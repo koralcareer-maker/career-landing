@@ -335,7 +335,6 @@
     }
 
     /* ─── PAIN ─── */
-    /* ─── PAIN CHECKLIST ─── */
     .pain-section {
       padding: 96px 28px;
       background: var(--black);
@@ -345,83 +344,95 @@
 
     .pain-section .section-title { color: var(--white); }
 
-    .pain-checklist {
-      max-width: 600px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
+    /* ─── CYCLE DIAGRAM ─── */
+    .pain-cycle {
+      max-width: 580px;
+      margin: 52px auto 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      position: relative;
     }
 
-    .pain-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 20px;
-      padding: 26px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+    /* center loop label */
+    .pain-cycle::before {
+      content: "🔄";
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      font-size: 32px;
+      z-index: 2;
+      filter: drop-shadow(0 0 12px rgba(62,207,207,0.5));
+    }
+
+    .cycle-step {
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 28px 20px 22px;
+      text-align: center;
       opacity: 0;
-      transform: translateX(24px);
-      transition: opacity .5s ease, transform .5s ease;
-      border-radius: 12px;
+      transform: scale(0.92);
+      transition: opacity .5s ease, transform .5s ease, border-color .4s;
+      position: relative;
     }
 
-    .pain-item.visible {
-      background: rgba(255,255,255,0.03);
-    }
-
-    .pain-item.visible {
+    .cycle-step.visible {
       opacity: 1;
-      transform: translateX(0);
+      transform: scale(1);
     }
 
-    .pain-item:last-child { border-bottom: none; }
-
-    .pain-check {
-      flex-shrink: 0;
-      width: 26px;
-      height: 26px;
-      border-radius: 6px;
-      border: 2px solid rgba(255,255,255,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 2px;
-      transition: border-color .3s, background .3s;
+    .cycle-step.active {
+      border-color: rgba(62,207,207,0.5);
+      background: rgba(62,207,207,0.07);
     }
 
-    .pain-item.checked .pain-check {
-      border-color: #e05252;
-      background: #e05252;
+    .cycle-num {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--teal);
+      margin-bottom: 10px;
+      text-transform: uppercase;
     }
 
-    .pain-check svg {
-      width: 14px; height: 14px;
-      stroke: white;
-      stroke-width: 2.5;
-      opacity: 0;
-      transition: opacity .3s .1s;
-    }
-
-    .pain-item.checked .pain-check svg { opacity: 1; }
-
-    .pain-item-text h3 {
-      font-size: clamp(19px, 2.8vw, 24px);
+    .cycle-step h3 {
+      font-size: clamp(15px, 2vw, 18px);
       font-weight: 900;
       color: var(--white);
+      line-height: 1.35;
       margin-bottom: 6px;
-      line-height: 1.3;
     }
 
-    .pain-item-text p {
-      font-size: 15px;
-      color: rgba(255,255,255,0.55);
-      line-height: 1.6;
+    .cycle-step p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
       margin: 0;
     }
 
+    /* arrows between steps */
+    .cycle-arrow {
+      position: absolute;
+      color: rgba(62,207,207,0.6);
+      font-size: 20px;
+      font-weight: 900;
+      z-index: 3;
+      pointer-events: none;
+    }
+    /* top arrow → (right-to-left in RTL, goes LEFT) */
+    .cycle-arrow.top    { top: calc(25% - 12px); left: 50%; transform: translateX(-50%); }
+    /* right arrow ↓ */
+    .cycle-arrow.right  { top: 50%; right: -2px; transform: translateY(-50%); }
+    /* bottom arrow ← */
+    .cycle-arrow.bottom { bottom: calc(25% - 12px); left: 50%; transform: translateX(-50%); }
+    /* left arrow ↑ */
+    .cycle-arrow.left   { top: 50%; left: -2px; transform: translateY(-50%); }
+
     .pain-bottom {
-      max-width: 600px;
-      margin: 44px auto 0;
+      max-width: 580px;
+      margin: 40px auto 0;
       background: rgba(62,207,207,0.1);
       border: 1.5px solid rgba(62,207,207,0.3);
       color: var(--white);
@@ -1050,9 +1061,8 @@
         <a class="btn btn--primary"
            href="https://secure.cardcom.solutions/EA/EA5/aG6eA8WAxkeQdeWYsGJaew/PaymentSP"
            target="_blank">
-          אני רוצה להגיע לראיונות – הרשמה עכשיו ←
+          הרשמה ←
         </a>
-        <p class="hero-price-note">המקומות מוגבלים</p>
       </div>
     </div>
 
@@ -1065,54 +1075,47 @@
 <section class="pain-section">
   <div class="wrap">
     <div class="center">
-      <h2 class="section-title">כמה זמן גם אתם<br/>נמצאים בלופ המתיש הזה?</h2>
-      <div class="teal-line"></div>
+      <h2 class="section-title">לא מוצאים עבודה חדשה?<br/>אתם תקועים בלולאה הזאת.</h2>
     </div>
 
-    <div class="pain-checklist" id="painList">
-      <div class="pain-item">
-        <div class="pain-check">
-          <svg viewBox="0 0 14 14" fill="none"><polyline points="2,7 5.5,10.5 12,3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="pain-item-text">
-          <h3>שלחתם קורות חיים. לא חזרו אליכם.</h3>
-          <p>מגישים מועמדות לעשרות משרות ומחכים לתגובה שלא מגיעה.</p>
-        </div>
+    <div class="pain-cycle" id="painList">
+      <!-- arrows -->
+      <span class="cycle-arrow top">↙</span>
+      <span class="cycle-arrow right">↓</span>
+      <span class="cycle-arrow bottom">↗</span>
+      <span class="cycle-arrow left">↑</span>
+
+      <!-- step 1: top-right (RTL) -->
+      <div class="cycle-step" id="cs1">
+        <span class="cycle-num">שלב 01</span>
+        <h3>שלחתם קורות חיים</h3>
+        <p>מועמדות לעשרות משרות — ושתיקה מוחלטת בחזרה.</p>
       </div>
 
-      <div class="pain-item">
-        <div class="pain-check">
-          <svg viewBox="0 0 14 14" fill="none"><polyline points="2,7 5.5,10.5 12,3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="pain-item-text">
-          <h3>שיפרתם את ה-CV. שוב שלחתם. שוב שתיקה.</h3>
-          <p>מחכים שבוע, שולחים שוב, שותקים שוב. ושוב.</p>
-        </div>
+      <!-- step 2: top-left (RTL) -->
+      <div class="cycle-step" id="cs2">
+        <span class="cycle-num">שלב 02</span>
+        <h3>שיפרתם ושלחתם שוב</h3>
+        <p>שבוע המתנה, ניסוח מחדש — ושוב שתיקה.</p>
       </div>
 
-      <div class="pain-item">
-        <div class="pain-check">
-          <svg viewBox="0 0 14 14" fill="none"><polyline points="2,7 5.5,10.5 12,3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="pain-item-text">
-          <h3>התחלתם לפקפק בעצמכם.</h3>
-          <p>מתחילים לחשוב שהבעיה היא אתם — במקום בשיטה.</p>
-        </div>
+      <!-- step 3: bottom-right (RTL) -->
+      <div class="cycle-step" id="cs3">
+        <span class="cycle-num">שלב 04</span>
+        <h3>חודשים עוברים</h3>
+        <p>כלום לא זז. המוטיבציה נשחקת לאט.</p>
       </div>
 
-      <div class="pain-item">
-        <div class="pain-check">
-          <svg viewBox="0 0 14 14" fill="none"><polyline points="2,7 5.5,10.5 12,3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="pain-item-text">
-          <h3>חודשים עוברים. כלום לא זז.</h3>
-          <p>חודשים חולפים בלי התקדמות. המוטיבציה נשחקת.</p>
-        </div>
+      <!-- step 4: bottom-left (RTL) -->
+      <div class="cycle-step" id="cs4">
+        <span class="cycle-num">שלב 03</span>
+        <h3>מתחילים לפקפק בעצמכם</h3>
+        <p>מאשימים את עצמכם — במקום לשנות שיטה.</p>
       </div>
     </div>
 
     <div class="pain-bottom" id="painBottom">
-      <span>הבעיה היא לא אתם.</span> אתם משקיעים את המאמץ במקומות הלא נכונים.
+      <span>אתם לא הבעיה.</span> המאמץ שלכם הולך למקומות הלא נכונים.
     </div>
   </div>
 </section>
@@ -1520,8 +1523,8 @@
     obsCards.observe(el);
   });
 
-  // ── Pain checklist sequential animation ──
-  const painItems = document.querySelectorAll('.pain-item');
+  // ── Cycle diagram sequential animation ──
+  const cycleSteps = document.querySelectorAll('.cycle-step');
   const painBottom = document.getElementById('painBottom');
   let painTriggered = false;
 
@@ -1529,24 +1532,22 @@
     entries.forEach(entry => {
       if (entry.isIntersecting && !painTriggered) {
         painTriggered = true;
-        painItems.forEach((item, i) => {
-          // Slide in
+        cycleSteps.forEach((step, i) => {
           setTimeout(() => {
-            item.classList.add('visible');
-          }, i * 420);
-          // Check with X after appearing
-          setTimeout(() => {
-            item.classList.add('checked');
-          }, i * 420 + 500);
+            step.classList.add('visible');
+            step.classList.add('active');
+            // remove active after a beat so next step highlights
+            setTimeout(() => step.classList.remove('active'), 600);
+          }, i * 500);
         });
-        // Show bottom message after all items
+        // Show bottom message after all steps
         setTimeout(() => {
           painBottom.classList.add('visible');
-        }, painItems.length * 420 + 600);
+        }, cycleSteps.length * 500 + 400);
         obsPain.disconnect();
       }
     });
-  }, { threshold: 0.25 });
+  }, { threshold: 0.2 });
 
   if (document.getElementById('painList')) {
     obsPain.observe(document.getElementById('painList'));
