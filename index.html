@@ -718,10 +718,10 @@
       .speaker:nth-child(even) .speaker-text { order: unset; }
     }
 
-    /* ─── TESTIMONIALS ─── */
+    /* ─── TESTIMONIALS MARQUEE ─── */
     .testimonials-section {
       padding: 96px 28px;
-      background: linear-gradient(160deg, var(--black) 0%, #1a2a2a 100%);
+      background: var(--cream);
       position: relative;
       overflow: hidden;
     }
@@ -744,83 +744,101 @@
       pointer-events: none;
     }
 
-    .testimonials-section .section-title { color: var(--white); }
-    .testimonials-section .section-sub { color: rgba(255,255,255,0.5); }
+    .testimonials-section .section-title { color: var(--black); }
+    .testimonials-section .section-sub { color: var(--muted); }
 
-    .testimonials-grid {
+    /* ── marquee container ── */
+    .t-marquee-wrap {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-      max-width: 960px;
-      margin: 0 auto;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      max-width: 860px;
+      margin: 56px auto 0;
+      height: 560px;
+      overflow: hidden;
       position: relative;
       z-index: 1;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%);
     }
 
-    .testimonial {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      padding: 36px 30px 28px;
-      position: relative;
-      transition: transform .25s, border-color .25s, background .25s;
-      backdrop-filter: blur(4px);
+    .t-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      will-change: transform;
     }
 
-    .testimonial:hover {
-      transform: translateY(-6px);
-      border-color: var(--teal);
-      background: rgba(62,207,207,0.06);
+    .t-col-1 { animation: scrollUp 28s linear infinite; }
+    .t-col-2 { animation: scrollDown 32s linear infinite; }
+
+    @keyframes scrollUp {
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+    @keyframes scrollDown {
+      0%   { transform: translateY(-50%); }
+      100% { transform: translateY(0); }
     }
 
-    .testimonial.t-featured {
-      background: var(--teal);
-      border-color: var(--teal);
-      grid-column: span 2;
+    .t-marquee-wrap:hover .t-col { animation-play-state: paused; }
+
+    /* ── individual card ── */
+    .tcard {
+      background: var(--white);
+      border-radius: 18px;
+      box-shadow: 0 2px 18px rgba(0,0,0,0.07);
+      padding: 26px 24px 20px;
+      text-align: right;
+      flex-shrink: 0;
     }
 
-    @media (max-width: 640px) {
-      .testimonial.t-featured { grid-column: span 1; }
-    }
-
-    .testimonial.t-featured .testimonial-body { color: var(--white); font-size: 19px; }
-    .testimonial.t-featured .testimonial-result { background: var(--black); color: var(--white); }
-    .testimonial.t-featured::before { color: rgba(255,255,255,0.25); }
-
-    .testimonial::before {
-      content: '\201C';
-      position: absolute;
-      top: 12px;
-      right: 22px;
-      font-size: 100px;
-      line-height: 1;
-      color: var(--teal);
-      opacity: 0.18;
-      font-family: Georgia, serif;
-    }
-
-    .testimonial-body {
-      font-size: 17px;
-      line-height: 1.8;
-      color: rgba(255,255,255,0.88);
-      margin-bottom: 24px;
+    .tcard-body {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text);
+      margin-bottom: 18px;
       font-weight: 400;
     }
 
-    .testimonial-result {
-      display: inline-flex;
+    .tcard-footer {
+      display: flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(62,207,207,0.15);
-      border: 1px solid rgba(62,207,207,0.4);
-      color: var(--teal);
-      font-size: 12px;
-      font-weight: 800;
-      padding: 6px 14px;
-      border-radius: 40px;
-      letter-spacing: 0.5px;
+      gap: 10px;
     }
-    .testimonial-result::before { content: '✓ '; }
+
+    .tcard-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--teal-pale);
+      border: 2px solid var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--teal-dark);
+      flex-shrink: 0;
+    }
+
+    .tcard-meta { display: flex; flex-direction: column; gap: 2px; }
+
+    .tcard-result {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--teal-dark);
+    }
+
+    .tcard-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 600px) {
+      .t-marquee-wrap { grid-template-columns: 1fr; height: 500px; }
+      .t-col-2 { display: none; }
+    }
 
     /* ─── EVENT DETAILS ─── */
     .event-section {
@@ -1383,58 +1401,141 @@
 <!-- ══ TESTIMONIALS ══ -->
 <section class="testimonials-section">
   <div class="wrap--wide">
-    <div class="center" style="position:relative;z-index:1;">
-      <h2 class="section-title" style="color:var(--white);">הם כבר עשו את זה.</h2>
-      <p class="section-sub" style="color:rgba(255,255,255,0.5);">תוצאות אמיתיות של אנשים שעברו תהליך עם קורל</p>
-      <div class="teal-line"></div>
+    <div class="center" style="position:relative;z-index:1;margin-bottom:0;">
+      <h2 class="section-title">הם כבר עשו את זה.</h2>
+      <p class="section-sub">תוצאות אמיתיות של אנשים שעברו תהליך עם קורל</p>
     </div>
 
-    <div class="testimonials-grid">
+    <div class="t-marquee-wrap">
 
-      <div class="testimonial t-featured fade-in">
-        <p class="testimonial-body">
-          "קורלי, בשעה טובה התקבלתי לדילויט — היום מקבלת מהם חוזה.
-          ההכנה איתך עזרה לי לדייק את איך שאני מציגה את עצמי
-          והגבירה לי את הביטחון.
-          בלעדייך זה לא היה קורה — תודה תודה תודה ❤️"
-        </p>
-        <span class="testimonial-result">התקבלה ל-Deloitte</span>
+      <!-- עמודה ימין — גולשת למעלה -->
+      <div class="t-col t-col-1">
+        <div class="tcard">
+          <p class="tcard-body">"קורלי, בשעה טובה התקבלתי לדילויט — היום מקבלת מהם חוזה. ההכנה איתך עזרה לי לדייק את איך שאני מציגה את עצמי והגבירה לי את הביטחון. בלעדייך זה לא היה קורה ❤️"</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">ד</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ התקבלה ל-Deloitte</span>
+              <span class="tcard-sub">מתאמנת של קורל</span>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <p class="tcard-body">"אחרי תקופה ארוכה מצאתי סוף סוף משרה כמו שרציתי! בזכותך ובעזרתך הגדולה — את אלופה, מעריכה מאוד ♡"</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">מ</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ מצאה את המשרה שרצתה</span>
+              <span class="tcard-sub">מתאמנת של קורל</span>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <p class="tcard-body">"היום חזרו אלי מהעירייה כדי לקבל אותי — את מבינה איזה מהפך עשית לי?"</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">ר</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ התקבלה לעירייה</span>
+              <span class="tcard-sub">מתאמנת של קורל</span>
+            </div>
+          </div>
+        </div>
+        <!-- כפל לאינסוף -->
+        <div class="tcard">
+          <p class="tcard-body">"קורלי, בשעה טובה התקבלתי לדילויט — היום מקבלת מהם חוזה. ההכנה איתך עזרה לי לדייק את איך שאני מציגה את עצמי והגבירה לי את הביטחון. בלעדייך זה לא היה קורה ❤️"</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">ד</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ התקבלה ל-Deloitte</span>
+              <span class="tcard-sub">מתאמנת של קורל</span>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <p class="tcard-body">"אחרי תקופה ארוכה מצאתי סוף סוף משרה כמו שרציתי! בזכותך ובעזרתך הגדולה — את אלופה, מעריכה מאוד ♡"</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">מ</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ מצאה את המשרה שרצתה</span>
+              <span class="tcard-sub">מתאמנת של קורל</span>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <p class="tcard-body">"היום חזרו אלי מהעירייה כדי לקבל אותי — את מבינה איזה מהפך עשית לי?"</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">ר</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ התקבלה לעירייה</span>
+              <span class="tcard-sub">מתאמנת של קורל</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="testimonial fade-in">
-        <p class="testimonial-body">
-          "קורלי!!! התקבלתי לתפקיד רכז גיוס בחברת Manpower
-          ואני מתחיל ממש בראשון הקרוב.
-          את פשוט אלופההה!!! אין עליך! ❤️😍"
-        </p>
-        <span class="testimonial-result">התקבל ל-Manpower</span>
-      </div>
-
-      <div class="testimonial fade-in">
-        <p class="testimonial-body">
-          "רציתי לשתף אותך בבשורה משמחת —
-          חתמנו על חוזה!
-          אין לי מילים להודות לך...
-          את אלופה אמיתית."
-        </p>
-        <span class="testimonial-result">חתמה על חוזה</span>
-      </div>
-
-      <div class="testimonial fade-in">
-        <p class="testimonial-body">
-          "היום חזרו אלי מהעירייה כדי לקבל אותי —
-          את מבינה איזה מהפך עשית לי?"
-        </p>
-        <span class="testimonial-result">התקבלה לעירייה</span>
-      </div>
-
-      <div class="testimonial fade-in">
-        <p class="testimonial-body">
-          "אחרי תקופה ארוכה מצאתי סוף סוף משרה כמו שרציתי!
-          בזכותך ובעזרתך הגדולה —
-          את אלופה, מעריכה מאוד. ♡"
-        </p>
-        <span class="testimonial-result">מצאה את המשרה שרצתה</span>
+      <!-- עמודה שמאל — גולשת למטה -->
+      <div class="t-col t-col-2">
+        <div class="tcard">
+          <p class="tcard-body">"קורלי!!! התקבלתי לתפקיד רכז גיוס בחברת Manpower ואני מתחיל ממש בראשון הקרוב. את פשוט אלופההה!!! אין עליך! ❤️😍"</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">י</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ התקבל ל-Manpower</span>
+              <span class="tcard-sub">מתאמן של קורל</span>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <p class="tcard-body">"רציתי לשתף אותך בבשורה משמחת — חתמנו על חוזה! אין לי מילים להודות לך... את אלופה אמיתית."</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">נ</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ חתמה על חוזה</span>
+              <span class="tcard-sub">מתאמנת של קורל</span>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <p class="tcard-body">"הגישה שלך שינתה לי לגמרי את האיך שאני מסתכלת על חיפוש עבודה. תוך שבועיים קיבלתי שלושה ראיונות. תודה קורל!"</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">ש</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ 3 ראיונות בשבועיים</span>
+              <span class="tcard-sub">מתאמנת של קורל</span>
+            </div>
+          </div>
+        </div>
+        <!-- כפל לאינסוף -->
+        <div class="tcard">
+          <p class="tcard-body">"קורלי!!! התקבלתי לתפקיד רכז גיוס בחברת Manpower ואני מתחיל ממש בראשון הקרוב. את פשוט אלופההה!!! אין עליך! ❤️😍"</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">י</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ התקבל ל-Manpower</span>
+              <span class="tcard-sub">מתאמן של קורל</span>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <p class="tcard-body">"רציתי לשתף אותך בבשורה משמחת — חתמנו על חוזה! אין לי מילים להודות לך... את אלופה אמיתית."</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">נ</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ חתמה על חוזה</span>
+              <span class="tcard-sub">מתאמנת של קורל</span>
+            </div>
+          </div>
+        </div>
+        <div class="tcard">
+          <p class="tcard-body">"הגישה שלך שינתה לי לגמרי את האיך שאני מסתכלת על חיפוש עבודה. תוך שבועיים קיבלתי שלושה ראיונות. תודה קורל!"</p>
+          <div class="tcard-footer">
+            <div class="tcard-avatar">ש</div>
+            <div class="tcard-meta">
+              <span class="tcard-result">✓ 3 ראיונות בשבועיים</span>
+              <span class="tcard-sub">מתאמנת של קורל</span>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
