@@ -1,0 +1,106 @@
+"use client";
+
+import Link from "next/link";
+import { useActionState } from "react";
+import { signup } from "@/lib/actions/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Eye, EyeOff, CheckCircle } from "lucide-react";
+import { useState } from "react";
+
+export default function SignupPage() {
+  const [state, action, isPending] = useActionState(signup, null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-4 py-10" dir="rtl">
+      <Link href="/" className="flex items-center gap-2 mb-8">
+        <div className="w-9 h-9 bg-teal rounded-xl flex items-center justify-center text-white font-bold">ק</div>
+        <span className="font-bold text-navy text-xl">קריירה בפוקוס</span>
+      </Link>
+
+      <div className="w-full max-w-sm">
+        {/* Benefits */}
+        <div className="bg-teal-pale border border-teal/20 rounded-2xl p-4 mb-5 flex flex-col gap-2">
+          {["גישה לכל התכנים", "ניתוח קריירה AI", "קהילה תומכת"].map((b) => (
+            <div key={b} className="flex items-center gap-2 text-sm text-teal-dark font-medium">
+              <CheckCircle size={14} className="shrink-0" />
+              {b}
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-md border border-black/5 p-8">
+          <h1 className="text-2xl font-black text-navy mb-1">הצטרפות</h1>
+          <p className="text-gray-500 text-sm mb-7">צור חשבון ותתחיל לחפש עבודה חכם יותר</p>
+
+          <form action={action} className="space-y-4">
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              label="שם מלא"
+              placeholder="ישראל ישראלי"
+              autoComplete="name"
+              required
+            />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              label="אימייל"
+              placeholder="your@email.com"
+              autoComplete="email"
+              required
+              dir="ltr"
+            />
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                label="סיסמה"
+                placeholder="לפחות 6 תווים"
+                autoComplete="new-password"
+                required
+                hint="לפחות 6 תווים"
+                dir="ltr"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute left-3 top-8 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+
+            {state?.error && (
+              <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">
+                {state.error}
+              </div>
+            )}
+
+            <Button type="submit" className="w-full" size="lg" loading={isPending}>
+              יצירת חשבון
+            </Button>
+          </form>
+
+          <p className="text-xs text-gray-400 mt-4 text-center">
+            בהרשמה אתה מסכים ל
+            <Link href="/terms" className="text-teal hover:underline mx-1">תנאי השימוש</Link>
+            ו
+            <Link href="/privacy" className="text-teal hover:underline mx-1">מדיניות הפרטיות</Link>
+          </p>
+
+          <div className="mt-5 pt-5 border-t border-gray-100 text-center">
+            <p className="text-sm text-gray-500">
+              כבר חבר?{" "}
+              <Link href="/login" className="text-teal font-semibold hover:underline">כניסה</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --color-teal:        #3ECFCF;
+  --color-teal-dark:   #2BAAAA;
+  --color-teal-pale:   #E8F9F9;
+  --color-teal-light:  #D0F0F0;
+  --color-navy:        #1C1C2E;
+  --color-navy-light:  #2D2D44;
+  --color-cream:       #F5F1EB;
+  --color-cream-dark:  #EDE9E2;
+  --color-surface:     #FFFFFF;
+  --font-sans: 'Rubik', 'Arial', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  direction: rtl;
+  font-family: 'Rubik', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: #F5F1EB;
+  color: #1A1A2E;
+  font-family: 'Rubik', Arial, sans-serif;
+  line-height: 1.6;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #F5F1EB; }
+::-webkit-scrollbar-thumb { background: #C8C4BC; border-radius: 3px; }
+
+:focus-visible { outline: 2px solid #3ECFCF; outline-offset: 2px; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.5s ease forwards; }
+.animate-scale-in  { animation: scaleIn  0.4s ease forwards; }
+
+/* Stagger delays for feature cards */
+.stagger-1 { animation-delay: 0.05s; opacity: 0; }
+.stagger-2 { animation-delay: 0.10s; opacity: 0; }
+.stagger-3 { animation-delay: 0.15s; opacity: 0; }
+.stagger-4 { animation-delay: 0.20s; opacity: 0; }
+.stagger-5 { animation-delay: 0.25s; opacity: 0; }
+.stagger-6 { animation-delay: 0.30s; opacity: 0; }
+.stagger-7 { animation-delay: 0.35s; opacity: 0; }
+.stagger-8 { animation-delay: 0.40s; opacity: 0; }
+
+/* Feature card hover lift */
+.feature-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px -8px rgba(62, 207, 207, 0.2), 0 4px 12px -4px rgba(0,0,0,0.08);
+}

@@ -1,0 +1,536 @@
+// Career In Focus — Prisma Schema
+// Hebrew RTL membership community for job seekers in Israel
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MEMBER
+}
+
+enum AccessStatus {
+  PENDING     // Registered but not paid
+  ACTIVE      // Paid and approved
+  SUSPENDED   // Suspended by admin
+  EXPIRED     // Membership expired
+}
+
+enum MembershipType {
+  NONE
+  MEMBER
+  VIP
+  PREMIUM  // "קורל מפעילה קשרים" tier
+}
+
+enum NetworkRequestStatus {
+  PENDING
+  IN_PROGRESS
+  DONE
+  DECLINED
+}
+
+enum PaymentProvider {
+  NONE
+  CARDCOM
+  MANUAL
+}
+
+enum ApplicationStatus {
+  SAVED
+  FIT_CHECKED
+  APPLIED
+  PROACTIVE_OUTREACH
+  FOLLOWUP_SENT
+  INTERVIEW_SCHEDULED
+  FIRST_INTERVIEW
+  ADVANCED_INTERVIEW
+  TASK_HOME
+  OFFER
+  REJECTED
+  FROZEN
+  ACCEPTED
+}
+
+enum EventType {
+  WEBINAR
+  WORKSHOP
+  LIVE
+  GUEST_RECRUITER
+  JOB_DROP
+  LAUNCH
+  NETWORKING
+}
+
+enum PostCategory {
+  QUESTION
+  JOB
+  WIN
+  TIP
+}
+
+enum ToolType {
+  AI_TOOL
+  TEMPLATE
+  LINK
+  FILE
+  COURSE_RESOURCE
+  QUESTIONNAIRE
+  JOB_SOURCE
+  WHATSAPP_GROUP
+  CV_TEMPLATE
+  OTHER
+}
+
+enum CourseFormat {
+  TEXT
+  PDF
+  VIDEO
+  EXTERNAL_LINK
+  EMBEDDED
+  EXTERNAL_PLATFORM
+  DOWNLOAD_BUNDLE
+}
+
+enum AccessType {
+  FREE
+  INCLUDED
+  DISCOUNTED
+  PAID
+}
+
+enum PhotoUpgradeStatus {
+  NONE
+  REQUESTED
+  IN_PROGRESS
+  DELIVERED
+}
+
+// ─── Auth Models ──────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Role & Access
+  role          Role         @default(MEMBER)
+  accessStatus  AccessStatus @default(PENDING)
+  membershipType MembershipType @default(NONE)
+
+  // Payment
+  paymentProvider PaymentProvider @default(NONE)
+  paymentReference String?
+  paidAt          DateTime?
+
+  // Profile
+  profile       Profile?
+  careerPassport CareerPassport?
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  jobApplications JobApplication[]
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  notifications Notification[]
+  coachingSession CoachingSession?
+  networkRequests NetworkRequest[]
+  photoUpgradeStatus PhotoUpgradeStatus @default(NONE)
+  photoUpgradeRequestedAt DateTime?
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+// ─── Profile & Career Passport ────────────────────────────────────────────────
+
+model Profile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt       DateTime @updatedAt
+
+  // Basic
+  fullName        String?
+  phone           String?
+  currentRole     String?
+  targetRole      String?
+  yearsExperience Int?
+  desiredField    String?
+
+  // Career Goals
+  careerTransitionGoal String?
+  mainChallenge        String?
+  strengths            String?  // JSON array
+  missingSkills        String?  // JSON array
+
+  // Preferences
+  preferredSalaryMin Int?
+  preferredSalaryMax Int?
+  preferredCompanyType String?
+
+  // Links & Files
+  linkedinUrl     String?
+  resumeUrl       String?
+  imageUrl        String?
+
+  // Questionnaire completion
+  questionnaireCompleted Boolean @default(false)
+
+  // Career Passport Questionnaire fields
+  q_workStyle          String?
+  q_teamOrSolo         String?
+  q_motivators         String?
+  q_biggestFear        String?
+  q_idealDay           String?
+  q_pastAchievement    String?
+  q_learningStyle      String?
+  q_shortTermGoal      String?
+  q_longTermGoal       String?
+  q_networkingLevel    String?
+  q_salaryPriority     String?
+  q_locationFlexible   Boolean?
+  q_remotePreference   String?
+  q_industryInterests  String?  // JSON array
+  q_roleModels         String?
+  q_valuesAtWork       String?  // JSON array
+}
+
+model CareerPassport {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generatedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  jobMatchScore   Int      @default(0)
+  strengths       String?  // JSON array
+  skillGaps       String?  // JSON array
+  recommendations String?  // JSON array
+  likelyFitRoles  String?  // JSON array
+  recommendedIndustries String?  // JSON array
+  nextBestActions String?  // JSON array
+  summary         String?
+}
+
+// ─── Job Applications Tracker ────────────────────────────────────────────────
+
+model JobApplication {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company       String
+  role          String
+  dateApplied   DateTime?
+  source        String?
+  status        ApplicationStatus @default(APPLIED)
+  notes         String?
+  nextFollowUp  DateTime?
+
+  // Extra tracking
+  contactName   String?
+  contactLinkedin String?
+  jobLink       String?
+  responseReceived Boolean @default(false)
+  interviewStage  String?
+}
+
+// ─── Courses ─────────────────────────────────────────────────────────────────
+
+model Course {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  title       String
+  description String?
+  category    String?
+  formatType  String?  // flexible free text
+  accessType  AccessType @default(INCLUDED)
+  isPublished Boolean @default(true)
+  imageUrl    String?
+  ctaText     String?
+  ctaUrl      String?
+  sortOrder   Int @default(0)
+
+  contents    CourseContent[]
+}
+
+model CourseContent {
+  id        String      @id @default(cuid())
+  courseId  String
+  course    Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  format    CourseFormat
+  title     String?
+  body      String?     // text content or embed code
+  url       String?
+  fileUrl   String?
+  sortOrder Int @default(0)
+}
+
+// ─── Tools & Resources ───────────────────────────────────────────────────────
+
+model Tool {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  title       String
+  description String?
+  category    String?
+  type        ToolType @default(LINK)
+  externalUrl String?
+  fileUrl     String?
+  imageUrl    String?
+  adminTip    String?
+  notes       String?
+  targetRole  String?
+  isPublished Boolean @default(true)
+  sortOrder   Int @default(0)
+}
+
+// ─── Jobs ─────────────────────────────────────────────────────────────────────
+
+model Job {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  title       String
+  company     String
+  companyLogo String?
+  summary     String?
+  description String?
+  location    String?
+  field       String?
+  experienceLevel String?
+  source      String?
+  externalUrl String?
+  isHot       Boolean @default(false)
+  isPublished Boolean @default(true)
+  expiresAt   DateTime?
+}
+
+// ─── Events ──────────────────────────────────────────────────────────────────
+
+model Event {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById String?
+
+  title       String
+  description String?
+  type        EventType @default(WEBINAR)
+  startAt     DateTime
+  endAt       DateTime?
+  location    String?
+  isOnline    Boolean   @default(true)
+  meetingUrl  String?
+  registerUrl String?
+  isPublished Boolean   @default(true)
+  maxCapacity Int?
+  imageUrl    String?
+}
+
+// ─── Community ────────────────────────────────────────────────────────────────
+
+model Post {
+  id        String      @id @default(cuid())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  authorId  String
+  author    User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  category  PostCategory
+  content   String
+  imageUrl  String?
+  isPinned  Boolean     @default(false)
+  isHidden  Boolean     @default(false)
+
+  comments  Comment[]
+  likes     Like[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  content   String
+  isHidden  Boolean @default(false)
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+// ─── Updates / Announcements ─────────────────────────────────────────────────
+
+model Update {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  title       String
+  content     String
+  category    String?  // e.g., "market", "launch", "event", "recruiter", "general"
+  isPinned    Boolean  @default(false)
+  isPublished Boolean  @default(true)
+  imageUrl    String?
+  ctaText     String?
+  ctaUrl      String?
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      String   // "event", "update", "job_match", "community_reply", "photo_upgrade", "general"
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  refId     String?  // Reference to the related entity
+}
+
+// ─── Featured Candidate ───────────────────────────────────────────────────────
+
+model FeaturedCandidate {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+
+  userId      String?  // optional link to a real user
+  name        String
+  targetRole  String
+  summary     String?
+  strengths   String?  // JSON array
+  lookingFor  String?
+  imageUrl    String?
+  linkedinUrl String?
+  isActive    Boolean  @default(true)
+  weekOf      DateTime @default(now())
+}
+
+// ─── AI Coaching ─────────────────────────────────────────────────────────────
+
+model CoachingSession {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // messages stored as JSON array [{role, content}]
+  messages    String   @default("[]")
+  // latest AI analysis snapshot
+  lastAnalysis String?
+  analyzedAt   DateTime?
+}
+
+// ─── Premium Network Requests ─────────────────────────────────────────────────
+
+model NetworkRequest {
+  id          String              @id @default(cuid())
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  targetRole     String
+  targetCompanies String?   // comma-separated
+  notes          String?
+  status         NetworkRequestStatus @default(PENDING)
+  adminNote      String?
+}
+
+// ─── Progress Tracking ────────────────────────────────────────────────────────
+
+model ProgressSnapshot {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  userId      String
+
+  // Weekly snapshot of metrics
+  weekStart   DateTime
+  applied     Int @default(0)
+  responses   Int @default(0)
+  interviews  Int @default(0)
+  offers      Int @default(0)
+  rejections  Int @default(0)
+  outreach    Int @default(0)
+  networking  Int @default(0)
+  skills      Int @default(0)
+}

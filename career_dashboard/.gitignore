@@ -1,0 +1,11 @@
+credentials/*.json
+credentials/token.pickle
+.drive_cache/
+exports/
+__pycache__/
+*.pyc
+.env
+*.egg-info/
+dist/
+build/
+.streamlit/secrets.toml
