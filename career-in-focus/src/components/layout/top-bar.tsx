@@ -33,24 +33,32 @@ export function TopBar({ user, unreadCount = 0 }: TopBarProps) {
   const title = Object.entries(PAGE_TITLES).find(([key]) => pathname.startsWith(key))?.[1] ?? "";
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-black/5 shadow-[0_1px_12px_rgba(0,0,0,0.06)] px-6 py-3 flex items-center justify-between md:px-8">
-      <h1 className="text-base font-bold text-navy">{title}</h1>
-      <div className="flex items-center gap-2">
-        <Link href="/notifications" className="relative p-2 rounded-xl hover:bg-cream transition-colors">
-          <Bell size={18} className="text-navy/60" />
+    <header className="sticky top-0 z-30 bg-white border-b border-slate-100 shadow-sm px-6 py-3 flex items-center justify-between md:px-8">
+      {/* Left: greeting */}
+      <div className="flex items-center gap-3">
+        <Link href="/notifications" className="relative p-2 rounded-xl hover:bg-slate-50 transition-colors">
+          <Bell size={18} className="text-slate-500" />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-teal rounded-full ring-2 ring-white" />
           )}
         </Link>
-        <Link href="/profile" className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-cream transition-colors">
-          <div className="w-7 h-7 bg-teal rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm">
+        <Link href="/community" className="p-2 rounded-xl hover:bg-slate-50 transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-500">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </Link>
+        <Link href="/profile" className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-colors">
+          <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
             {user.image
-              ? <img src={user.image} alt="" className="w-7 h-7 rounded-full object-cover" />
+              ? <img src={user.image} alt="" className="w-8 h-8 rounded-full object-cover" />
               : (user.name?.charAt(0) ?? "?")}
           </div>
-          <span className="text-sm font-medium text-navy/80 hidden sm:block">{user.name?.split(" ")[0]}</span>
+          <span className="text-sm font-semibold text-navy hidden sm:block">שלום, {user.name?.split(" ")[0]}</span>
         </Link>
       </div>
+
+      {/* Right: page title */}
+      <h1 className="text-sm font-semibold text-slate-400">{title}</h1>
     </header>
   );
 }

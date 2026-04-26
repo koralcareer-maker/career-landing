@@ -151,6 +151,7 @@ model User {
   notifications Notification[]
   coachingSession CoachingSession?
   networkRequests NetworkRequest[]
+  premiumLeads    PremiumLead[]
   photoUpgradeStatus PhotoUpgradeStatus @default(NONE)
   photoUpgradeRequestedAt DateTime?
 }
@@ -514,6 +515,36 @@ model NetworkRequest {
   notes          String?
   status         NetworkRequestStatus @default(PENDING)
   adminNote      String?
+}
+
+// ─── Premium Lead ("קורל תפעילי קשרים") ──────────────────────────────────────
+
+enum PremiumLeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  IN_PROGRESS
+  CLOSED
+  DECLINED
+}
+
+model PremiumLead {
+  id          String            @id @default(cuid())
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Contact info (may or may not be a registered user)
+  userId      String?
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  fullName    String
+  phone       String
+  email       String
+  targetRole  String
+  description String?           // "ספר בקצרה מה אתה מחפש"
+  whyNow      String?           // "למה דווקא עכשיו"
+
+  status      PremiumLeadStatus @default(NEW)
+  adminNote   String?
 }
 
 // ─── Progress Tracking ────────────────────────────────────────────────────────

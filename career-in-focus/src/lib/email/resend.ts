@@ -151,6 +151,40 @@ export async function sendNetworkRequestToAdmin(opts: {
   });
 }
 
+// ─── Premium Lead notification to admin ──────────────────────────────────────
+
+export async function safeSendPremiumLeadNotification(opts: {
+  fullName: string;
+  email: string;
+  phone: string;
+  targetRole: string;
+  description?: string;
+  whyNow?: string;
+  leadId: string;
+  appUrl: string;
+}) {
+  const html = baseLayout(`
+    <h2>ליד פרימיום חדש 👑</h2>
+    <p>מועמד/ת חדש/ה הגיש/ה מועמדות למסלול "קורל תפעילי קשרים":</p>
+    <div class="card">
+      <h3>${opts.fullName}</h3>
+      <p>📧 ${opts.email}</p>
+      <p>📱 ${opts.phone}</p>
+      <p>🎯 תפקיד יעד: ${opts.targetRole}</p>
+      ${opts.description ? `<p>📝 מה מחפש/ת: ${opts.description}</p>` : ""}
+      ${opts.whyNow ? `<p>⏰ למה עכשיו: ${opts.whyNow}</p>` : ""}
+    </div>
+    <a href="${opts.appUrl}/admin/premium-leads" class="btn">צפייה בכל הלידים</a>
+  `);
+
+  return safeSend({
+    from: FROM,
+    to: process.env.ADMIN_EMAIL ?? "koral@careerinfocus.co.il",
+    subject: `ליד פרימיום חדש: ${opts.fullName} — ${opts.targetRole}`,
+    html,
+  });
+}
+
 // ─── Welcome email ────────────────────────────────────────────────────────────
 
 export async function sendWelcomeEmail(opts: {
