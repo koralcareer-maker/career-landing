@@ -1,7 +1,21 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
 export const FROM = process.env.EMAIL_FROM ?? "קריירה בפוקוס <noreply@careerinfocus.co.il>";
+
+function getResend(): Resend {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY is not set — email sending is disabled");
+  return new Resend(key);
+}
+
+// Safe email send — returns null instead of throwing when key is missing
+async function safeSend(payload: Parameters<Resend["emails"]["send"]>[0]) {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[email] RESEND_API_KEY not set, skipping email to", payload.to);
+    return null;
+  }
+  return getResend().emails.send(payload);
+}
 
 // ─── Email templates ──────────────────────────────────────────────────────────
 
@@ -68,7 +82,7 @@ export async function sendWeeklyDigest(opts: {
     <a href="${opts.appUrl}/coaching" class="btn">פתחי את המאמן האישי שלי</a>
   `);
 
-  return resend.emails.send({
+  return safeSend({
     from: FROM,
     to: opts.to,
     subject: `${opts.name}, הניתוח השבועי שלך מוכן 🎯`,
@@ -99,7 +113,7 @@ export async function sendEventReminder(opts: {
     <a href="${opts.appUrl}/events" class="btn">לפרטי האירוע</a>
   `);
 
-  return resend.emails.send({
+  return safeSend({
     from: FROM,
     to: opts.to,
     subject: `תזכורת: ${opts.eventTitle} — מחר!`,
@@ -129,7 +143,7 @@ export async function sendNetworkRequestToAdmin(opts: {
     <a href="${opts.appUrl}/admin/network" class="btn">ניהול בקשות רשת</a>
   `);
 
-  return resend.emails.send({
+  return safeSend({
     from: FROM,
     to: process.env.ADMIN_EMAIL ?? "koral@careerinfocus.co.il",
     subject: `בקשת רשת חדשה מ-${opts.userName}`,
@@ -158,7 +172,7 @@ export async function sendWelcomeEmail(opts: {
     <p style="font-size:13px;color:#999;">אני כאן לכל שאלה — קורל שלו</p>
   `);
 
-  return resend.emails.send({
+  return safeSend({
     from: FROM,
     to: opts.to,
     subject: `ברוכה הבאה לקריירה בפוקוס, ${opts.name}! 🎯`,
