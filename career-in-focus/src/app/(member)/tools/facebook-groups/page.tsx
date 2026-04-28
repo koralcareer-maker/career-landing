@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function FacebookGroupsPage() {
   const tools = await prisma.tool.findMany({
-    where: { type: "FACEBOOK_GROUP", isPublished: true },
+    where: { type: "FACEBOOK_GROUP" as any, isPublished: true },
     orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
     select: { id: true, title: true, category: true, externalUrl: true, notes: true },
   });

@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function WhatsAppGroupsPage() {
   const tools = await prisma.tool.findMany({
-    where: { type: "WHATSAPP_GROUP", isPublished: true },
+    where: { type: "WHATSAPP_GROUP" as any, isPublished: true },
     orderBy: [{ category: "asc" }, { sortOrder: "asc" }],
     select: { id: true, title: true, category: true, externalUrl: true, notes: true, description: true },
   });

@@ -9,8 +9,8 @@ export default async function ToolsPage() {
       where: { isPublished: true },
       orderBy: { sortOrder: "asc" },
     }),
-    prisma.tool.count({ where: { type: "WHATSAPP_GROUP", isPublished: true } }),
-    prisma.tool.count({ where: { type: "FACEBOOK_GROUP", isPublished: true } }),
+    prisma.tool.count({ where: { type: "WHATSAPP_GROUP" as any, isPublished: true } }),
+    prisma.tool.count({ where: { type: "FACEBOOK_GROUP" as any, isPublished: true } }),
   ]);
 
   return (
