@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, ExternalLink, X, Lightbulb, Wrench, MessageCircle, ArrowLeft, ChevronLeft } from "lucide-react";
+import { Search, ExternalLink, X, Lightbulb, Wrench, MessageCircle, ArrowLeft, ChevronLeft, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -238,6 +238,28 @@ export function ToolsClient({ tools, whatsappCount = 0, facebookCount = 0 }: { t
               <div>
                 <p className="text-white font-black text-base">קבוצות פייסבוק למשרות</p>
                 <p className="text-white/70 text-sm mt-0.5">{facebookCount} קבוצות · ממויין לפי תחום</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
+              כניסה
+              <ChevronLeft size={14} />
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* ─── Networking Prompts ─── */}
+      <div>
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-3">כלי נטוורקינג</h2>
+        <Link href="/tools/networking-prompts" className="block group">
+          <div className="bg-gradient-to-l from-[#1e3a5f] to-[#2563eb] rounded-2xl p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                <Users size={24} className="text-white" />
+              </div>
+              <div>
+                <p className="text-white font-black text-base">תבניות נטוורקינג</p>
+                <p className="text-white/70 text-sm mt-0.5">12 תבניות · מגייסים, הפניות ופנייה קרה · וואטסאפ, מייל ולינקדאין</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
