@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Search, ExternalLink, X, Lightbulb, Wrench } from "lucide-react";
+import Link from "next/link";
+import { Search, ExternalLink, X, Lightbulb, Wrench, MessageCircle, ArrowLeft, ChevronLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -177,14 +178,16 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function ToolsClient({ tools }: { tools: ToolItem[] }) {
+export function ToolsClient({ tools, whatsappCount = 0 }: { tools: ToolItem[]; whatsappCount?: number }) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("הכל");
   const [tipModalTool, setTipModalTool] = useState<ToolItem | null>(null);
 
+  // Exclude WhatsApp groups from the main grid — they have their own page
+  const regularTools = tools.filter((t) => t.type !== "WHATSAPP_GROUP");
   const allCategories = ["הכל", ...TOOL_CATEGORIES];
 
-  const filtered = tools.filter((t) => {
+  const filtered = regularTools.filter((t) => {
     const matchesSearch =
       !search ||
       t.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -201,7 +204,29 @@ export function ToolsClient({ tools }: { tools: ToolItem[] }) {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-black text-navy mb-1">כלים ומשאבים</h1>
-        <p className="text-sm text-gray-500">{tools.length} כלים ומשאבים לחברי הקהילה</p>
+        <p className="text-sm text-gray-500">כלים ומשאבים לחברי הקהילה</p>
+      </div>
+
+      {/* ─── Featured: WhatsApp Groups ─── */}
+      <div>
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-3">ערוצי איתור משרות</h2>
+        <Link href="/tools/whatsapp-groups" className="block group">
+          <div className="bg-gradient-to-l from-[#075E54] via-[#128C7E] to-[#25D366] rounded-2xl p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:shadow-[#25D366]/20 transition-all duration-200">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                <MessageCircle size={24} className="text-white" />
+              </div>
+              <div>
+                <p className="text-white font-black text-base">קבוצות וואטספ למשרות</p>
+                <p className="text-white/70 text-sm mt-0.5">{whatsappCount} קבוצות · 60 תחומים · ממויין לפי תעשייה</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
+              כניסה
+              <ChevronLeft size={14} />
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Search + Filters */}
