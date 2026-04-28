@@ -1,7 +1,7 @@
 import { LeadForm } from "./lead-form";
 import {
   Sparkles, CheckCircle2, Clock, Target, Users, TrendingUp,
-  FileText, Linkedin, Briefcase, DollarSign, Calendar, Zap,
+  FileText, Link, Briefcase, DollarSign, Calendar, Zap,
   Shield, Star, MessageCircle, UserCheck, Globe, Award, Send
 } from "lucide-react";
 
@@ -104,7 +104,7 @@ export default function KoralConnectionsPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {[
               { icon: <FileText size={18} />, label: "קורות חיים מעודכנים" },
-              { icon: <Linkedin size={18} />, label: "לינקדאין פעיל" },
+              { icon: <Link size={18} />, label: "לינקדאין פעיל" },
               { icon: <Briefcase size={18} />, label: "תיאור ניסיון מקצועי" },
               { icon: <DollarSign size={18} />, label: "מטרות שכר ותפקיד" },
               { icon: <Calendar size={18} />, label: "זמינות לראיונות" },
