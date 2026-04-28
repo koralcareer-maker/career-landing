@@ -178,13 +178,13 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function ToolsClient({ tools, whatsappCount = 0 }: { tools: ToolItem[]; whatsappCount?: number }) {
+export function ToolsClient({ tools, whatsappCount = 0, facebookCount = 0 }: { tools: ToolItem[]; whatsappCount?: number; facebookCount?: number }) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("הכל");
   const [tipModalTool, setTipModalTool] = useState<ToolItem | null>(null);
 
-  // Exclude WhatsApp groups from the main grid — they have their own page
-  const regularTools = tools.filter((t) => t.type !== "WHATSAPP_GROUP");
+  // Exclude WhatsApp/Facebook groups from the main grid — they have their own pages
+  const regularTools = tools.filter((t) => t.type !== "WHATSAPP_GROUP" && t.type !== "FACEBOOK_GROUP");
   const allCategories = ["הכל", ...TOOL_CATEGORIES];
 
   const filtered = regularTools.filter((t) => {
@@ -219,6 +219,25 @@ export function ToolsClient({ tools, whatsappCount = 0 }: { tools: ToolItem[]; w
               <div>
                 <p className="text-white font-black text-base">קבוצות וואטספ למשרות</p>
                 <p className="text-white/70 text-sm mt-0.5">{whatsappCount} קבוצות · 60 תחומים · ממויין לפי תעשייה</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
+              כניסה
+              <ChevronLeft size={14} />
+            </div>
+          </div>
+        </Link>
+
+        {/* Facebook Groups */}
+        <Link href="/tools/facebook-groups" className="block group mt-3">
+          <div className="bg-gradient-to-l from-[#0a5dc2] to-[#1877F2] rounded-2xl p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:shadow-[#1877F2]/20 transition-all duration-200">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </div>
+              <div>
+                <p className="text-white font-black text-base">קבוצות פייסבוק למשרות</p>
+                <p className="text-white/70 text-sm mt-0.5">{facebookCount} קבוצות · ממויין לפי תחום</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
