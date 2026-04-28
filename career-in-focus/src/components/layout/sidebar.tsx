@@ -61,7 +61,7 @@ export function Sidebar({ user, unreadCount = 0 }: SidebarProps) {
           </div>
           <div>
             <div className="text-navy font-black text-base leading-tight">קורל</div>
-            <div className="text-teal text-xs font-semibold">תפעילי קשרים</div>
+            <div className="text-teal text-xs font-semibold">קריירה בפוקוס</div>
           </div>
         </Link>
       </div>
