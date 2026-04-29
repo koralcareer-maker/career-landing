@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { sendWelcomeEmail } from "@/lib/email";
 
 async function requireAdmin() {
   const session = await auth();
@@ -321,19 +322,26 @@ export async function setFeaturedCandidate(formData: FormData) {
 
 export async function activateUser(id: string) {
   await requireAdmin();
-  await prisma.user.update({
+  const user = await prisma.user.update({
     where: { id },
     data: { accessStatus: "ACTIVE", membershipType: "MEMBER", paymentProvider: "MANUAL", paidAt: new Date() },
+    select: { name: true, email: true, membershipType: true },
   });
   await prisma.notification.create({
     data: {
       userId:  id,
       type:    "general",
       title:   "החברות שלך אושרה!",
-      message: "ברוך הבא לקהילה. יש לך עכשיו גישה מלאה לכל הפלטפורמה.",
+      message: "ברוכה הבאה לקהילה. יש לך עכשיו גישה מלאה לכל הפלטפורמה.",
       link:    "/dashboard",
     },
   });
+  // Send welcome email (non-blocking)
+  sendWelcomeEmail({
+    name:           user.name ?? user.email,
+    email:          user.email,
+    membershipType: user.membershipType,
+  }).catch(console.error);
   revalidatePath("/admin/users");
 }
 
@@ -395,6 +403,14 @@ export async function createUserManually(prevState: unknown, formData: FormData)
       link:    "/dashboard",
     },
   });
+
+  // Send welcome email with login details (non-blocking)
+  sendWelcomeEmail({
+    name,
+    email,
+    membershipType,
+    password,
+  }).catch(console.error);
 
   revalidatePath("/admin/users");
   return { success: true, userId: user.id };

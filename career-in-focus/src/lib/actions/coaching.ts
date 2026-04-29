@@ -65,37 +65,67 @@ ${events.map(e => `• ${e.title} — ${new Date(e.startAt).toLocaleDateString("
 
 async function callClaude(messages: Message[], systemPrompt: string): Promise<string> {
   if (!process.env.GEMINI_API_KEY) {
-    return "המאמן AI אינו זמין כרגע. יש להוסיף GEMINI_API_KEY.";
+    return "המאמן AI אינו זמין כרגע. אנא פני למנהלת המערכת.";
   }
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
-  // Build conversation: system instruction + history
-  const contents = messages.map(m => ({
+  // Gemini requires strict alternating user/model turns, starting with "user"
+  // Filter and fix the message sequence
+  const rawContents = messages.map(m => ({
     role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
+    parts: [{ text: m.content || "..." }],
   }));
+
+  // Ensure conversation starts with "user" and alternates properly
+  const contents: typeof rawContents = [];
+  let expectedRole: "user" | "model" = "user";
+  for (const msg of rawContents) {
+    if (msg.role === expectedRole) {
+      contents.push(msg);
+      expectedRole = expectedRole === "user" ? "model" : "user";
+    }
+    // Skip messages that break the alternating pattern
+  }
+  // Must end with user turn
+  if (contents.length === 0 || contents[contents.length - 1].role !== "user") {
+    return "אירעה שגיאה בעיבוד השיחה. נסי שנית.";
+  }
 
   const body = {
     system_instruction: { parts: [{ text: systemPrompt }] },
     contents,
     generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+    safetySettings: [
+      { category: "HARM_CATEGORY_HARASSMENT",        threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HATE_SPEECH",       threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+    ],
   };
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
 
-  if (!res.ok) {
-    const err = await res.text();
-    console.error("Gemini error:", err);
-    return "אירעה שגיאה בתקשורת עם מאמן ה-AI. נסי שנית.";
+    const data = await res.json() as {
+      candidates?: Array<{ content: { parts: Array<{ text: string }> } }>;
+      error?: { message: string };
+    };
+
+    if (data.error) {
+      console.error("Gemini API error:", data.error.message);
+      return "אירעה שגיאה זמנית במאמן ה-AI. נסי שנית בעוד רגע.";
+    }
+
+    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "לא התקבלה תשובה. נסי שנית.";
+  } catch (err) {
+    console.error("Gemini fetch error:", err);
+    return "אירעה שגיאת רשת. נסי שנית.";
   }
-
-  const data = await res.json() as { candidates?: Array<{ content: { parts: Array<{ text: string }> } }> };
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
 // ─── Get or create coaching session ──────────────────────────────────────────

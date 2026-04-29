@@ -8,7 +8,7 @@ import { logout } from "@/lib/actions/auth";
 import {
   LayoutDashboard, TrendingUp, User, BookOpen, Wrench,
   Briefcase, Users, CalendarDays, Bell, MessageSquare,
-  LogOut, Star, Settings, Sparkles, Network, HelpCircle, UserSearch
+  LogOut, Star, Settings, Sparkles, Network, HelpCircle, UserSearch, GraduationCap
 } from "lucide-react";
 
 interface NavItem {
@@ -20,6 +20,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard",           label: "דשבורד",               icon: LayoutDashboard },
+  { href: "/guide",               label: "מדריך למשתמש",          icon: GraduationCap },
   { href: "/coaching",            label: "מאמן AI",               icon: Sparkles },
   { href: "/progress",            label: "התקדמות",               icon: TrendingUp },
   { href: "/profile",             label: "פרופיל",                icon: User },

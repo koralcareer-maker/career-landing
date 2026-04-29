@@ -16,6 +16,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
     const isSuccess = responseCode === "000" || responseCode === "0";
 
     if (isSuccess) {
-      await prisma.user.update({
+      const user = await prisma.user.update({
         where: { id: userId },
         data: {
           accessStatus:     "ACTIVE",
@@ -60,9 +61,9 @@ export async function POST(req: NextRequest) {
           paymentProvider:  "CARDCOM",
           paymentReference: transactionId,
           paidAt:           new Date(),
-          // Store card token for future recurring charges
           ...(token ? { cardToken: token, cardLast4: last4 } : {}),
         },
+        select: { name: true, email: true },
       });
 
       await prisma.notification.create({
@@ -74,6 +75,13 @@ export async function POST(req: NextRequest) {
           link:    "/dashboard",
         },
       });
+
+      // Send welcome email (non-blocking)
+      sendWelcomeEmail({
+        name:           user.name ?? user.email,
+        email:          user.email,
+        membershipType: plan,
+      }).catch(console.error);
 
       console.log(`CardCom: user ${userId} activated as ${plan}, tx ${transactionId}`);
     } else {
