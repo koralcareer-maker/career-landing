@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 
+// Allow up to 60s on Vercel Pro; on hobby plan the queue polling avoids this limit
+export const maxDuration = 60;
+
 // ─── Pure-TS CRC32 ────────────────────────────────────────────────────────────
 
 const CRC_TABLE = (() => {
@@ -139,8 +142,8 @@ export async function POST(req: NextRequest) {
   };
   const prompt = prompts[style] ?? prompts.formal;
 
-  // Call fal.ai PhotoMaker (sync endpoint)
-  const falRes = await fetch("https://fal.run/fal-ai/photomaker", {
+  // Submit to fal.ai queue (async — avoids Vercel timeout)
+  const submitRes = await fetch("https://queue.fal.run/fal-ai/photomaker", {
     method: "POST",
     headers: {
       Authorization: `Key ${FAL_KEY()}`,
@@ -150,21 +153,51 @@ export async function POST(req: NextRequest) {
       image_archive_url: zipUrl,
       prompt,
       style: "Photographic (Default)",
-      num_steps: 50,
+      num_steps: 30,
       style_strength_ratio: 20,
       guidance_scale: 5,
-      num_images: 4,
+      num_images: 2,
     }),
   });
 
-  if (!falRes.ok) {
-    const err = await falRes.text();
-    console.error("PhotoMaker error:", err);
-    return NextResponse.json({ error: `שגיאה ביצירת תמונות: ${err}` }, { status: 500 });
+  if (!submitRes.ok) {
+    const err = await submitRes.text();
+    console.error("PhotoMaker queue submit error:", err);
+    return NextResponse.json({ error: `שגיאה בהגשת משימה: ${err}` }, { status: 500 });
   }
 
-  const result = await falRes.json() as { images?: { url: string }[] };
-  const images = result.images?.map((i) => i.url) ?? [];
+  const submitted = await submitRes.json() as { request_id: string };
+  const requestId = submitted.request_id;
 
-  return NextResponse.json({ images });
+  if (!requestId) {
+    return NextResponse.json({ error: "לא התקבל request_id מ-fal.ai" }, { status: 500 });
+  }
+
+  // Poll for up to 55s (within maxDuration)
+  const deadline = Date.now() + 55_000;
+  while (Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, 3000));
+
+    const statusRes = await fetch(
+      `https://queue.fal.run/fal-ai/photomaker/requests/${requestId}/status`,
+      { headers: { Authorization: `Key ${FAL_KEY()}` } }
+    );
+    const status = await statusRes.json() as { status: string };
+
+    if (status.status === "COMPLETED") {
+      const resultRes = await fetch(
+        `https://queue.fal.run/fal-ai/photomaker/requests/${requestId}`,
+        { headers: { Authorization: `Key ${FAL_KEY()}` } }
+      );
+      const result = await resultRes.json() as { images?: { url: string }[] };
+      const images = result.images?.map((i) => i.url) ?? [];
+      return NextResponse.json({ images });
+    }
+
+    if (status.status === "FAILED") {
+      return NextResponse.json({ error: "היצירה נכשלה — נסי שנית" }, { status: 500 });
+    }
+  }
+
+  return NextResponse.json({ error: "הזמן הוקצב — נסי שנית (התמונות מורכבות לייצור)" }, { status: 504 });
 }

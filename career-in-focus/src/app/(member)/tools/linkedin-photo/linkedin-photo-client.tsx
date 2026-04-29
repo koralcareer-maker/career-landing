@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { Camera, Upload, X, Sparkles, Download, RefreshCw, User, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 
-type PhotoSlot = { file: File; preview: string } | null;
+type PhotoEntry = { file: File; preview: string };
 
 const STYLES = [
   { value: "formal",   label: "פורמלי",   desc: "חליפה / בלייזר, רקע לבן" },
@@ -15,66 +15,69 @@ const STYLES = [
 ];
 
 export function LinkedInPhotoClient() {
-  const [photos, setPhotos]   = useState<[PhotoSlot, PhotoSlot, PhotoSlot]>([null, null, null]);
-  const [gender, setGender]   = useState<"woman" | "man">("woman");
-  const [style, setStyle]     = useState("formal");
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<string[]>([]);
-  const [error, setError]     = useState("");
+  const [photos, setPhotos]     = useState<PhotoEntry[]>([]);
+  const [gender, setGender]     = useState<"woman" | "man">("woman");
+  const [style, setStyle]       = useState("formal");
+  const [loading, setLoading]   = useState(false);
+  const [results, setResults]   = useState<string[]>([]);
+  const [error, setError]       = useState("");
   const [progress, setProgress] = useState("");
-  const inputRefs             = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+  const inputRef                = useRef<HTMLInputElement>(null);
 
-  const handleFile = useCallback((idx: number, file: File) => {
-    const preview = URL.createObjectURL(file);
+  function addFiles(files: FileList | null) {
+    if (!files) return;
+    const newEntries: PhotoEntry[] = [];
+    for (let i = 0; i < files.length && photos.length + newEntries.length < 3; i++) {
+      const file = files[i];
+      if (file.type.startsWith("image/")) {
+        newEntries.push({ file, preview: URL.createObjectURL(file) });
+      }
+    }
+    setPhotos(prev => [...prev, ...newEntries].slice(0, 3));
+  }
+
+  function removePhoto(idx: number) {
     setPhotos(prev => {
-      const next = [...prev] as typeof prev;
-      if (prev[idx]?.preview) URL.revokeObjectURL(prev[idx]!.preview);
-      next[idx] = { file, preview };
-      return next;
+      URL.revokeObjectURL(prev[idx].preview);
+      return prev.filter((_, i) => i !== idx);
     });
-  }, []);
-
-  const removePhoto = (idx: number) => {
-    setPhotos(prev => {
-      const next = [...prev] as typeof prev;
-      if (next[idx]?.preview) URL.revokeObjectURL(next[idx]!.preview);
-      next[idx] = null;
-      return next;
-    });
-  };
-
-  const onDrop = (idx: number, e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file?.type.startsWith("image/")) handleFile(idx, file);
-  };
+  }
 
   const generate = async () => {
-    const filled = photos.filter(Boolean);
-    if (filled.length === 0) return;
-
+    if (photos.length === 0) return;
     setLoading(true);
     setError("");
     setResults([]);
     setProgress("מעלה תמונות...");
 
     const fd = new FormData();
-    photos.forEach((p, i) => { if (p) fd.append(`photo${i + 1}`, p.file); });
+    photos.forEach((p, i) => fd.append(`photo${i + 1}`, p.file));
     fd.append("gender", gender);
     fd.append("style", style);
 
     try {
-      setProgress("מעבד עם AI... (זה עשוי לקחת 20-40 שניות)");
-      const res = await fetch("/api/tools/linkedin-photo", { method: "POST", body: fd });
-      const data = await res.json() as { images?: string[]; error?: string };
+      // Animated progress messages
+      const messages = [
+        "מעלה תמונות...",
+        "מנתח פנים...",
+        "מייצר תמונת תדמית מקצועית...",
+        "מעבד עם AI (עוד כ-30 שניות)...",
+        "כמעט מוכן...",
+      ];
+      let msgIdx = 0;
+      setProgress(messages[0]);
+      const interval = setInterval(() => {
+        msgIdx = Math.min(msgIdx + 1, messages.length - 1);
+        setProgress(messages[msgIdx]);
+      }, 10000);
 
-      if (!res.ok || data.error) {
-        setError(data.error ?? "שגיאה לא ידועה");
-      } else {
-        setResults(data.images ?? []);
-      }
+      const res = await fetch("/api/tools/linkedin-photo", { method: "POST", body: fd });
+      clearInterval(interval);
+      const data = await res.json() as { images?: string[]; error?: string };
+      if (!res.ok || data.error) setError(data.error ?? "שגיאה לא ידועה");
+      else setResults(data.images ?? []);
     } catch {
-      setError("שגיאת רשת — נסי שנית");
+      setError("שגיאת רשת — נסה שנית");
     } finally {
       setLoading(false);
       setProgress("");
@@ -90,8 +93,6 @@ export function LinkedInPhotoClient() {
     a.click();
   };
 
-  const filledCount = photos.filter(Boolean).length;
-
   return (
     <div className="space-y-6 max-w-3xl mx-auto" dir="rtl">
       {/* Header */}
@@ -106,54 +107,62 @@ export function LinkedInPhotoClient() {
             </div>
             <h1 className="text-2xl font-black text-navy">מחולל תמונת תדמית לינקדאין</h1>
           </div>
-          <p className="text-gray-500 text-sm mt-1 mr-11">העלי עד 3 תמונות שלך — AI ייצור תמונת פרופיל מקצועית</p>
+          <p className="text-gray-500 text-sm mt-1 mr-11">העלה עד 3 תמונות — AI ייצור תמונת פרופיל מקצועית</p>
         </div>
       </div>
 
       {/* Photo Upload */}
       <Card className="p-5">
-        <h2 className="font-bold text-navy mb-1">שלב 1 — העלי תמונות</h2>
+        <h2 className="font-bold text-navy mb-1">שלב 1 — העלה תמונות</h2>
         <p className="text-xs text-gray-400 mb-4">מינימום תמונה אחת. יותר תמונות = תוצאה טובה יותר (מספקות זוויות שונות לבינה מלאכותית)</p>
+
+        {/* Hidden multi-file input */}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={e => { addFiles(e.target.files); e.target.value = ""; }}
+        />
+
         <div className="grid grid-cols-3 gap-3">
-          {([0, 1, 2] as const).map((idx) => (
-            <div key={idx}>
-              <input
-                ref={inputRefs[idx]}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(idx, f); }}
-              />
-              {photos[idx] ? (
-                <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-teal/50 group">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photos[idx]!.preview} alt="" className="w-full h-full object-cover" />
-                  <button
-                    onClick={() => removePhoto(idx)}
-                    className="absolute top-1.5 left-1.5 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X size={12} className="text-white" />
-                  </button>
-                  <div className="absolute bottom-1.5 right-1.5 bg-teal text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
-                    ✓
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={() => inputRefs[idx].current?.click()}
-                  onDrop={(e) => onDrop(idx, e)}
-                  onDragOver={(e) => e.preventDefault()}
-                  className="w-full aspect-square rounded-xl border-2 border-dashed border-gray-200 hover:border-teal/50 hover:bg-teal-pale/30 transition-all flex flex-col items-center justify-center gap-2 text-gray-300 hover:text-teal cursor-pointer"
-                >
-                  <Upload size={22} />
-                  <span className="text-xs font-medium">תמונה {idx + 1}</span>
-                </button>
-              )}
+          {/* Filled slots */}
+          {photos.map((p, idx) => (
+            <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border-2 border-teal/50 group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={p.preview} alt="" className="w-full h-full object-cover" />
+              <button
+                onClick={() => removePhoto(idx)}
+                className="absolute top-1.5 left-1.5 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X size={12} className="text-white" />
+              </button>
+              <div className="absolute bottom-1.5 right-1.5 w-6 h-6 bg-teal rounded-full flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
             </div>
           ))}
+
+          {/* Empty slots up to 3 */}
+          {photos.length < 3 && (
+            <button
+              onClick={() => inputRef.current?.click()}
+              onDrop={e => { e.preventDefault(); addFiles(e.dataTransfer.files); }}
+              onDragOver={e => e.preventDefault()}
+              className="aspect-square rounded-xl border-2 border-dashed border-gray-200 hover:border-teal/50 hover:bg-teal-pale/30 transition-all flex flex-col items-center justify-center gap-2 text-gray-300 hover:text-teal cursor-pointer"
+            >
+              <Upload size={22} />
+              <span className="text-xs font-medium">העלה</span>
+            </button>
+          )}
+
+          {/* Placeholder slots (visual only) */}
+          {Array.from({ length: Math.max(0, 2 - photos.length) }).map((_, i) => (
+            <div key={`ph-${i}`} className="aspect-square rounded-xl border-2 border-dashed border-gray-100 bg-gray-50/50" />
+          ))}
         </div>
-        {filledCount > 0 && (
-          <p className="text-xs text-teal mt-2 font-medium">{filledCount} תמונה{filledCount !== 1 ? "ות" : ""} נבחרה{filledCount !== 1 ? "ו" : ""}</p>
+
+        {photos.length > 0 && (
+          <p className="text-xs text-teal mt-2 font-medium">{photos.length} תמונות נבחרו</p>
         )}
       </Card>
 
@@ -211,7 +220,7 @@ export function LinkedInPhotoClient() {
       {/* Generate Button */}
       <Button
         onClick={generate}
-        disabled={loading || filledCount === 0}
+        disabled={loading || photos.length === 0}
         className="w-full h-12 text-base font-bold bg-gradient-to-l from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white rounded-xl border-0"
       >
         {loading ? (

@@ -6,7 +6,7 @@ import {
   Briefcase, CalendarDays, Users, Target,
   ChevronLeft, Flame, BookOpen, Wrench,
   MessageSquare, Search, MapPin, Clock,
-  TrendingUp, Sparkles
+  TrendingUp, Sparkles, GraduationCap
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -52,6 +52,23 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-5xl mx-auto px-0 sm:px-2 py-5 space-y-5">
+
+        {/* ─── Guide button — always visible at top ─── */}
+        <Link
+          href="/guide"
+          className="flex items-center justify-between gap-3 bg-white border border-teal/30 rounded-2xl px-5 py-3.5 hover:border-teal hover:shadow-sm transition-all group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-teal/10 rounded-xl flex items-center justify-center group-hover:bg-teal/20 transition-colors">
+              <GraduationCap size={18} className="text-teal" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-navy">מדריך למשתמש — 7 צעדים להצלחה</p>
+              <p className="text-xs text-gray-400">למדי איך להשתמש בפלטפורמה בצורה הכי חכמה</p>
+            </div>
+          </div>
+          <ChevronLeft size={16} className="text-teal shrink-0" />
+        </Link>
 
         {/* ─── Hero / Welcome ─── */}
         <div className="rounded-3xl overflow-hidden bg-white shadow-sm border border-slate-100">

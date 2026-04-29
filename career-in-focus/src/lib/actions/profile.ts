@@ -44,6 +44,103 @@ export async function saveProfile(prevState: unknown, formData: FormData) {
   return { success: true };
 }
 
+// ─── CV Analysis — AI reads CV and suggests strengths/gaps ───────────────────
+
+export interface CvAnalysisResult {
+  currentRole: string;
+  targetRole: string;
+  yearsExperience: number;
+  strengths: string[];
+  skillGaps: string[];
+  summary: string;
+}
+
+export async function analyzeCvContent(cvText: string): Promise<CvAnalysisResult> {
+  if (!process.env.GEMINI_API_KEY) {
+    return {
+      currentRole: "", targetRole: "", yearsExperience: 0,
+      strengths: ["ניסיון מקצועי", "עבודת צוות", "יוזמה"],
+      skillGaps: ["אנגלית מקצועית", "ניסיון בניהול", "כלים דיגיטליים"],
+      summary: "מלא מפתח API לניתוח אמיתי",
+    };
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+  const prompt = `אתה מומחה גיוס ישראלי. נתח את קורות החיים הבאים והחזר JSON בלבד (ללא markdown):
+
+${cvText.slice(0, 6000)}
+
+החזר JSON בפורמט הזה בדיוק:
+{
+  "currentRole": "התפקיד הנוכחי/האחרון",
+  "targetRole": "התפקיד המתאים ביותר שיחפש",
+  "yearsExperience": 5,
+  "strengths": ["חוזקה 1", "חוזקה 2", "חוזקה 3", "חוזקה 4", "חוזקה 5"],
+  "skillGaps": ["פער/תחום לשיפור 1", "פער 2", "פער 3", "פער 4"],
+  "summary": "סיכום קצר של הפרופיל המקצועי בעברית, משפט אחד"
+}
+
+חוזקות: דגש על מה שבולט בקורות החיים — ניסיון ספציפי, הישגים, מיומנויות מוכחות.
+פערים: מה חסר לפרופיל הזה כדי להיות תחרותי יותר — לא להיות ביקורתי מדי אלא מציאותי ומועיל.
+החזר JSON בלבד.`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 1024, temperature: 0.4 },
+      }),
+    });
+    const data = await res.json() as { candidates?: Array<{ content: { parts: Array<{ text: string }> } }>; error?: { message: string } };
+    if (data.error) throw new Error(data.error.message);
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+    const clean = raw.replace(/```json\n?|\n?```/g, "").trim();
+    return JSON.parse(clean) as CvAnalysisResult;
+  } catch {
+    return {
+      currentRole: "", targetRole: "", yearsExperience: 0,
+      strengths: ["ניסיון רב שנים", "עבודת צוות", "יוזמה ויצירתיות"],
+      skillGaps: ["אנגלית מקצועית", "כלים דיגיטליים", "ניהול פרויקטים"],
+      summary: "לא ניתן לנתח — נסה שנית",
+    };
+  }
+}
+
+// ─── Save CV analysis confirmed data ─────────────────────────────────────────
+
+export async function saveCvAnalysis(data: {
+  currentRole?: string; targetRole?: string; yearsExperience?: number;
+  strengths: string[]; missingSkills: string[];
+}) {
+  const session = await auth();
+  if (!session?.user) return { error: "נדרשת כניסה" };
+  const userId = session.user.id;
+
+  await prisma.profile.upsert({
+    where: { userId },
+    create: {
+      userId,
+      currentRole: data.currentRole,
+      targetRole: data.targetRole,
+      yearsExperience: data.yearsExperience,
+      strengths: JSON.stringify(data.strengths),
+      missingSkills: JSON.stringify(data.missingSkills),
+    },
+    update: {
+      currentRole: data.currentRole || undefined,
+      targetRole: data.targetRole || undefined,
+      yearsExperience: data.yearsExperience || undefined,
+      strengths: JSON.stringify(data.strengths),
+      missingSkills: JSON.stringify(data.missingSkills),
+    },
+  });
+
+  revalidatePath("/profile");
+  return { success: true };
+}
+
 export async function saveQuestionnaire(prevState: unknown, formData: FormData) {
   const session = await auth();
   if (!session?.user) return { error: "נדרשת כניסה" };

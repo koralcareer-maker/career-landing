@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useActionState } from "react";
+import { useState, useActionState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { saveProfile, saveQuestionnaire, generateCareerPassport, requestPhotoUpgrade } from "@/lib/actions/profile";
-import { getInitials } from "@/lib/utils";
 import {
-  User, Star, Zap, BookOpen, CheckCircle, Camera, Check
-} from "lucide-react";
+  saveProfile, saveQuestionnaire, generateCareerPassport,
+  analyzeCvContent, saveCvAnalysis, type CvAnalysisResult
+} from "@/lib/actions/profile";
+import { getInitials } from "@/lib/utils";
+import { User, Star, Zap, BookOpen, CheckCircle, Camera, Check, X, FileText, Sparkles, Loader2, ChevronDown } from "lucide-react";
 
 // ─── Industry list ────────────────────────────────────────────────────────────
 
@@ -22,50 +23,330 @@ const INDUSTRIES = [
   "ספורט / פנאי", "אחר",
 ];
 
-// ─── Multi-select checkboxes component ───────────────────────────────────────
+// ─── Dropdown multi-select ────────────────────────────────────────────────────
 
-function IndustryMultiSelect({ name, defaultValue, label = "תחום רצוי (ניתן לבחור כמה)" }: { name: string; defaultValue: string[]; label?: string }) {
+function IndustryMultiSelect({ name, defaultValue, label = "תחום רצוי" }: { name: string; defaultValue: string[]; label?: string }) {
   const [selected, setSelected] = useState<string[]>(defaultValue);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
-  function toggle(industry: string) {
-    setSelected(prev =>
-      prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry]
-    );
+  // Close on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  function toggle(ind: string) {
+    setSelected(prev => prev.includes(ind) ? prev.filter(i => i !== ind) : [...prev, ind]);
   }
 
   return (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
-      <div className="flex flex-wrap gap-2 mb-2">
-        {INDUSTRIES.map(ind => (
-          <button
-            key={ind}
-            type="button"
-            onClick={() => toggle(ind)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-              selected.includes(ind)
-                ? "bg-teal text-white border-teal shadow-sm"
-                : "bg-white text-gray-600 border-gray-200 hover:border-teal hover:text-teal"
-            }`}
-          >
-            {selected.includes(ind) && <Check size={10} className="inline ml-1" />}
-            {ind}
-          </button>
-        ))}
-      </div>
+    <div ref={ref} className="relative">
+      <label className="block text-sm font-semibold text-gray-700 mb-1.5">{label}</label>
+
+      {/* Trigger button */}
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between gap-2 border border-gray-200 rounded-xl px-4 py-2.5 bg-white text-sm text-right hover:border-teal/50 focus:outline-none focus:border-teal/50 transition-colors"
+      >
+        <span className={selected.length === 0 ? "text-gray-400" : "text-navy font-medium"}>
+          {selected.length === 0
+            ? "בחרי תחומים..."
+            : selected.length === 1
+              ? selected[0]
+              : `${selected.length} תחומים נבחרו`}
+        </span>
+        <ChevronDown size={15} className={`text-gray-400 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {/* Selected chips (shown below trigger) */}
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {selected.map(ind => (
+            <span key={ind} className="inline-flex items-center gap-1 bg-teal/10 text-teal text-xs font-medium px-2.5 py-1 rounded-full border border-teal/20">
+              {ind}
+              <button type="button" onClick={() => toggle(ind)} className="hover:text-red-400 transition-colors ml-0.5">
+                <X size={10} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Dropdown panel */}
+      {open && (
+        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto">
+          {INDUSTRIES.map(ind => (
+            <button
+              key={ind}
+              type="button"
+              onClick={() => toggle(ind)}
+              className={`w-full flex items-center justify-between px-4 py-2.5 text-sm text-right hover:bg-gray-50 transition-colors ${
+                selected.includes(ind) ? "text-teal font-semibold bg-teal/5" : "text-gray-700"
+              }`}
+            >
+              <span>{ind}</span>
+              {selected.includes(ind) && <Check size={14} className="text-teal shrink-0" />}
+            </button>
+          ))}
+        </div>
+      )}
+
       <input type="hidden" name={name} value={selected.join(", ")} />
     </div>
   );
 }
 
-interface Profile {
+// ─── Confirm chips (AI suggestions) ──────────────────────────────────────────
+
+function ConfirmChips({
+  label, items, onChange, color = "teal"
+}: {
+  label: string;
+  items: string[];
+  onChange: (items: string[]) => void;
+  color?: "teal" | "orange";
+}) {
+  const [custom, setCustom] = useState("");
+
+  function toggle(item: string) {
+    onChange(items.includes(item) ? items.filter(i => i !== item) : [...items, item]);
+  }
+  function addCustom() {
+    const val = custom.trim();
+    if (val && !items.includes(val)) {
+      onChange([...items, val]);
+    }
+    setCustom("");
+  }
+
+  const activeClass = color === "teal"
+    ? "bg-teal text-white border-teal"
+    : "bg-orange-500 text-white border-orange-500";
+  const inactiveClass = color === "teal"
+    ? "bg-white text-gray-500 border-gray-200 hover:border-teal/50 line-through opacity-50"
+    : "bg-white text-gray-500 border-gray-200 hover:border-orange-300 line-through opacity-50";
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-semibold text-gray-700">{label}</label>
+      <p className="text-xs text-gray-400">לחצי על פריט כדי להוסיף/להסיר. ירוק = נבחר, מחוק = לא נבחר</p>
+      <div className="flex flex-wrap gap-2">
+        {items.map(item => {
+          const active = items.includes(item);
+          return (
+            <button key={item} type="button" onClick={() => toggle(item)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${active ? activeClass : inactiveClass}`}>
+              {active && <Check size={10} className="inline ml-1" />}
+              {item}
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex gap-2 mt-1">
+        <input
+          value={custom}
+          onChange={e => setCustom(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addCustom())}
+          placeholder="הוסיפי בעצמך..."
+          className="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-teal/50"
+        />
+        <button type="button" onClick={addCustom}
+          className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium transition-colors">
+          + הוסיפי
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── CV Analysis Tab ──────────────────────────────────────────────────────────
+
+function CvAnalysisTab({ profile }: { profile: ProfileType | null }) {
+  const [cvText, setCvText] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState<CvAnalysisResult | null>(null);
+  const [confirmedStrengths, setConfirmedStrengths] = useState<string[]>(profile?.strengths ?? []);
+  const [confirmedGaps, setConfirmedGaps] = useState<string[]>(profile?.missingSkills ?? []);
+  const [currentRole, setCurrentRole] = useState(profile?.currentRole ?? "");
+  const [targetRole, setTargetRole] = useState(profile?.targetRole ?? "");
+  const [yearsExp, setYearsExp] = useState(profile?.yearsExperience?.toString() ?? "");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  async function handleAnalyze() {
+    if (!cvText.trim()) return;
+    setAnalyzing(true);
+    setSaved(false);
+    const result = await analyzeCvContent(cvText);
+    setAnalysis(result);
+    setConfirmedStrengths(result.strengths);
+    setConfirmedGaps(result.skillGaps);
+    if (result.currentRole) setCurrentRole(result.currentRole);
+    if (result.targetRole) setTargetRole(result.targetRole);
+    if (result.yearsExperience) setYearsExp(result.yearsExperience.toString());
+    setAnalyzing(false);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    await saveCvAnalysis({
+      currentRole: currentRole || undefined,
+      targetRole: targetRole || undefined,
+      yearsExperience: yearsExp ? parseInt(yearsExp) : undefined,
+      strengths: confirmedStrengths,
+      missingSkills: confirmedGaps,
+    });
+    setSaving(false);
+    setSaved(true);
+  }
+
+  const hasExistingData = (profile?.strengths?.length ?? 0) > 0 || (profile?.missingSkills?.length ?? 0) > 0;
+
+  return (
+    <div className="space-y-5">
+      {/* Paste CV */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <FileText size={16} className="text-teal" />
+            <CardTitle>הדבק את תוכן קורות החיים</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-gray-500">
+            העתיקי את הטקסט מה-CV שלך (Word / PDF) והדביקי כאן. ה-AI ינתח ויציע חוזקות ופערים לאישורך.
+          </p>
+          <textarea
+            value={cvText}
+            onChange={e => setCvText(e.target.value)}
+            placeholder="הדבק כאן את תוכן קורות החיים שלך..."
+            rows={8}
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-teal/40 resize-none leading-relaxed"
+          />
+          <Button onClick={handleAnalyze} loading={analyzing} disabled={!cvText.trim() || analyzing}>
+            <Sparkles size={14} className="ml-1" />
+            {analyzing ? "מנתח קורות חיים..." : "נתח קורות חיים עם AI"}
+          </Button>
+          {analyzing && (
+            <p className="text-xs text-gray-400 flex items-center gap-1.5">
+              <Loader2 size={12} className="animate-spin" />
+              הAI קורא את הניסיון שלך ומזהה חוזקות ופערים...
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Analysis results OR existing data */}
+      {(analysis || hasExistingData) && (
+        <div className="space-y-4">
+          {analysis?.summary && (
+            <div className="bg-teal-pale border border-teal/20 rounded-xl px-4 py-3">
+              <p className="text-sm font-semibold text-teal mb-1">📋 סיכום הפרופיל שלך</p>
+              <p className="text-sm text-navy">{analysis.summary}</p>
+            </div>
+          )}
+
+          {/* Basic info from CV */}
+          <Card>
+            <CardHeader><CardTitle className="text-sm">פרטים שזוהו מהCV</CardTitle></CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">תפקיד נוכחי</label>
+                  <input value={currentRole} onChange={e => setCurrentRole(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal/40" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">תפקיד יעד מוצע</label>
+                  <input value={targetRole} onChange={e => setTargetRole(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal/40" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">שנות ניסיון</label>
+                  <input value={yearsExp} onChange={e => setYearsExp(e.target.value)} type="number"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal/40" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Strengths confirmation */}
+          <Card className="border-green-100">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle size={14} className="text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-navy">💪 חוזקות שזיהינו</p>
+                  <p className="text-xs text-gray-400">אשרי את מה שמדויק, הסירי את מה שלא, הוסיפי בעצמך</p>
+                </div>
+              </div>
+              <ConfirmChips
+                label=""
+                items={confirmedStrengths}
+                onChange={setConfirmedStrengths}
+                color="teal"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Skill gaps confirmation */}
+          <Card className="border-orange-100">
+            <CardContent className="pt-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center">
+                  <Zap size={14} className="text-orange-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-navy">⚠️ תחומים לשיפור / פערים</p>
+                  <p className="text-xs text-gray-400">אלו תחומים שיכולים לעזור לך להיות מועמדת חזקה יותר</p>
+                </div>
+              </div>
+              <ConfirmChips
+                label=""
+                items={confirmedGaps}
+                onChange={setConfirmedGaps}
+                color="orange"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Save confirmed */}
+          <div className="flex items-center gap-3">
+            <Button onClick={handleSave} loading={saving}>
+              ✓ שמור ניתוח לפרופיל
+            </Button>
+            {saved && <span className="text-sm text-green-600 font-semibold">✓ נשמר בהצלחה</span>}
+          </div>
+        </div>
+      )}
+
+      {!analysis && !hasExistingData && (
+        <div className="text-center py-8 text-gray-400">
+          <FileText size={32} className="mx-auto mb-3 opacity-40" />
+          <p className="text-sm">הדביקי קורות חיים למעלה וה-AI ינתח אותם</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface ProfileType {
   fullName?: string | null; phone?: string | null; currentRole?: string | null;
   targetRole?: string | null; yearsExperience?: number | null; desiredField?: string | null;
   careerTransitionGoal?: string | null; mainChallenge?: string | null;
   strengths: string[]; missingSkills: string[];
   preferredSalaryMin?: number | null; preferredSalaryMax?: number | null;
-  preferredCompanyType?: string | null; linkedinUrl?: string | null;
-  resumeUrl?: string | null; imageUrl?: string | null; questionnaireCompleted: boolean;
+  linkedinUrl?: string | null; resumeUrl?: string | null;
+  imageUrl?: string | null; questionnaireCompleted: boolean;
   q_workStyle?: string | null; q_teamOrSolo?: string | null; q_motivators?: string | null;
   q_biggestFear?: string | null; q_idealDay?: string | null; q_pastAchievement?: string | null;
   q_learningStyle?: string | null; q_shortTermGoal?: string | null; q_longTermGoal?: string | null;
@@ -82,18 +363,19 @@ interface Passport {
 
 interface Props {
   user: { email: string; name: string; photoUpgradeStatus: string };
-  profile: Profile | null;
+  profile: ProfileType | null;
   passport: Passport | null;
   readinessScore: number;
 }
 
-type TabId = "profile" | "passport" | "questionnaire";
+type TabId = "cv" | "profile" | "questionnaire" | "passport";
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function ProfileClient({ user, profile, passport, readinessScore }: Props) {
-  const [tab, setTab] = useState<TabId>("profile");
+  const [tab, setTab] = useState<TabId>("cv");
   const [generating, setGenerating] = useState(false);
   const [passportResult, setPassportResult] = useState(passport);
-  const [photoUpgradeState, setPhotoUpgradeState] = useState(user.photoUpgradeStatus);
 
   const [profileState, profileAction, profilePending] = useActionState(saveProfile, null);
   const [questState, questAction, questPending] = useActionState(saveQuestionnaire, null);
@@ -102,22 +384,14 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
     setGenerating(true);
     const result = await generateCareerPassport();
     setGenerating(false);
-    if (!result?.error) {
-      window.location.reload();
-    }
-  }
-
-  async function handlePhotoUpgrade() {
-    if (confirm("שדרוג תמונת LinkedIn — ₪49 חד פעמי. האם להמשיך?")) {
-      await requestPhotoUpgrade();
-      setPhotoUpgradeState("REQUESTED");
-    }
+    if (!result?.error) window.location.reload();
   }
 
   const TABS = [
-    { id: "profile" as TabId, label: "פרופיל", icon: User },
-    { id: "questionnaire" as TabId, label: "שאלון דרכון", icon: BookOpen },
-    { id: "passport" as TabId, label: "דרכון קריירה", icon: Star },
+    { id: "cv" as TabId,            label: "ניתוח CV",        icon: FileText },
+    { id: "profile" as TabId,       label: "פרופיל קריירה",   icon: User },
+    { id: "questionnaire" as TabId, label: "שאלון",           icon: BookOpen },
+    { id: "passport" as TabId,      label: "דרכון קריירה",    icon: Star },
   ];
 
   return (
@@ -132,7 +406,7 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
           <div className="h-full bg-teal rounded-full transition-all duration-700" style={{ width: `${readinessScore}%` }} />
         </div>
         {readinessScore < 80 && (
-          <p className="text-xs text-gray-400 mt-1.5">מלא את כל הפרטים לקבלת ניתוח קריירה מלא</p>
+          <p className="text-xs text-gray-400 mt-1.5">מלאי את כל הפרטים לקבלת ניתוח קריירה מלא</p>
         )}
       </div>
 
@@ -141,35 +415,37 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
         {TABS.map((t) => {
           const Icon = t.icon;
           return (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold transition-colors ${
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
                 tab === t.id ? "bg-white text-navy shadow-sm" : "text-gray-500 hover:text-navy"
-              }`}
-            >
-              <Icon size={14} />
+              }`}>
+              <Icon size={13} />
               <span className="hidden sm:inline">{t.label}</span>
             </button>
           );
         })}
       </div>
 
+      {/* ── CV Analysis Tab ── */}
+      {tab === "cv" && <CvAnalysisTab profile={profile} />}
+
       {/* ── Profile Tab ── */}
       {tab === "profile" && (
         <Card>
           <CardHeader>
-            <CardTitle>פרטים אישיים ומקצועיים</CardTitle>
+            <div className="flex items-center gap-2">
+              <User size={16} className="text-teal" />
+              <CardTitle>פרופיל קריירה</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            {/* Avatar + Photo upgrade */}
+            {/* Avatar */}
             <div className="flex items-start gap-4 mb-6">
               <div className="relative">
                 <div className="w-20 h-20 bg-teal/20 rounded-2xl flex items-center justify-center text-teal text-2xl font-black">
                   {profile?.imageUrl
                     ? <img src={profile.imageUrl} alt="" className="w-20 h-20 rounded-2xl object-cover" />
-                    : getInitials(profile?.fullName ?? user.name)
-                  }
+                    : getInitials(profile?.fullName ?? user.name)}
                 </div>
                 <button className="absolute -bottom-1 -left-1 w-6 h-6 bg-teal rounded-full flex items-center justify-center text-white shadow-md">
                   <Camera size={11} />
@@ -178,17 +454,6 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
               <div>
                 <p className="font-bold text-navy">{profile?.fullName ?? user.name}</p>
                 <p className="text-sm text-gray-400">{user.email}</p>
-                {profile?.imageUrl && photoUpgradeState === "NONE" && (
-                  <button
-                    onClick={handlePhotoUpgrade}
-                    className="mt-2 text-xs bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-1 rounded-lg hover:bg-purple-100 transition-colors"
-                  >
-                    ✨ שדרוג תמונת LinkedIn — ₪49
-                  </button>
-                )}
-                {photoUpgradeState === "REQUESTED" && (
-                  <Badge variant="yellow" size="sm" className="mt-2">📸 בקשת שדרוג נשלחה</Badge>
-                )}
               </div>
             </div>
 
@@ -203,21 +468,15 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
                 <Input name="preferredSalaryMin" type="number" label="שכר מינימום (₪)" defaultValue={profile?.preferredSalaryMin?.toString() ?? ""} placeholder="15000" />
                 <Input name="preferredSalaryMax" type="number" label="שכר מקסימום (₪)" defaultValue={profile?.preferredSalaryMax?.toString() ?? ""} placeholder="25000" />
               </div>
-
-              {/* Industry multi-select */}
               <IndustryMultiSelect
                 name="desiredField"
                 defaultValue={profile?.desiredField ? profile.desiredField.split(",").map(s => s.trim()).filter(Boolean) : []}
               />
-
-              <Textarea name="careerTransitionGoal" label="מטרת מעבר קריירה" defaultValue={profile?.careerTransitionGoal ?? ""} placeholder="תאר את המעבר שאתה מחפש ולמה" rows={2} />
-              <Textarea name="mainChallenge" label="האתגר העיקרי בחיפוש עבודה" defaultValue={profile?.mainChallenge ?? ""} placeholder="מה מקשה עליך הכי הרבה?" rows={2} />
-              <Input name="strengths" label="חוזקות (מופרדות בפסיק)" defaultValue={profile?.strengths.join(", ") ?? ""} placeholder="מנהיגות, יצירתיות, עבודת צוות" />
-              <Input name="missingSkills" label="מיומנויות חסרות (מופרדות בפסיק)" defaultValue={profile?.missingSkills.join(", ") ?? ""} placeholder="Python, ניהול פרויקטים, Figma" />
+              <Textarea name="careerTransitionGoal" label="מטרת מעבר קריירה" defaultValue={profile?.careerTransitionGoal ?? ""} placeholder="תארי את המעבר שאת מחפשת ולמה" rows={2} />
+              <Textarea name="mainChallenge" label="האתגר העיקרי בחיפוש עבודה" defaultValue={profile?.mainChallenge ?? ""} placeholder="מה מקשה עלייך הכי הרבה?" rows={2} />
 
               {profileState?.error && <p className="text-sm text-red-500">{profileState.error}</p>}
               {profileState?.success && <p className="text-sm text-green-600">✓ הפרופיל נשמר בהצלחה</p>}
-
               <Button type="submit" loading={profilePending}>שמור פרופיל</Button>
             </form>
           </CardContent>
@@ -235,19 +494,19 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
             {profile?.questionnaireCompleted && <Badge variant="green">✓ הושלם</Badge>}
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-500 mb-5">מלא שאלון זה כדי לקבל ניתוח קריירה מעמיק ומדויק יותר</p>
+            <p className="text-sm text-gray-500 mb-5">מלאי שאלון זה כדי לקבל ניתוח קריירה מעמיק ומדויק יותר</p>
             <form action={questAction} className="space-y-4">
               <Select name="q_workStyle" label="סגנון עבודה מועדף" defaultValue={profile?.q_workStyle ?? ""}
                 options={[
-                  { value: "", label: "בחר..." },
+                  { value: "", label: "בחרי..." },
                   { value: "structured", label: "מובנה עם הנחיות ברורות" },
                   { value: "autonomous", label: "עצמאי עם גמישות" },
                   { value: "mixed", label: "שילוב של השניים" },
                 ]}
               />
-              <Select name="q_teamOrSolo" label="עדפת עבודה" defaultValue={profile?.q_teamOrSolo ?? ""}
+              <Select name="q_teamOrSolo" label="העדפת עבודה" defaultValue={profile?.q_teamOrSolo ?? ""}
                 options={[
-                  { value: "", label: "בחר..." },
+                  { value: "", label: "בחרי..." },
                   { value: "team", label: "בצוות" },
                   { value: "solo", label: "עצמאי" },
                   { value: "mixed", label: "שניהם" },
@@ -255,7 +514,7 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
               />
               <Select name="q_remotePreference" label="עבודה מרחוק" defaultValue={profile?.q_remotePreference ?? ""}
                 options={[
-                  { value: "", label: "בחר..." },
+                  { value: "", label: "בחרי..." },
                   { value: "remote", label: "רק מרחוק" },
                   { value: "hybrid", label: "היברידי" },
                   { value: "office", label: "רק ממשרד" },
@@ -264,12 +523,12 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
               />
               <Textarea name="q_motivators" label="מה מניע אותך?" defaultValue={profile?.q_motivators ?? ""} placeholder="מה גורם לך לקום בבוקר ולהתלהב מהעבודה?" rows={2} />
               <Textarea name="q_biggestFear" label="החשש הכי גדול שלך" defaultValue={profile?.q_biggestFear ?? ""} placeholder="מה הכי מפחיד אותך בשינוי קריירה?" rows={2} />
-              <Textarea name="q_pastAchievement" label="הישג מקצועי שגאה בך" defaultValue={profile?.q_pastAchievement ?? ""} placeholder="תאר הישג שמרגיש לך משמעותי" rows={2} />
-              <Textarea name="q_shortTermGoal" label="יעד לשנה הקרובה" defaultValue={profile?.q_shortTermGoal ?? ""} placeholder="היכן אתה רוצה להיות בעוד שנה?" rows={2} />
+              <Textarea name="q_pastAchievement" label="הישג מקצועי שגאה בו" defaultValue={profile?.q_pastAchievement ?? ""} placeholder="תארי הישג שמרגיש לך משמעותי" rows={2} />
+              <Textarea name="q_shortTermGoal" label="יעד לשנה הקרובה" defaultValue={profile?.q_shortTermGoal ?? ""} placeholder="היכן את רוצה להיות בעוד שנה?" rows={2} />
               <Textarea name="q_longTermGoal" label="יעד ל-5 שנים" defaultValue={profile?.q_longTermGoal ?? ""} placeholder="מה החזון המקצועי שלך לטווח ארוך?" rows={2} />
               <Select name="q_networkingLevel" label="רמת הנטוורקינג שלך" defaultValue={profile?.q_networkingLevel ?? ""}
                 options={[
-                  { value: "", label: "בחר..." },
+                  { value: "", label: "בחרי..." },
                   { value: "low", label: "נמוכה — קשה לי לפנות לאנשים" },
                   { value: "medium", label: "בינונית — מתנסה בכך" },
                   { value: "high", label: "גבוהה — נוח לי לעשות נטוורקינג" },
@@ -284,7 +543,6 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
 
               {questState?.error && <p className="text-sm text-red-500">{questState.error}</p>}
               {questState?.success && <p className="text-sm text-green-600">✓ השאלון נשמר</p>}
-
               <Button type="submit" loading={questPending}>שמור שאלון</Button>
             </form>
           </CardContent>
@@ -294,34 +552,24 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
       {/* ── Career Passport Tab ── */}
       {tab === "passport" && (
         <div className="space-y-5">
-          {/* CTA */}
           <div className="bg-gradient-to-l from-navy to-navy-light rounded-2xl p-6 text-white text-center">
             <div className="w-14 h-14 bg-teal/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Star size={28} className="text-teal" />
             </div>
             <h3 className="text-xl font-black mb-2">דרכון הקריירה שלך</h3>
             <p className="text-white/60 text-sm mb-5">ניתוח AI מעמיק של חוזקות, פערים ותפקידים מומלצים</p>
-
             {!profile?.questionnaireCompleted && (
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3 mb-4 text-yellow-200 text-sm">
-                💡 מלא את שאלון הדרכון קודם לניתוח מדויק יותר
+                💡 מלאי את שאלון הדרכון קודם לניתוח מדויק יותר
               </div>
             )}
-
-            <Button
-              onClick={handleGenerate}
-              loading={generating}
-              size="lg"
-              className="bg-teal hover:bg-teal-dark text-white mx-auto"
-            >
+            <Button onClick={handleGenerate} loading={generating} size="lg" className="bg-teal hover:bg-teal-dark text-white mx-auto">
               {passportResult ? "🔄 עדכן דרכון קריירה" : "✨ צור דרכון קריירה"}
             </Button>
           </div>
 
-          {/* Results */}
           {passportResult && (
             <div className="space-y-4 animate-fade-in">
-              {/* Score */}
               <Card>
                 <CardContent className="p-5 text-center">
                   <div className="text-5xl font-black text-teal mb-1">{passportResult.jobMatchScore}%</div>
@@ -331,39 +579,31 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
                   )}
                 </CardContent>
               </Card>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Strengths */}
                 <Card>
                   <CardHeader><CardTitle className="text-green-700">💪 חוזקות</CardTitle></CardHeader>
                   <CardContent>
                     <ul className="space-y-1.5">
                       {passportResult.strengths.map((s, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                          <CheckCircle size={14} className="text-green-500 mt-0.5 shrink-0" />
-                          {s}
+                          <CheckCircle size={14} className="text-green-500 mt-0.5 shrink-0" />{s}
                         </li>
                       ))}
                     </ul>
                   </CardContent>
                 </Card>
-
-                {/* Skill Gaps */}
                 <Card>
                   <CardHeader><CardTitle className="text-orange-600">⚠️ פערי מיומנויות</CardTitle></CardHeader>
                   <CardContent>
                     <ul className="space-y-1.5">
                       {passportResult.skillGaps.map((s, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                          <div className="w-4 h-4 rounded-full bg-orange-100 border border-orange-300 shrink-0 mt-0.5" />
-                          {s}
+                          <div className="w-4 h-4 rounded-full bg-orange-100 border border-orange-300 shrink-0 mt-0.5" />{s}
                         </li>
                       ))}
                     </ul>
                   </CardContent>
                 </Card>
-
-                {/* Recommended Roles */}
                 <Card>
                   <CardHeader><CardTitle className="text-blue-700">🎯 תפקידים מומלצים</CardTitle></CardHeader>
                   <CardContent>
@@ -374,8 +614,6 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Industries */}
                 <Card>
                   <CardHeader><CardTitle className="text-purple-700">🏢 תעשיות מומלצות</CardTitle></CardHeader>
                   <CardContent>
@@ -387,8 +625,6 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
                   </CardContent>
                 </Card>
               </div>
-
-              {/* Recommendations */}
               <Card>
                 <CardHeader><CardTitle>📋 המלצות לפעולה</CardTitle></CardHeader>
                 <CardContent>
@@ -402,16 +638,13 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
                   </ul>
                 </CardContent>
               </Card>
-
-              {/* Next Best Actions */}
               <Card className="bg-navy border-navy">
                 <CardHeader><CardTitle className="text-white">🚀 הצעדים הבאים שלך</CardTitle></CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
                     {passportResult.nextBestActions.map((a, i) => (
                       <li key={i} className="flex items-start gap-3 text-white/80 text-sm">
-                        <Zap size={14} className="text-teal mt-0.5 shrink-0" />
-                        {a}
+                        <Zap size={14} className="text-teal mt-0.5 shrink-0" />{a}
                       </li>
                     ))}
                   </ul>

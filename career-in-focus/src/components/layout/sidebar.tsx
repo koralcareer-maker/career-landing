@@ -20,7 +20,6 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard",           label: "דשבורד",               icon: LayoutDashboard },
-  { href: "/guide",               label: "מדריך למשתמש",          icon: GraduationCap },
   { href: "/coaching",            label: "מאמן AI",               icon: Sparkles },
   { href: "/progress",            label: "התקדמות",               icon: TrendingUp },
   { href: "/profile",             label: "פרופיל",                icon: User },

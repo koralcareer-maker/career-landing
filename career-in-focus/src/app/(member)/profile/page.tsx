@@ -31,7 +31,6 @@ export default async function ProfilePage() {
         missingSkills: parseJsonArray(profile.missingSkills),
         preferredSalaryMin: profile.preferredSalaryMin,
         preferredSalaryMax: profile.preferredSalaryMax,
-        preferredCompanyType: profile.preferredCompanyType,
         linkedinUrl: profile.linkedinUrl,
         resumeUrl: profile.resumeUrl,
         imageUrl: profile.imageUrl,
