@@ -187,14 +187,25 @@ function CvUploadStrip({ onAnalyzed, noCV, onToggleNoCV }: CvUploadStripProps) {
     setError("");
     setDone(false);
     try {
-      const buf   = await file.arrayBuffer();
-      const bytes = new Uint8Array(buf);
-      let bin = "";
-      bytes.forEach(b => { bin += String.fromCharCode(b); });
-      const b64 = btoa(bin);
-      const result = await analyzeCvFile(b64, file.type || "application/pdf");
-      onAnalyzed(result);
-      setDone(true);
+      // Use FileReader for reliable base64 (btoa+forEach breaks on large files)
+      const b64 = await new Promise<string>((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res((reader.result as string).split(",")[1]);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+      const mimeType = file.type || "application/pdf";
+      const result = await analyzeCvFile(b64, mimeType);
+
+      // Check if analysis actually succeeded (not just fallback error)
+      const failed = !result.currentRole && !result.targetRole &&
+        (result.cvFeedback?.[0] ?? "").includes("לא ניתן");
+      if (failed) {
+        setError("הניתוח נכשל — וודאי שהקובץ הוא PDF תקין ונסי שנית");
+      } else {
+        onAnalyzed(result);
+        setDone(true);
+      }
     } catch {
       setError("שגיאה — נסי שנית");
     } finally {
@@ -461,8 +472,8 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
               <Button type="submit" loading={profilePending}>שמור פרופיל</Button>
             </form>
 
-            {/* Market skills — shown after CV upload */}
-            {marketSkills.length > 0 && (
+            {/* Market skills — show only after successful analysis */}
+            {marketSkills.length >= 2 && (
               <div className="mt-5 p-4 rounded-xl bg-blue-50 border border-blue-100">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp size={14} className="text-blue-600" />
@@ -476,8 +487,8 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
               </div>
             )}
 
-            {/* CV Feedback — shown after CV upload */}
-            {cvFeedback.length > 0 && (
+            {/* CV Feedback — show only when we have real AI tips (not error stubs) */}
+            {cvFeedback.length >= 2 && !cvFeedback[0].includes("לא ניתן") && (
               <div className="mt-4 rounded-xl border border-purple-100 bg-purple-50/40 p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <MessageSquare size={14} className="text-purple-600" />
