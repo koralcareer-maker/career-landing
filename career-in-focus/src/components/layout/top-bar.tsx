@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Menu, X } from "lucide-react";
+import { Bell, Briefcase } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
@@ -34,18 +34,16 @@ export function TopBar({ user, unreadCount = 0 }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-slate-100 shadow-sm px-6 py-3 flex items-center justify-between md:px-8">
-      {/* Left: greeting */}
-      <div className="flex items-center gap-3">
-        <Link href="/notifications" className="relative p-2 rounded-xl hover:bg-slate-50 transition-colors">
+      {/* Left: quick action icons */}
+      <div className="flex items-center gap-1">
+        <Link href="/notifications" className="relative p-2 rounded-xl hover:bg-slate-50 transition-colors" title="התראות">
           <Bell size={18} className="text-slate-500" />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-teal rounded-full ring-2 ring-white" />
           )}
         </Link>
-        <Link href="/community" className="p-2 rounded-xl hover:bg-slate-50 transition-colors">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-500">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
+        <Link href="/jobs" className="p-2 rounded-xl hover:bg-slate-50 transition-colors" title="משרות">
+          <Briefcase size={18} className="text-slate-500" />
         </Link>
         <Link href="/profile" className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-colors">
           <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm shrink-0">
