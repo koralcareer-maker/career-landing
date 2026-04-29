@@ -2,33 +2,66 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { activateUser, suspendUser } from "@/lib/actions/admin";
+import { activateUser, suspendUser, createUserManually, setMembershipType } from "@/lib/actions/admin";
 import { auth } from "@/auth";
-import { UserCheck, UserX, Search } from "lucide-react";
+import { UserCheck, UserX, UserPlus, Crown } from "lucide-react";
+import { AddUserForm } from "./add-user-form";
+
+// ─── Membership badge config ───────────────────────────────────────────────────
+
+const MEMBERSHIP_LABELS: Record<string, { label: string; variant: "teal" | "green" | "navy" | "purple" | "yellow" | "gray" | "red" }> = {
+  NONE:    { label: "ללא חברות",    variant: "gray" },
+  MEMBER:  { label: "חבר | 49₪",   variant: "teal" },
+  VIP:     { label: "VIP | 149₪",  variant: "navy" },
+  PREMIUM: { label: "פרמיום | 449₪", variant: "purple" },
+};
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function AdminUsersPage() {
   const session = await auth();
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
-    include: { profile: { select: { targetRole: true, questionnaireCompleted: true } }, _count: { select: { jobApplications: true } } },
+    include: {
+      profile: { select: { targetRole: true, questionnaireCompleted: true } },
+      _count: { select: { jobApplications: true } },
+    },
   });
 
   const photoUpgradeUsers = users.filter(u => u.photoUpgradeStatus === "REQUESTED");
+  const pendingUsers = users.filter(u => u.accessStatus === "PENDING");
+  const activeUsers = users.filter(u => u.accessStatus === "ACTIVE");
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-black text-navy">ניהול משתמשים</h1>
-          <p className="text-gray-500 text-sm">{users.length} משתמשים רשומים</p>
+          <p className="text-gray-500 text-sm">
+            {users.length} משתמשים · {activeUsers.length} פעילים · {pendingUsers.length} ממתינים לאישור
+          </p>
         </div>
       </div>
+
+      {/* ─── Add User Form ─── */}
+      <Card className="border-teal/30 bg-teal/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-teal text-base flex items-center gap-2">
+            <UserPlus size={18} />
+            הוספת משתמש/ת ידנית (ללא תשלום)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AddUserForm action={createUserManually} />
+        </CardContent>
+      </Card>
 
       {/* Photo upgrade requests */}
       {photoUpgradeUsers.length > 0 && (
         <Card className="border-purple-200">
           <CardHeader>
-            <CardTitle className="text-purple-700">📸 בקשות שדרוג תמונת LinkedIn ({photoUpgradeUsers.length})</CardTitle>
+            <CardTitle className="text-purple-700 text-base">📸 בקשות שדרוג תמונת LinkedIn ({photoUpgradeUsers.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -41,14 +74,20 @@ export default async function AdminUsersPage() {
                       <p className="text-xs text-gray-400">בוקש ב-{formatDate(u.photoUpgradeRequestedAt)}</p>
                     )}
                   </div>
-                  <div className="flex gap-2">
-                    <Badge variant="purple">₪49 — ממתין לטיפול</Badge>
-                  </div>
+                  <Badge variant="purple">ממתין לטיפול</Badge>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Pending users banner */}
+      {pendingUsers.length > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
+          <span className="text-yellow-600 font-bold text-sm">⏳ {pendingUsers.length} משתמשים ממתינים לאישור</span>
+          <span className="text-yellow-700 text-xs">לחץ על ✅ כדי לאשר גישה</span>
+        </div>
       )}
 
       {/* Users table */}
@@ -61,56 +100,105 @@ export default async function AdminUsersPage() {
                   <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">שם</th>
                   <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">אימייל</th>
                   <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">סטטוס</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">תפקיד</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">חברות</th>
                   <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">יעד</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">בקשות</th>
                   <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">הצטרף</th>
-                  <th className="py-3 px-4 text-xs text-gray-500">פעולות</th>
+                  <th className="py-3 px-4 text-xs text-gray-500 text-center">פעולות</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((u) => (
-                  <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                    <td className="py-3 px-4 font-medium text-navy">{u.name ?? "—"}</td>
-                    <td className="py-3 px-4 text-gray-500 text-xs">{u.email}</td>
-                    <td className="py-3 px-4">
-                      <Badge
-                        variant={u.accessStatus === "ACTIVE" ? "green" : u.accessStatus === "PENDING" ? "yellow" : "red"}
-                        size="sm"
-                      >
-                        {u.accessStatus === "ACTIVE" ? "פעיל" : u.accessStatus === "PENDING" ? "ממתין" : u.accessStatus === "SUSPENDED" ? "מוגבל" : "פג תוקף"}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge variant={u.role === "SUPER_ADMIN" ? "navy" : u.role === "ADMIN" ? "teal" : "gray"} size="sm">
-                        {u.role === "SUPER_ADMIN" ? "סופר אדמין" : u.role === "ADMIN" ? "אדמין" : "חבר"}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-gray-500 text-xs">{u.profile?.targetRole ?? "—"}</td>
-                    <td className="py-3 px-4 text-gray-600 text-xs text-center">{u._count.jobApplications}</td>
-                    <td className="py-3 px-4 text-gray-400 text-xs">{formatDate(u.createdAt)}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-1">
-                        {u.accessStatus === "PENDING" && (
-                          <form action={async () => { "use server"; await activateUser(u.id); }}>
-                            <button type="submit" title="אשר חברות" className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">
-                              <UserCheck size={13} />
-                            </button>
-                          </form>
-                        )}
-                        {u.accessStatus === "ACTIVE" && u.id !== session?.user?.id && (
-                          <form action={async () => { "use server"; await suspendUser(u.id); }}>
-                            <button type="submit" title="השהה" className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors">
-                              <UserX size={13} />
-                            </button>
-                          </form>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {users.map((u) => {
+                  const mem = MEMBERSHIP_LABELS[u.membershipType] ?? MEMBERSHIP_LABELS.NONE;
+                  return (
+                    <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4 font-medium text-navy">{u.name ?? "—"}</td>
+                      <td className="py-3 px-4 text-gray-500 text-xs">{u.email}</td>
+                      <td className="py-3 px-4">
+                        <Badge
+                          variant={u.accessStatus === "ACTIVE" ? "green" : u.accessStatus === "PENDING" ? "yellow" : "red"}
+                          size="sm"
+                        >
+                          {u.accessStatus === "ACTIVE" ? "פעיל" : u.accessStatus === "PENDING" ? "ממתין" : u.accessStatus === "SUSPENDED" ? "מוגבל" : "פג תוקף"}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge variant={mem.variant} size="sm">
+                          {mem.label}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-gray-500 text-xs">{u.profile?.targetRole ?? "—"}</td>
+                      <td className="py-3 px-4 text-gray-400 text-xs">{formatDate(u.createdAt)}</td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-1 flex-wrap">
+                          {/* Activate */}
+                          {u.accessStatus === "PENDING" && (
+                            <form action={async () => { "use server"; await activateUser(u.id); }}>
+                              <button type="submit" title="אשר חברות" className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors">
+                                <UserCheck size={13} />
+                              </button>
+                            </form>
+                          )}
+                          {/* Suspend */}
+                          {u.accessStatus === "ACTIVE" && u.id !== session?.user?.id && (
+                            <form action={async () => { "use server"; await suspendUser(u.id); }}>
+                              <button type="submit" title="השהה" className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors">
+                                <UserX size={13} />
+                              </button>
+                            </form>
+                          )}
+                          {/* Upgrade to VIP */}
+                          {u.membershipType === "MEMBER" && (
+                            <form action={async () => { "use server"; await setMembershipType(u.id, "VIP"); }}>
+                              <button type="submit" title="שדרג ל-VIP (149₪)" className="p-1.5 bg-navy/10 text-navy rounded-lg hover:bg-navy/20 transition-colors text-xs font-bold">
+                                VIP
+                              </button>
+                            </form>
+                          )}
+                          {/* Upgrade to Premium */}
+                          {(u.membershipType === "MEMBER" || u.membershipType === "VIP") && (
+                            <form action={async () => { "use server"; await setMembershipType(u.id, "PREMIUM"); }}>
+                              <button type="submit" title="שדרג לפרמיום (449₪)" className="p-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors">
+                                <Crown size={12} />
+                              </button>
+                            </form>
+                          )}
+                          {/* Downgrade */}
+                          {u.membershipType !== "MEMBER" && u.membershipType !== "NONE" && (
+                            <form action={async () => { "use server"; await setMembershipType(u.id, "MEMBER"); }}>
+                              <button type="submit" title="הורד לחבר רגיל" className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors text-xs">↓</button>
+                            </form>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Pricing reference */}
+      <Card className="border-slate-200 bg-slate-50">
+        <CardContent className="p-4">
+          <p className="text-xs font-bold text-slate-500 mb-3">תמחור הקהילה</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center p-3 bg-white rounded-xl border border-teal/20">
+              <p className="font-black text-teal text-lg">49₪</p>
+              <p className="text-xs text-gray-500">חבר/ה</p>
+              <p className="text-xs text-gray-400">לחודש</p>
+            </div>
+            <div className="text-center p-3 bg-white rounded-xl border border-navy/20">
+              <p className="font-black text-navy text-lg">149₪</p>
+              <p className="text-xs text-gray-500">VIP</p>
+              <p className="text-xs text-gray-400">לחודש</p>
+            </div>
+            <div className="text-center p-3 bg-white rounded-xl border border-purple-200">
+              <p className="font-black text-purple-700 text-lg">449₪</p>
+              <p className="text-xs text-gray-500">קורל תפעילי קשרים</p>
+              <p className="text-xs text-gray-400">לחודש</p>
+            </div>
           </div>
         </CardContent>
       </Card>

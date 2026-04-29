@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import bcrypt from "bcryptjs";
 
 async function requireAdmin() {
   const session = await auth();
@@ -346,5 +347,66 @@ export async function setUserRole(id: string, role: string) {
   const admin = await requireAdmin();
   if (admin.role !== "SUPER_ADMIN") throw new Error("Only Super Admin can change roles");
   await prisma.user.update({ where: { id }, data: { role: role as never } });
+  revalidatePath("/admin/users");
+}
+
+// ── Manual user creation (no payment required) ────────────────────────────────
+
+export async function createUserManually(prevState: unknown, formData: FormData) {
+  await requireAdmin();
+
+  const name = (formData.get("name") as string)?.trim();
+  const email = (formData.get("email") as string)?.toLowerCase().trim();
+  const password = (formData.get("password") as string)?.trim();
+  const membershipType = (formData.get("membershipType") as string) || "MEMBER";
+
+  if (!name || !email || !password) {
+    return { error: "שם, אימייל וסיסמה הם שדות חובה" };
+  }
+
+  // Check for existing user
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    return { error: "כבר קיים משתמש עם האימייל הזה" };
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  const user = await prisma.user.create({
+    data: {
+      name,
+      email,
+      passwordHash,
+      role: "MEMBER",
+      accessStatus: "ACTIVE",
+      membershipType: membershipType as never,
+      paymentProvider: "MANUAL",
+      paidAt: new Date(),
+    },
+  });
+
+  // Send welcome notification
+  await prisma.notification.create({
+    data: {
+      userId:  user.id,
+      type:    "general",
+      title:   `ברוכה הבאה לקריירה בפוקוס! 🎉`,
+      message: `היי ${name}! החשבון שלך נוצר. כניסה עם האימייל והסיסמה שקיבלת.`,
+      link:    "/dashboard",
+    },
+  });
+
+  revalidatePath("/admin/users");
+  return { success: true, userId: user.id };
+}
+
+// ── Change membership type ────────────────────────────────────────────────────
+
+export async function setMembershipType(id: string, membershipType: string) {
+  await requireAdmin();
+  await prisma.user.update({
+    where: { id },
+    data: { membershipType: membershipType as never },
+  });
   revalidatePath("/admin/users");
 }
