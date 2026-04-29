@@ -8,6 +8,32 @@ import Link from "next/link";
 
 type PhotoEntry = { file: File; preview: string };
 
+// Compress image to max 900px JPEG 85% — keeps faces sharp, slashes upload size
+async function compressImage(file: File): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX = 900;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else        { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width  = w;
+      canvas.height = h;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => {
+        resolve(new File([blob!], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" }));
+      }, "image/jpeg", 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); }; // fallback: use original
+    img.src = url;
+  });
+}
+
 const STYLES = [
   { value: "formal",   label: "פורמלי",   desc: "חליפה / בלייזר, רקע לבן" },
   { value: "casual",   label: "קז'ואל מקצועי", desc: "לבוש נינוח-מקצועי" },
@@ -49,8 +75,12 @@ export function LinkedInPhotoClient() {
     setError("");
     setResults([]);
 
+    setProgress("מכין תמונות...");
+    // Compress images client-side to keep ZIP well under 1 MB
+    const compressed = await Promise.all(photos.map(p => compressImage(p.file)));
+
     const fd = new FormData();
-    photos.forEach((p, i) => fd.append(`photo${i + 1}`, p.file));
+    compressed.forEach((f, i) => fd.append(`photo${i + 1}`, f));
     fd.append("gender", gender);
     fd.append("style", style);
 
@@ -66,10 +96,17 @@ export function LinkedInPhotoClient() {
 
     try {
       // Step 1: Submit job (fast — just uploads + queues)
-      const submitRes = await fetch("/api/tools/linkedin-photo", { method: "POST", body: fd });
+      setProgress("שולח ל-AI...");
+      let submitRes: Response;
+      try {
+        submitRes = await fetch("/api/tools/linkedin-photo", { method: "POST", body: fd });
+      } catch {
+        setError("שגיאת רשת בשליחה — בדקי חיבור ונסי שנית");
+        return;
+      }
       const submitData = await submitRes.json() as { requestId?: string; error?: string };
       if (!submitRes.ok || submitData.error) {
-        setError(submitData.error ?? "שגיאה בהגשת משימה");
+        setError(submitData.error ?? `שגיאת שרת (${submitRes.status}) — נסי שנית`);
         return;
       }
       const requestId = submitData.requestId!;
