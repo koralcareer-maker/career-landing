@@ -155,6 +155,7 @@ model User {
   coachingSession CoachingSession?
   networkRequests NetworkRequest[]
   premiumLeads    PremiumLead[]
+  broadcastsSent  BroadcastLog[]
   photoUpgradeStatus PhotoUpgradeStatus @default(NONE)
   photoUpgradeRequestedAt DateTime?
 }
@@ -567,4 +568,18 @@ model ProgressSnapshot {
   outreach    Int @default(0)
   networking  Int @default(0)
   skills      Int @default(0)
+}
+
+// ─── Broadcast Log ────────────────────────────────────────────────────────────
+
+model BroadcastLog {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  subject      String
+  body         String
+  audience     String   @default("ALL")
+  sentCount    Int      @default(0)
+  skippedCount Int      @default(0)
+  sentById     String
+  sentBy       User     @relation(fields: [sentById], references: [id])
 }

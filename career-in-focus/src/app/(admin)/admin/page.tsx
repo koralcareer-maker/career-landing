@@ -124,6 +124,7 @@ export default async function AdminDashboard() {
           { href: "/admin/events/new",   label: "📅 אירוע חדש" },
           { href: "/admin/updates/new",  label: "📢 עדכון חדש" },
           { href: "/admin/courses/new",  label: "📚 קורס חדש" },
+          { href: "/admin/broadcast",    label: "📧 תפוצת מייל" },
         ].map((q) => (
           <Link key={q.href} href={q.href} className="bg-white rounded-xl p-3 border border-gray-200 text-center text-sm font-semibold text-navy hover:bg-teal-pale hover:border-teal/30 transition-colors">
             {q.label}

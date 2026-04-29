@@ -4,18 +4,19 @@ import Link from "next/link";
 import { logout } from "@/lib/actions/auth";
 import {
   LayoutDashboard, Users, BookOpen, Wrench, Briefcase,
-  CalendarDays, MessageSquare, Star, LogOut, ChevronLeft, Settings
+  CalendarDays, MessageSquare, Star, LogOut, ChevronLeft, Settings, Mail
 } from "lucide-react";
 
 const ADMIN_NAV = [
-  { href: "/admin",           label: "סקירה כללית",  icon: LayoutDashboard, exact: true },
-  { href: "/admin/users",     label: "משתמשים",      icon: Users },
-  { href: "/admin/courses",   label: "קורסים",       icon: BookOpen },
-  { href: "/admin/tools",     label: "כלים",         icon: Wrench },
-  { href: "/admin/jobs",      label: "משרות",        icon: Briefcase },
-  { href: "/admin/events",    label: "אירועים",      icon: CalendarDays },
-  { href: "/admin/updates",   label: "עדכונים",      icon: MessageSquare },
-  { href: "/admin/candidate", label: "מועמד השבוע",  icon: Star },
+  { href: "/admin",            label: "סקירה כללית",  icon: LayoutDashboard, exact: true },
+  { href: "/admin/users",      label: "משתמשים",      icon: Users },
+  { href: "/admin/broadcast",  label: "תפוצת מייל",   icon: Mail },
+  { href: "/admin/courses",    label: "קורסים",       icon: BookOpen },
+  { href: "/admin/tools",      label: "כלים",         icon: Wrench },
+  { href: "/admin/jobs",       label: "משרות",        icon: Briefcase },
+  { href: "/admin/events",     label: "אירועים",      icon: CalendarDays },
+  { href: "/admin/updates",    label: "עדכונים",      icon: MessageSquare },
+  { href: "/admin/candidate",  label: "מועמד השבוע",  icon: Star },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
