@@ -8,7 +8,7 @@ import { logout } from "@/lib/actions/auth";
 import {
   LayoutDashboard, TrendingUp, User, BookOpen, Wrench,
   Briefcase, Users, CalendarDays, Bell, MessageSquare,
-  LogOut, Star, Settings, Sparkles, Network, HelpCircle
+  LogOut, Star, Settings, Sparkles, Network, HelpCircle, UserSearch
 } from "lucide-react";
 
 interface NavItem {
@@ -31,6 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/events",              label: "אירועים",               icon: CalendarDays },
   { href: "/updates",             label: "עדכונים",               icon: MessageSquare },
   { href: "/notifications",       label: "התראות",                icon: Bell },
+  { href: "/recruiters",          label: "ספריית מגייסים",        icon: UserSearch },
   { href: "/koral-connections",   label: "קורל תפעילי קשרים",    icon: Network, premium: true },
 ];
 
