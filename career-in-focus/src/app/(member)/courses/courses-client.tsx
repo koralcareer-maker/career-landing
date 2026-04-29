@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { BookOpen, PlayCircle, FileText, ExternalLink, ChevronLeft, GraduationCap, Layers } from "lucide-react";
+import { BookOpen, PlayCircle, FileText, ExternalLink, ChevronLeft, GraduationCap, Layers, Search, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -163,24 +163,70 @@ function EmptyState({ filtered }: { filtered: boolean }) {
       </h3>
       <p className="text-sm text-gray-400 max-w-xs mx-auto">
         {filtered
-          ? "נסה לבחור קטגוריה אחרת או לבחור 'הכל'"
+          ? "נסי לשנות את הסינון או לנקות אותו"
           : "הקורסים יתווספו בקרוב. בנתיים עיין בכלים ומשאבים הזמינים"}
       </p>
     </div>
   );
 }
 
+// ─── Topic Groups ─────────────────────────────────────────────────────────────
+
+const TOPIC_GROUPS: { label: string; categories: string[] }[] = [
+  {
+    label: "קורסים למציאת עבודה",
+    categories: ["חיפוש עבודה", "ראיונות"],
+  },
+  {
+    label: "קורסי העשרה",
+    categories: ["העשרה", "בינה מלאכותית", "ניתוח נתונים", "שיווק דיגיטלי"],
+  },
+  {
+    label: "פיתוח מיומנויות אישיותיות",
+    categories: ["מנהיגות", "מנהיגות ולידרשיפ", "מיומנויות ארגוניות"],
+  },
+  {
+    label: "פיתוח מיומנויות מקצועיות",
+    categories: ["כלים מקצועיים", "אנגלית מקצועית", "משאבי אנוש", "ניהול פרויקטים"],
+  },
+  {
+    label: "שיפור תדמית מקצועית",
+    categories: ["שיווק אישי", "יכולות מכירה", "קשרי לקוחות"],
+  },
+];
+
 // ─── Main Client Component ────────────────────────────────────────────────────
 
-export function CoursesClient({ courses, categories }: { courses: CourseItem[]; categories: string[] }) {
-  const [activeCategory, setActiveCategory] = useState("הכל");
+export function CoursesClient({ courses }: { courses: CourseItem[]; categories: string[] }) {
+  const [activeGroup, setActiveGroup] = useState("הכל");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const allCategories = ["הכל", ...categories];
+  const filtered = useMemo(() => {
+    let result = courses;
 
-  const filtered =
-    activeCategory === "הכל"
-      ? courses
-      : courses.filter((c) => c.category === activeCategory);
+    // Filter by topic group
+    if (activeGroup !== "הכל") {
+      const group = TOPIC_GROUPS.find((g) => g.label === activeGroup);
+      if (group) {
+        result = result.filter((c) => group.categories.includes(c.category ?? ""));
+      }
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.title.toLowerCase().includes(q) ||
+          (c.description ?? "").toLowerCase().includes(q) ||
+          (c.category ?? "").toLowerCase().includes(q)
+      );
+    }
+
+    return result;
+  }, [courses, activeGroup, searchQuery]);
+
+  const isFiltered = activeGroup !== "הכל" || searchQuery.trim() !== "";
 
   return (
     <div className="space-y-6">
@@ -190,26 +236,60 @@ export function CoursesClient({ courses, categories }: { courses: CourseItem[]; 
         <p className="text-sm text-gray-500">{courses.length} קורסים זמינים לחברי הקהילה</p>
       </div>
 
-      {/* Category Filter */}
-      <div className="flex flex-wrap gap-2">
-        {allCategories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-              activeCategory === cat
-                ? "bg-teal text-white shadow-sm"
-                : "bg-white border border-gray-200 text-gray-600 hover:border-teal hover:text-teal"
-            }`}
+      {/* Filters row */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Topic group dropdown */}
+        <div className="relative">
+          <select
+            value={activeGroup}
+            onChange={(e) => setActiveGroup(e.target.value)}
+            className="appearance-none w-full sm:w-64 bg-white border border-gray-200 rounded-xl px-4 py-2.5 pr-10 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal cursor-pointer"
           >
-            {cat}
+            <option value="הכל">כל הנושאים</option>
+            {TOPIC_GROUPS.map((g) => (
+              <option key={g.label} value={g.label}>
+                {g.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
+
+        {/* Free text search */}
+        <div className="relative flex-1">
+          <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="חיפוש קורס..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 pr-9 text-sm text-gray-700 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal"
+          />
+        </div>
+
+        {/* Clear filters */}
+        {isFiltered && (
+          <button
+            onClick={() => { setActiveGroup("הכל"); setSearchQuery(""); }}
+            className="text-sm text-gray-400 hover:text-teal transition-colors px-2 whitespace-nowrap"
+          >
+            נקה סינון
           </button>
-        ))}
+        )}
       </div>
+
+      {/* Active filter label */}
+      {isFiltered && (
+        <p className="text-sm text-gray-500">
+          מציג <span className="font-semibold text-navy">{filtered.length}</span> קורסים
+          {activeGroup !== "הכל" && <> בנושא <span className="font-semibold text-teal">{activeGroup}</span></>}
+          {searchQuery.trim() && <> עבור &quot;{searchQuery.trim()}&quot;</>}
+        </p>
+      )}
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <EmptyState filtered={activeCategory !== "הכל"} />
+        <EmptyState filtered={isFiltered} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((course) => (
