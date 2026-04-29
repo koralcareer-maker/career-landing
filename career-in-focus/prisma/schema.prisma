@@ -134,9 +134,11 @@ model User {
   membershipType MembershipType @default(NONE)
 
   // Payment
-  paymentProvider PaymentProvider @default(NONE)
+  paymentProvider  PaymentProvider @default(NONE)
   paymentReference String?
-  paidAt          DateTime?
+  paidAt           DateTime?
+  cardToken        String?   // CardCom recurring token
+  cardLast4        String?   // last 4 digits for display
 
   // Profile
   profile       Profile?

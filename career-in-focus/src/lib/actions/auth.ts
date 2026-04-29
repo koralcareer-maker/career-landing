@@ -13,6 +13,9 @@ const SignupSchema = z.object({
   password: z.string().min(6, "סיסמה חייבת להכיל לפחות 6 תווים"),
 });
 
+const VALID_PLANS = ["MEMBER", "VIP", "PREMIUM"] as const;
+type Plan = typeof VALID_PLANS[number];
+
 export async function signup(prevState: unknown, formData: FormData) {
   const raw = {
     name: formData.get("name") as string,
@@ -26,6 +29,10 @@ export async function signup(prevState: unknown, formData: FormData) {
   }
 
   const { name, email, password } = result.data;
+
+  // Read plan from form (passed as hidden field from pricing page)
+  const planRaw = ((formData.get("plan") as string) ?? "MEMBER").toUpperCase();
+  const plan: Plan = VALID_PLANS.includes(planRaw as Plan) ? (planRaw as Plan) : "MEMBER";
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -41,15 +48,15 @@ export async function signup(prevState: unknown, formData: FormData) {
       passwordHash,
       role: "MEMBER",
       accessStatus: "PENDING",
-      membershipType: "NONE",
+      membershipType: plan, // store chosen plan — activated after payment
     },
   });
 
-  // Auto sign in
+  // Auto sign in and redirect to payment with plan
   await signIn("credentials", {
     email,
     password,
-    redirectTo: "/payment/pending",
+    redirectTo: `/payment/pending?plan=${plan.toLowerCase()}`,
   });
 }
 

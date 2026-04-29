@@ -15,11 +15,13 @@ declare module "next-auth" {
       image?: string | null;
       role: Role;
       accessStatus: AccessStatus;
+      membershipType?: string | null;
     };
   }
   interface User {
     role: Role;
     accessStatus: AccessStatus;
+    membershipType?: string | null;
   }
 }
 
@@ -56,6 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           image: user.image,
           role: user.role,
           accessStatus: user.accessStatus,
+          membershipType: user.membershipType,
         };
       },
     }),
@@ -66,16 +69,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.role = user.role;
         token.accessStatus = user.accessStatus;
+        token.membershipType = user.membershipType;
       }
       // Refresh role/status from DB on sign-in/token creation
       if (token.id && !user) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true, accessStatus: true, name: true, image: true },
+          select: { role: true, accessStatus: true, membershipType: true, name: true, image: true },
         });
         if (dbUser) {
           token.role = dbUser.role;
           token.accessStatus = dbUser.accessStatus;
+          token.membershipType = dbUser.membershipType;
           token.name = dbUser.name;
           token.picture = dbUser.image;
         }
@@ -87,6 +92,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role as Role;
         session.user.accessStatus = token.accessStatus as AccessStatus;
+        session.user.membershipType = token.membershipType as string;
         session.user.name = token.name as string;
         session.user.image = token.picture as string;
       }
