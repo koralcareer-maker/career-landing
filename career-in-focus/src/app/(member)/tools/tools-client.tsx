@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, ExternalLink, X, Lightbulb, Wrench, MessageCircle, ArrowLeft, ChevronLeft, Users, UserSearch } from "lucide-react";
+import { Search, ExternalLink, X, Lightbulb, Wrench, MessageCircle, ArrowLeft, ChevronLeft, Users, UserSearch, Camera } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -264,6 +264,28 @@ export function ToolsClient({ tools, whatsappCount = 0, facebookCount = 0 }: { t
             </div>
             <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
               כניסה
+              <ChevronLeft size={14} />
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* ─── LinkedIn AI Photo ─── */}
+      <div>
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-3">AI לתמונת פרופיל</h2>
+        <Link href="/tools/linkedin-photo" className="block group">
+          <div className="bg-gradient-to-l from-purple-700 via-purple-600 to-pink-500 rounded-2xl p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-200">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                <Camera size={24} className="text-white" />
+              </div>
+              <div>
+                <p className="text-white font-black text-base">מחולל תמונת לינקדאין</p>
+                <p className="text-white/70 text-sm mt-0.5">העלי 3 תמונות · AI ייצור תמונת פרופיל מקצועית</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
+              נסי עכשיו
               <ChevronLeft size={14} />
             </div>
           </div>

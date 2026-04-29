@@ -1,0 +1,170 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+
+// ─── Pure-TS CRC32 ────────────────────────────────────────────────────────────
+
+const CRC_TABLE = (() => {
+  const t: number[] = [];
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    t[i] = c;
+  }
+  return t;
+})();
+
+function crc32(data: Uint8Array): number {
+  let crc = 0xffffffff;
+  for (const byte of data) crc = (crc >>> 8) ^ CRC_TABLE[(crc ^ byte) & 0xff];
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+// ─── Pure-TS ZIP creator (stored, no compression) ────────────────────────────
+
+function createZip(files: { name: string; data: Uint8Array }[]): Buffer {
+  const parts: Buffer[] = [];
+  const centralDir: Buffer[] = [];
+  let offset = 0;
+
+  for (const { name, data } of files) {
+    const nameBytes = Buffer.from(name, "utf8");
+    const crc = crc32(data);
+    const size = data.length;
+
+    // Local file header (30 bytes + name)
+    const local = Buffer.alloc(30 + nameBytes.length);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(0, 6);
+    local.writeUInt16LE(0, 8);   // stored
+    local.writeUInt16LE(0, 10);
+    local.writeUInt16LE(0, 12);
+    local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(size, 18);
+    local.writeUInt32LE(size, 22);
+    local.writeUInt16LE(nameBytes.length, 26);
+    local.writeUInt16LE(0, 28);
+    nameBytes.copy(local, 30);
+    parts.push(local, Buffer.from(data));
+
+    // Central directory entry (46 bytes + name)
+    const cd = Buffer.alloc(46 + nameBytes.length);
+    cd.writeUInt32LE(0x02014b50, 0);
+    cd.writeUInt16LE(20, 4);
+    cd.writeUInt16LE(20, 6);
+    cd.writeUInt16LE(0, 8);
+    cd.writeUInt16LE(0, 10);
+    cd.writeUInt16LE(0, 12);
+    cd.writeUInt16LE(0, 14);
+    cd.writeUInt32LE(crc, 16);
+    cd.writeUInt32LE(size, 20);
+    cd.writeUInt32LE(size, 24);
+    cd.writeUInt16LE(nameBytes.length, 28);
+    cd.writeUInt32LE(offset, 42);
+    nameBytes.copy(cd, 46);
+    centralDir.push(cd);
+
+    offset += 30 + nameBytes.length + size;
+  }
+
+  const centralBuf = Buffer.concat(centralDir);
+  const eocd = Buffer.alloc(22);
+  eocd.writeUInt32LE(0x06054b50, 0);
+  eocd.writeUInt16LE(files.length, 8);
+  eocd.writeUInt16LE(files.length, 10);
+  eocd.writeUInt32LE(centralBuf.length, 12);
+  eocd.writeUInt32LE(offset, 16);
+
+  return Buffer.concat([...parts, centralBuf, eocd]);
+}
+
+// ─── Fal.ai helpers ───────────────────────────────────────────────────────────
+
+const FAL_KEY = () => process.env.FAL_KEY ?? "";
+
+async function uploadToFal(data: Buffer, fileName: string, contentType: string): Promise<string> {
+  const blob = new Blob([new Uint8Array(data)], { type: contentType });
+  const fd = new FormData();
+  fd.append("file", blob, fileName);
+
+  const res = await fetch("https://storage.alpha.fal.ai/files/", {
+    method: "POST",
+    headers: { Authorization: `Key ${FAL_KEY()}` },
+    body: fd,
+  });
+
+  if (!res.ok) throw new Error(`fal.ai upload failed: ${await res.text()}`);
+  const json = await res.json() as { url: string };
+  return json.url;
+}
+
+// ─── Route Handler ────────────────────────────────────────────────────────────
+
+export async function POST(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: "נדרשת כניסה" }, { status: 401 });
+
+  if (!FAL_KEY()) {
+    return NextResponse.json({ error: "FAL_KEY אינו מוגדר — יש להוסיף אותו לסביבה" }, { status: 500 });
+  }
+
+  const formData = await req.formData();
+  const gender = (formData.get("gender") as string | null) ?? "woman";
+  const style  = (formData.get("style")  as string | null) ?? "formal";
+
+  // Collect uploaded photos
+  const photoBuffers: { name: string; data: Uint8Array }[] = [];
+  for (let i = 1; i <= 3; i++) {
+    const file = formData.get(`photo${i}`) as File | null;
+    if (file && file.size > 0) {
+      const ext = file.name.split(".").pop() ?? "jpg";
+      photoBuffers.push({ name: `photo${i}.${ext}`, data: new Uint8Array(await file.arrayBuffer()) });
+    }
+  }
+
+  if (photoBuffers.length === 0) {
+    return NextResponse.json({ error: "יש להעלות לפחות תמונה אחת" }, { status: 400 });
+  }
+
+  // Create ZIP + upload
+  const zip = createZip(photoBuffers);
+  const zipUrl = await uploadToFal(zip, "photos.zip", "application/zip");
+
+  // Build prompt
+  const genderHe = gender === "man" ? "man" : "woman";
+  const prompts: Record<string, string> = {
+    formal: `professional LinkedIn headshot of a ${genderHe} img, business formal suit or blazer, clean white or light grey studio background, soft diffused studio lighting with subtle rim light, confident and approachable expression, slight smile, eyes looking directly at camera, shoulders visible, upper body portrait, preserve facial identity, photorealistic, 8K professional corporate photography`,
+    casual: `professional LinkedIn headshot of a ${genderHe} img, smart casual attire in neutral tones, clean neutral background, natural warm studio lighting, warm approachable expression, genuine smile, eyes looking at camera, upper body portrait, preserve facial identity, photorealistic, high resolution professional portrait photography`,
+    creative: `professional LinkedIn headshot of a ${genderHe} img, creative professional attire, modern gradient or blurred office background, cinematic lighting, confident creative expression, upper body portrait, preserve facial identity, photorealistic, editorial portrait photography`,
+  };
+  const prompt = prompts[style] ?? prompts.formal;
+
+  // Call fal.ai PhotoMaker (sync endpoint)
+  const falRes = await fetch("https://fal.run/fal-ai/photomaker", {
+    method: "POST",
+    headers: {
+      Authorization: `Key ${FAL_KEY()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      image_archive_url: zipUrl,
+      prompt,
+      style: "Photographic (Default)",
+      num_steps: 50,
+      style_strength_ratio: 20,
+      guidance_scale: 5,
+      num_images: 4,
+    }),
+  });
+
+  if (!falRes.ok) {
+    const err = await falRes.text();
+    console.error("PhotoMaker error:", err);
+    return NextResponse.json({ error: `שגיאה ביצירת תמונות: ${err}` }, { status: 500 });
+  }
+
+  const result = await falRes.json() as { images?: { url: string }[] };
+  const images = result.images?.map((i) => i.url) ?? [];
+
+  return NextResponse.json({ images });
+}

@@ -88,8 +88,8 @@ export async function generateCareerPassport() {
 
   let result: CareerPassportResult;
 
-  if (process.env.ANTHROPIC_API_KEY) {
-    result = await generateWithClaude(profile);
+  if (process.env.GEMINI_API_KEY) {
+    result = await generateWithGemini(profile);
   } else {
     result = generateMock(profile);
   }
@@ -130,9 +130,9 @@ interface CareerPassportResult {
   nextBestActions: string[];
 }
 
-// ─── Claude API implementation ────────────────────────────────────────────────
+// ─── Gemini API implementation ────────────────────────────────────────────────
 
-async function generateWithClaude(profile: {
+type ProfileInput = {
   targetRole?: string | null;
   currentRole?: string | null;
   yearsExperience?: number | null;
@@ -156,11 +156,9 @@ async function generateWithClaude(profile: {
   q_remotePreference?: string | null;
   q_valuesAtWork?: string | null;
   q_industryInterests?: string | null;
-}): Promise<CareerPassportResult> {
-  // Dynamic import to avoid bundling in edge/build when key not set
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+};
 
+async function generateWithGemini(profile: ProfileInput): Promise<CareerPassportResult> {
   const profileSummary = [
     profile.targetRole && `תפקיד יעד: ${profile.targetRole}`,
     profile.currentRole && `תפקיד נוכחי: ${profile.currentRole}`,
@@ -200,16 +198,24 @@ ${profileSummary}
 
 כל התשובות חייבות להיות בעברית. היה ספציפי ומעשי. התאם לשוק העבודה הישראלי.`;
 
-  const message = await client.messages.create({
-    model: "claude-opus-4-5",
-    max_tokens: 1024,
-    messages: [{ role: "user", content: prompt }],
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: 1024, temperature: 0.3 },
+    }),
   });
 
-  const text = message.content[0].type === "text" ? message.content[0].text : "";
-  const parsed = JSON.parse(text.trim()) as CareerPassportResult;
+  if (!res.ok) throw new Error(`Gemini error: ${res.status}`);
 
-  // Validate and clamp score
+  const data = await res.json() as { candidates?: Array<{ content: { parts: Array<{ text: string }> } }> };
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  const clean = text.replace(/```json\n?|\n?```/g, "").trim();
+  const parsed = JSON.parse(clean) as CareerPassportResult;
+
   parsed.jobMatchScore = Math.max(0, Math.min(100, parsed.jobMatchScore || 50));
   return parsed;
 }

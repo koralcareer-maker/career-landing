@@ -583,3 +583,27 @@ model BroadcastLog {
   sentById     String
   sentBy       User     @relation(fields: [sentById], references: [id])
 }
+
+// ─── Recruiter Directory ──────────────────────────────────────────────────────
+
+enum RecruiterType {
+  RECRUITER       // מגייס בחברה
+  STAFFING        // חברת השמה
+  HEADHUNTER      // הד האנטר
+}
+
+model Recruiter {
+  id          String        @id @default(cuid())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  name        String
+  company     String
+  email       String?
+  phone       String?
+  linkedinUrl String?
+  type        RecruiterType @default(RECRUITER)
+  field       String?       // תחום התמחות (hi-tech, finance, etc.)
+  notes       String?       // הערות פנימיות
+  isActive    Boolean       @default(true)
+}

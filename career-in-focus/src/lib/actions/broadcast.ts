@@ -163,7 +163,7 @@ function buildWhere(audience: string) {
     case "MEMBER":  return { ...base, membershipType: "MEMBER"  as const };
     case "VIP":     return { ...base, membershipType: "VIP"     as const };
     case "PREMIUM": return { ...base, membershipType: "PREMIUM" as const };
-    case "PAYING":  return { ...base, membershipType: { in: ["MEMBER","VIP","PREMIUM"] as const } };
+    case "PAYING":  return { ...base, membershipType: { in: ["MEMBER","VIP","PREMIUM"] as ("MEMBER"|"VIP"|"PREMIUM")[] } };
     default:        return { accessStatus: "ACTIVE" as const }; // ALL active
   }
 }

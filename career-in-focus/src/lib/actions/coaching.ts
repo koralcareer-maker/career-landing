@@ -61,24 +61,41 @@ ${events.map(e => `• ${e.title} — ${new Date(e.startAt).toLocaleDateString("
 `.trim();
 }
 
-// ─── Generate AI coaching response ───────────────────────────────────────────
+// ─── Generate AI coaching response (Google Gemini) ───────────────────────────
 
 async function callClaude(messages: Message[], systemPrompt: string): Promise<string> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return "המאמן AI אינו זמין כרגע. יש להוסיף ANTHROPIC_API_KEY.";
+  if (!process.env.GEMINI_API_KEY) {
+    return "המאמן AI אינו זמין כרגע. יש להוסיף GEMINI_API_KEY.";
   }
 
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
-  const response = await client.messages.create({
-    model: "claude-opus-4-5",
-    max_tokens: 1024,
-    system: systemPrompt,
-    messages: messages.map(m => ({ role: m.role, content: m.content })),
+  // Build conversation: system instruction + history
+  const contents = messages.map(m => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+
+  const body = {
+    system_instruction: { parts: [{ text: systemPrompt }] },
+    contents,
+    generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+  };
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
 
-  return response.content[0].type === "text" ? response.content[0].text : "";
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("Gemini error:", err);
+    return "אירעה שגיאה בתקשורת עם מאמן ה-AI. נסי שנית.";
+  }
+
+  const data = await res.json() as { candidates?: Array<{ content: { parts: Array<{ text: string }> } }> };
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
 // ─── Get or create coaching session ──────────────────────────────────────────
