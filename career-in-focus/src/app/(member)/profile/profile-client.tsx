@@ -8,9 +8,55 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { saveProfile, saveQuestionnaire, generateCareerPassport, requestPhotoUpgrade } from "@/lib/actions/profile";
 import { getInitials } from "@/lib/utils";
 import {
-  User, Star, Zap, Target, BookOpen, TrendingUp,
-  CheckCircle, Lock, Camera, Link, ExternalLink, Loader2, ChevronDown, ChevronUp
+  User, Star, Zap, BookOpen, CheckCircle, Camera, Check
 } from "lucide-react";
+
+// ─── Industry list ────────────────────────────────────────────────────────────
+
+const INDUSTRIES = [
+  "הייטק / תוכנה", "פינטק", "ביוטכנולוגיה / פארמה", "בריאות / רפואה",
+  "חינוך / אקדמיה", "בנקאות / פיננסים", "נדל\"ן", "ייעוץ / עסקים",
+  "שיווק / פרסום", "מדיה / תקשורת", "מסחר אלקטרוני / קמעונאות",
+  "לוגיסטיקה / שרשרת אספקה", "תעשייה / ייצור", "הנדסה / בנייה",
+  "ממשלה / מגזר ציבורי", "עמותות / מגזר שלישי", "תיירות / אירוח",
+  "ספורט / פנאי", "אחר",
+];
+
+// ─── Multi-select checkboxes component ───────────────────────────────────────
+
+function IndustryMultiSelect({ name, defaultValue, label = "תחום רצוי (ניתן לבחור כמה)" }: { name: string; defaultValue: string[]; label?: string }) {
+  const [selected, setSelected] = useState<string[]>(defaultValue);
+
+  function toggle(industry: string) {
+    setSelected(prev =>
+      prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry]
+    );
+  }
+
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+      <div className="flex flex-wrap gap-2 mb-2">
+        {INDUSTRIES.map(ind => (
+          <button
+            key={ind}
+            type="button"
+            onClick={() => toggle(ind)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+              selected.includes(ind)
+                ? "bg-teal text-white border-teal shadow-sm"
+                : "bg-white text-gray-600 border-gray-200 hover:border-teal hover:text-teal"
+            }`}
+          >
+            {selected.includes(ind) && <Check size={10} className="inline ml-1" />}
+            {ind}
+          </button>
+        ))}
+      </div>
+      <input type="hidden" name={name} value={selected.join(", ")} />
+    </div>
+  );
+}
 
 interface Profile {
   fullName?: string | null; phone?: string | null; currentRole?: string | null;
@@ -153,22 +199,17 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
                 <Input name="currentRole" label="תפקיד נוכחי" defaultValue={profile?.currentRole ?? ""} placeholder="כגון: מנהל מוצר" />
                 <Input name="targetRole" label="תפקיד יעד" defaultValue={profile?.targetRole ?? ""} placeholder="כגון: UX Designer" />
                 <Input name="yearsExperience" type="number" label="שנות ניסיון" defaultValue={profile?.yearsExperience?.toString() ?? ""} placeholder="5" min="0" max="40" />
-                <Input name="desiredField" label="תחום רצוי" defaultValue={profile?.desiredField ?? ""} placeholder="כגון: הייטק, פינטק" />
                 <Input name="linkedinUrl" type="url" label="LinkedIn" defaultValue={profile?.linkedinUrl ?? ""} placeholder="https://linkedin.com/in/..." dir="ltr" />
-                <Select name="preferredCompanyType" label="סוג חברה מועדף" defaultValue={profile?.preferredCompanyType ?? ""}
-                  options={[
-                    { value: "", label: "בחר..." },
-                    { value: "startup", label: "סטארטאפ" },
-                    { value: "scale_up", label: "Scale-up" },
-                    { value: "enterprise", label: "תאגיד גדול" },
-                    { value: "public_sector", label: "מגזר ציבורי" },
-                    { value: "ngo", label: "מגזר שלישי" },
-                    { value: "any", label: "לא משנה" },
-                  ]}
-                />
                 <Input name="preferredSalaryMin" type="number" label="שכר מינימום (₪)" defaultValue={profile?.preferredSalaryMin?.toString() ?? ""} placeholder="15000" />
                 <Input name="preferredSalaryMax" type="number" label="שכר מקסימום (₪)" defaultValue={profile?.preferredSalaryMax?.toString() ?? ""} placeholder="25000" />
               </div>
+
+              {/* Industry multi-select */}
+              <IndustryMultiSelect
+                name="desiredField"
+                defaultValue={profile?.desiredField ? profile.desiredField.split(",").map(s => s.trim()).filter(Boolean) : []}
+              />
+
               <Textarea name="careerTransitionGoal" label="מטרת מעבר קריירה" defaultValue={profile?.careerTransitionGoal ?? ""} placeholder="תאר את המעבר שאתה מחפש ולמה" rows={2} />
               <Textarea name="mainChallenge" label="האתגר העיקרי בחיפוש עבודה" defaultValue={profile?.mainChallenge ?? ""} placeholder="מה מקשה עליך הכי הרבה?" rows={2} />
               <Input name="strengths" label="חוזקות (מופרדות בפסיק)" defaultValue={profile?.strengths.join(", ") ?? ""} placeholder="מנהיגות, יצירתיות, עבודת צוות" />
@@ -235,7 +276,11 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
                 ]}
               />
               <Input name="q_valuesAtWork" label="ערכים בעבודה (מופרדים בפסיק)" defaultValue={profile?.q_valuesAtWork?.join(", ") ?? ""} placeholder="אתגר, מנטורינג, חדשנות, יצירתיות..." />
-              <Input name="q_industryInterests" label="תעשיות מעניינות (מופרדות בפסיק)" defaultValue={profile?.q_industryInterests?.join(", ") ?? ""} placeholder="הייטק, בריאות, חינוך, פינטק..." />
+              <IndustryMultiSelect
+                name="q_industryInterests"
+                defaultValue={profile?.q_industryInterests ?? []}
+                label="תעשיות מעניינות (ניתן לבחור כמה)"
+              />
 
               {questState?.error && <p className="text-sm text-red-500">{questState.error}</p>}
               {questState?.success && <p className="text-sm text-green-600">✓ השאלון נשמר</p>}
