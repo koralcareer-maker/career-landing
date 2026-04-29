@@ -111,68 +111,71 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "FAL_KEY אינו מוגדר — יש להוסיף אותו לסביבה" }, { status: 500 });
   }
 
-  const formData = await req.formData();
-  const gender = (formData.get("gender") as string | null) ?? "woman";
-  const style  = (formData.get("style")  as string | null) ?? "formal";
+  try {
+    const formData = await req.formData();
+    const gender = (formData.get("gender") as string | null) ?? "woman";
+    const style  = (formData.get("style")  as string | null) ?? "formal";
 
-  // Collect uploaded photos
-  const photoBuffers: { name: string; data: Uint8Array }[] = [];
-  for (let i = 1; i <= 3; i++) {
-    const file = formData.get(`photo${i}`) as File | null;
-    if (file && file.size > 0) {
-      const ext = file.name.split(".").pop() ?? "jpg";
-      photoBuffers.push({ name: `photo${i}.${ext}`, data: new Uint8Array(await file.arrayBuffer()) });
+    // Collect uploaded photos
+    const photoBuffers: { name: string; data: Uint8Array }[] = [];
+    for (let i = 1; i <= 3; i++) {
+      const file = formData.get(`photo${i}`) as File | null;
+      if (file && file.size > 0) {
+        const ext = file.name.split(".").pop() ?? "jpg";
+        photoBuffers.push({ name: `photo${i}.${ext}`, data: new Uint8Array(await file.arrayBuffer()) });
+      }
     }
+
+    if (photoBuffers.length === 0) {
+      return NextResponse.json({ error: "יש להעלות לפחות תמונה אחת" }, { status: 400 });
+    }
+
+    // Create ZIP + upload
+    const zip = createZip(photoBuffers);
+    const zipUrl = await uploadToFal(zip, "photos.zip", "application/zip");
+
+    // Build prompt
+    const genderHe = gender === "man" ? "man" : "woman";
+    const prompts: Record<string, string> = {
+      formal: `professional LinkedIn headshot of a ${genderHe} img, business formal suit or blazer, clean white or light grey studio background, soft diffused studio lighting with subtle rim light, confident and approachable expression, slight smile, eyes looking directly at camera, shoulders visible, upper body portrait, preserve facial identity, photorealistic, 8K professional corporate photography`,
+      casual: `professional LinkedIn headshot of a ${genderHe} img, smart casual attire in neutral tones, clean neutral background, natural warm studio lighting, warm approachable expression, genuine smile, eyes looking at camera, upper body portrait, preserve facial identity, photorealistic, high resolution professional portrait photography`,
+      creative: `professional LinkedIn headshot of a ${genderHe} img, creative professional attire, modern gradient or blurred office background, cinematic lighting, confident creative expression, upper body portrait, preserve facial identity, photorealistic, editorial portrait photography`,
+    };
+    const prompt = prompts[style] ?? prompts.formal;
+
+    // Submit to fal.ai queue
+    const submitRes = await fetch("https://queue.fal.run/fal-ai/photomaker", {
+      method: "POST",
+      headers: { Authorization: `Key ${FAL_KEY()}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        image_archive_url: zipUrl,
+        prompt,
+        style: "Photographic (Default)",
+        num_steps: 30,
+        style_strength_ratio: 20,
+        guidance_scale: 5,
+        num_images: 2,
+      }),
+    });
+
+    if (!submitRes.ok) {
+      const err = await submitRes.text();
+      console.error("PhotoMaker queue submit error:", err);
+      return NextResponse.json({ error: `שגיאה בהגשת משימה ל-fal.ai: ${err.slice(0, 200)}` }, { status: 500 });
+    }
+
+    const submitted = await submitRes.json() as { request_id?: string };
+    const requestId = submitted.request_id;
+
+    if (!requestId) {
+      return NextResponse.json({ error: "לא התקבל request_id מ-fal.ai" }, { status: 500 });
+    }
+
+    return NextResponse.json({ requestId });
+
+  } catch (err) {
+    console.error("LinkedIn photo route unhandled error:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: `שגיאת שרת: ${msg.slice(0, 200)}` }, { status: 500 });
   }
-
-  if (photoBuffers.length === 0) {
-    return NextResponse.json({ error: "יש להעלות לפחות תמונה אחת" }, { status: 400 });
-  }
-
-  // Create ZIP + upload
-  const zip = createZip(photoBuffers);
-  const zipUrl = await uploadToFal(zip, "photos.zip", "application/zip");
-
-  // Build prompt
-  const genderHe = gender === "man" ? "man" : "woman";
-  const prompts: Record<string, string> = {
-    formal: `professional LinkedIn headshot of a ${genderHe} img, business formal suit or blazer, clean white or light grey studio background, soft diffused studio lighting with subtle rim light, confident and approachable expression, slight smile, eyes looking directly at camera, shoulders visible, upper body portrait, preserve facial identity, photorealistic, 8K professional corporate photography`,
-    casual: `professional LinkedIn headshot of a ${genderHe} img, smart casual attire in neutral tones, clean neutral background, natural warm studio lighting, warm approachable expression, genuine smile, eyes looking at camera, upper body portrait, preserve facial identity, photorealistic, high resolution professional portrait photography`,
-    creative: `professional LinkedIn headshot of a ${genderHe} img, creative professional attire, modern gradient or blurred office background, cinematic lighting, confident creative expression, upper body portrait, preserve facial identity, photorealistic, editorial portrait photography`,
-  };
-  const prompt = prompts[style] ?? prompts.formal;
-
-  // Submit to fal.ai queue (async — avoids Vercel timeout)
-  const submitRes = await fetch("https://queue.fal.run/fal-ai/photomaker", {
-    method: "POST",
-    headers: {
-      Authorization: `Key ${FAL_KEY()}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      image_archive_url: zipUrl,
-      prompt,
-      style: "Photographic (Default)",
-      num_steps: 30,
-      style_strength_ratio: 20,
-      guidance_scale: 5,
-      num_images: 2,
-    }),
-  });
-
-  if (!submitRes.ok) {
-    const err = await submitRes.text();
-    console.error("PhotoMaker queue submit error:", err);
-    return NextResponse.json({ error: `שגיאה בהגשת משימה: ${err}` }, { status: 500 });
-  }
-
-  const submitted = await submitRes.json() as { request_id: string };
-  const requestId = submitted.request_id;
-
-  if (!requestId) {
-    return NextResponse.json({ error: "לא התקבל request_id מ-fal.ai" }, { status: 500 });
-  }
-
-  // Return requestId immediately — client polls via /api/tools/linkedin-photo/status
-  return NextResponse.json({ requestId });
 }

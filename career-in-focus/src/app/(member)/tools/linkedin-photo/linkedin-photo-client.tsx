@@ -101,10 +101,16 @@ export function LinkedInPhotoClient() {
       try {
         submitRes = await fetch("/api/tools/linkedin-photo", { method: "POST", body: fd });
       } catch {
-        setError("שגיאת רשת בשליחה — בדקי חיבור ונסי שנית");
+        setError("שגיאת רשת — בדקי חיבור ונסי שנית");
         return;
       }
-      const submitData = await submitRes.json() as { requestId?: string; error?: string };
+      let submitData: { requestId?: string; error?: string };
+      try {
+        submitData = await submitRes.json() as { requestId?: string; error?: string };
+      } catch {
+        setError(`שגיאת שרת (${submitRes.status}) — נסי שנית`);
+        return;
+      }
       if (!submitRes.ok || submitData.error) {
         setError(submitData.error ?? `שגיאת שרת (${submitRes.status}) — נסי שנית`);
         return;
