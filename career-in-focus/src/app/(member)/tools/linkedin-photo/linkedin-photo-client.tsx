@@ -48,36 +48,55 @@ export function LinkedInPhotoClient() {
     setLoading(true);
     setError("");
     setResults([]);
-    setProgress("מעלה תמונות...");
 
     const fd = new FormData();
     photos.forEach((p, i) => fd.append(`photo${i + 1}`, p.file));
     fd.append("gender", gender);
     fd.append("style", style);
 
+    const messages = [
+      "מעלה תמונות...",
+      "מנתח פנים...",
+      "מייצר תמונת תדמית מקצועית...",
+      "מעבד עם AI...",
+      "כמעט מוכן...",
+    ];
+    let msgIdx = 0;
+    setProgress(messages[0]);
+
     try {
-      // Animated progress messages
-      const messages = [
-        "מעלה תמונות...",
-        "מנתח פנים...",
-        "מייצר תמונת תדמית מקצועית...",
-        "מעבד עם AI (עוד כ-30 שניות)...",
-        "כמעט מוכן...",
-      ];
-      let msgIdx = 0;
-      setProgress(messages[0]);
-      const interval = setInterval(() => {
+      // Step 1: Submit job (fast — just uploads + queues)
+      const submitRes = await fetch("/api/tools/linkedin-photo", { method: "POST", body: fd });
+      const submitData = await submitRes.json() as { requestId?: string; error?: string };
+      if (!submitRes.ok || submitData.error) {
+        setError(submitData.error ?? "שגיאה בהגשת משימה");
+        return;
+      }
+      const requestId = submitData.requestId!;
+
+      // Step 2: Poll from browser every 4s (avoids Vercel timeout)
+      const deadline = Date.now() + 150_000; // 2.5 minutes
+      while (Date.now() < deadline) {
+        await new Promise(r => setTimeout(r, 4000));
         msgIdx = Math.min(msgIdx + 1, messages.length - 1);
         setProgress(messages[msgIdx]);
-      }, 10000);
 
-      const res = await fetch("/api/tools/linkedin-photo", { method: "POST", body: fd });
-      clearInterval(interval);
-      const data = await res.json() as { images?: string[]; error?: string };
-      if (!res.ok || data.error) setError(data.error ?? "שגיאה לא ידועה");
-      else setResults(data.images ?? []);
+        const pollRes = await fetch(`/api/tools/linkedin-photo/status?requestId=${requestId}`);
+        const poll = await pollRes.json() as { status: string; images?: string[]; error?: string };
+
+        if (poll.status === "completed") {
+          setResults(poll.images ?? []);
+          return;
+        }
+        if (poll.status === "failed") {
+          setError("היצירה נכשלה — נסי שנית");
+          return;
+        }
+        // "pending" → keep polling
+      }
+      setError("הזמן הוקצב — נסי שנית");
     } catch {
-      setError("שגיאת רשת — נסה שנית");
+      setError("שגיאת רשת — נסי שנית");
     } finally {
       setLoading(false);
       setProgress("");
@@ -127,38 +146,36 @@ export function LinkedInPhotoClient() {
         />
 
         <div className="grid grid-cols-3 gap-3">
-          {/* Filled slots */}
-          {photos.map((p, idx) => (
-            <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border-2 border-teal/50 group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.preview} alt="" className="w-full h-full object-cover" />
+          {Array.from({ length: 3 }).map((_, idx) => {
+            const photo = photos[idx];
+            if (photo) {
+              return (
+                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border-2 border-teal/50 group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photo.preview} alt="" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => removePhoto(idx)}
+                    className="absolute top-1.5 left-1.5 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X size={12} className="text-white" />
+                  </button>
+                  <div className="absolute bottom-1.5 right-1.5 w-6 h-6 bg-teal rounded-full flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
+                </div>
+              );
+            }
+            return (
               <button
-                onClick={() => removePhoto(idx)}
-                className="absolute top-1.5 left-1.5 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                key={idx}
+                onClick={() => inputRef.current?.click()}
+                onDrop={e => { e.preventDefault(); addFiles(e.dataTransfer.files); }}
+                onDragOver={e => e.preventDefault()}
+                className="aspect-square rounded-xl border-2 border-dashed border-gray-200 hover:border-teal/50 hover:bg-teal-pale/30 transition-all flex flex-col items-center justify-center gap-2 text-gray-300 hover:text-teal cursor-pointer"
               >
-                <X size={12} className="text-white" />
+                <Upload size={22} />
+                <span className="text-xs font-medium">העלה</span>
               </button>
-              <div className="absolute bottom-1.5 right-1.5 w-6 h-6 bg-teal rounded-full flex items-center justify-center text-white text-xs font-bold shadow">✓</div>
-            </div>
-          ))}
-
-          {/* Empty slots up to 3 */}
-          {photos.length < 3 && (
-            <button
-              onClick={() => inputRef.current?.click()}
-              onDrop={e => { e.preventDefault(); addFiles(e.dataTransfer.files); }}
-              onDragOver={e => e.preventDefault()}
-              className="aspect-square rounded-xl border-2 border-dashed border-gray-200 hover:border-teal/50 hover:bg-teal-pale/30 transition-all flex flex-col items-center justify-center gap-2 text-gray-300 hover:text-teal cursor-pointer"
-            >
-              <Upload size={22} />
-              <span className="text-xs font-medium">העלה</span>
-            </button>
-          )}
-
-          {/* Placeholder slots (visual only) */}
-          {Array.from({ length: Math.max(0, 2 - photos.length) }).map((_, i) => (
-            <div key={`ph-${i}`} className="aspect-square rounded-xl border-2 border-dashed border-gray-100 bg-gray-50/50" />
-          ))}
+            );
+          })}
         </div>
 
         {photos.length > 0 && (

@@ -7,10 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   saveProfile, saveQuestionnaire, generateCareerPassport,
-  analyzeCvContent, saveCvAnalysis, type CvAnalysisResult
+  analyzeCvFile, saveCvAnalysis, type CvAnalysisResult
 } from "@/lib/actions/profile";
 import { getInitials } from "@/lib/utils";
-import { User, Star, Zap, BookOpen, CheckCircle, Camera, Check, X, FileText, Sparkles, Loader2, ChevronDown } from "lucide-react";
+import { User, Star, Zap, BookOpen, CheckCircle, Camera, Check, X, FileText, Sparkles, Loader2, ChevronDown, Upload, TrendingUp, MessageSquare, AlertCircle } from "lucide-react";
 
 // ─── Industry list ────────────────────────────────────────────────────────────
 
@@ -164,174 +164,121 @@ function ConfirmChips({
   );
 }
 
-// ─── CV Analysis Tab ──────────────────────────────────────────────────────────
+// ─── Compact CV upload strip (used inside profile tab) ───────────────────────
 
-function CvAnalysisTab({ profile }: { profile: ProfileType | null }) {
-  const [cvText, setCvText] = useState("");
+interface CvUploadStripProps {
+  onAnalyzed: (result: CvAnalysisResult) => void;
+  noCV: boolean;
+  onToggleNoCV: (v: boolean) => void;
+}
+
+function CvUploadStrip({ onAnalyzed, noCV, onToggleNoCV }: CvUploadStripProps) {
+  const fileRef = useRef<HTMLInputElement>(null);
   const [analyzing, setAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState<CvAnalysisResult | null>(null);
-  const [confirmedStrengths, setConfirmedStrengths] = useState<string[]>(profile?.strengths ?? []);
-  const [confirmedGaps, setConfirmedGaps] = useState<string[]>(profile?.missingSkills ?? []);
-  const [currentRole, setCurrentRole] = useState(profile?.currentRole ?? "");
-  const [targetRole, setTargetRole] = useState(profile?.targetRole ?? "");
-  const [yearsExp, setYearsExp] = useState(profile?.yearsExperience?.toString() ?? "");
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [fileName, setFileName]   = useState("");
+  const [error, setError]         = useState("");
+  const [done, setDone]           = useState(false);
 
-  async function handleAnalyze() {
-    if (!cvText.trim()) return;
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setFileName(file.name);
     setAnalyzing(true);
-    setSaved(false);
-    const result = await analyzeCvContent(cvText);
-    setAnalysis(result);
-    setConfirmedStrengths(result.strengths);
-    setConfirmedGaps(result.skillGaps);
-    if (result.currentRole) setCurrentRole(result.currentRole);
-    if (result.targetRole) setTargetRole(result.targetRole);
-    if (result.yearsExperience) setYearsExp(result.yearsExperience.toString());
-    setAnalyzing(false);
+    setError("");
+    setDone(false);
+    try {
+      const buf   = await file.arrayBuffer();
+      const bytes = new Uint8Array(buf);
+      let bin = "";
+      bytes.forEach(b => { bin += String.fromCharCode(b); });
+      const b64 = btoa(bin);
+      const result = await analyzeCvFile(b64, file.type || "application/pdf");
+      onAnalyzed(result);
+      setDone(true);
+    } catch {
+      setError("שגיאה — נסי שנית");
+    } finally {
+      setAnalyzing(false);
+      e.target.value = "";
+    }
   }
-
-  async function handleSave() {
-    setSaving(true);
-    await saveCvAnalysis({
-      currentRole: currentRole || undefined,
-      targetRole: targetRole || undefined,
-      yearsExperience: yearsExp ? parseInt(yearsExp) : undefined,
-      strengths: confirmedStrengths,
-      missingSkills: confirmedGaps,
-    });
-    setSaving(false);
-    setSaved(true);
-  }
-
-  const hasExistingData = (profile?.strengths?.length ?? 0) > 0 || (profile?.missingSkills?.length ?? 0) > 0;
 
   return (
-    <div className="space-y-5">
-      {/* Paste CV */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <FileText size={16} className="text-teal" />
-            <CardTitle>הדבק את תוכן קורות החיים</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-gray-500">
-            העתיקי את הטקסט מה-CV שלך (Word / PDF) והדביקי כאן. ה-AI ינתח ויציע חוזקות ופערים לאישורך.
-          </p>
-          <textarea
-            value={cvText}
-            onChange={e => setCvText(e.target.value)}
-            placeholder="הדבק כאן את תוכן קורות החיים שלך..."
-            rows={8}
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-teal/40 resize-none leading-relaxed"
-          />
-          <Button onClick={handleAnalyze} loading={analyzing} disabled={!cvText.trim() || analyzing}>
-            <Sparkles size={14} className="ml-1" />
-            {analyzing ? "מנתח קורות חיים..." : "נתח קורות חיים עם AI"}
-          </Button>
+    <div className="mb-5 rounded-2xl border border-teal/20 bg-gradient-to-l from-teal/5 to-white p-4">
+      <input
+        ref={fileRef}
+        type="file"
+        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        className="hidden"
+        onChange={handleFile}
+      />
+
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-teal/10 rounded-xl flex items-center justify-center shrink-0">
+          {analyzing
+            ? <Loader2 size={18} className="text-teal animate-spin" />
+            : done
+              ? <CheckCircle size={18} className="text-green-500" />
+              : <Upload size={18} className="text-teal" />
+          }
+        </div>
+
+        <div className="flex-1 min-w-0">
           {analyzing && (
-            <p className="text-xs text-gray-400 flex items-center gap-1.5">
-              <Loader2 size={12} className="animate-spin" />
-              הAI קורא את הניסיון שלך ומזהה חוזקות ופערים...
-            </p>
+            <>
+              <p className="text-sm font-semibold text-teal">מנתח קורות חיים...</p>
+              <p className="text-xs text-gray-400">ממלא את הפרטים שלך אוטומטית</p>
+            </>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Analysis results OR existing data */}
-      {(analysis || hasExistingData) && (
-        <div className="space-y-4">
-          {analysis?.summary && (
-            <div className="bg-teal-pale border border-teal/20 rounded-xl px-4 py-3">
-              <p className="text-sm font-semibold text-teal mb-1">📋 סיכום הפרופיל שלך</p>
-              <p className="text-sm text-navy">{analysis.summary}</p>
-            </div>
+          {!analyzing && done && (
+            <>
+              <p className="text-sm font-semibold text-green-700">✓ {fileName}</p>
+              <p className="text-xs text-gray-400">הפרטים עודכנו — בדקי ועדכני אם נדרש</p>
+            </>
           )}
-
-          {/* Basic info from CV */}
-          <Card>
-            <CardHeader><CardTitle className="text-sm">פרטים שזוהו מהCV</CardTitle></CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">תפקיד נוכחי</label>
-                  <input value={currentRole} onChange={e => setCurrentRole(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal/40" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">תפקיד יעד מוצע</label>
-                  <input value={targetRole} onChange={e => setTargetRole(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal/40" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">שנות ניסיון</label>
-                  <input value={yearsExp} onChange={e => setYearsExp(e.target.value)} type="number"
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal/40" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Strengths confirmation */}
-          <Card className="border-green-100">
-            <CardContent className="pt-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle size={14} className="text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-navy">💪 חוזקות שזיהינו</p>
-                  <p className="text-xs text-gray-400">אשרי את מה שמדויק, הסירי את מה שלא, הוסיפי בעצמך</p>
-                </div>
-              </div>
-              <ConfirmChips
-                label=""
-                items={confirmedStrengths}
-                onChange={setConfirmedStrengths}
-                color="teal"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Skill gaps confirmation */}
-          <Card className="border-orange-100">
-            <CardContent className="pt-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center">
-                  <Zap size={14} className="text-orange-500" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-navy">⚠️ תחומים לשיפור / פערים</p>
-                  <p className="text-xs text-gray-400">אלו תחומים שיכולים לעזור לך להיות מועמדת חזקה יותר</p>
-                </div>
-              </div>
-              <ConfirmChips
-                label=""
-                items={confirmedGaps}
-                onChange={setConfirmedGaps}
-                color="orange"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Save confirmed */}
-          <div className="flex items-center gap-3">
-            <Button onClick={handleSave} loading={saving}>
-              ✓ שמור ניתוח לפרופיל
-            </Button>
-            {saved && <span className="text-sm text-green-600 font-semibold">✓ נשמר בהצלחה</span>}
-          </div>
+          {!analyzing && !done && !noCV && (
+            <>
+              <p className="text-sm font-semibold text-navy">העלי קורות חיים לשליפה אוטומטית</p>
+              <p className="text-xs text-gray-400">PDF / DOC / DOCX — AI ימלא את כל הפרטים</p>
+            </>
+          )}
+          {!analyzing && !done && noCV && (
+            <>
+              <p className="text-sm font-semibold text-amber-700">ממלאת ידנית</p>
+              <p className="text-xs text-gray-400">מלאי את הפרטים — לאחר שמירה תוכלי לייצר קורות חיים</p>
+            </>
+          )}
+          {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
         </div>
-      )}
 
-      {!analysis && !hasExistingData && (
-        <div className="text-center py-8 text-gray-400">
-          <FileText size={32} className="mx-auto mb-3 opacity-40" />
-          <p className="text-sm">הדביקי קורות חיים למעלה וה-AI ינתח אותם</p>
-        </div>
+        {!analyzing && !noCV && (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="shrink-0 px-3 py-1.5 bg-teal text-white text-xs font-bold rounded-lg hover:bg-teal/90 transition-colors"
+          >
+            {done ? "החלף" : "העלי"}
+          </button>
+        )}
+        {!analyzing && noCV && (
+          <button
+            type="button"
+            onClick={() => onToggleNoCV(false)}
+            className="shrink-0 px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            יש לי CV
+          </button>
+        )}
+      </div>
+
+      {!done && !noCV && (
+        <button
+          type="button"
+          onClick={() => onToggleNoCV(true)}
+          className="mt-2 text-xs text-gray-400 hover:text-gray-600 underline"
+        >
+          אין לי קורות חיים — אמלא ידנית
+        </button>
       )}
     </div>
   );
@@ -368,14 +315,44 @@ interface Props {
   readinessScore: number;
 }
 
-type TabId = "cv" | "profile" | "questionnaire" | "passport";
+type TabId = "profile" | "questionnaire" | "passport";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function ProfileClient({ user, profile, passport, readinessScore }: Props) {
-  const [tab, setTab] = useState<TabId>("cv");
+  const [tab, setTab] = useState<TabId>("profile");
   const [generating, setGenerating] = useState(false);
   const [passportResult, setPassportResult] = useState(passport);
+
+  // CV upload state — for filling form fields automatically
+  const [formKey, setFormKey]           = useState(0);
+  const [noCV, setNoCV]                 = useState(false);
+  const [cvFeedback, setCvFeedback]     = useState<string[]>([]);
+  const [marketSkills, setMarketSkills] = useState<string[]>([]);
+  const [formDefaults, setFormDefaults] = useState({
+    fullName:            profile?.fullName            ?? "",
+    phone:               profile?.phone               ?? "",
+    currentRole:         profile?.currentRole         ?? "",
+    targetRole:          profile?.targetRole          ?? "",
+    yearsExperience:     profile?.yearsExperience?.toString() ?? "",
+    linkedinUrl:         profile?.linkedinUrl         ?? "",
+    preferredSalaryMin:  profile?.preferredSalaryMin?.toString()  ?? "",
+    preferredSalaryMax:  profile?.preferredSalaryMax?.toString()  ?? "",
+    careerTransitionGoal: profile?.careerTransitionGoal ?? "",
+    mainChallenge:       profile?.mainChallenge        ?? "",
+  });
+
+  function handleCvAnalyzed(result: CvAnalysisResult) {
+    setFormDefaults(prev => ({
+      ...prev,
+      currentRole:     result.currentRole     || prev.currentRole,
+      targetRole:      result.targetRole      || prev.targetRole,
+      yearsExperience: result.yearsExperience ? result.yearsExperience.toString() : prev.yearsExperience,
+    }));
+    setCvFeedback(result.cvFeedback   ?? []);
+    setMarketSkills(result.marketSkills ?? []);
+    setFormKey(k => k + 1); // re-mount form with new defaults
+  }
 
   const [profileState, profileAction, profilePending] = useActionState(saveProfile, null);
   const [questState, questAction, questPending] = useActionState(saveQuestionnaire, null);
@@ -388,7 +365,6 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
   }
 
   const TABS = [
-    { id: "cv" as TabId,            label: "ניתוח CV",        icon: FileText },
     { id: "profile" as TabId,       label: "פרופיל קריירה",   icon: User },
     { id: "questionnaire" as TabId, label: "שאלון",           icon: BookOpen },
     { id: "passport" as TabId,      label: "דרכון קריירה",    icon: Star },
@@ -426,9 +402,6 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
         })}
       </div>
 
-      {/* ── CV Analysis Tab ── */}
-      {tab === "cv" && <CvAnalysisTab profile={profile} />}
-
       {/* ── Profile Tab ── */}
       {tab === "profile" && (
         <Card>
@@ -439,8 +412,15 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
             </div>
           </CardHeader>
           <CardContent>
+            {/* CV Upload Strip — always shown at top */}
+            <CvUploadStrip
+              onAnalyzed={handleCvAnalyzed}
+              noCV={noCV}
+              onToggleNoCV={setNoCV}
+            />
+
             {/* Avatar */}
-            <div className="flex items-start gap-4 mb-6">
+            <div className="flex items-start gap-4 mb-5">
               <div className="relative">
                 <div className="w-20 h-20 bg-teal/20 rounded-2xl flex items-center justify-center text-teal text-2xl font-black">
                   {profile?.imageUrl
@@ -457,28 +437,73 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
               </div>
             </div>
 
-            <form action={profileAction} className="space-y-4">
+            {/* Form — re-mounts (key) when AI fills defaults */}
+            <form key={formKey} action={profileAction} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input name="fullName" label="שם מלא" defaultValue={profile?.fullName ?? ""} placeholder="ישראל ישראלי" />
-                <Input name="phone" label="טלפון" defaultValue={profile?.phone ?? ""} placeholder="050-1234567" />
-                <Input name="currentRole" label="תפקיד נוכחי" defaultValue={profile?.currentRole ?? ""} placeholder="כגון: מנהל מוצר" />
-                <Input name="targetRole" label="תפקיד יעד" defaultValue={profile?.targetRole ?? ""} placeholder="כגון: UX Designer" />
-                <Input name="yearsExperience" type="number" label="שנות ניסיון" defaultValue={profile?.yearsExperience?.toString() ?? ""} placeholder="5" min="0" max="40" />
-                <Input name="linkedinUrl" type="url" label="LinkedIn" defaultValue={profile?.linkedinUrl ?? ""} placeholder="https://linkedin.com/in/..." dir="ltr" />
-                <Input name="preferredSalaryMin" type="number" label="שכר מינימום (₪)" defaultValue={profile?.preferredSalaryMin?.toString() ?? ""} placeholder="15000" />
-                <Input name="preferredSalaryMax" type="number" label="שכר מקסימום (₪)" defaultValue={profile?.preferredSalaryMax?.toString() ?? ""} placeholder="25000" />
+                <Input name="fullName" label="שם מלא" defaultValue={formDefaults.fullName} placeholder="ישראל ישראלי" />
+                <Input name="phone" label="טלפון" defaultValue={formDefaults.phone} placeholder="050-1234567" />
+                <Input name="currentRole" label="תפקיד נוכחי" defaultValue={formDefaults.currentRole} placeholder="כגון: מנהל מוצר" />
+                <Input name="targetRole" label="תפקיד יעד" defaultValue={formDefaults.targetRole} placeholder="כגון: UX Designer" />
+                <Input name="yearsExperience" type="number" label="שנות ניסיון" defaultValue={formDefaults.yearsExperience} placeholder="5" min="0" max="40" />
+                <Input name="linkedinUrl" type="url" label="LinkedIn" defaultValue={formDefaults.linkedinUrl} placeholder="https://linkedin.com/in/..." dir="ltr" />
+                <Input name="preferredSalaryMin" type="number" label="שכר מינימום (₪)" defaultValue={formDefaults.preferredSalaryMin} placeholder="15000" />
+                <Input name="preferredSalaryMax" type="number" label="שכר מקסימום (₪)" defaultValue={formDefaults.preferredSalaryMax} placeholder="25000" />
               </div>
               <IndustryMultiSelect
                 name="desiredField"
                 defaultValue={profile?.desiredField ? profile.desiredField.split(",").map(s => s.trim()).filter(Boolean) : []}
               />
-              <Textarea name="careerTransitionGoal" label="מטרת מעבר קריירה" defaultValue={profile?.careerTransitionGoal ?? ""} placeholder="תארי את המעבר שאת מחפשת ולמה" rows={2} />
-              <Textarea name="mainChallenge" label="האתגר העיקרי בחיפוש עבודה" defaultValue={profile?.mainChallenge ?? ""} placeholder="מה מקשה עלייך הכי הרבה?" rows={2} />
+              <Textarea name="careerTransitionGoal" label="מטרת מעבר קריירה" defaultValue={formDefaults.careerTransitionGoal} placeholder="תארי את המעבר שאת מחפשת ולמה" rows={2} />
+              <Textarea name="mainChallenge" label="האתגר העיקרי בחיפוש עבודה" defaultValue={formDefaults.mainChallenge} placeholder="מה מקשה עלייך הכי הרבה?" rows={2} />
 
               {profileState?.error && <p className="text-sm text-red-500">{profileState.error}</p>}
               {profileState?.success && <p className="text-sm text-green-600">✓ הפרופיל נשמר בהצלחה</p>}
               <Button type="submit" loading={profilePending}>שמור פרופיל</Button>
             </form>
+
+            {/* Market skills — shown after CV upload */}
+            {marketSkills.length > 0 && (
+              <div className="mt-5 p-4 rounded-xl bg-blue-50 border border-blue-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp size={14} className="text-blue-600" />
+                  <p className="text-sm font-bold text-blue-800">🔥 מיומנויות חמות לתפקיד זה ב-2025</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {marketSkills.map((s, i) => (
+                    <span key={i} className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full border border-blue-200">{s}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* CV Feedback — shown after CV upload */}
+            {cvFeedback.length > 0 && (
+              <div className="mt-4 rounded-xl border border-purple-100 bg-purple-50/40 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <MessageSquare size={14} className="text-purple-600" />
+                  <p className="text-sm font-bold text-purple-800">✍️ פידבק לשיפור קורות החיים שלך</p>
+                </div>
+                <ul className="space-y-2">
+                  {cvFeedback.map((tip, i) => (
+                    <li key={i} className="flex items-start gap-2.5 p-2.5 bg-white rounded-lg border border-purple-100 text-sm text-gray-700">
+                      <span className="w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{i + 1}</span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* No-CV path: offer to generate CV after profile is saved */}
+            {noCV && profileState?.success && (
+              <div className="mt-5 p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3">
+                <AlertCircle size={16} className="text-amber-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-800">הפרטים נשמרו!</p>
+                  <p className="text-xs text-amber-600 mt-0.5">מלאי גם את השאלון לדרכון קריירה מלא, ובהמשך נוסיף גם ייצור קורות חיים.</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

@@ -173,31 +173,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "לא התקבל request_id מ-fal.ai" }, { status: 500 });
   }
 
-  // Poll for up to 55s (within maxDuration)
-  const deadline = Date.now() + 55_000;
-  while (Date.now() < deadline) {
-    await new Promise(r => setTimeout(r, 3000));
-
-    const statusRes = await fetch(
-      `https://queue.fal.run/fal-ai/photomaker/requests/${requestId}/status`,
-      { headers: { Authorization: `Key ${FAL_KEY()}` } }
-    );
-    const status = await statusRes.json() as { status: string };
-
-    if (status.status === "COMPLETED") {
-      const resultRes = await fetch(
-        `https://queue.fal.run/fal-ai/photomaker/requests/${requestId}`,
-        { headers: { Authorization: `Key ${FAL_KEY()}` } }
-      );
-      const result = await resultRes.json() as { images?: { url: string }[] };
-      const images = result.images?.map((i) => i.url) ?? [];
-      return NextResponse.json({ images });
-    }
-
-    if (status.status === "FAILED") {
-      return NextResponse.json({ error: "היצירה נכשלה — נסי שנית" }, { status: 500 });
-    }
-  }
-
-  return NextResponse.json({ error: "הזמן הוקצב — נסי שנית (התמונות מורכבות לייצור)" }, { status: 504 });
+  // Return requestId immediately — client polls via /api/tools/linkedin-photo/status
+  return NextResponse.json({ requestId });
 }

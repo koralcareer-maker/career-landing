@@ -53,6 +53,8 @@ export interface CvAnalysisResult {
   strengths: string[];
   skillGaps: string[];
   summary: string;
+  marketSkills?: string[];  // hot skills employers want NOW for this role
+  cvFeedback?: string[];    // actionable tips to improve the CV
 }
 
 export async function analyzeCvContent(cvText: string): Promise<CvAnalysisResult> {
@@ -104,6 +106,85 @@ ${cvText.slice(0, 6000)}
       strengths: ["ניסיון רב שנים", "עבודת צוות", "יוזמה ויצירתיות"],
       skillGaps: ["אנגלית מקצועית", "כלים דיגיטליים", "ניהול פרויקטים"],
       summary: "לא ניתן לנתח — נסה שנית",
+    };
+  }
+}
+
+// ─── CV Analysis from FILE (PDF/DOC) ─────────────────────────────────────────
+
+export async function analyzeCvFile(base64Data: string, mimeType: string): Promise<CvAnalysisResult> {
+  if (!process.env.GEMINI_API_KEY) {
+    return {
+      currentRole: "", targetRole: "", yearsExperience: 0,
+      strengths: ["ניסיון מקצועי", "עבודת צוות", "יוזמה"],
+      skillGaps: ["אנגלית מקצועית", "ניהול פרויקטים", "כלים דיגיטליים"],
+      marketSkills: ["Excel מתקדם", "Python בסיס", "ניהול נתונים"],
+      cvFeedback: ["הוסיפי מספרים והישגים לכל תפקיד", "הוסיפי מילות מפתח מהמקצוע"],
+      summary: "הוסיפי מפתח API לניתוח אמיתי",
+    };
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
+  const prompt = `אתה מומחה גיוס ומיתוג מקצועי ישראלי עם ניסיון רב. אתה מנתח את קורות החיים המצורפים.
+
+ענה אך ורק ב-JSON תקין (ללא markdown, ללא הסברים):
+{
+  "currentRole": "התפקיד הנוכחי/האחרון",
+  "targetRole": "התפקיד המתאים ביותר שיחפש בהתבסס על הרקע",
+  "yearsExperience": <מספר שנות ניסיון כולל>,
+  "strengths": ["חוזקה 1", "חוזקה 2", "חוזקה 3", "חוזקה 4", "חוזקה 5"],
+  "skillGaps": ["פער 1", "פער 2", "פער 3", "פער 4"],
+  "marketSkills": ["מיומנות חמה 1 שמעסיקים מחפשים עכשיו", "מיומנות 2", "מיומנות 3"],
+  "cvFeedback": [
+    "פידבק ספציפי 1 לשיפור קורות החיים (כגון: הוסיפי נתונים כמותיים להישגים)",
+    "פידבק 2",
+    "פידבק 3",
+    "פידבק 4",
+    "פידבק 5"
+  ],
+  "summary": "סיכום פרופיל מקצועי בעברית — 2 משפטים"
+}
+
+חוזקות: מה בולט ומוכח בקורות החיים.
+פערים: מה חסר להפוך למועמד תחרותי יותר.
+marketSkills: מיומנויות שחמות בשוק העכשווי לתפקיד זה (2025).
+cvFeedback: עצות ספציפיות ופרקטיות לשיפור קורות החיים — לא כלליות. כל פריט = פעולה אחת ברורה.
+החזר JSON בלבד.`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          role: "user",
+          parts: [
+            { inline_data: { mime_type: mimeType, data: base64Data } },
+            { text: prompt },
+          ],
+        }],
+        generationConfig: { maxOutputTokens: 2048, temperature: 0.4 },
+      }),
+    });
+
+    const data = await res.json() as {
+      candidates?: Array<{ content: { parts: Array<{ text: string }> } }>;
+      error?: { message: string };
+    };
+    if (data.error) throw new Error(data.error.message);
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+    const clean = raw.replace(/```json\n?|\n?```/g, "").trim();
+    return JSON.parse(clean) as CvAnalysisResult;
+  } catch (e) {
+    console.error("analyzeCvFile error:", e);
+    return {
+      currentRole: "", targetRole: "", yearsExperience: 0,
+      strengths: ["ניסיון רב שנים", "עבודת צוות", "יוזמה ויצירתיות"],
+      skillGaps: ["אנגלית מקצועית", "כלים דיגיטליים", "ניהול פרויקטים"],
+      marketSkills: [],
+      cvFeedback: ["לא ניתן לנתח — נסי שנית"],
+      summary: "לא ניתן לנתח — נסי שנית",
     };
   }
 }
