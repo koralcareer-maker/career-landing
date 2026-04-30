@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getToken } from "next-auth/jwt";
 
 // Edge runtime: 30-second timeout vs 10s for serverless
 // Needed because Gemini PDF analysis typically takes 10-25 seconds
@@ -34,13 +34,14 @@ cvFeedback: עצות ספציפיות ופרקטיות — כל פריט = פע�
 החזר JSON בלבד.`;
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) {
+  // Use getToken (edge-safe JWT check) instead of auth() which uses PrismaAdapter
+  const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
+  const token = await getToken({ req, secret });
+  if (!token) {
     return NextResponse.json({ error: "נדרשת כניסה" }, { status: 401 });
   }
 
   if (!GEMINI_KEY()) {
-    // No API key — return helpful mock
     return NextResponse.json({
       currentRole: "לא זוהה",
       targetRole: "לא זוהה",
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
       strengths: ["ניסיון מקצועי", "עבודת צוות", "יוזמה"],
       skillGaps: ["אנגלית מקצועית", "ניהול פרויקטים", "כלים דיגיטליים"],
       marketSkills: ["Excel מתקדם", "Python בסיס", "ניהול נתונים"],
-      cvFeedback: ["הוסף נתונים כמותיים לכל הישג", "הוסף מילות מפתח מהתחום"],
+      cvFeedback: ["הוסף נתונים כמותיים לכל הישג", "הוסף מילות מפתח רלוונטיות"],
       summary: "GEMINI_API_KEY לא מוגדר — הוסף אותו ב-Vercel Environment Variables",
     });
   }
