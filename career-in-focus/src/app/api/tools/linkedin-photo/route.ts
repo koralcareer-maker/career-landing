@@ -86,23 +86,39 @@ function createZip(files: { name: string; data: Uint8Array }[]): Buffer {
 const FAL_KEY = () => process.env.FAL_KEY ?? "";
 
 async function uploadToFal(data: Buffer, fileName: string, contentType: string): Promise<string> {
-  // Correct fal.ai REST upload: binary body (NOT multipart), rest.alpha.fal.ai endpoint
-  const res = await fetch("https://rest.alpha.fal.ai/storage/upload/", {
-    method: "POST",
-    headers: {
-      "Authorization": `Key ${FAL_KEY()}`,
-      "Content-Type": contentType,
-      "Content-Disposition": `attachment; filename="${fileName}"`,
-    },
+  // Step 1: Initiate upload — get a presigned PUT URL + the final CDN URL
+  const initRes = await fetch(
+    "https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Key ${FAL_KEY()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ file_name: fileName, content_type: contentType }),
+    }
+  );
+
+  if (!initRes.ok) {
+    const errText = await initRes.text().catch(() => `HTTP ${initRes.status}`);
+    throw new Error(`fal.ai initiate failed (${initRes.status}): ${errText.slice(0, 300)}`);
+  }
+
+  const { upload_url, file_url } = await initRes.json() as { upload_url: string; file_url: string };
+
+  // Step 2: PUT the binary to the presigned URL (no auth header needed — it's pre-signed)
+  const putRes = await fetch(upload_url, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
     body: new Uint8Array(data),
   });
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => `HTTP ${res.status}`);
-    throw new Error(`fal.ai upload failed (${res.status}): ${errText.slice(0, 300)}`);
+  if (!putRes.ok) {
+    const errText = await putRes.text().catch(() => `HTTP ${putRes.status}`);
+    throw new Error(`fal.ai upload PUT failed (${putRes.status}): ${errText.slice(0, 300)}`);
   }
-  const json = await res.json() as { url: string };
-  return json.url;
+
+  return file_url;
 }
 
 // ─── Route Handler ────────────────────────────────────────────────────────────
