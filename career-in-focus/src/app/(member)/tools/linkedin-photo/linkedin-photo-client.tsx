@@ -101,18 +101,18 @@ export function LinkedInPhotoClient() {
       try {
         submitRes = await fetch("/api/tools/linkedin-photo", { method: "POST", body: fd });
       } catch {
-        setError("שגיאת רשת — בדקי חיבור ונסי שנית");
+        setError("שגיאת רשת — בדוק חיבור ונסה שנית");
         return;
       }
       let submitData: { requestId?: string; error?: string };
       try {
         submitData = await submitRes.json() as { requestId?: string; error?: string };
       } catch {
-        setError(`שגיאת שרת (${submitRes.status}) — נסי שנית`);
+        setError(`שגיאת שרת (${submitRes.status}) — נסה שנית`);
         return;
       }
       if (!submitRes.ok || submitData.error) {
-        setError(submitData.error ?? `שגיאת שרת (${submitRes.status}) — נסי שנית`);
+        setError(submitData.error ?? `שגיאת שרת (${submitRes.status}) — נסה שנית`);
         return;
       }
       const requestId = submitData.requestId!;
@@ -132,14 +132,14 @@ export function LinkedInPhotoClient() {
           return;
         }
         if (poll.status === "failed") {
-          setError("היצירה נכשלה — נסי שנית");
+          setError("היצירה נכשלה — נסה שנית");
           return;
         }
         // "pending" → keep polling
       }
-      setError("הזמן הוקצב — נסי שנית");
+      setError("הזמן הוקצב — נסה שנית");
     } catch {
-      setError("שגיאת רשת — נסי שנית");
+      setError("שגיאת רשת — נסה שנית");
     } finally {
       setLoading(false);
       setProgress("");
@@ -291,7 +291,7 @@ export function LinkedInPhotoClient() {
         ) : (
           <span className="flex items-center gap-2">
             <Sparkles size={16} />
-            יצרי תמונת לינקדאין
+            יצר תמונת לינקדאין
           </span>
         )}
       </Button>
@@ -307,7 +307,7 @@ export function LinkedInPhotoClient() {
       {results.length > 0 && (
         <div className="space-y-3">
           <h2 className="font-bold text-navy text-lg">התוצאות שלך ✨</h2>
-          <p className="text-sm text-gray-500">לחצי על הורד כדי לשמור את התמונה המועדפת עליך</p>
+          <p className="text-sm text-gray-500">לחץ על הורד כדי לשמור את התמונה המועדפת עליך</p>
           <div className="grid grid-cols-2 gap-4">
             {results.map((url, idx) => (
               <div key={idx} className="relative group rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
@@ -333,7 +333,7 @@ export function LinkedInPhotoClient() {
             className="w-full mt-2 py-2.5 rounded-xl border border-gray-200 text-gray-500 hover:border-teal/40 hover:text-teal text-sm font-semibold transition-all flex items-center justify-center gap-2"
           >
             <RefreshCw size={14} />
-            ייצרי שוב (גרסאות חדשות)
+            ייצר שוב (גרסאות חדשות)
           </button>
         </div>
       )}

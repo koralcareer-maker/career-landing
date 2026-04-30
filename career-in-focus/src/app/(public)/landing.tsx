@@ -196,7 +196,7 @@ export default function LandingPage() {
                 ))}
               </div>
               <Link href="/about" className="inline-flex items-center gap-2 text-teal font-semibold text-sm hover:underline">
-                קראי עוד עליי <ChevronLeft size={16} />
+                קרא עוד עליי <ChevronLeft size={16} />
               </Link>
             </div>
           </div>

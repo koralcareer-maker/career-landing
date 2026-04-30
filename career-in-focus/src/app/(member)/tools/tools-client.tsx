@@ -281,11 +281,11 @@ export function ToolsClient({ tools, whatsappCount = 0, facebookCount = 0 }: { t
               </div>
               <div>
                 <p className="text-white font-black text-base">מחולל תמונת לינקדאין</p>
-                <p className="text-white/70 text-sm mt-0.5">העלי 3 תמונות · AI ייצור תמונת פרופיל מקצועית</p>
+                <p className="text-white/70 text-sm mt-0.5">העלה 3 תמונות · AI ייצור תמונת פרופיל מקצועית</p>
               </div>
             </div>
             <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
-              נסי עכשיו
+              נסה עכשיו
               <ChevronLeft size={14} />
             </div>
           </div>

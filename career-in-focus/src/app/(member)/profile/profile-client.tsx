@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   saveProfile, saveQuestionnaire, generateCareerPassport,
-  analyzeCvFile, saveCvAnalysis, type CvAnalysisResult
+  saveCvAnalysis, type CvAnalysisResult
 } from "@/lib/actions/profile";
 import { getInitials } from "@/lib/utils";
 import { User, Star, Zap, BookOpen, CheckCircle, Camera, Check, X, FileText, Sparkles, Loader2, ChevronDown, Upload, TrendingUp, MessageSquare, AlertCircle } from "lucide-react";
@@ -55,7 +55,7 @@ function IndustryMultiSelect({ name, defaultValue, label = "תחום רצוי" }
       >
         <span className={selected.length === 0 ? "text-gray-400" : "text-navy font-medium"}>
           {selected.length === 0
-            ? "בחרי תחומים..."
+            ? "בחר תחומים..."
             : selected.length === 1
               ? selected[0]
               : `${selected.length} תחומים נבחרו`}
@@ -134,7 +134,7 @@ function ConfirmChips({
   return (
     <div className="space-y-2">
       <label className="block text-sm font-semibold text-gray-700">{label}</label>
-      <p className="text-xs text-gray-400">לחצי על פריט כדי להוסיף/להסיר. ירוק = נבחר, מחוק = לא נבחר</p>
+      <p className="text-xs text-gray-400">לחץ על פריט כדי להוסיף/להסיר. ירוק = נבחר, מחוק = לא נבחר</p>
       <div className="flex flex-wrap gap-2">
         {items.map(item => {
           const active = items.includes(item);
@@ -152,12 +152,12 @@ function ConfirmChips({
           value={custom}
           onChange={e => setCustom(e.target.value)}
           onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addCustom())}
-          placeholder="הוסיפי בעצמך..."
+          placeholder="הוסף בעצמך..."
           className="flex-1 text-xs border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-teal/50"
         />
         <button type="button" onClick={addCustom}
           className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium transition-colors">
-          + הוסיפי
+          + הוסף
         </button>
       </div>
     </div>
@@ -187,7 +187,7 @@ function CvUploadStrip({ onAnalyzed, noCV, onToggleNoCV }: CvUploadStripProps) {
     setError("");
     setDone(false);
     try {
-      // Use FileReader for reliable base64 (btoa+forEach breaks on large files)
+      // FileReader → reliable base64 for any file size
       const b64 = await new Promise<string>((res, rej) => {
         const reader = new FileReader();
         reader.onload = () => res((reader.result as string).split(",")[1]);
@@ -195,19 +195,24 @@ function CvUploadStrip({ onAnalyzed, noCV, onToggleNoCV }: CvUploadStripProps) {
         reader.readAsDataURL(file);
       });
       const mimeType = file.type || "application/pdf";
-      const result = await analyzeCvFile(b64, mimeType);
 
-      // Check if analysis actually succeeded (not just fallback error)
-      const failed = !result.currentRole && !result.targetRole &&
-        (result.cvFeedback?.[0] ?? "").includes("לא ניתן");
-      if (failed) {
-        setError("הניתוח נכשל — וודאי שהקובץ הוא PDF תקין ונסי שנית");
-      } else {
-        onAnalyzed(result);
-        setDone(true);
+      // Call Edge API route (30s timeout) instead of server action (10s limit)
+      const resp = await fetch("/api/profile/analyze-cv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ base64Data: b64, mimeType }),
+      });
+      const result = await resp.json() as CvAnalysisResult & { error?: string };
+
+      if (!resp.ok || result.error) {
+        setError(result.error ?? "הניתוח נכשל — נסה שנית");
+        return;
       }
+
+      onAnalyzed(result);
+      setDone(true);
     } catch {
-      setError("שגיאה — נסי שנית");
+      setError("שגיאת רשת — נסה שנית");
     } finally {
       setAnalyzing(false);
       e.target.value = "";
@@ -244,19 +249,19 @@ function CvUploadStrip({ onAnalyzed, noCV, onToggleNoCV }: CvUploadStripProps) {
           {!analyzing && done && (
             <>
               <p className="text-sm font-semibold text-green-700">✓ {fileName}</p>
-              <p className="text-xs text-gray-400">הפרטים עודכנו — בדקי ועדכני אם נדרש</p>
+              <p className="text-xs text-gray-400">הפרטים עודכנו — בדוק ועדכן אם נדרש</p>
             </>
           )}
           {!analyzing && !done && !noCV && (
             <>
-              <p className="text-sm font-semibold text-navy">העלי קורות חיים לשליפה אוטומטית</p>
+              <p className="text-sm font-semibold text-navy">העלה קורות חיים לשליפה אוטומטית</p>
               <p className="text-xs text-gray-400">PDF / DOC / DOCX — AI ימלא את כל הפרטים</p>
             </>
           )}
           {!analyzing && !done && noCV && (
             <>
-              <p className="text-sm font-semibold text-amber-700">ממלאת ידנית</p>
-              <p className="text-xs text-gray-400">מלאי את הפרטים — לאחר שמירה תוכלי לייצר קורות חיים</p>
+              <p className="text-sm font-semibold text-amber-700">ממלא ידנית</p>
+              <p className="text-xs text-gray-400">מלא את הפרטים — לאחר שמירה תוכל לייצר קורות חיים</p>
             </>
           )}
           {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
@@ -268,7 +273,7 @@ function CvUploadStrip({ onAnalyzed, noCV, onToggleNoCV }: CvUploadStripProps) {
             onClick={() => fileRef.current?.click()}
             className="shrink-0 px-3 py-1.5 bg-teal text-white text-xs font-bold rounded-lg hover:bg-teal/90 transition-colors"
           >
-            {done ? "החלף" : "העלי"}
+            {done ? "החלף" : "העלה"}
           </button>
         )}
         {!analyzing && noCV && (
@@ -393,7 +398,7 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
           <div className="h-full bg-teal rounded-full transition-all duration-700" style={{ width: `${readinessScore}%` }} />
         </div>
         {readinessScore < 80 && (
-          <p className="text-xs text-gray-400 mt-1.5">מלאי את כל הפרטים לקבלת ניתוח קריירה מלא</p>
+          <p className="text-xs text-gray-400 mt-1.5">מלא את כל הפרטים לקבלת ניתוח קריירה מלא</p>
         )}
       </div>
 
@@ -464,8 +469,8 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
                 name="desiredField"
                 defaultValue={profile?.desiredField ? profile.desiredField.split(",").map(s => s.trim()).filter(Boolean) : []}
               />
-              <Textarea name="careerTransitionGoal" label="מטרת מעבר קריירה" defaultValue={formDefaults.careerTransitionGoal} placeholder="תארי את המעבר שאת מחפשת ולמה" rows={2} />
-              <Textarea name="mainChallenge" label="האתגר העיקרי בחיפוש עבודה" defaultValue={formDefaults.mainChallenge} placeholder="מה מקשה עלייך הכי הרבה?" rows={2} />
+              <Textarea name="careerTransitionGoal" label="מטרת מעבר קריירה" defaultValue={formDefaults.careerTransitionGoal} placeholder="תאר את המעבר שאתה מחפש ולמה" rows={2} />
+              <Textarea name="mainChallenge" label="האתגר העיקרי בחיפוש עבודה" defaultValue={formDefaults.mainChallenge} placeholder="מה מקשה עליך הכי הרבה?" rows={2} />
 
               {profileState?.error && <p className="text-sm text-red-500">{profileState.error}</p>}
               {profileState?.success && <p className="text-sm text-green-600">✓ הפרופיל נשמר בהצלחה</p>}
@@ -511,7 +516,7 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
                 <AlertCircle size={16} className="text-amber-600 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-amber-800">הפרטים נשמרו!</p>
-                  <p className="text-xs text-amber-600 mt-0.5">מלאי גם את השאלון לדרכון קריירה מלא, ובהמשך נוסיף גם ייצור קורות חיים.</p>
+                  <p className="text-xs text-amber-600 mt-0.5">מלא גם את השאלון לדרכון קריירה מלא, ובהמשך נוסיף גם ייצור קורות חיים.</p>
                 </div>
               </div>
             )}
@@ -530,11 +535,11 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
             {profile?.questionnaireCompleted && <Badge variant="green">✓ הושלם</Badge>}
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-500 mb-5">מלאי שאלון זה כדי לקבל ניתוח קריירה מעמיק ומדויק יותר</p>
+            <p className="text-sm text-gray-500 mb-5">מלא שאלון זה כדי לקבל ניתוח קריירה מעמיק ומדויק יותר</p>
             <form action={questAction} className="space-y-4">
               <Select name="q_workStyle" label="סגנון עבודה מועדף" defaultValue={profile?.q_workStyle ?? ""}
                 options={[
-                  { value: "", label: "בחרי..." },
+                  { value: "", label: "בחר..." },
                   { value: "structured", label: "מובנה עם הנחיות ברורות" },
                   { value: "autonomous", label: "עצמאי עם גמישות" },
                   { value: "mixed", label: "שילוב של השניים" },
@@ -542,7 +547,7 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
               />
               <Select name="q_teamOrSolo" label="העדפת עבודה" defaultValue={profile?.q_teamOrSolo ?? ""}
                 options={[
-                  { value: "", label: "בחרי..." },
+                  { value: "", label: "בחר..." },
                   { value: "team", label: "בצוות" },
                   { value: "solo", label: "עצמאי" },
                   { value: "mixed", label: "שניהם" },
@@ -550,7 +555,7 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
               />
               <Select name="q_remotePreference" label="עבודה מרחוק" defaultValue={profile?.q_remotePreference ?? ""}
                 options={[
-                  { value: "", label: "בחרי..." },
+                  { value: "", label: "בחר..." },
                   { value: "remote", label: "רק מרחוק" },
                   { value: "hybrid", label: "היברידי" },
                   { value: "office", label: "רק ממשרד" },
@@ -559,12 +564,12 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
               />
               <Textarea name="q_motivators" label="מה מניע אותך?" defaultValue={profile?.q_motivators ?? ""} placeholder="מה גורם לך לקום בבוקר ולהתלהב מהעבודה?" rows={2} />
               <Textarea name="q_biggestFear" label="החשש הכי גדול שלך" defaultValue={profile?.q_biggestFear ?? ""} placeholder="מה הכי מפחיד אותך בשינוי קריירה?" rows={2} />
-              <Textarea name="q_pastAchievement" label="הישג מקצועי שגאה בו" defaultValue={profile?.q_pastAchievement ?? ""} placeholder="תארי הישג שמרגיש לך משמעותי" rows={2} />
-              <Textarea name="q_shortTermGoal" label="יעד לשנה הקרובה" defaultValue={profile?.q_shortTermGoal ?? ""} placeholder="היכן את רוצה להיות בעוד שנה?" rows={2} />
+              <Textarea name="q_pastAchievement" label="הישג מקצועי שגאה בו" defaultValue={profile?.q_pastAchievement ?? ""} placeholder="תאר הישג שמרגיש לך משמעותי" rows={2} />
+              <Textarea name="q_shortTermGoal" label="יעד לשנה הקרובה" defaultValue={profile?.q_shortTermGoal ?? ""} placeholder="היכן אתה רוצה להיות בעוד שנה?" rows={2} />
               <Textarea name="q_longTermGoal" label="יעד ל-5 שנים" defaultValue={profile?.q_longTermGoal ?? ""} placeholder="מה החזון המקצועי שלך לטווח ארוך?" rows={2} />
               <Select name="q_networkingLevel" label="רמת הנטוורקינג שלך" defaultValue={profile?.q_networkingLevel ?? ""}
                 options={[
-                  { value: "", label: "בחרי..." },
+                  { value: "", label: "בחר..." },
                   { value: "low", label: "נמוכה — קשה לי לפנות לאנשים" },
                   { value: "medium", label: "בינונית — מתנסה בכך" },
                   { value: "high", label: "גבוהה — נוח לי לעשות נטוורקינג" },
@@ -596,7 +601,7 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
             <p className="text-white/60 text-sm mb-5">ניתוח AI מעמיק של חוזקות, פערים ותפקידים מומלצים</p>
             {!profile?.questionnaireCompleted && (
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3 mb-4 text-yellow-200 text-sm">
-                💡 מלאי את שאלון הדרכון קודם לניתוח מדויק יותר
+                💡 מלא את שאלון הדרכון קודם לניתוח מדויק יותר
               </div>
             )}
             <Button onClick={handleGenerate} loading={generating} size="lg" className="bg-teal hover:bg-teal-dark text-white mx-auto">

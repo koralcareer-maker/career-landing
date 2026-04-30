@@ -6,7 +6,7 @@ export const metadata = { title: "מחירים | קריירה בפוקוס" };
 const PLANS = [
   {
     id: "member",
-    name: "חבר/ה",
+    name: "חבר",
     price: "49",
     period: "לחודש",
     badge: null,
@@ -25,7 +25,7 @@ const PLANS = [
       "גישה לקהילה ואירועים",
       "ביטול בכל עת",
     ],
-    cta: "הצטרפי לקהילה",
+    cta: "הצטרף לקהילה",
     href: "/signup?plan=member",
     highlight: false,
     border: "border-gray-200",
@@ -51,7 +51,7 @@ const PLANS = [
       "תג VIP בקהילה",
       "מענה אישי מקורל תוך 24 שעות",
     ],
-    cta: "הצטרפי ל-VIP",
+    cta: "הצטרף ל-VIP",
     href: "/signup?plan=vip",
     highlight: true,
     border: "border-teal",
@@ -90,7 +90,7 @@ const FAQ = [
   { q: "איך מתבצע התשלום?", a: "התשלום מתבצע בכרטיס אשראי בהוראת קבע חודשית. התשלום מאובטח ומוצפן." },
   { q: "האם ניתן לבטל?", a: "כן, ניתן לבטל בכל עת. החיוב הבא לא יתבצע." },
   { q: "מה קורה אחרי ההרשמה?", a: "מיד לאחר ההצטרפות יש לך גישה מלאה לכל הפלטפורמה — ממשרות ועד כלים וקורסים." },
-  { q: "מה ההבדל בין VIP לחבר/ה רגיל/ה?", a: "VIP כולל ליווי אישי מקורל — ביקורת CV, פגישות ייעוץ ומענה אישי. חבר/ה רגיל/ה מקבל/ת גישה לכל הכלים ללא ליווי אישי." },
+  { q: "מה ההבדל בין VIP לחבר רגיל?", a: "VIP כולל ליווי אישי מקורל — ביקורת CV, פגישות ייעוץ ומענה אישי. חבר רגיל מקבל גישה לכל הכלים ללא ליווי אישי." },
   { q: "מה זה 'קורל תפעילי קשרים'?", a: "השירות הפרמיום שבו קורל בעצמה שולחת פניות בשמך למגייסים ולאנשי קשר בחברות יעד. מתאים למי שרוצה חיפוש עבודה אגרסיבי ומובנה." },
 ];
 
@@ -110,9 +110,9 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 bg-teal/10 text-teal text-xs font-bold px-4 py-2 rounded-full mb-4">
-            🎯 הצטרפי לקהילה
+            🎯 הצטרף לקהילה
           </div>
-          <h1 className="text-4xl font-black text-navy mb-4">בחרי את המסלול שמתאים לך</h1>
+          <h1 className="text-4xl font-black text-navy mb-4">בחר את המסלול שמתאים לך</h1>
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
             כל המסלולים כוללים גישה מלאה לכלים, המשרות, הקורסים והקהילה
           </p>
@@ -175,7 +175,7 @@ export default function PricingPage() {
         <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center mb-12">
           <p className="text-2xl mb-2">🛡️</p>
           <h3 className="font-bold text-navy mb-1">ביטול בכל עת, ללא שאלות</h3>
-          <p className="text-gray-400 text-sm">לא מרגישה שהקהילה מתאימה לך? מבטלת בלחיצה אחת. אין התחייבות ארוכת טווח.</p>
+          <p className="text-gray-400 text-sm">לא מרגיש שהקהילה מתאימה לך? מבטל בלחיצה אחת. אין התחייבות ארוכת טווח.</p>
         </div>
 
         {/* FAQ */}
@@ -193,12 +193,12 @@ export default function PricingPage() {
 
         {/* CTA */}
         <div className="text-center mt-12">
-          <p className="text-gray-400 text-sm mb-3">עוד לא בטוחה? דברי עם קורל ישירות</p>
+          <p className="text-gray-400 text-sm mb-3">עוד לא בטוח? דבר עם קורל ישירות</p>
           <a
             href="https://wa.me/972501234567"
             className="inline-flex items-center gap-2 bg-green-500 text-white font-bold px-6 py-3 rounded-xl hover:bg-green-600 transition-colors"
           >
-            💬 שלחי הודעה בוואטסאפ
+            💬 שלח הודעה בוואטסאפ
           </a>
         </div>
       </div>

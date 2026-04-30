@@ -8,7 +8,7 @@ import { logout } from "@/lib/actions/auth";
 import {
   LayoutDashboard, TrendingUp, User, BookOpen, Wrench,
   Briefcase, Users, CalendarDays, Bell, MessageSquare,
-  LogOut, Star, Settings, Sparkles, Network, HelpCircle, UserSearch, GraduationCap
+  LogOut, Star, Settings, Sparkles, Network, HelpCircle, UserSearch
 } from "lucide-react";
 
 interface NavItem {
@@ -121,10 +121,10 @@ export function Sidebar({ user, unreadCount = 0 }: SidebarProps) {
         <div className="mt-5 rounded-2xl bg-gradient-to-br from-teal/10 to-teal/5 border border-teal/20 p-4">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Sparkles size={13} className="text-teal" />
-            <p className="text-xs font-bold text-teal">שדרגי את החוויה שלך</p>
+            <p className="text-xs font-bold text-teal">שדרג את החוויה שלך</p>
           </div>
           <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-            הצטרפי לחברות פרימיום וקבלי גישה למעטפת מלאה של כלים, קורסים והזדמנויות.
+            הצטרף לחברות פרימיום וקבל גישה למעטפת מלאה של כלים, קורסים והזדמנויות.
           </p>
           <Link
             href="/koral-connections"

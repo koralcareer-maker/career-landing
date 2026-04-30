@@ -163,7 +163,7 @@ function EmptyState({ filtered }: { filtered: boolean }) {
       </h3>
       <p className="text-sm text-gray-400 max-w-xs mx-auto">
         {filtered
-          ? "נסי לשנות את הסינון או לנקות אותו"
+          ? "נסה לשנות את הסינון או לנקות אותו"
           : "הקורסים יתווספו בקרוב. בנתיים עיין בכלים ומשאבים הזמינים"}
       </p>
     </div>

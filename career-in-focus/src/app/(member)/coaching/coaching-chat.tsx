@@ -5,10 +5,10 @@ import { sendCoachingMessage, clearCoachingChat, type Message } from "@/lib/acti
 import { Send, Trash2, Sparkles, Loader2 } from "lucide-react";
 
 const SUGGESTED = [
-  "נתחי את מצב חיפוש העבודה שלי",
+  "נתח את מצב חיפוש העבודה שלי",
   "מה המשימה הכי חשובה שלי השבוע?",
-  "איך אני משפרת את ציון המוכנות שלי?",
-  "תני לי טיפ לכתיבת מכתב מקדים",
+  "איך אני משפר את ציון המוכנות שלי?",
+  "תן לי טיפ לכתיבת מכתב מקדים",
   "מה עדיף — לינקדאין או אתר חברה?",
 ];
 
@@ -80,7 +80,7 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
       const reply = await sendCoachingMessage(msg);
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
     } catch {
-      setMessages(prev => [...prev, { role: "assistant", content: "אירעה שגיאת רשת. נסי שנית." }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "אירעה שגיאת רשת. נסה שנית." }]);
     } finally {
       setIsPending(false);
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -198,7 +198,7 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && !e.shiftKey && !isPending && handleSend()}
-            placeholder="שאלי את המאמן שלך..."
+            placeholder="שאל את המאמן שלך..."
             disabled={isPending}
             className="flex-1 bg-cream rounded-xl px-4 py-2.5 text-sm text-navy placeholder:text-gray-400 border border-transparent focus:border-teal/40 focus:outline-none transition-colors disabled:opacity-60"
           />

@@ -10,10 +10,10 @@ const STEPS = [
     icon: User,
     color: "bg-blue-50 text-blue-600",
     border: "border-blue-100",
-    title: "מלאי את הפרופיל שלך",
-    desc: "הוסיפי תפקיד נוכחי, תפקיד מבוקש, קישור לינקדאין וקורות חיים. זה הבסיס שממנו ה-AI מתחיל לעבוד.",
+    title: "מלא את הפרופיל שלך",
+    desc: "הוסף תפקיד נוכחי, תפקיד מבוקש, קישור לינקדאין וקורות חיים. זה הבסיס שממנו ה-AI מתחיל לעבוד.",
     href: "/profile",
-    cta: "עברי לפרופיל",
+    cta: "עבור לפרופיל",
     time: "5 דקות",
   },
   {
@@ -21,10 +21,10 @@ const STEPS = [
     icon: Brain,
     color: "bg-purple-50 text-purple-600",
     border: "border-purple-100",
-    title: "צרי את הדרכון הקריירה שלך",
-    desc: 'ענה על 15 שאלות קצרות — ה-AI מנתח ומייצרת דרכון קריירה אישי עם חוזקות, פערים, תפקידים מתאימים ותוכנית פעולה.',
+    title: "צור את הדרכון הקריירה שלך",
+    desc: 'ענה על 15 שאלות קצרות — ה-AI מנתח ומייצר דרכון קריירה אישי עם חוזקות, פערים, תפקידים מתאימים ותוכנית פעולה.',
     href: "/skills",
-    cta: "צרי דרכון",
+    cta: "צור דרכון",
     time: "10 דקות",
   },
   {
@@ -32,8 +32,8 @@ const STEPS = [
     icon: Briefcase,
     color: "bg-teal-50 text-teal-600",
     border: "border-teal-100",
-    title: "גלי משרות שנבחרו בשבילך",
-    desc: "משרות שנבחרו ביד — עם כפתור מעקב ישיר לטראקר שלך. סמני 'שמור' כדי לעקוב אחרי הגשות.",
+    title: "גלה משרות שנבחרו בשבילך",
+    desc: "משרות שנבחרו ביד — עם כפתור מעקב ישיר לטראקר שלך. סמן 'שמור' כדי לעקוב אחרי הגשות.",
     href: "/jobs",
     cta: "לגלות משרות",
     time: "מתחדש שבועית",
@@ -43,7 +43,7 @@ const STEPS = [
     icon: Wrench,
     color: "bg-orange-50 text-orange-600",
     border: "border-orange-100",
-    title: "השתמשי בכלים המקצועיים",
+    title: "השתמש בכלים המקצועיים",
     desc: "קבוצות וואטסאפ, מגייסים וחברות השמה, תבניות נטוורקינג, מחולל תמונת לינקדאין ועוד.",
     href: "/tools",
     cta: "לכלים",
@@ -55,7 +55,7 @@ const STEPS = [
     icon: MessageSquare,
     color: "bg-green-50 text-green-600",
     border: "border-green-100",
-    title: "עקבי אחרי ההתקדמות שלך",
+    title: "עקוב אחרי ההתקדמות שלך",
     desc: "הטראקר עוקב אחרי כל בקשת עבודה — מ'שמרתי' ועד 'קיבלתי הצעה'. גרפים שבועיים ומשימות קרובות.",
     href: "/progress",
     cta: "לטראקר",
@@ -66,7 +66,7 @@ const STEPS = [
     icon: CalendarDays,
     color: "bg-pink-50 text-pink-600",
     border: "border-pink-100",
-    title: "הצטרפי לאירועים",
+    title: "הצטרף לאירועים",
     desc: "ווובינרים שבועיים, אירועי נטוורקינג, מפגשי מגייסים ומפגשי קבוצה. כולם כלולים בחברות.",
     href: "/events",
     cta: "לאירועים",
@@ -77,7 +77,7 @@ const STEPS = [
     icon: Sparkles,
     color: "bg-indigo-50 text-indigo-600",
     border: "border-indigo-100",
-    title: "שוחחי עם מאמן ה-AI",
+    title: "שוחח עם מאמן ה-AI",
     desc: "מאמן קריירה אישי שמכיר את הפרופיל שלך, עונה על שאלות, מעניק משוב על CVs, ועוזר להתכונן לראיונות.",
     href: "/coaching",
     cta: "לפתוח שיחה",
@@ -86,11 +86,11 @@ const STEPS = [
 ];
 
 const TIPS = [
-  "עדכני את הטראקר אחרי כל שליחה — זה עוזר לך לראות תמונה אמיתית",
-  "שלחי לפחות 3 בקשות ביום — כמות + איכות = תוצאות",
-  "קרי לפחות עדכון אחד בשבוע — הם מכילים תוכן ערכי ועדכוני שוק",
-  "השתמשי בתבניות נטוורקינג — פנייה ישירה למגייסת עובדת",
-  "בדקי את דף המגייסים — יש שם פרטי קשר ישירים לעשרות חברות",
+  "עדכן את הטראקר אחרי כל שליחה — זה עוזר לך לראות תמונה אמיתית",
+  "שלח לפחות 3 בקשות ביום — כמות + איכות = תוצאות",
+  "קרא לפחות עדכון אחד בשבוע — הם מכילים תוכן ערכי ועדכוני שוק",
+  "השתמש בתבניות נטוורקינג — פנייה ישירה למגייסת עובדת",
+  "בדוק את דף המגייסים — יש שם פרטי קשר ישירים לעשרות חברות",
 ];
 
 export default function GuidePage() {
@@ -116,10 +116,10 @@ export default function GuidePage() {
 
       {/* Welcome Banner */}
       <div className="bg-gradient-to-l from-navy to-[#1a3a5c] rounded-2xl p-6 text-white">
-        <p className="font-black text-lg mb-1">ברוכה הבאה לקריירה בפוקוס! 🎉</p>
+        <p className="font-black text-lg mb-1">ברוך הבא לקריירה בפוקוס! 🎉</p>
         <p className="text-white/70 text-sm leading-relaxed">
           הפלטפורמה מכילה הכל שצריך כדי לחפש עבודה בצורה חכמה, מסודרת ופחות לבד.
-          עקבי אחרי הצעדים כאן ותצאי לדרך הנכונה.
+          עקוב אחרי הצעדים כאן ותצא לדרך הנכונה.
         </p>
       </div>
 
@@ -210,10 +210,10 @@ export default function GuidePage() {
       {/* Footer note */}
       <div className="bg-gray-50 rounded-2xl p-5 text-center">
         <p className="text-sm text-gray-500">
-          שאלות? בעיות? <Link href="/dashboard" className="text-teal font-semibold hover:underline">חזרי לדשבורד</Link> ·
-          {" "}<Link href="/coaching" className="text-teal font-semibold hover:underline">שאלי את מאמן ה-AI</Link>
+          שאלות? בעיות? <Link href="/dashboard" className="text-teal font-semibold hover:underline">חזור לדשבורד</Link> ·
+          {" "}<Link href="/coaching" className="text-teal font-semibold hover:underline">שאל את מאמן ה-AI</Link>
         </p>
-        <p className="text-xs text-gray-400 mt-1">אנחנו כאן כדי שתצליחי 💙 קורל</p>
+        <p className="text-xs text-gray-400 mt-1">אנחנו כאן כדי שתצליח 💙 קורל</p>
       </div>
     </div>
   );
