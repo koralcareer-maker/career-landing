@@ -86,17 +86,21 @@ function createZip(files: { name: string; data: Uint8Array }[]): Buffer {
 const FAL_KEY = () => process.env.FAL_KEY ?? "";
 
 async function uploadToFal(data: Buffer, fileName: string, contentType: string): Promise<string> {
-  const blob = new Blob([new Uint8Array(data)], { type: contentType });
-  const fd = new FormData();
-  fd.append("file", blob, fileName);
-
-  const res = await fetch("https://storage.alpha.fal.ai/files/", {
+  // Correct fal.ai REST upload: binary body (NOT multipart), rest.alpha.fal.ai endpoint
+  const res = await fetch("https://rest.alpha.fal.ai/storage/upload/", {
     method: "POST",
-    headers: { Authorization: `Key ${FAL_KEY()}` },
-    body: fd,
+    headers: {
+      "Authorization": `Key ${FAL_KEY()}`,
+      "Content-Type": contentType,
+      "Content-Disposition": `attachment; filename="${fileName}"`,
+    },
+    body: new Uint8Array(data),
   });
 
-  if (!res.ok) throw new Error(`fal.ai upload failed: ${await res.text()}`);
+  if (!res.ok) {
+    const errText = await res.text().catch(() => `HTTP ${res.status}`);
+    throw new Error(`fal.ai upload failed (${res.status}): ${errText.slice(0, 300)}`);
+  }
   const json = await res.json() as { url: string };
   return json.url;
 }
