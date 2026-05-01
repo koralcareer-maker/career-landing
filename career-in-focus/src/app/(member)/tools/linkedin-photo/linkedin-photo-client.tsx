@@ -102,7 +102,7 @@ export function LinkedInPhotoClient() {
         return;
       }
 
-      setProgress("יוצר תמונות תדמית עם AI (10-25 שניות)...");
+      setProgress("יוצר תמונות תדמית עם AI (20-45 שניות)...");
       let res: Response;
       try {
         res = await fetch("/api/tools/linkedin-photo", {
