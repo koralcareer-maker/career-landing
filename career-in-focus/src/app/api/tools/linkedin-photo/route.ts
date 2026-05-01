@@ -1,201 +1,207 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 
-// Allow up to 60s on Vercel Pro; on hobby plan the queue polling avoids this limit
+// Node runtime (auth() needs Prisma adapter). 60s on Vercel Pro covers
+// the 2 parallel Gemini calls (~10-15s each, run in parallel).
 export const maxDuration = 60;
 
-// ─── Pure-TS CRC32 ────────────────────────────────────────────────────────────
+const ALLOWED_GENDERS = ["man", "woman"] as const;
+const ALLOWED_STYLES  = ["formal", "casual", "creative"] as const;
 
-const CRC_TABLE = (() => {
-  const t: number[] = [];
-  for (let i = 0; i < 256; i++) {
-    let c = i;
-    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-    t[i] = c;
-  }
-  return t;
-})();
+type Gender = (typeof ALLOWED_GENDERS)[number];
+type Style  = (typeof ALLOWED_STYLES)[number];
 
-function crc32(data: Uint8Array): number {
-  let crc = 0xffffffff;
-  for (const byte of data) crc = (crc >>> 8) ^ CRC_TABLE[(crc ^ byte) & 0xff];
-  return (crc ^ 0xffffffff) >>> 0;
+interface Variant {
+  styling: string;
+  setting: string;
+  lighting: string;
+  expression: string;
 }
 
-// ─── Pure-TS ZIP creator (stored, no compression) ────────────────────────────
-
-function createZip(files: { name: string; data: Uint8Array }[]): Buffer {
-  const parts: Buffer[] = [];
-  const centralDir: Buffer[] = [];
-  let offset = 0;
-
-  for (const { name, data } of files) {
-    const nameBytes = Buffer.from(name, "utf8");
-    const crc = crc32(data);
-    const size = data.length;
-
-    // Local file header (30 bytes + name)
-    const local = Buffer.alloc(30 + nameBytes.length);
-    local.writeUInt32LE(0x04034b50, 0);
-    local.writeUInt16LE(20, 4);
-    local.writeUInt16LE(0, 6);
-    local.writeUInt16LE(0, 8);   // stored
-    local.writeUInt16LE(0, 10);
-    local.writeUInt16LE(0, 12);
-    local.writeUInt32LE(crc, 14);
-    local.writeUInt32LE(size, 18);
-    local.writeUInt32LE(size, 22);
-    local.writeUInt16LE(nameBytes.length, 26);
-    local.writeUInt16LE(0, 28);
-    nameBytes.copy(local, 30);
-    parts.push(local, Buffer.from(data));
-
-    // Central directory entry (46 bytes + name)
-    const cd = Buffer.alloc(46 + nameBytes.length);
-    cd.writeUInt32LE(0x02014b50, 0);
-    cd.writeUInt16LE(20, 4);
-    cd.writeUInt16LE(20, 6);
-    cd.writeUInt16LE(0, 8);
-    cd.writeUInt16LE(0, 10);
-    cd.writeUInt16LE(0, 12);
-    cd.writeUInt16LE(0, 14);
-    cd.writeUInt32LE(crc, 16);
-    cd.writeUInt32LE(size, 20);
-    cd.writeUInt32LE(size, 24);
-    cd.writeUInt16LE(nameBytes.length, 28);
-    cd.writeUInt32LE(offset, 42);
-    nameBytes.copy(cd, 46);
-    centralDir.push(cd);
-
-    offset += 30 + nameBytes.length + size;
-  }
-
-  const centralBuf = Buffer.concat(centralDir);
-  const eocd = Buffer.alloc(22);
-  eocd.writeUInt32LE(0x06054b50, 0);
-  eocd.writeUInt16LE(files.length, 8);
-  eocd.writeUInt16LE(files.length, 10);
-  eocd.writeUInt32LE(centralBuf.length, 12);
-  eocd.writeUInt32LE(offset, 16);
-
-  return Buffer.concat([...parts, centralBuf, eocd]);
-}
-
-// ─── Fal.ai helpers ───────────────────────────────────────────────────────────
-
-const FAL_KEY = () => process.env.FAL_KEY ?? "";
-
-async function uploadToFal(data: Buffer, fileName: string, contentType: string): Promise<string> {
-  // Step 1: Initiate upload — get a presigned PUT URL + the final CDN URL
-  const initRes = await fetch(
-    "https://rest.fal.ai/storage/upload/initiate?storage_type=fal-cdn-v3",
+const STYLES: Record<Style, Variant[]> = {
+  formal: [
     {
-      method: "POST",
-      headers: {
-        "Authorization": `Key ${FAL_KEY()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ file_name: fileName, content_type: contentType }),
-    }
-  );
+      styling: "wearing a sharp tailored navy blazer over a crisp white shirt, no tie, polished executive look",
+      setting: "clean light-grey studio gradient background, subtle vignette",
+      lighting: "soft diffused key light from camera-left with gentle rim light",
+      expression: "confident slight smile, direct eye contact, head straight",
+    },
+    {
+      styling: "charcoal grey suit jacket with a soft-toned shirt, modern executive style",
+      setting: "off-white seamless studio backdrop with very soft gradient",
+      lighting: "warm key light with bright fill, magazine-cover lighting",
+      expression: "warm professional smile, head turned three-quarters to camera",
+    },
+  ],
+  casual: [
+    {
+      styling: "quality fine-knit sweater in soft beige or warm grey, smart casual",
+      setting: "warm neutral studio backdrop in soft beige tones",
+      lighting: "natural warm window-style lighting from the side, golden-hour tone",
+      expression: "genuine warm smile showing slight teeth, relaxed and approachable",
+    },
+    {
+      styling: "smart casual button-up shirt, top button open, modern minimalist look",
+      setting: "clean off-white studio with subtle warm tone",
+      lighting: "soft diffused front lighting, even skin tones",
+      expression: "calm confident smile, head slightly angled, friendly and engaged",
+    },
+  ],
+  creative: [
+    {
+      styling: "stylish tailored jacket over a designer top, modern creative-professional look",
+      setting: "softly blurred modern minimalist office space, bokeh background",
+      lighting: "cinematic side lighting with depth and subtle shadow play",
+      expression: "confident charismatic expression, slight smirk, head three-quarters",
+    },
+    {
+      styling: "refined modern outfit with subtle texture or pattern, designer-grade clothing",
+      setting: "subtle deep-blue gradient background with soft glow",
+      lighting: "dramatic rim light from behind plus soft front fill",
+      expression: "thoughtful confident look, slight smile, direct gaze",
+    },
+  ],
+};
 
-  if (!initRes.ok) {
-    const errText = await initRes.text().catch(() => `HTTP ${initRes.status}`);
-    throw new Error(`fal.ai initiate failed (${initRes.status}): ${errText.slice(0, 300)}`);
-  }
+function buildPrompt(gender: Gender, v: Variant): string {
+  return `Generate a hyper-realistic professional LinkedIn headshot photograph.
 
-  const { upload_url, file_url } = await initRes.json() as { upload_url: string; file_url: string };
+CRITICAL — IDENTITY PRESERVATION: Use the reference photos to preserve the EXACT face of this ${gender}. Keep the same facial structure, eye shape, eye color, nose, mouth, jawline, skin tone, hair color, hair style, and any defining features (freckles, glasses, beard, etc.) IDENTICAL to the reference. Do not alter, beautify, or change the person's face.
 
-  // Step 2: PUT the binary to the presigned URL (no auth header needed — it's pre-signed)
-  const putRes = await fetch(upload_url, {
-    method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: new Uint8Array(data),
+STYLING: ${v.styling}.
+SETTING: ${v.setting}.
+LIGHTING: ${v.lighting}.
+EXPRESSION: ${v.expression}.
+FRAMING: Tight upper-body portrait, chest up, square 1:1 composition, face occupies center 60% of the frame.
+TECHNICAL: Sharp focus on the eyes, shallow depth of field, photographic realism, high-end commercial photography quality, no plastic skin.
+NEGATIVE: No illustrations, paintings, cartoons, or stylized art. Do not change the person's race, age, or gender. No watermarks, no text.`;
+}
+
+interface GeminiResponse {
+  candidates?: { content: { parts: { inline_data?: { data: string; mime_type: string } }[] } }[];
+  error?: { message: string; status?: string; code?: number };
+  promptFeedback?: { blockReason?: string };
+}
+
+interface VariantResult { image?: string; error?: string }
+
+function sleep(ms: number) { return new Promise<void>((r) => setTimeout(r, ms)); }
+
+async function generateOne(
+  variant: Variant,
+  gender: Gender,
+  refs: { inline_data: { mime_type: string; data: string } }[],
+  apiKey: string
+): Promise<VariantResult> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
+  const body = JSON.stringify({
+    contents: [{ role: "user", parts: [{ text: buildPrompt(gender, variant) }, ...refs] }],
+    generationConfig: { imageConfig: { aspectRatio: "1:1" } },
   });
 
-  if (!putRes.ok) {
-    const errText = await putRes.text().catch(() => `HTTP ${putRes.status}`);
-    throw new Error(`fal.ai upload PUT failed (${putRes.status}): ${errText.slice(0, 300)}`);
-  }
+  // Up to 2 attempts: original + 1 retry on overload only.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+      const data = (await res.json().catch(() => null)) as GeminiResponse | null;
+      if (!data) {
+        if (attempt === 1) { await sleep(2000); continue; }
+        return { error: `שגיאת שרת מהמודל (HTTP ${res.status})` };
+      }
+      if (data.error) {
+        const isOverload =
+          data.error.code === 429 ||
+          data.error.code === 503 ||
+          /UNAVAILABLE|RESOURCE_EXHAUSTED|overloaded|high demand/i.test(
+            data.error.status ?? data.error.message ?? ""
+          );
+        if (isOverload && attempt === 1) { await sleep(3000); continue; }
+        return { error: `שגיאת המודל: ${data.error.message.slice(0, 200)}` };
+      }
+      const block = data.promptFeedback?.blockReason;
+      if (block) return { error: `התמונה נחסמה ע"י מסנן בטיחות (${block})` };
 
-  return file_url;
+      const part = data.candidates?.[0]?.content?.parts?.find((p) => p.inline_data?.data);
+      if (!part?.inline_data?.data) {
+        return { error: "המודל לא החזיר תמונה — נסי תמונה ברורה יותר של הפנים" };
+      }
+      return { image: `data:${part.inline_data.mime_type ?? "image/png"};base64,${part.inline_data.data}` };
+    } catch (e) {
+      if (attempt === 1) { await sleep(1500); continue; }
+      return { error: `שגיאת רשת מול המודל: ${(e instanceof Error ? e.message : String(e)).slice(0, 150)}` };
+    }
+  }
+  return { error: "כשל לא צפוי" };
 }
 
-// ─── Route Handler ────────────────────────────────────────────────────────────
+interface RequestBody {
+  photos?: unknown;
+  gender?: unknown;
+  style?: unknown;
+}
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "נדרשת כניסה" }, { status: 401 });
-
-  if (!FAL_KEY()) {
-    return NextResponse.json({ error: "FAL_KEY אינו מוגדר — יש להוסיף אותו לסביבה" }, { status: 500 });
+  if (!session?.user) {
+    return NextResponse.json({ error: "נדרשת כניסה למערכת" }, { status: 401 });
   }
 
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "GEMINI_API_KEY חסר ב-Vercel — יש להוסיף אותו ב-Settings → Environment Variables" },
+      { status: 503 }
+    );
+  }
+
+  let body: RequestBody;
   try {
-    const formData = await req.formData();
-    const gender = (formData.get("gender") as string | null) ?? "woman";
-    const style  = (formData.get("style")  as string | null) ?? "formal";
-
-    // Collect uploaded photos
-    const photoBuffers: { name: string; data: Uint8Array }[] = [];
-    for (let i = 1; i <= 3; i++) {
-      const file = formData.get(`photo${i}`) as File | null;
-      if (file && file.size > 0) {
-        const ext = file.name.split(".").pop() ?? "jpg";
-        photoBuffers.push({ name: `photo${i}.${ext}`, data: new Uint8Array(await file.arrayBuffer()) });
-      }
-    }
-
-    if (photoBuffers.length === 0) {
-      return NextResponse.json({ error: "יש להעלות לפחות תמונה אחת" }, { status: 400 });
-    }
-
-    // Create ZIP + upload
-    const zip = createZip(photoBuffers);
-    const zipUrl = await uploadToFal(zip, "photos.zip", "application/zip");
-
-    // Build prompt
-    const genderHe = gender === "man" ? "man" : "woman";
-    const prompts: Record<string, string> = {
-      formal: `professional LinkedIn headshot of a ${genderHe} img, business formal suit or blazer, clean white or light grey studio background, soft diffused studio lighting with subtle rim light, confident and approachable expression, slight smile, eyes looking directly at camera, shoulders visible, upper body portrait, preserve facial identity, photorealistic, 8K professional corporate photography`,
-      casual: `professional LinkedIn headshot of a ${genderHe} img, smart casual attire in neutral tones, clean neutral background, natural warm studio lighting, warm approachable expression, genuine smile, eyes looking at camera, upper body portrait, preserve facial identity, photorealistic, high resolution professional portrait photography`,
-      creative: `professional LinkedIn headshot of a ${genderHe} img, creative professional attire, modern gradient or blurred office background, cinematic lighting, confident creative expression, upper body portrait, preserve facial identity, photorealistic, editorial portrait photography`,
-    };
-    const prompt = prompts[style] ?? prompts.formal;
-
-    // Submit to fal.ai queue
-    const submitRes = await fetch("https://queue.fal.run/fal-ai/photomaker", {
-      method: "POST",
-      headers: { Authorization: `Key ${FAL_KEY()}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        image_archive_url: zipUrl,
-        prompt,
-        style: "Photographic (Default)",
-        num_steps: 30,
-        style_strength_ratio: 20,
-        guidance_scale: 5,
-        num_images: 2,
-      }),
-    });
-
-    if (!submitRes.ok) {
-      const err = await submitRes.text();
-      console.error("PhotoMaker queue submit error:", err);
-      return NextResponse.json({ error: `שגיאה בהגשת משימה ל-fal.ai: ${err.slice(0, 200)}` }, { status: 500 });
-    }
-
-    const submitted = await submitRes.json() as { request_id?: string };
-    const requestId = submitted.request_id;
-
-    if (!requestId) {
-      return NextResponse.json({ error: "לא התקבל request_id מ-fal.ai" }, { status: 500 });
-    }
-
-    return NextResponse.json({ requestId });
-
-  } catch (err) {
-    console.error("LinkedIn photo route unhandled error:", err);
-    const msg = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: `שגיאת שרת: ${msg.slice(0, 200)}` }, { status: 500 });
+    body = (await req.json()) as RequestBody;
+  } catch {
+    return NextResponse.json({ error: "גוף הבקשה אינו JSON תקין" }, { status: 400 });
   }
+
+  if (!Array.isArray(body.photos) || body.photos.length !== 3) {
+    return NextResponse.json({ error: "יש להעלות בדיוק 3 תמונות" }, { status: 400 });
+  }
+  for (let i = 0; i < body.photos.length; i++) {
+    const p = body.photos[i];
+    if (typeof p !== "string" || p.length === 0) {
+      return NextResponse.json({ error: `תמונה ${i + 1} אינה תקינה` }, { status: 400 });
+    }
+    if (p.length > 6_000_000) {
+      return NextResponse.json(
+        { error: `תמונה ${i + 1} גדולה מדי אחרי דחיסה — נסי תמונה אחרת` },
+        { status: 413 }
+      );
+    }
+  }
+  if (typeof body.gender !== "string" || !ALLOWED_GENDERS.includes(body.gender as Gender)) {
+    return NextResponse.json({ error: 'מגדר לא תקין — חייב להיות "man" או "woman"' }, { status: 400 });
+  }
+  if (typeof body.style !== "string" || !ALLOWED_STYLES.includes(body.style as Style)) {
+    return NextResponse.json({ error: "סגנון לא תקין — formal / casual / creative" }, { status: 400 });
+  }
+
+  const gender = body.gender as Gender;
+  const style  = body.style as Style;
+  const photos = body.photos as string[];
+  const refs   = photos.map((data) => ({ inline_data: { mime_type: "image/jpeg", data } }));
+  const variants = STYLES[style];
+
+  const settled = await Promise.all(variants.map((v) => generateOne(v, gender, refs, apiKey)));
+  const images = settled.map((r) => r.image).filter((x): x is string => Boolean(x));
+  const errors = settled.map((r) => r.error).filter((x): x is string => Boolean(x));
+
+  if (images.length === 0) {
+    const reason = errors[0] ?? "לא הצלחנו ליצור תמונות הפעם";
+    console.error("[linkedin-photo] all variants failed", { errors });
+    return NextResponse.json({ error: reason }, { status: 502 });
+  }
+
+  return NextResponse.json({ images, partialErrors: errors });
 }
