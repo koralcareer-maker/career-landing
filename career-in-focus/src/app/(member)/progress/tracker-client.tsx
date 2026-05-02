@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  Briefcase, Calendar, Clock, MapPin, Plus, Filter,
+  Briefcase, Calendar, Plus,
   CheckCircle2, AlertTriangle, Sparkles, Bell, ChevronLeft,
   TrendingUp, Target, Trophy, Flame, ArrowUpCircle,
   Search,

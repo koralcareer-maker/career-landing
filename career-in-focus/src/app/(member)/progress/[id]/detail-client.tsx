@@ -4,9 +4,9 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ChevronLeft, Briefcase, Calendar, Clock, MapPin, Edit3,
+  ChevronLeft, Briefcase, Calendar, Clock, Edit3,
   Plus, Trash2, CheckCircle2, Circle, Sparkles, Bell,
-  BookText, Target, AlertCircle, ExternalLink, Archive,
+  BookText, AlertCircle, ExternalLink, Archive,
   ArrowUpCircle, MessageSquare,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
