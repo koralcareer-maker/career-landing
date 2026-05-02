@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { listUserHistory } from "@/lib/blob";
+import { listUserHistory, countUserJobsSince, startOfMonthMs } from "@/lib/blob";
 
 export const runtime = "nodejs";
 
+const MAX_JOBS_PER_MONTH = 10;
+
 /**
  * Returns the current user's previous LinkedIn-photo generations as
- * grouped jobs (newest first). The list is reconstructed from Vercel
- * Blob, so it persists across page refreshes and deployments without
- * requiring any database schema.
+ * grouped jobs (newest first), plus the current month's quota usage.
+ * The list is reconstructed from Vercel Blob, so it persists across
+ * page refreshes and deployments without requiring any database schema.
  */
 export async function GET() {
   const session = await auth();
@@ -17,17 +19,23 @@ export async function GET() {
   }
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    // Without the token we can't read Blob — return empty rather than 503,
-    // so the page still renders the upload UI cleanly.
-    return NextResponse.json({ jobs: [] });
+    return NextResponse.json({ jobs: [], quotaUsed: 0, quotaMax: MAX_JOBS_PER_MONTH });
   }
 
   try {
-    const jobs = await listUserHistory(session.user.id, 12);
-    return NextResponse.json({ jobs });
+    const [jobs, quotaUsed] = await Promise.all([
+      listUserHistory(session.user.id, 12),
+      countUserJobsSince(session.user.id, startOfMonthMs()),
+    ]);
+    return NextResponse.json({ jobs, quotaUsed, quotaMax: MAX_JOBS_PER_MONTH });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "unknown";
     console.error("[linkedin-photo/history] list failed:", msg);
-    return NextResponse.json({ jobs: [], warning: "טעינת היסטוריה נכשלה" });
+    return NextResponse.json({
+      jobs: [],
+      quotaUsed: 0,
+      quotaMax: MAX_JOBS_PER_MONTH,
+      warning: "טעינת היסטוריה נכשלה",
+    });
   }
 }

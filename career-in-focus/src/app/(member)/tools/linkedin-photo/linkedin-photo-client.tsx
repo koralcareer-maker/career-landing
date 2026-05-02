@@ -24,6 +24,8 @@ interface HistoryJob {
 
 interface HistoryResponse {
   jobs?: HistoryJob[];
+  quotaUsed?: number;
+  quotaMax?: number;
   error?: string;
 }
 
@@ -32,6 +34,8 @@ interface GenerateResponse {
   jobId?: number;
   error?: string;
   debug?: string;
+  quotaUsed?: number;
+  quotaMax?: number;
 }
 
 // Compress to 1024px JPEG @0.9 → returns a File ready to upload.
@@ -86,15 +90,20 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
   const [error, setError] = useState("");
   const [progress, setProgress] = useState("");
   const [history, setHistory] = useState<HistoryJob[]>(initialHistory);
+  const [quota, setQuota] = useState<{ used: number; max: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Refresh history once on mount in case server-rendered list is stale.
+  // Refresh history + quota once on mount.
   useEffect(() => {
     let alive = true;
     fetch("/api/tools/linkedin-photo/history", { cache: "no-store" })
       .then((r) => r.json() as Promise<HistoryResponse>)
       .then((data) => {
-        if (alive && data.jobs) setHistory(data.jobs);
+        if (!alive) return;
+        if (data.jobs) setHistory(data.jobs);
+        if (typeof data.quotaUsed === "number" && typeof data.quotaMax === "number") {
+          setQuota({ used: data.quotaUsed, max: data.quotaMax });
+        }
       })
       .catch(() => { /* keep server-rendered list */ });
     return () => { alive = false; };
@@ -201,6 +210,9 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
       }
 
       setResults(data.images);
+      if (typeof data.quotaUsed === "number" && typeof data.quotaMax === "number") {
+        setQuota({ used: data.quotaUsed, max: data.quotaMax });
+      }
 
       // Refresh history so the new job appears immediately
       try {
@@ -229,15 +241,16 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
     }
   }
 
-  const canGenerate = photos.length === 3 && !loading;
+  const quotaExhausted = quota !== null && quota.used >= quota.max;
+  const canGenerate = photos.length === 3 && !loading && !quotaExhausted;
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto" dir="rtl">
-      <div className="flex items-center gap-3">
-        <Link href="/tools" className="text-gray-400 hover:text-navy transition-colors">
+      <div className="flex items-start gap-3">
+        <Link href="/tools" className="text-gray-400 hover:text-navy transition-colors mt-1">
           <ChevronLeft size={20} />
         </Link>
-        <div>
+        <div className="flex-1">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
               <Camera size={18} className="text-white" />
@@ -248,6 +261,14 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
             העלי 3 תמונות פנים ברורות — AI ייצור תמונת פרופיל מקצועית
           </p>
         </div>
+        {quota && (
+          <div className="hidden sm:flex flex-col items-center bg-teal/10 border border-teal/30 rounded-2xl px-4 py-2">
+            <span className="text-xs text-teal font-semibold">נשארו לחודש</span>
+            <span className="text-lg font-black text-teal">
+              {Math.max(0, quota.max - quota.used)} / {quota.max}
+            </span>
+          </div>
+        )}
       </div>
 
       <Card className="p-5">
@@ -373,6 +394,10 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
           <span className="flex items-center gap-2">
             <RefreshCw size={16} className="animate-spin" />
             {progress || "מייצר..."}
+          </span>
+        ) : quotaExhausted ? (
+          <span className="flex items-center gap-2">
+            מיצית את המכסה החודשית — מתחדשת בתחילת החודש
           </span>
         ) : (
           <span className="flex items-center gap-2">

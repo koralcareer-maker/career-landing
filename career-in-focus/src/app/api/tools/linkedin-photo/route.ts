@@ -35,11 +35,15 @@ const ALLOWED_STYLES = ["formal", "casual", "creative"] as const;
 type Gender = (typeof ALLOWED_GENDERS)[number];
 type Style = (typeof ALLOWED_STYLES)[number];
 
-/** Number of variants we ask Gemini to produce for one user request. */
-const NUM_OUTPUTS = 2;
+/**
+ * Number of variants per generation request. Gemini's image API returns
+ * one image per call, and the user's quota is sized so that 10 generations
+ * = 10 final photos — matches the "10 תמונות תדמית" premium benefit.
+ */
+const NUM_OUTPUTS = 1;
 
-/** Per-user monthly quota. Counts distinct generation jobs (timestamp folders). */
-const MAX_JOBS_PER_MONTH = 2;
+/** Per-user monthly quota — premium tier benefit. */
+const MAX_JOBS_PER_MONTH = 10;
 
 /** Gemini 2.5 Flash Image (a.k.a. "Nano Banana") — image-out capable. */
 const GEMINI_MODEL = "gemini-2.5-flash-image";
@@ -212,6 +216,14 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "נדרשת כניסה למערכת" }, { status: 401 });
   }
+  if (session.user.membershipType !== "PREMIUM") {
+    // Defense-in-depth — the page-level gate already redirects non-premium
+    // users, but the API enforces the same rule so it can't be bypassed.
+    return NextResponse.json(
+      { error: "מחולל התמונות זמין רק במסלול הפרמיום. שדרגי כדי להשתמש בו." },
+      { status: 403 }
+    );
+  }
   const userId = session.user.id;
 
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -312,9 +324,9 @@ export async function POST(req: NextRequest) {
     // 1. Fetch all 3 sources from Blob
     const sources = await Promise.all(sourceUrls.map((u, i) => fetchSource(u, i)));
 
-    // 2. Call Gemini sequentially (NOT in parallel) — Gemini's free tier is
-    // 10 RPM per project and parallel requests can trip the burst limit.
-    // Sequential with a small spacer between calls keeps us safely inside it.
+    // 2. Call Gemini. NUM_OUTPUTS=1 → one call. If you ever raise that,
+    // keep the calls sequential (not Promise.all) — Gemini's per-project
+    // burst limiter trips on parallel image-generation requests.
     const prompt = buildPrompt(gender, style);
     const pngBuffers: Buffer[] = [];
     for (let i = 0; i < NUM_OUTPUTS; i++) {

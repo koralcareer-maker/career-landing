@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { Camera } from "lucide-react";
 import { listUserHistory } from "@/lib/blob";
+import { PremiumGate } from "@/components/premium-gate";
 import { LinkedInPhotoClient } from "./linkedin-photo-client";
 
 export const metadata = { title: "מחולל תמונת לינקדאין | קריירה בפוקוס" };
@@ -10,9 +12,20 @@ export default async function LinkedInPhotoPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  // Load past generations from Vercel Blob so they appear immediately
-  // on first paint (no "loading history…" flash). If Blob isn't
-  // configured yet (no token), this returns an empty array gracefully.
+  // ─── Premium gate ─────────────────────────────────────────────────────────
+  // The LinkedIn photo generator is a premium-tier benefit. Non-premium
+  // members see the upsell component instead of the tool itself.
+  if (session.user.membershipType !== "PREMIUM") {
+    return (
+      <PremiumGate
+        feature="מחולל תמונת תדמית AI"
+        featureDesc="הופכים 3 תמונות יומיומיות שלך ל-10 תמונות פרופיל מקצועיות באיכות סטודיו — בלי להזיז את הטלפון מהבית."
+        featureIcon={<Camera size={28} className="text-teal" />}
+      />
+    );
+  }
+
+  // ─── Premium user — load history and render the actual tool ───────────────
   let initialHistory: Awaited<ReturnType<typeof listUserHistory>> = [];
   if (process.env.BLOB_READ_WRITE_TOKEN) {
     try {

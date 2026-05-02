@@ -18,6 +18,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "נדרשת כניסה למערכת" }, { status: 401 });
   }
+  if (session.user.membershipType !== "PREMIUM") {
+    return NextResponse.json(
+      { error: "מחולל התמונות זמין רק במסלול הפרמיום." },
+      { status: 403 }
+    );
+  }
   const userId = session.user.id;
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
