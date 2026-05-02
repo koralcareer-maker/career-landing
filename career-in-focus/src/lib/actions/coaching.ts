@@ -42,7 +42,48 @@ function statusLabel(status: string): string {
   return map[status] ?? status;
 }
 
-async function buildUserContext(userId: string) {
+/**
+ * If the user has a CV uploaded (resumeUrl), fetch it and return base64
+ * + mime so we can send the file natively to Gemini as inline_data. Gemini
+ * 2.5 Flash reads PDFs/DOCX/images directly, so the coach can quote real
+ * lines from the CV instead of just knowing it exists.
+ *
+ * Caps at 5MB to avoid blowing up the request size; returns null on any
+ * fetch/parse problem (we still build the rest of the context normally).
+ */
+async function fetchCvAttachment(
+  resumeUrl: string | null | undefined
+): Promise<{ mimeType: string; data: string } | null> {
+  if (!resumeUrl || !resumeUrl.startsWith("https://")) return null;
+  try {
+    const res = await fetch(resumeUrl);
+    if (!res.ok) return null;
+    const contentLength = Number(res.headers.get("content-length") ?? "0");
+    if (contentLength > 5 * 1024 * 1024) return null; // > 5MB — skip
+    const ct = res.headers.get("content-type") ?? "application/pdf";
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.byteLength > 5 * 1024 * 1024) return null;
+    // Only attach types Gemini understands as documents/images.
+    const allowed = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
+    const mimeType = allowed.find((m) => ct.includes(m)) ?? "application/pdf";
+    return { mimeType, data: buf.toString("base64") };
+  } catch (e) {
+    console.warn("[coaching] CV fetch failed:", e instanceof Error ? e.message : e);
+    return null;
+  }
+}
+
+async function buildUserContext(userId: string): Promise<{
+  text: string;
+  cvAttachment: { mimeType: string; data: string } | null;
+}> {
   const [profile, passport, apps, events, user] = await Promise.all([
     prisma.profile.findUnique({ where: { userId } }),
     prisma.careerPassport.findUnique({ where: { userId } }),
@@ -50,6 +91,9 @@ async function buildUserContext(userId: string) {
     prisma.event.findMany({ where: { isPublished: true, startAt: { gte: new Date() } }, take: 3 }),
     prisma.user.findUnique({ where: { id: userId }, select: { name: true, createdAt: true } }),
   ]);
+
+  // Pull the CV in parallel with everything else so it doesn't add latency.
+  const cvAttachment = await fetchCvAttachment(profile?.resumeUrl);
 
   const readiness = profile ? getReadinessScore(profile) : 0;
   const statusCounts = apps.reduce((acc, a) => {
@@ -73,7 +117,7 @@ async function buildUserContext(userId: string) {
     return lines.join("\n");
   }).join("\n");
 
-  return `
+  const text = `
 === פרופיל המשתמשת ===
 שם: ${user?.name ?? "לא ידוע"}
 ימים מאז ההצטרפות: ${daysSinceJoin}
@@ -137,12 +181,24 @@ ${events.map(e => `• ${e.title} — ${new Date(e.startAt).toLocaleDateString("
 - אל תזכירי שדות שמסומנים — או "לא הוגדר" — כי זו תהיה הצפה. אם נתון חיוני חסר, עודדי בעדינות להשלים אותו ב-/profile או ב-/guide.
 - אם המשתמשת שאלה על מצב מסוים (למשל "האם להגיש?") — תמיד שילבי תוך התייחסות ל-targetRole, החוזקות מהדרכון, וההעדפות שלה.
 - אם יש סתירות בין הצהרות המשתמשת לבין הנתונים בפרופיל — הני לטובתה את ההצהרה האחרונה בצ'אט.
+${cvAttachment ? "- צורף לבקשה הזו קובץ קורות החיים של המשתמשת. עיינו בו וצטטו ממנו פרטים אמיתיים (חברות, תפקידים, הישגים מספריים) כשרלוונטי, במקום להניח." : ""}
 `.trim();
+
+  return { text, cvAttachment };
 }
 
 // ─── Generate AI coaching response (Google Gemini) ───────────────────────────
 
-async function callClaude(messages: Message[], systemPrompt: string): Promise<string> {
+// Type used by Gemini for inline files. Loose so we can mix with text parts.
+type GeminiPart =
+  | { text: string }
+  | { inline_data: { mime_type: string; data: string } };
+
+async function callClaude(
+  messages: Message[],
+  systemPrompt: string,
+  cvAttachment?: { mimeType: string; data: string } | null
+): Promise<string> {
   if (!process.env.GEMINI_API_KEY) {
     return "המאמן AI אינו זמין כרגע. אנא פני למנהלת המערכת.";
   }
@@ -151,13 +207,14 @@ async function callClaude(messages: Message[], systemPrompt: string): Promise<st
 
   // Gemini requires strict alternating user/model turns, starting with "user"
   // Filter and fix the message sequence
-  const rawContents = messages.map(m => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content || "..." }],
-  }));
+  const rawContents: { role: "user" | "model"; parts: GeminiPart[] }[] =
+    messages.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content || "..." } as GeminiPart],
+    }));
 
   // Ensure conversation starts with "user" and alternates properly
-  const contents: typeof rawContents = [];
+  const contents: { role: "user" | "model"; parts: GeminiPart[] }[] = [];
   let expectedRole: "user" | "model" = "user";
   for (const msg of rawContents) {
     if (msg.role === expectedRole) {
@@ -169,6 +226,19 @@ async function callClaude(messages: Message[], systemPrompt: string): Promise<st
   // Must end with user turn
   if (contents.length === 0 || contents[contents.length - 1].role !== "user") {
     return "אירעה שגיאה בעיבוד השיחה. נסי שנית.";
+  }
+
+  // Attach the CV PDF (or DOCX/image) to the FIRST user turn so Gemini can
+  // read it natively. Only attached once even across long conversations —
+  // the model retains it across the contents array.
+  if (cvAttachment) {
+    const firstUser = contents.find((c) => c.role === "user");
+    if (firstUser) {
+      firstUser.parts = [
+        { inline_data: { mime_type: cvAttachment.mimeType, data: cvAttachment.data } },
+        ...firstUser.parts,
+      ];
+    }
   }
 
   const body = {
@@ -232,7 +302,7 @@ export async function sendCoachingMessage(userMessage: string) {
   if (!session?.user?.id) throw new Error("לא מחובר");
   const userId = session.user.id;
 
-  const userContext = await buildUserContext(userId);
+  const { text: userContext, cvAttachment } = await buildUserContext(userId);
 
   const systemPrompt = `אתה מאמן קריירה אישי ומקצועי של "קריירה בפוקוס" — פלטפורמה ישראלית לחיפוש עבודה.
 
@@ -258,7 +328,7 @@ ${userContext}
 
   // Keep last 20 messages for context
   const contextMessages = messages.slice(-20);
-  const aiReply = await callClaude(contextMessages, systemPrompt);
+  const aiReply = await callClaude(contextMessages, systemPrompt, cvAttachment);
 
   messages.push({ role: "assistant", content: aiReply });
 
@@ -276,7 +346,7 @@ ${userContext}
 // ─── Generate weekly analysis ─────────────────────────────────────────────────
 
 export async function generateWeeklyAnalysis(userId: string) {
-  const userContext = await buildUserContext(userId);
+  const { text: userContext, cvAttachment } = await buildUserContext(userId);
 
   const prompt = `בסס על הנתונים הבאים, צור ניתוח קצר (3-4 משפטים) ורשימת 3-4 משימות קונקרטיות לשבוע הקרוב.
 
@@ -290,7 +360,8 @@ ${userContext}
 
   try {
     const text = await callClaude([{ role: "user", content: prompt }],
-      "אתה מאמן קריירה ישראלי. ענה רק ב-JSON תקני בעברית.");
+      "אתה מאמן קריירה ישראלי. ענה רק ב-JSON תקני בעברית.",
+      cvAttachment);
     const clean = text.replace(/```json\n?|\n?```/g, "").trim();
     return JSON.parse(clean) as { analysis: string; actionItems: string[] };
   } catch {
