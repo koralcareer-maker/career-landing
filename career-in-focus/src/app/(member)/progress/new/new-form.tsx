@@ -43,11 +43,7 @@ export function NewApplicationForm() {
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-600 block mb-1">סטטוס</label>
-              <Select name="status" defaultValue="APPLIED">
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </Select>
+              <Select name="status" defaultValue="APPLIED" options={STATUS_OPTIONS} />
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-600 block mb-1">מקור</label>
