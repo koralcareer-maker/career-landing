@@ -148,6 +148,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   jobApplications JobApplication[]
+  jobApplicationJournalEntries JobApplicationJournalEntry[]
+  jobApplicationReminders JobApplicationReminder[]
   posts         Post[]
   comments      Comment[]
   likes         Like[]
@@ -286,6 +288,71 @@ model JobApplication {
   jobLink       String?
   responseReceived Boolean @default(false)
   interviewStage  String?
+
+  // Job-search-as-an-OS additions:
+  interviewDate DateTime?      // Scheduled interview (used for countdown + prep)
+  nextStep      String?        // Free text — "what's the next thing to do"
+  priority      Int?           // 1=low 2=medium 3=high
+  archived      Boolean @default(false)
+
+  journal       JobApplicationJournalEntry[]
+  reminders     JobApplicationReminder[]
+}
+
+// ─── Journal entries per application ─────────────────────────────────────────
+
+enum JournalEntryTag {
+  INTERVIEW
+  FOLLOWUP
+  NOTE
+  FEELING
+  LEARNING
+  OUTREACH
+}
+
+model JobApplicationJournalEntry {
+  id            String   @id @default(cuid())
+  applicationId String
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  occurredAt    DateTime @default(now())
+
+  text          String
+  tag           JournalEntryTag?
+
+  @@index([applicationId, occurredAt])
+  @@index([userId, occurredAt])
+}
+
+// ─── Reminders per application ───────────────────────────────────────────────
+
+enum ReminderType {
+  FOLLOWUP
+  INTERVIEW_PREP
+  THANK_YOU
+  RESEARCH
+  OTHER
+}
+
+model JobApplicationReminder {
+  id            String   @id @default(cuid())
+  applicationId String
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  dueAt         DateTime
+  type          ReminderType @default(OTHER)
+  title         String
+  notes         String?
+  completed     Boolean @default(false)
+  completedAt   DateTime?
+
+  @@index([applicationId, dueAt])
+  @@index([userId, dueAt, completed])
 }
 
 // ─── Courses ─────────────────────────────────────────────────────────────────
