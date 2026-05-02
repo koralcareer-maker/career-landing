@@ -23,6 +23,8 @@ export interface JobItem {
   isHot: boolean;
   createdAt: Date | string;
   matchScore: number;
+  /** Short human-readable Hebrew reasons explaining the match (max 3). */
+  matchReasons?: string[];
 }
 
 // ─── Job Card ─────────────────────────────────────────────────────────────────

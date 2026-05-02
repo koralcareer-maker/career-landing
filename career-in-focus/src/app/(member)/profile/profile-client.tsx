@@ -405,6 +405,23 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
         )}
       </div>
 
+      {/* Documents shortcut */}
+      <a
+        href="/profile/documents"
+        className="flex items-center justify-between gap-3 bg-white border border-slate-100 rounded-2xl px-5 py-3.5 hover:border-teal/40 hover:shadow-sm transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-teal/10 rounded-xl flex items-center justify-center group-hover:bg-teal/20 transition-colors">
+            <BookOpen size={18} className="text-teal" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-navy">המסמכים שלי</p>
+            <p className="text-xs text-gray-400">קורות חיים, תעודות, מכתבי המלצה ועוד</p>
+          </div>
+        </div>
+        <span className="text-teal text-xs font-bold">פתח →</span>
+      </a>
+
       {/* Tabs */}
       <div className="flex gap-1 bg-cream-dark rounded-xl p-1">
         {TABS.map((t) => {

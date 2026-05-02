@@ -27,6 +27,10 @@ export interface CourseItem {
   ctaUrl: string | null;
   sortOrder: number;
   contents: CourseContentItem[];
+  /** 0-100 personalised relevance score. The catalogue is sorted by this. */
+  matchScore?: number;
+  /** Short human-readable reasons (max 3) — shown as a "מותאם לך" badge. */
+  matchReasons?: string[];
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -84,13 +88,20 @@ function CourseCard({ course }: { course: CourseItem }) {
       <div className="h-1.5 bg-gradient-to-l from-teal to-navy -mx-5 -mt-5 mb-5" />
 
       <CardContent className="flex flex-col flex-1 pt-0">
-        {/* Category + Access */}
+        {/* Category + Access + Personalised match badge */}
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-          {course.category && (
-            <Badge variant="gray" size="sm">
-              {course.category}
-            </Badge>
-          )}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {course.category && (
+              <Badge variant="gray" size="sm">
+                {course.category}
+              </Badge>
+            )}
+            {(course.matchScore ?? 0) >= 70 && (
+              <Badge variant="teal" size="sm">
+                ✓ מותאם לך
+              </Badge>
+            )}
+          </div>
           <Badge variant={access.variant} size="sm">
             {access.label}
           </Badge>

@@ -11,6 +11,37 @@ export type Message = { role: "user" | "assistant"; content: string };
 
 // ─── Build rich context about the user for Claude ─────────────────────────────
 
+/**
+ * Pretty-print a possibly-JSON-array string field. Many of the questionnaire
+ * fields store either a single string or a JSON-encoded array — show them
+ * the same way to the model.
+ */
+function fmtField(value: string | null | undefined): string {
+  if (!value) return "—";
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed.filter(Boolean).join(", ") || "—";
+  } catch {
+    // not JSON — fall through and return the raw string
+  }
+  return value;
+}
+
+/** Translate JobApplication.status enum codes to Hebrew labels. */
+function statusLabel(status: string): string {
+  const map: Record<string, string> = {
+    APPLIED: "הוגשה מועמדות",
+    FOLLOWUP_SENT: "נשלח follow-up",
+    INTERVIEW_SCHEDULED: "ראיון נקבע",
+    INTERVIEWED: "התראיינה",
+    OFFER: "קיבלה הצעה",
+    REJECTED: "נדחתה",
+    WITHDRAWN: "נסוגה",
+    HIRED: "התקבלה",
+  };
+  return map[status] ?? status;
+}
+
 async function buildUserContext(userId: string) {
   const [profile, passport, apps, events, user] = await Promise.all([
     prisma.profile.findUnique({ where: { userId } }),
@@ -30,34 +61,82 @@ async function buildUserContext(userId: string) {
     ? Math.floor((Date.now() - new Date(user.createdAt).getTime()) / 86400000)
     : 0;
 
-  return `
-=== פרופיל המשתמש ===
-שם: ${user?.name ?? "לא ידוע"}
-ימים מאז הצטרפות: ${daysSinceJoin}
-ניקוד מוכנות: ${readiness}%
-קורות חיים: ${profile?.resumeUrl ? "✅ הועלו" : "❌ חסרים"}
-דרכון קריירה: ${passport ? "✅ נוצר" : "❌ לא נוצר"}
+  // Most recent 5 applications, with company / role / status / notes — gives
+  // the coach concrete grounding to reference rather than just totals.
+  const recentApps = apps.slice(0, 5).map((a) => {
+    const lines = [`• ${a.role} ב-${a.company} — ${statusLabel(a.status)}`];
+    if (a.dateApplied) {
+      lines.push(`  הוגשה ב-${new Date(a.dateApplied).toLocaleDateString("he-IL")}`);
+    }
+    if (a.interviewStage) lines.push(`  שלב ראיון: ${a.interviewStage}`);
+    if (a.notes) lines.push(`  הערות: ${a.notes.slice(0, 200)}`);
+    return lines.join("\n");
+  }).join("\n");
 
-=== פרופיל קריירה ===
+  return `
+=== פרופיל המשתמשת ===
+שם: ${user?.name ?? "לא ידוע"}
+ימים מאז ההצטרפות: ${daysSinceJoin}
+ניקוד השלמת פרופיל: ${readiness}%
+קורות חיים: ${profile?.resumeUrl ? "✅ הועלו" : "❌ חסרים"}
+לינקדאין: ${profile?.linkedinUrl ? "✅ הוזן" : "❌ חסר"}
+דרכון קריירה: ${passport ? `✅ נוצר (ציון התאמה ${passport.jobMatchScore}%)` : "❌ עדיין לא נוצר"}
+שאלון: ${profile?.questionnaireCompleted ? "✅ הושלם" : "❌ עוד לא הושלם"}
+
+=== מסלול הקריירה ===
 תפקיד נוכחי: ${profile?.currentRole ?? "לא הוגדר"}
-תפקיד מבוקש: ${profile?.targetRole ?? "לא הוגדר"}
-ניסיון: ${profile?.yearsExperience ?? 0} שנים
-תחום עניין: ${profile?.q_industryInterests ?? "לא הוגדר"}
-${profile?.q_industryInterests ? `תחומי עניין: ${profile.q_industryInterests}` : ""}
+תפקיד יעד: ${profile?.targetRole ?? "לא הוגדר"}
+שנות ניסיון: ${profile?.yearsExperience ?? 0}
+תחום מבוקש: ${profile?.desiredField ?? "לא הוגדר"}
+מטרה במעבר: ${profile?.careerTransitionGoal ?? "לא הוגדרה"}
+האתגר העיקרי: ${profile?.mainChallenge ?? "לא הוגדר"}
+חוזקות שציינה: ${fmtField(profile?.strengths)}
+פערים שציינה: ${fmtField(profile?.missingSkills)}
+
+=== העדפות תעסוקה ===
+שכר רצוי: ${profile?.preferredSalaryMin ?? "—"} עד ${profile?.preferredSalaryMax ?? "—"}
+סוג חברה מועדף: ${profile?.preferredCompanyType ?? "לא הוגדר"}
+גמישות גיאוגרפית: ${profile?.q_locationFlexible === true ? "כן" : profile?.q_locationFlexible === false ? "לא" : "לא ידוע"}
+העדפת רימוט: ${profile?.q_remotePreference ?? "לא הוגדרה"}
+
+=== שאלון 16 שאלות (תובנות עומק) ===
+סגנון עבודה: ${profile?.q_workStyle ?? "—"}
+עבודה בצוות / לבד: ${profile?.q_teamOrSolo ?? "—"}
+מוטיבטורים: ${fmtField(profile?.q_motivators)}
+הפחד הכי גדול: ${profile?.q_biggestFear ?? "—"}
+היום האידיאלי בעבודה: ${profile?.q_idealDay ?? "—"}
+הצלחה בעבר שאת גאה בה: ${profile?.q_pastAchievement ?? "—"}
+סגנון למידה: ${profile?.q_learningStyle ?? "—"}
+מטרת קצר טווח: ${profile?.q_shortTermGoal ?? "—"}
+מטרת ארוך טווח: ${profile?.q_longTermGoal ?? "—"}
+רמת נטוורקינג: ${profile?.q_networkingLevel ?? "—"}
+חשיבות שכר: ${profile?.q_salaryPriority ?? "—"}
+תחומי עניין: ${fmtField(profile?.q_industryInterests)}
+דמויות מקצועיות מעוררות השראה: ${profile?.q_roleModels ?? "—"}
+ערכים בעבודה: ${fmtField(profile?.q_valuesAtWork)}
+
+=== דרכון הקריירה (תובנות AI) ===
+${passport ? `ציון התאמה: ${passport.jobMatchScore}%
+חוזקות (ע"פ AI): ${fmtField(passport.strengths)}
+פערים (ע"פ AI): ${fmtField(passport.skillGaps)}
+תפקידים מתאימים: ${fmtField(passport.likelyFitRoles)}
+תחומים מומלצים: ${fmtField(passport.recommendedIndustries)}
+המלצות פעולה הבאה: ${fmtField(passport.nextBestActions)}
+${passport.summary ? `סיכום: ${passport.summary}` : ""}` : "עדיין לא נוצר — מומלץ לעודד את המשתמשת ליצור אותו דרך /guide."}
 
 === מצב חיפוש עבודה ===
-סה"כ בקשות: ${apps.length}
-${Object.entries(statusCounts).map(([s, n]) => `${s}: ${n}`).join(" | ")}
-
-=== דרכון קריירה ===
-${passport ? `
-חוזקות: ${passport.strengths ?? "לא הוגדרו"}
-תפקידים מתאימים: ${passport.likelyFitRoles ?? "לא הוגדרו"}
-פערי מיומנויות: ${passport.skillGaps ?? "לא הוגדרו"}
-` : "לא נוצר עדיין"}
+סה"כ הגשות: ${apps.length}
+פילוח: ${Object.entries(statusCounts).map(([s, n]) => `${statusLabel(s)}: ${n}`).join(" | ") || "—"}
+${recentApps ? `\n5 הגשות אחרונות:\n${recentApps}` : ""}
 
 === אירועים קרובים ===
 ${events.map(e => `• ${e.title} — ${new Date(e.startAt).toLocaleDateString("he-IL")}`).join("\n") || "אין"}
+
+=== הנחיות שימוש בקונטקסט הזה ===
+- השתמשי במידע הזה כדי להפנות לפרטים ספציפיים מהקריירה של המשתמשת (למשל "ראיתי שהמטרה ארוכת הטווח שלך היא X").
+- אל תזכירי שדות שמסומנים — או "לא הוגדר" — כי זו תהיה הצפה. אם נתון חיוני חסר, עודדי בעדינות להשלים אותו ב-/profile או ב-/guide.
+- אם המשתמשת שאלה על מצב מסוים (למשל "האם להגיש?") — תמיד שילבי תוך התייחסות ל-targetRole, החוזקות מהדרכון, וההעדפות שלה.
+- אם יש סתירות בין הצהרות המשתמשת לבין הנתונים בפרופיל — הני לטובתה את ההצהרה האחרונה בצ'אט.
 `.trim();
 }
 
