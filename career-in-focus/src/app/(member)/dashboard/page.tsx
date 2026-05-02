@@ -13,7 +13,7 @@ import {
   Briefcase, CalendarDays, Users, Target,
   ChevronLeft, Flame, BookOpen, Wrench,
   MessageSquare, Search, MapPin, Clock,
-  TrendingUp, Sparkles, GraduationCap, Quote
+  TrendingUp, Sparkles, GraduationCap
 } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -180,7 +180,7 @@ export default async function DashboardPage() {
 
                 {/* Personal note from Coral */}
                 <div className="relative bg-white/70 backdrop-blur-sm border-r-4 border-teal rounded-l-2xl rounded-r-md px-4 py-3 mb-4 shadow-sm max-w-md">
-                  <Quote size={12} className="absolute top-2 left-2 text-teal/40" />
+                  <span aria-hidden className="absolute top-1 left-2 text-teal/30 text-2xl font-serif leading-none">&ldquo;</span>
                   <p className="text-navy/85 text-sm leading-relaxed">
                     הקמתי את המקום הזה כדי לתת לך בדיוק את מה שהייתי רוצה לקבל בעצמי
                     — קהילה, ליווי וכלים מעשיים שעוזרים להתקדם בלי להיתקע.
