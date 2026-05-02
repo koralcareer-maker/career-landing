@@ -143,7 +143,7 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
     try {
       // 1. Compress all 3 photos client-side
       setProgress("מעבד תמונות...");
-      let compressed: File[];
+      let compressed: File[] = [];
       try {
         compressed = await Promise.all(
           photos.map((p, i) => compressToFile(p.file, `source-${i + 1}.jpg`))
@@ -155,7 +155,7 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
 
       // 2. Upload each source directly to Vercel Blob (no API-route body limit hit)
       setProgress("מעלה את התמונות לאחסון מאובטח...");
-      let sourceUrls: string[];
+      let sourceUrls: string[] = [];
       try {
         const uploaded = await Promise.all(
           compressed.map((file, i) =>
