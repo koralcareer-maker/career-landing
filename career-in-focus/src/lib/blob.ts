@@ -96,7 +96,7 @@ export async function listUserHistory(userId: string, limit = 12): Promise<Histo
       arr.push({ url: blob.url, index });
       groups.set(ts, arr);
     }
-    if (!page.hasMore) break;
+    if (!page.hasMore || !page.cursor) break;
     cursor = page.cursor;
   }
 
