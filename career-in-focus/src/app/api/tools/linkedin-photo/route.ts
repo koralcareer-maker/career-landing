@@ -216,7 +216,10 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "נדרשת כניסה למערכת" }, { status: 401 });
   }
-  if (session.user.membershipType !== "PREMIUM") {
+  const isAdmin =
+    session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
+  const isPremium = session.user.membershipType === "PREMIUM";
+  if (!isAdmin && !isPremium) {
     // Defense-in-depth — the page-level gate already redirects non-premium
     // users, but the API enforces the same rule so it can't be bypassed.
     return NextResponse.json(

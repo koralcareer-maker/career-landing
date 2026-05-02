@@ -18,7 +18,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "נדרשת כניסה למערכת" }, { status: 401 });
   }
-  if (session.user.membershipType !== "PREMIUM") {
+  const isAdmin =
+    session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
+  const isPremium = session.user.membershipType === "PREMIUM";
+  if (!isAdmin && !isPremium) {
     return NextResponse.json(
       { error: "מחולל התמונות זמין רק במסלול הפרמיום." },
       { status: 403 }

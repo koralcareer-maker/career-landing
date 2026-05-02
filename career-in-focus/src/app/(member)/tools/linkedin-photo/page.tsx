@@ -14,8 +14,12 @@ export default async function LinkedInPhotoPage() {
 
   // ─── Premium gate ─────────────────────────────────────────────────────────
   // The LinkedIn photo generator is a premium-tier benefit. Non-premium
-  // members see the upsell component instead of the tool itself.
-  if (session.user.membershipType !== "PREMIUM") {
+  // members see the upsell component. Admins bypass the gate so they can
+  // QA every feature regardless of their own membership level.
+  const isAdmin =
+    session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
+  const isPremium = session.user.membershipType === "PREMIUM";
+  if (!isAdmin && !isPremium) {
     return (
       <PremiumGate
         feature="מחולל תמונת תדמית AI"
