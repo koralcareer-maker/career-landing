@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
-import { BookOpen, PlayCircle, FileText, ExternalLink, ChevronLeft, GraduationCap, Layers, Search, ChevronDown } from "lucide-react";
+import { BookOpen, PlayCircle, FileText, ExternalLink, ChevronLeft, GraduationCap, Layers, Search, ChevronDown, CheckCircle2, Circle, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { markCourseCompleted, unmarkCourseCompleted } from "@/lib/actions/completions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,8 @@ export interface CourseItem {
   matchScore?: number;
   /** Short human-readable reasons (max 3) — shown as a "מותאם לך" badge. */
   matchReasons?: string[];
+  /** True if the user has marked this course as completed. */
+  completed?: boolean;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -156,8 +159,62 @@ function CourseCard({ course }: { course: CourseItem }) {
             <span className="text-xs text-gray-300">בקרוב</span>
           )}
         </div>
+
+        {/* Completion toggle — clicking auto-updates the user's career
+            passport in the background, so the dashboard score grows. */}
+        <CompletionToggle courseId={course.id} initialCompleted={!!course.completed} />
       </CardContent>
     </Card>
+  );
+}
+
+function CompletionToggle({ courseId, initialCompleted }: { courseId: string; initialCompleted: boolean }) {
+  const [completed, setCompleted] = useState(initialCompleted);
+  const [justFlipped, setJustFlipped] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  function toggle() {
+    const next = !completed;
+    setCompleted(next);
+    setJustFlipped(true);
+    startTransition(async () => {
+      try {
+        if (next) {
+          await markCourseCompleted(courseId);
+        } else {
+          await unmarkCourseCompleted(courseId);
+        }
+      } catch {
+        setCompleted(!next); // revert on failure
+      } finally {
+        setTimeout(() => setJustFlipped(false), 2400);
+      }
+    });
+  }
+
+  return (
+    <div className="mt-4 pt-3 border-t border-gray-100">
+      <button
+        type="button"
+        onClick={toggle}
+        disabled={pending}
+        className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-50 ${
+          completed
+            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+            : "bg-slate-50 text-slate-600 border border-slate-100 hover:border-teal/40 hover:bg-teal/5"
+        }`}
+      >
+        {completed ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+        {completed
+          ? (justFlipped ? "כל הכבוד! הדרכון מתעדכן ✨" : "סיימת — הוסף לדרכון")
+          : "סימני שלמדתי"}
+      </button>
+      {completed && justFlipped && (
+        <p className="text-[10px] text-emerald-600 mt-1.5 text-center flex items-center justify-center gap-1">
+          <Sparkles size={10} /> ציון ההתאמה שלך גדל
+        </p>
+      )}
+    </div>
   );
 }
 

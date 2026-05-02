@@ -62,6 +62,7 @@ export function MigrateClient() {
               <li>מוסיפה עמודות חדשות ל-JobApplication: <code>interviewDate</code>, <code>nextStep</code>, <code>priority</code>, <code>archived</code></li>
               <li>יוצרת טבלה <code>JobApplicationJournalEntry</code> (יומן רשומות לכל משרה)</li>
               <li>יוצרת טבלה <code>JobApplicationReminder</code> (תזכורות לכל משרה)</li>
+              <li>יוצרת טבלאות <code>UserCourseCompletion</code> + <code>UserSkillCompletion</code> (לעדכון אוטומטי של דרכון הקריירה)</li>
               <li>פעולה אידמפוטנטית — אם משהו כבר קיים, פשוט מדלגים</li>
             </ul>
           </div>

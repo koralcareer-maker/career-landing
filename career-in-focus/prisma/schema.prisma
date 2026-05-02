@@ -150,6 +150,8 @@ model User {
   jobApplications JobApplication[]
   jobApplicationJournalEntries JobApplicationJournalEntry[]
   jobApplicationReminders JobApplicationReminder[]
+  courseCompletions UserCourseCompletion[]
+  skillCompletions  UserSkillCompletion[]
   posts         Post[]
   comments      Comment[]
   likes         Like[]
@@ -326,6 +328,31 @@ model JobApplicationJournalEntry {
   @@index([userId, occurredAt])
 }
 
+// ─── User completions (auto-update Career Passport on each completion) ──────
+
+model UserCourseCompletion {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+  @@index([userId])
+}
+
+model UserSkillCompletion {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillName   String
+  completedAt DateTime @default(now())
+
+  @@unique([userId, skillName])
+  @@index([userId])
+}
+
 // ─── Reminders per application ───────────────────────────────────────────────
 
 enum ReminderType {
@@ -375,6 +402,7 @@ model Course {
   sortOrder   Int @default(0)
 
   contents    CourseContent[]
+  completions UserCourseCompletion[]
 }
 
 model CourseContent {

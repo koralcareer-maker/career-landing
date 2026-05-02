@@ -333,13 +333,15 @@ interface Props {
   profile: ProfileType | null;
   passport: Passport | null;
   readinessScore: number;
+  /** Counts used by the PassportHero stat strip. Optional for back-compat. */
+  completions?: { courses: number; skills: number };
 }
 
 type TabId = "profile" | "questionnaire" | "passport";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function ProfileClient({ user, profile, passport, readinessScore }: Props) {
+export function ProfileClient({ user, profile, passport, readinessScore, completions }: Props) {
   const [tab, setTab] = useState<TabId>("profile");
   const [generating, setGenerating] = useState(false);
   const [passportResult, setPassportResult] = useState(passport);
@@ -403,10 +405,17 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
             imageUrl: profile?.imageUrl,
             targetRole: profile?.targetRole,
             currentRole: profile?.currentRole,
+            yearsExperience: profile?.yearsExperience,
           }}
+          completions={completions}
         />
       )}
 
+      {/* Once the user has both a passport AND a completed questionnaire,
+          hide the long edit form / questionnaire / passport-tab. The user
+          can still re-generate the passport via the "השתדרגתי" button in
+          the hero, which is the canonical update path from now on. */}
+      {!(passportResult && profile?.questionnaireCompleted) && (<>
       {/* Readiness bar */}
       <div className="bg-gradient-to-l from-teal-pale to-white rounded-2xl p-5 border border-teal/20">
         <div className="flex items-center justify-between mb-2">
@@ -731,6 +740,7 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
           )}
         </div>
       )}
+      </>)}
     </div>
   );
 }

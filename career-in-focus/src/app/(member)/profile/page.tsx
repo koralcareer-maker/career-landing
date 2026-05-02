@@ -7,10 +7,13 @@ export default async function ProfilePage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [user, profile, passport] = await Promise.all([
+  const [user, profile, passport, courseCompletions, skillCompletions] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true, photoUpgradeStatus: true } }),
     prisma.profile.findUnique({ where: { userId } }),
     prisma.careerPassport.findUnique({ where: { userId } }),
+    // Tolerate the new tables not being migrated yet — count = 0 in that case.
+    prisma.userCourseCompletion.count({ where: { userId } }).catch(() => 0),
+    prisma.userSkillCompletion.count({ where: { userId } }).catch(() => 0),
   ]);
 
   const readinessScore = profile ? getReadinessScore(profile) : 0;
@@ -62,6 +65,7 @@ export default async function ProfilePage() {
         generatedAt: passport.generatedAt.toISOString(),
       } : null}
       readinessScore={readinessScore}
+      completions={{ courses: courseCompletions, skills: skillCompletions }}
     />
   );
 }

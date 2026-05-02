@@ -288,10 +288,26 @@ export async function generateCareerPassport() {
   const profile = await prisma.profile.findUnique({ where: { userId } });
   if (!profile) return { error: "יש למלא פרופיל תחילה" };
 
+  // Fetch completions so the passport reflects courses/skills the user
+  // has marked as done since their last passport generation.
+  const [courseCompletions, skillCompletions] = await Promise.all([
+    prisma.userCourseCompletion.findMany({
+      where: { userId },
+      include: { course: { select: { title: true, category: true } } },
+    }).catch(() => []),
+    prisma.userSkillCompletion.findMany({
+      where: { userId },
+      select: { skillName: true },
+    }).catch(() => []),
+  ]);
+
+  const completedCourseTitles = courseCompletions.map((c) => c.course?.title).filter(Boolean) as string[];
+  const completedSkillNames = skillCompletions.map((s) => s.skillName);
+
   let result: CareerPassportResult;
 
   if (process.env.GEMINI_API_KEY) {
-    result = await generateWithGemini(profile);
+    result = await generateWithGemini(profile, completedCourseTitles, completedSkillNames);
   } else {
     result = generateMock(profile);
   }
@@ -360,7 +376,11 @@ type ProfileInput = {
   q_industryInterests?: string | null;
 };
 
-async function generateWithGemini(profile: ProfileInput): Promise<CareerPassportResult> {
+async function generateWithGemini(
+  profile: ProfileInput,
+  completedCourseTitles: string[] = [],
+  completedSkillNames: string[] = []
+): Promise<CareerPassportResult> {
   const profileSummary = [
     profile.targetRole && `תפקיד יעד: ${profile.targetRole}`,
     profile.currentRole && `תפקיד נוכחי: ${profile.currentRole}`,
@@ -379,12 +399,20 @@ async function generateWithGemini(profile: ProfileInput): Promise<CareerPassport
     profile.q_longTermGoal && `מטרה ארוכת טווח: ${profile.q_longTermGoal}`,
     profile.q_valuesAtWork && `ערכים בעבודה: ${JSON.parse(profile.q_valuesAtWork).join(", ")}`,
     profile.q_industryInterests && `תחומי עניין: ${JSON.parse(profile.q_industryInterests).join(", ")}`,
+    completedCourseTitles.length > 0 && `קורסים שהשלימה במערכת: ${completedCourseTitles.join(", ")}`,
+    completedSkillNames.length > 0 && `מיומנויות שרכשה במערכת: ${completedSkillNames.join(", ")}`,
   ].filter(Boolean).join("\n");
 
   const prompt = `אתה יועץ קריירה מקצועי בישראל. על בסיס המידע הבא על מחפש עבודה, צור דרכון קריירה מפורט ומותאם אישית.
 
 פרטי המועמד:
 ${profileSummary}
+
+הוראות חשובות לגבי מיומנויות וקורסים שהשלימה:
+- אם רשומים "קורסים שהשלימה במערכת" או "מיומנויות שרכשה במערכת" — אסור לרשום אותם בעצמם כפערים. הם כבר חוזקות.
+- אם הקורסים/מיומנויות מצליחים לסגור פער קודם — הסר אותו או שדרג אותו.
+- ה-jobMatchScore צריך לעלות בכל פעם שהמשתמשת מסיימת קורס או רוכשת מיומנות חדשה.
+- הכלל את הקורסים/מיומנויות שרכשה כחוזקות חדשות.
 
 החזר JSON בלבד (ללא markdown, ללא הסברים) בפורמט הבא:
 {

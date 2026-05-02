@@ -1,10 +1,12 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { parseJsonArray } from "@/lib/utils";
+import { getUserCompletions } from "@/lib/actions/completions";
 import Link from "next/link";
 import { Lock, ExternalLink, BookOpen, PlayCircle, GraduationCap, Target, ChevronLeft } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { SkillCompletionButton } from "./skill-completion-button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -137,7 +139,7 @@ function PriorityBadge({ priority }: { priority: "high" | "medium" | "low" }) {
 
 // ─── Skill Card Component ─────────────────────────────────────────────────────
 
-function SkillCardItem({ card }: { card: SkillCard }) {
+function SkillCardItem({ card, completed }: { card: SkillCard; completed: boolean }) {
   return (
     <Card hover className="h-full">
       <CardContent>
@@ -179,6 +181,7 @@ function SkillCardItem({ card }: { card: SkillCard }) {
             ))}
           </div>
         </div>
+        <SkillCompletionButton skillName={card.skill} initialCompleted={completed} />
       </CardContent>
     </Card>
   );
@@ -190,9 +193,12 @@ export default async function SkillsPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [profile, passport] = await Promise.all([
+  const [profile, passport, completions] = await Promise.all([
     prisma.profile.findUnique({ where: { userId } }),
     prisma.careerPassport.findUnique({ where: { userId } }),
+    // Tolerate the table not being migrated yet — we just won't show
+    // anything as completed in that case.
+    getUserCompletions().catch(() => ({ courseIds: new Set<string>(), skills: new Set<string>() })),
   ]);
 
   if (!passport) {
@@ -279,7 +285,7 @@ export default async function SkillsPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {highPriority.map((card) => (
-                  <SkillCardItem key={card.skill} card={card} />
+                  <SkillCardItem key={card.skill} card={card} completed={completions.skills.has(card.skill)} />
                 ))}
               </div>
             </section>
@@ -295,7 +301,7 @@ export default async function SkillsPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {mediumPriority.map((card) => (
-                  <SkillCardItem key={card.skill} card={card} />
+                  <SkillCardItem key={card.skill} card={card} completed={completions.skills.has(card.skill)} />
                 ))}
               </div>
             </section>
@@ -311,7 +317,7 @@ export default async function SkillsPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {lowPriority.map((card) => (
-                  <SkillCardItem key={card.skill} card={card} />
+                  <SkillCardItem key={card.skill} card={card} completed={completions.skills.has(card.skill)} />
                 ))}
               </div>
             </section>

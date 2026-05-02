@@ -99,6 +99,47 @@ const STEPS: MigrationStep[] = [
     sql: `CREATE INDEX IF NOT EXISTS "idx_jar_user_due_completed"
       ON "JobApplicationReminder"("userId", "dueAt", "completed")`,
   },
+  {
+    description: "Create UserCourseCompletion table",
+    sql: `CREATE TABLE IF NOT EXISTS "UserCourseCompletion" (
+      "id" TEXT NOT NULL PRIMARY KEY,
+      "userId" TEXT NOT NULL,
+      "courseId" TEXT NOT NULL,
+      "completedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+      FOREIGN KEY ("courseId") REFERENCES "Course"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    )`,
+  },
+  {
+    description: "Unique index for UserCourseCompletion (userId, courseId)",
+    sql: `CREATE UNIQUE INDEX IF NOT EXISTS "uniq_ucc_user_course"
+      ON "UserCourseCompletion"("userId", "courseId")`,
+  },
+  {
+    description: "Index UserCourseCompletion by user",
+    sql: `CREATE INDEX IF NOT EXISTS "idx_ucc_user"
+      ON "UserCourseCompletion"("userId")`,
+  },
+  {
+    description: "Create UserSkillCompletion table",
+    sql: `CREATE TABLE IF NOT EXISTS "UserSkillCompletion" (
+      "id" TEXT NOT NULL PRIMARY KEY,
+      "userId" TEXT NOT NULL,
+      "skillName" TEXT NOT NULL,
+      "completedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
+    )`,
+  },
+  {
+    description: "Unique index for UserSkillCompletion (userId, skillName)",
+    sql: `CREATE UNIQUE INDEX IF NOT EXISTS "uniq_usc_user_skill"
+      ON "UserSkillCompletion"("userId", "skillName")`,
+  },
+  {
+    description: "Index UserSkillCompletion by user",
+    sql: `CREATE INDEX IF NOT EXISTS "idx_usc_user"
+      ON "UserSkillCompletion"("userId")`,
+  },
 ];
 
 export async function POST() {
