@@ -166,7 +166,12 @@ async function callGeminiOnce(
   return Buffer.from(inline.data, "base64");
 }
 
-/** Run Gemini once. On a transient failure, retry exactly once. */
+/**
+ * Run Gemini once. On a transient (non-rate-limit) failure, retry exactly
+ * once. We deliberately do NOT retry 429s — that would just amplify the
+ * rate-limit and waste the user's time. The route surfaces 429 to the user
+ * with a clear "wait a moment" message instead.
+ */
 async function generateOneWithRetry(
   sources: SourceFile[],
   prompt: string,
@@ -178,7 +183,6 @@ async function generateOneWithRetry(
     const msg = e instanceof Error ? e.message : String(e);
     const transient =
       msg.includes("gemini-5") ||
-      msg.includes("gemini-429") ||
       msg.includes("ETIMEDOUT") ||
       msg.includes("ECONNRESET") ||
       msg.includes("gemini-bad-json") ||
@@ -187,6 +191,11 @@ async function generateOneWithRetry(
     console.warn("[linkedin-photo] transient Gemini failure, retrying once:", msg);
     return await callGeminiOnce(sources, prompt, apiKey);
   }
+}
+
+/** Small delay helper for spacing out sequential API calls. */
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 // ─── Route handler ──────────────────────────────────────────────────────────
@@ -303,11 +312,15 @@ export async function POST(req: NextRequest) {
     // 1. Fetch all 3 sources from Blob
     const sources = await Promise.all(sourceUrls.map((u, i) => fetchSource(u, i)));
 
-    // 2. Build prompt + call Gemini twice in parallel (it produces 1 image per call)
+    // 2. Call Gemini sequentially (NOT in parallel) — Gemini's free tier is
+    // 10 RPM per project and parallel requests can trip the burst limit.
+    // Sequential with a small spacer between calls keeps us safely inside it.
     const prompt = buildPrompt(gender, style);
-    const pngBuffers = await Promise.all(
-      Array.from({ length: NUM_OUTPUTS }, () => generateOneWithRetry(sources, prompt, GEMINI_API_KEY))
-    );
+    const pngBuffers: Buffer[] = [];
+    for (let i = 0; i < NUM_OUTPUTS; i++) {
+      if (i > 0) await sleep(1500);
+      pngBuffers.push(await generateOneWithRetry(sources, prompt, GEMINI_API_KEY));
+    }
 
     // 3. Save outputs to Blob in parallel
     const saved = await Promise.all(
