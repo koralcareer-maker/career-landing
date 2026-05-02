@@ -63,6 +63,46 @@ export default async function DashboardPage() {
     where: { userId, status: { in: ["APPLIED", "FOLLOWUP_SENT", "INTERVIEW_SCHEDULED"] } }
   });
 
+  // 4. Job-search OS widgets — upcoming interviews, today's reminders
+  // Wrapped in try/catch because the new tables may not exist until the
+  // admin clicks /admin/migrate-job-tracking; in that case we simply
+  // render the rest of the dashboard without these widgets.
+  let upcomingInterviews: { id: string; company: string; role: string; interviewDate: Date }[] = [];
+  let dueReminders: {
+    id: string;
+    title: string;
+    dueAt: Date;
+    application: { id: string; company: string; role: string };
+  }[] = [];
+  try {
+    const horizon14d = new Date(); horizon14d.setDate(horizon14d.getDate() + 14);
+    const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
+    [upcomingInterviews, dueReminders] = await Promise.all([
+      prisma.jobApplication.findMany({
+        where: {
+          userId,
+          archived: false,
+          interviewDate: { gte: new Date(), lte: horizon14d },
+        },
+        select: { id: true, company: true, role: true, interviewDate: true },
+        orderBy: { interviewDate: "asc" },
+        take: 3,
+      }) as Promise<{ id: string; company: string; role: string; interviewDate: Date }[]>,
+      prisma.jobApplicationReminder.findMany({
+        where: {
+          userId,
+          completed: false,
+          dueAt: { lte: todayEnd },
+        },
+        include: { application: { select: { id: true, company: true, role: true } } },
+        orderBy: { dueAt: "asc" },
+        take: 3,
+      }),
+    ]);
+  } catch (e) {
+    console.warn("[dashboard] job-tracking widgets skipped:", e instanceof Error ? e.message : e);
+  }
+
   function timeAgo(date: Date) {
     const diff = Date.now() - new Date(date).getTime();
     const h = Math.floor(diff / 3600000);
@@ -154,6 +194,93 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* ─── Job-search-OS widgets (only if user has activity) ─── */}
+        {(upcomingInterviews.length > 0 || dueReminders.length > 0) && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {upcomingInterviews.length > 0 && (
+              <div className="bg-white rounded-3xl shadow-sm border border-purple-200 p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays size={17} className="text-purple-500" />
+                    <h2 className="font-black text-navy text-base">הראיונות הקרובים שלך</h2>
+                  </div>
+                  <Link href="/progress" className="text-purple-500 text-xs font-semibold flex items-center gap-0.5 hover:underline">
+                    מעקב מלא <ChevronLeft size={14} />
+                  </Link>
+                </div>
+                <div className="space-y-2">
+                  {upcomingInterviews.map((iv) => {
+                    const days = Math.ceil((iv.interviewDate.getTime() - Date.now()) / 86400000);
+                    return (
+                      <Link
+                        key={iv.id}
+                        href={`/progress/${iv.id}`}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-purple-100 bg-purple-50/40 hover:border-purple-200 transition-colors"
+                      >
+                        <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center text-white shrink-0">
+                          <CalendarDays size={16} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-navy text-sm truncate">{iv.role}</p>
+                          <p className="text-purple-700 text-xs font-semibold truncate">{iv.company}</p>
+                        </div>
+                        <div className="text-center shrink-0">
+                          <p className="text-sm font-black text-purple-700">
+                            {days === 0 ? "היום" : days === 1 ? "מחר" : `+${days}ד׳`}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {dueReminders.length > 0 && (
+              <div className="bg-white rounded-3xl shadow-sm border border-orange-200 p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Clock size={17} className="text-orange-500" />
+                    <h2 className="font-black text-navy text-base">פעולות להיום</h2>
+                  </div>
+                  <Link href="/progress" className="text-orange-500 text-xs font-semibold flex items-center gap-0.5 hover:underline">
+                    הכל <ChevronLeft size={14} />
+                  </Link>
+                </div>
+                <div className="space-y-2">
+                  {dueReminders.map((r) => {
+                    const overdue = r.dueAt.getTime() < Date.now();
+                    return (
+                      <Link
+                        key={r.id}
+                        href={`/progress/${r.application.id}`}
+                        className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                          overdue ? "bg-red-50 border-red-200" : "bg-orange-50/40 border-orange-100 hover:border-orange-200"
+                        }`}
+                      >
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${overdue ? "bg-red-500 text-white" : "bg-orange-500 text-white"}`}>
+                          <Clock size={14} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-navy text-sm truncate">{r.title}</p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {r.application.company} · {r.application.role}
+                          </p>
+                        </div>
+                        {overdue && (
+                          <span className="text-[10px] bg-red-500 text-white rounded-full px-2 py-0.5 font-bold shrink-0">
+                            באיחור
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ─── Stats ─── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
