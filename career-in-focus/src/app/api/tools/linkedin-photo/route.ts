@@ -58,19 +58,25 @@ interface OpenAIImagesResponse {
   error?: { message?: string; type?: string; code?: string };
 }
 
-async function fetchSource(url: string, idx: number): Promise<{ blob: Blob; ext: string }> {
+interface SourceFile {
+  bytes: Uint8Array;
+  ext: string;
+  contentType: string;
+}
+
+async function fetchSource(url: string, idx: number): Promise<SourceFile> {
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`source-fetch-${res.status}: image ${idx + 1}`);
   }
-  const ct = res.headers.get("content-type") ?? "image/jpeg";
-  const ext = ct.includes("png") ? "png" : ct.includes("webp") ? "webp" : "jpg";
-  const blob = await res.blob();
-  return { blob, ext };
+  const contentType = res.headers.get("content-type") ?? "image/jpeg";
+  const ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  return { bytes, ext, contentType };
 }
 
 async function callOpenAIEdits(
-  sources: { blob: Blob; ext: string }[],
+  sources: SourceFile[],
   prompt: string,
   apiKey: string
 ): Promise<Buffer[]> {
@@ -82,7 +88,10 @@ async function callOpenAIEdits(
   form.append("quality", "medium"); // medium fits the 60s Vercel budget for n=2
   for (let i = 0; i < sources.length; i++) {
     const filename = `source-${i + 1}.${sources[i].ext}`;
-    form.append("image[]", sources[i].blob, filename);
+    // Wrap bytes in a freshly-constructed Blob so the type matches the global
+    // FormData.append signature (avoids cross-realm Blob type mismatches).
+    const blob = new Blob([sources[i].bytes], { type: sources[i].contentType });
+    form.append("image[]", blob, filename);
   }
 
   const res = await fetch("https://api.openai.com/v1/images/edits", {
@@ -125,7 +134,7 @@ async function callOpenAIEdits(
 
 /** Run the OpenAI call once. On a transient failure, retry exactly once. */
 async function generateWithRetry(
-  sources: { blob: Blob; ext: string }[],
+  sources: SourceFile[],
   prompt: string,
   apiKey: string
 ): Promise<Buffer[]> {
