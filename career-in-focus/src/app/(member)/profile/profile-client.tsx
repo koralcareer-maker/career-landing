@@ -11,6 +11,7 @@ import {
 } from "@/lib/actions/profile";
 import { getInitials } from "@/lib/utils";
 import { User, Star, Zap, BookOpen, CheckCircle, Camera, Check, X, FileText, Sparkles, Loader2, ChevronDown, Upload, TrendingUp, MessageSquare, AlertCircle } from "lucide-react";
+import { PassportHero } from "./passport-hero";
 
 // ─── Industry list ────────────────────────────────────────────────────────────
 
@@ -391,6 +392,21 @@ export function ProfileClient({ user, profile, passport, readinessScore }: Props
 
   return (
     <div className="space-y-5">
+      {/* Passport Hero — shown only when the user has a generated passport.
+          Sits at the very top so the visual artefact is the first thing they
+          see on every profile visit, not a settings page. */}
+      {passportResult && (
+        <PassportHero
+          passport={passportResult}
+          user={{
+            name: profile?.fullName || user.name,
+            imageUrl: profile?.imageUrl,
+            targetRole: profile?.targetRole,
+            currentRole: profile?.currentRole,
+          }}
+        />
+      )}
+
       {/* Readiness bar */}
       <div className="bg-gradient-to-l from-teal-pale to-white rounded-2xl p-5 border border-teal/20">
         <div className="flex items-center justify-between mb-2">
