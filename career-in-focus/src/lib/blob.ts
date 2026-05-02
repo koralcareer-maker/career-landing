@@ -45,7 +45,7 @@ export async function saveGenerated(
   userId: string,
   timestamp: number,
   index: number,
-  pngBytes: Uint8Array | Buffer
+  pngBytes: Buffer
 ): Promise<PutBlobResult> {
   return put(generatedPathname(userId, timestamp, index), pngBytes, {
     access: "public",

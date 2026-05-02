@@ -59,7 +59,7 @@ interface OpenAIImagesResponse {
 }
 
 interface SourceFile {
-  bytes: Uint8Array;
+  buffer: ArrayBuffer;
   ext: string;
   contentType: string;
 }
@@ -71,8 +71,8 @@ async function fetchSource(url: string, idx: number): Promise<SourceFile> {
   }
   const contentType = res.headers.get("content-type") ?? "image/jpeg";
   const ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
-  const bytes = new Uint8Array(await res.arrayBuffer());
-  return { bytes, ext, contentType };
+  const buffer = await res.arrayBuffer();
+  return { buffer, ext, contentType };
 }
 
 async function callOpenAIEdits(
@@ -88,9 +88,10 @@ async function callOpenAIEdits(
   form.append("quality", "medium"); // medium fits the 60s Vercel budget for n=2
   for (let i = 0; i < sources.length; i++) {
     const filename = `source-${i + 1}.${sources[i].ext}`;
-    // Wrap bytes in a freshly-constructed Blob so the type matches the global
-    // FormData.append signature (avoids cross-realm Blob type mismatches).
-    const blob = new Blob([sources[i].bytes], { type: sources[i].contentType });
+    // Pass the raw ArrayBuffer to the Blob constructor — ArrayBuffer is a
+    // BlobPart in DOM types and avoids the TS 5.7+ Uint8Array<ArrayBufferLike>
+    // generic narrowing problem.
+    const blob = new Blob([sources[i].buffer], { type: sources[i].contentType });
     form.append("image[]", blob, filename);
   }
 
