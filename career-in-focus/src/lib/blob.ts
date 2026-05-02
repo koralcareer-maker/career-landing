@@ -65,6 +65,43 @@ export interface HistoryJob {
 }
 
 /**
+ * Count how many distinct generation jobs a user has run since the given
+ * unix-ms cutoff (e.g. start of current month). A "job" = one timestamp
+ * folder under linkedin-photos/<userId>/ that contains at least one
+ * generated-N.png file.
+ *
+ * Used for the per-user monthly quota.
+ */
+export async function countUserJobsSince(userId: string, sinceMs: number): Promise<number> {
+  const prefix = userPrefix(userId);
+  const seenJobTs = new Set<number>();
+
+  let cursor: string | undefined;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const page = await list({ prefix, cursor, limit: 1000 });
+    for (const blob of page.blobs) {
+      const rel = blob.pathname.slice(prefix.length);
+      const parts = rel.split("/");
+      if (parts.length < 2) continue;
+      const ts = Number(parts[0]);
+      if (!Number.isFinite(ts) || ts < sinceMs) continue;
+      const file = parts[parts.length - 1];
+      if (!/^generated-\d+\.png$/.test(file)) continue;
+      seenJobTs.add(ts);
+    }
+    if (!page.hasMore || !page.cursor) break;
+    cursor = page.cursor;
+  }
+  return seenJobTs.size;
+}
+
+/** Returns unix-ms for the first millisecond of the current calendar month (UTC). */
+export function startOfMonthMs(now: Date = new Date()): number {
+  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0);
+}
+
+/**
  * List a user's generation history.
  *
  * Strategy: list everything under `linkedin-photos/<userId>/`,

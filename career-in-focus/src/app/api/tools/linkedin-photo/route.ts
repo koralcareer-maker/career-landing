@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { BLOB_ROOT, saveGenerated } from "@/lib/blob";
+import {
+  BLOB_ROOT,
+  saveGenerated,
+  countUserJobsSince,
+  startOfMonthMs,
+} from "@/lib/blob";
 
 /**
  * LinkedIn photo generator — generation endpoint.
@@ -12,13 +17,14 @@ import { BLOB_ROOT, saveGenerated } from "@/lib/blob";
  *    pass through this route.
  * 2. The client then calls THIS endpoint with only:
  *      { sourceUrls: string[3], gender, style, jobId }
- * 3. We download the 3 URLs server-side, send them to OpenAI's
- *    `images/edits` endpoint with model `gpt-image-1` (which accepts up to
- *    16 reference images and edits them based on a prompt — perfect for
- *    "preserve facial identity, restyle as professional headshot").
- * 4. We save each generated PNG to Vercel Blob and return the saved URLs.
- *    Persistence after refresh is handled by /api/tools/linkedin-photo/history
- *    listing this user's Blob folder — no DB required.
+ * 3. We fetch the 3 sources from Blob, base64-encode them, and call Google's
+ *    Gemini 2.5 Flash Image API (the "Nano Banana" model) — it accepts up
+ *    to ~10 reference images plus a prompt and returns generated PNG/JPEG
+ *    bytes inline. Free tier: 100 requests/day, 10 RPM.
+ * 4. Each user is limited to MAX_JOBS_PER_MONTH generations per calendar
+ *    month — counted from existing Blob folders, no DB row needed.
+ * 5. We save each generated image to Vercel Blob and return the saved URLs.
+ *    Persistence after refresh is via /api/tools/linkedin-photo/history.
  */
 
 export const runtime = "nodejs";
@@ -29,39 +35,68 @@ const ALLOWED_STYLES = ["formal", "casual", "creative"] as const;
 type Gender = (typeof ALLOWED_GENDERS)[number];
 type Style = (typeof ALLOWED_STYLES)[number];
 
+/** Number of variants we ask Gemini to produce for one user request. */
 const NUM_OUTPUTS = 2;
+
+/** Per-user monthly quota. Counts distinct generation jobs (timestamp folders). */
+const MAX_JOBS_PER_MONTH = 2;
+
+/** Gemini 2.5 Flash Image — image-out-capable preview model. */
+const GEMINI_MODEL = "gemini-2.5-flash-image-preview";
 
 // ─── Prompt builder ─────────────────────────────────────────────────────────
 
 function buildPrompt(gender: Gender, style: Style): string {
-  const subject = gender === "woman" ? "professional woman" : "professional man";
+  const subject = gender === "woman" ? "woman" : "man";
   const styleDesc: Record<Style, string> = {
     formal:
-      "wearing a tailored business suit or blazer, clean light-grey studio background, soft diffused studio lighting with subtle rim light, confident approachable expression, slight smile, eyes looking directly at camera, sharp focus on the eyes",
+      "wearing a tailored business suit or blazer, against a clean light-grey studio background with soft diffused studio lighting, confident approachable expression, slight smile, eyes looking directly at the camera",
     casual:
-      "wearing smart-casual attire in neutral tones (sweater or button-up), clean neutral background, natural warm studio lighting, warm approachable expression, genuine smile, eyes looking at camera, sharp focus on the eyes",
+      "wearing smart-casual attire in neutral tones (a sweater or a button-up shirt), against a clean neutral background with natural warm studio lighting, warm friendly expression with a genuine smile, eyes looking directly at the camera",
     creative:
-      "wearing modern creative-professional attire (tailored jacket or designer top), softly blurred modern office background, cinematic lighting with depth, confident creative expression, sharp focus on the eyes",
+      "wearing modern creative-professional attire (a tailored jacket or designer top), against a softly blurred modern office background with cinematic lighting, confident creative expression",
   };
+  // Phrasing tuned to minimize Gemini safety filter blocks: emphasize that
+  // the output is "the same person" rather than asking to "transform" or
+  // "modify" them.
   return [
-    `Generate a single high-resolution professional LinkedIn headshot of the ${subject} shown in the reference photos.`,
-    `${styleDesc[style]}.`,
-    "Upper-body portrait, photorealistic, 8K corporate photography, color photo.",
-    "CRITICAL: preserve the exact facial identity (face shape, eyes, nose, mouth, hairline) from the reference photos. Do not change ethnicity, age, or distinguishing features. The output person must look identifiably like the input person.",
+    `Create a professional LinkedIn-style headshot of the same ${subject} shown in the reference photographs.`,
+    `The output should be photorealistic high-quality color photography, ${styleDesc[style]}.`,
+    `It is the SAME PERSON — keep their face shape, eyes, nose, mouth, hairline and skin tone identical to the reference photos.`,
+    `Upper-body portrait, sharp focus on the eyes, professional corporate photography style.`,
+    `Return one generated image.`,
   ].join(" ");
 }
 
-// ─── OpenAI Images Edit call ────────────────────────────────────────────────
+// ─── Gemini Generative Language API call ────────────────────────────────────
 
-interface OpenAIImagesResponse {
-  data?: { b64_json?: string; url?: string }[];
-  error?: { message?: string; type?: string; code?: string };
+interface GeminiInlineData {
+  mimeType?: string;
+  mime_type?: string;
+  data: string; // base64
+}
+
+interface GeminiPart {
+  text?: string;
+  inlineData?: GeminiInlineData;
+  inline_data?: GeminiInlineData;
+}
+
+interface GeminiCandidate {
+  content?: { parts?: GeminiPart[] };
+  finishReason?: string;
+  safetyRatings?: { category: string; probability: string }[];
+}
+
+interface GeminiResponse {
+  candidates?: GeminiCandidate[];
+  promptFeedback?: { blockReason?: string; safetyRatings?: unknown[] };
+  error?: { code?: number; message?: string; status?: string };
 }
 
 interface SourceFile {
-  buffer: ArrayBuffer;
-  ext: string;
-  contentType: string;
+  base64: string;
+  mimeType: string;
 }
 
 async function fetchSource(url: string, idx: number): Promise<SourceFile> {
@@ -69,90 +104,88 @@ async function fetchSource(url: string, idx: number): Promise<SourceFile> {
   if (!res.ok) {
     throw new Error(`source-fetch-${res.status}: image ${idx + 1}`);
   }
-  const contentType = res.headers.get("content-type") ?? "image/jpeg";
-  const ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
-  const buffer = await res.arrayBuffer();
-  return { buffer, ext, contentType };
+  const mimeType = res.headers.get("content-type") ?? "image/jpeg";
+  const buf = Buffer.from(await res.arrayBuffer());
+  return { base64: buf.toString("base64"), mimeType };
 }
 
-async function callOpenAIEdits(
+/** One Gemini call. Returns PNG/JPEG bytes for the first image part found. */
+async function callGeminiOnce(
   sources: SourceFile[],
   prompt: string,
   apiKey: string
-): Promise<Buffer[]> {
-  const form = new FormData();
-  form.append("model", "gpt-image-1");
-  form.append("prompt", prompt);
-  form.append("n", String(NUM_OUTPUTS));
-  form.append("size", "1024x1024");
-  form.append("quality", "medium"); // medium fits the 60s Vercel budget for n=2
-  for (let i = 0; i < sources.length; i++) {
-    const filename = `source-${i + 1}.${sources[i].ext}`;
-    // Pass the raw ArrayBuffer to the Blob constructor — ArrayBuffer is a
-    // BlobPart in DOM types and avoids the TS 5.7+ Uint8Array<ArrayBufferLike>
-    // generic narrowing problem.
-    const blob = new Blob([sources[i].buffer], { type: sources[i].contentType });
-    form.append("image[]", blob, filename);
-  }
+): Promise<Buffer> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(
+    apiKey
+  )}`;
 
-  const res = await fetch("https://api.openai.com/v1/images/edits", {
+  const parts: GeminiPart[] = [
+    { text: prompt },
+    ...sources.map<GeminiPart>((s) => ({
+      inlineData: { mimeType: s.mimeType, data: s.base64 },
+    })),
+  ];
+
+  const res = await fetch(url, {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}` },
-    body: form,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts }],
+      generationConfig: {
+        responseModalities: ["IMAGE", "TEXT"],
+      },
+    }),
   });
 
   const text = await res.text();
-  let data: OpenAIImagesResponse;
+  let data: GeminiResponse;
   try {
-    data = JSON.parse(text) as OpenAIImagesResponse;
+    data = JSON.parse(text) as GeminiResponse;
   } catch {
-    throw new Error(`openai-bad-json-${res.status}: ${text.slice(0, 200)}`);
+    throw new Error(`gemini-bad-json-${res.status}: ${text.slice(0, 200)}`);
   }
-
   if (!res.ok) {
     const msg = data.error?.message ?? text.slice(0, 200);
-    throw new Error(`openai-${res.status}-${data.error?.code ?? "err"}: ${msg}`);
+    throw new Error(`gemini-${res.status}-${data.error?.status ?? "err"}: ${msg}`);
   }
-  if (!data.data || data.data.length === 0) {
-    throw new Error("openai-empty: no images returned");
+  if (data.promptFeedback?.blockReason) {
+    throw new Error(`gemini-blocked: ${data.promptFeedback.blockReason}`);
   }
-
-  const buffers: Buffer[] = [];
-  for (const item of data.data) {
-    if (item.b64_json) {
-      buffers.push(Buffer.from(item.b64_json, "base64"));
-    } else if (item.url) {
-      const r = await fetch(item.url);
-      if (!r.ok) throw new Error(`openai-url-fetch-${r.status}`);
-      buffers.push(Buffer.from(await r.arrayBuffer()));
-    }
+  const candidate = data.candidates?.[0];
+  if (!candidate) throw new Error("gemini-empty: no candidates");
+  if (candidate.finishReason && candidate.finishReason !== "STOP") {
+    throw new Error(`gemini-finish-${candidate.finishReason}`);
   }
-  if (buffers.length === 0) {
-    throw new Error("openai-empty-payload: data items had no b64 or url");
+  const imgPart = candidate.content?.parts?.find(
+    (p) => p.inlineData?.data || p.inline_data?.data
+  );
+  const inline = imgPart?.inlineData ?? imgPart?.inline_data;
+  if (!inline?.data) {
+    throw new Error("gemini-empty-payload: no inlineData in response");
   }
-  return buffers;
+  return Buffer.from(inline.data, "base64");
 }
 
-/** Run the OpenAI call once. On a transient failure, retry exactly once. */
-async function generateWithRetry(
+/** Run Gemini once. On a transient failure, retry exactly once. */
+async function generateOneWithRetry(
   sources: SourceFile[],
   prompt: string,
   apiKey: string
-): Promise<Buffer[]> {
+): Promise<Buffer> {
   try {
-    return await callOpenAIEdits(sources, prompt, apiKey);
+    return await callGeminiOnce(sources, prompt, apiKey);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     const transient =
-      msg.includes("openai-5") ||
-      msg.includes("openai-429") ||
+      msg.includes("gemini-5") ||
+      msg.includes("gemini-429") ||
       msg.includes("ETIMEDOUT") ||
       msg.includes("ECONNRESET") ||
-      msg.includes("openai-bad-json") ||
-      msg.includes("openai-empty");
+      msg.includes("gemini-bad-json") ||
+      msg.includes("gemini-empty");
     if (!transient) throw e;
-    console.warn("[linkedin-photo] transient failure, retrying once:", msg);
-    return await callOpenAIEdits(sources, prompt, apiKey);
+    console.warn("[linkedin-photo] transient Gemini failure, retrying once:", msg);
+    return await callGeminiOnce(sources, prompt, apiKey);
   }
 }
 
@@ -162,7 +195,7 @@ interface RequestBody {
   sourceUrls?: unknown;
   gender?: unknown;
   style?: unknown;
-  jobId?: unknown; // unix-ms timestamp identifying this generation folder
+  jobId?: unknown;
 }
 
 export async function POST(req: NextRequest) {
@@ -172,13 +205,13 @@ export async function POST(req: NextRequest) {
   }
   const userId = session.user.id;
 
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-  if (!OPENAI_API_KEY) {
-    console.error("[linkedin-photo] OPENAI_API_KEY missing");
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_API_KEY) {
+    console.error("[linkedin-photo] GEMINI_API_KEY missing");
     return NextResponse.json(
       {
         error:
-          "המחולל לא מוגדר. יש להוסיף את משתנה הסביבה OPENAI_API_KEY ב-Vercel (Settings → Environment Variables).",
+          "המחולל לא מוגדר. יש להוסיף את משתנה הסביבה GEMINI_API_KEY ב-Vercel (Settings → Environment Variables).",
       },
       { status: 503 }
     );
@@ -221,7 +254,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    // Reject other users' blobs (URL.pathname always starts with "/")
     if (!parsed.pathname.startsWith(`/${userBlobPrefix}`)) {
       return NextResponse.json(
         { error: `תמונה ${i + 1} אינה שייכת למשתמש המחובר` },
@@ -236,11 +268,27 @@ export async function POST(req: NextRequest) {
   if (typeof body.style !== "string" || !ALLOWED_STYLES.includes(body.style as Style)) {
     return NextResponse.json({ error: "סגנון לא תקין — formal / casual / creative" }, { status: 400 });
   }
-  const jobId = typeof body.jobId === "number" && Number.isFinite(body.jobId) ? body.jobId : Date.now();
+  const jobId =
+    typeof body.jobId === "number" && Number.isFinite(body.jobId) ? body.jobId : Date.now();
 
   const gender = body.gender as Gender;
   const style = body.style as Style;
   const sourceUrls = body.sourceUrls as string[];
+
+  // ─── Per-user monthly quota ───────────────────────────────────────────────
+  const since = startOfMonthMs();
+  const usedThisMonth = await countUserJobsSince(userId, since);
+  if (usedThisMonth >= MAX_JOBS_PER_MONTH) {
+    console.log("[linkedin-photo] quota exceeded", { userId, usedThisMonth });
+    return NextResponse.json(
+      {
+        error: `מיצית את מכסת היצירות החינמית לחודש (${MAX_JOBS_PER_MONTH} בחודש). המכסה תתחדש בתחילת החודש הבא.`,
+        quotaUsed: usedThisMonth,
+        quotaMax: MAX_JOBS_PER_MONTH,
+      },
+      { status: 429 }
+    );
+  }
 
   console.log("[linkedin-photo] generate start", {
     userId,
@@ -248,15 +296,18 @@ export async function POST(req: NextRequest) {
     gender,
     style,
     sources: sourceUrls.length,
+    usedThisMonth,
   });
 
   try {
-    // 1. Fetch all 3 sources from Blob (server-to-Blob is fast, same region typically)
+    // 1. Fetch all 3 sources from Blob
     const sources = await Promise.all(sourceUrls.map((u, i) => fetchSource(u, i)));
 
-    // 2. Build prompt + call OpenAI (with one retry on transient failures)
+    // 2. Build prompt + call Gemini twice in parallel (it produces 1 image per call)
     const prompt = buildPrompt(gender, style);
-    const pngBuffers = await generateWithRetry(sources, prompt, OPENAI_API_KEY);
+    const pngBuffers = await Promise.all(
+      Array.from({ length: NUM_OUTPUTS }, () => generateOneWithRetry(sources, prompt, GEMINI_API_KEY))
+    );
 
     // 3. Save outputs to Blob in parallel
     const saved = await Promise.all(
@@ -265,7 +316,12 @@ export async function POST(req: NextRequest) {
 
     const images = saved.map((s) => s.url);
     console.log("[linkedin-photo] generate success", { userId, jobId, count: images.length });
-    return NextResponse.json({ images, jobId });
+    return NextResponse.json({
+      images,
+      jobId,
+      quotaUsed: usedThisMonth + 1,
+      quotaMax: MAX_JOBS_PER_MONTH,
+    });
   } catch (e) {
     const raw = e instanceof Error ? e.message : String(e);
     console.error("[linkedin-photo] generate failure:", { userId, jobId, raw });
@@ -275,23 +331,27 @@ export async function POST(req: NextRequest) {
     if (raw.startsWith("source-fetch-")) {
       userMsg = "אחת התמונות לא נטענה מאחסון הענן — נסי להעלות שוב";
       status = 400;
-    } else if (raw.startsWith("openai-401") || raw.startsWith("openai-403")) {
-      userMsg = "הרשאות OpenAI אינן תקינות — יש לעדכן את OPENAI_API_KEY ב-Vercel";
+    } else if (raw.startsWith("gemini-401") || raw.startsWith("gemini-403")) {
+      userMsg = "הרשאות Gemini אינן תקינות — יש לעדכן את GEMINI_API_KEY ב-Vercel";
       status = 503;
-    } else if (raw.startsWith("openai-429")) {
-      userMsg = "המודל בעומס כרגע — נסי שוב בעוד דקה";
+    } else if (raw.startsWith("gemini-429")) {
+      userMsg = "המודל בעומס כרגע (חרגנו ממכסת השימוש החינמית) — נסי שוב בעוד דקה";
       status = 429;
-    } else if (raw.startsWith("openai-400") && raw.includes("safety")) {
-      userMsg = "המודל סירב לעבד את התמונות מסיבות בטיחות — נסי תמונות אחרות";
+    } else if (raw.startsWith("gemini-blocked") || raw.startsWith("gemini-finish-SAFETY")) {
+      userMsg =
+        "מסנני הבטיחות של Google חסמו את היצירה. זה קורה לפעמים בתמונות פנים — נסי תמונות אחרות, או זוויות שונות.";
       status = 400;
-    } else if (raw.startsWith("openai-400")) {
+    } else if (raw.startsWith("gemini-finish-RECITATION")) {
+      userMsg = "המודל סירב הפעם — נסי שוב או החליפי תמונה";
+      status = 400;
+    } else if (raw.startsWith("gemini-400")) {
       userMsg = "אחת התמונות נדחתה ע״י המודל — נסי תמונות פנים ברורות יותר (JPG/PNG/WEBP)";
       status = 400;
-    } else if (raw.startsWith("openai-5")) {
-      userMsg = "שירות התמונות של OpenAI נכשל — נסי שוב בעוד מספר דקות";
+    } else if (raw.startsWith("gemini-5")) {
+      userMsg = "שירות Gemini נכשל — נסי שוב בעוד מספר דקות";
       status = 502;
-    } else if (raw.startsWith("openai-empty")) {
-      userMsg = "המודל לא החזיר תמונות הפעם — נסי שוב";
+    } else if (raw.startsWith("gemini-empty")) {
+      userMsg = "המודל לא החזיר תמונה הפעם — נסי שוב";
     } else if (raw.includes("ETIMEDOUT") || raw.includes("ECONNRESET")) {
       userMsg = "תקלת רשת מול ספק התמונות — נסי שוב";
     } else if (raw.includes("Vercel Blob") || raw.includes("BLOB_")) {
