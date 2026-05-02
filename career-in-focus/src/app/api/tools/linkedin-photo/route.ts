@@ -41,8 +41,8 @@ const NUM_OUTPUTS = 2;
 /** Per-user monthly quota. Counts distinct generation jobs (timestamp folders). */
 const MAX_JOBS_PER_MONTH = 2;
 
-/** Gemini 2.5 Flash Image — image-out-capable preview model. */
-const GEMINI_MODEL = "gemini-2.5-flash-image-preview";
+/** Gemini 2.5 Flash Image (a.k.a. "Nano Banana") — image-out capable. */
+const GEMINI_MODEL = "gemini-2.5-flash-image";
 
 // ─── Prompt builder ─────────────────────────────────────────────────────────
 
