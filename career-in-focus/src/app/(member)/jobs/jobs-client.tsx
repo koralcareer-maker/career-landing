@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { MapPin, Building2, ExternalLink, Flame, Briefcase, ChevronDown } from "lucide-react";
+import { useState, useTransition } from "react";
+import { MapPin, Building2, ExternalLink, Flame, Briefcase, ChevronDown, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getMatchLabel } from "@/lib/utils";
+import { trackApplicationFromJob } from "@/lib/actions/job-tracking";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,6 +26,61 @@ export interface JobItem {
   matchScore: number;
   /** Short human-readable Hebrew reasons explaining the match (max 3). */
   matchReasons?: string[];
+}
+
+// ─── Apply + Track Button ───────────────────────────────────────────────────
+// Wraps the catalogue's "open external URL" CTA so that clicking it ALSO
+// adds the job to the user's /progress tracker (idempotent — duplicates
+// are detected and skipped on the server). Uses startTransition so the
+// external tab opens immediately without waiting for the server roundtrip.
+function ApplyAndTrackButton({ job }: { job: JobItem }) {
+  const [, startTransition] = useTransition();
+  const [tracked, setTracked] = useState<"idle" | "added" | "exists">("idle");
+
+  if (!job.externalUrl) {
+    return (
+      <Button size="sm" variant="secondary" className="w-full" disabled>
+        פרטים בקרוב
+      </Button>
+    );
+  }
+
+  return (
+    <a
+      href={job.externalUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => {
+        // Fire-and-forget — don't block the link from opening.
+        startTransition(async () => {
+          try {
+            const r = await trackApplicationFromJob(job.id);
+            setTracked(r.isNew ? "added" : "exists");
+          } catch {
+            // Silent failure — link still opened in a new tab.
+          }
+        });
+      }}
+      className="w-full inline-flex items-center justify-center gap-2 bg-teal text-white font-semibold py-2.5 rounded-xl hover:bg-teal-dark transition-colors text-sm relative"
+    >
+      {tracked === "idle" && (
+        <>
+          פרטים ומועמדות
+          <ExternalLink size={13} />
+        </>
+      )}
+      {tracked === "added" && (
+        <>
+          <CheckCircle2 size={14} /> נשמרה במעקב + נפתחה בלשונית
+        </>
+      )}
+      {tracked === "exists" && (
+        <>
+          <CheckCircle2 size={14} /> כבר במעקב + נפתחה בלשונית
+        </>
+      )}
+    </a>
+  );
 }
 
 // ─── Job Card ─────────────────────────────────────────────────────────────────
@@ -103,23 +159,9 @@ function JobCard({ job }: { job: JobItem }) {
           )}
         </div>
 
-        {/* CTA */}
+        {/* CTA — opens external URL AND auto-tracks into /progress */}
         <div className="pt-3 border-t border-gray-100 mt-auto">
-          {job.externalUrl ? (
-            <a
-              href={job.externalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full inline-flex items-center justify-center gap-2 bg-teal text-white font-semibold py-2.5 rounded-xl hover:bg-teal-dark transition-colors text-sm"
-            >
-              פרטים ומועמדות
-              <ExternalLink size={13} />
-            </a>
-          ) : (
-            <Button size="sm" variant="secondary" className="w-full" disabled>
-              פרטים בקרוב
-            </Button>
-          )}
+          <ApplyAndTrackButton job={job} />
         </div>
       </CardContent>
     </Card>

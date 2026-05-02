@@ -193,6 +193,80 @@ export async function toggleReminderComplete(reminderId: string) {
   return next;
 }
 
+/**
+ * Auto-tracks a Job (from the /jobs catalogue) into the user's
+ * JobApplication tracker when they click "Apply". Idempotent — if a
+ * JobApplication for the same Job (same jobLink or company+role) already
+ * exists for this user, returns the existing one instead of creating a
+ * duplicate. Returns { id, isNew } so the client can show a "תווסף למעקב"
+ * vs. "כבר במעקב" toast.
+ */
+export async function trackApplicationFromJob(jobId: string): Promise<{
+  id: string;
+  isNew: boolean;
+}> {
+  const userId = await requireUser();
+
+  const job = await prisma.job.findUnique({ where: { id: jobId } });
+  if (!job) throw new Error("המשרה לא נמצאה");
+
+  // Try to find an existing tracked application for this job (by external
+  // URL first — most reliable signal — then fall back to company+role).
+  const existing = await prisma.jobApplication.findFirst({
+    where: {
+      userId,
+      OR: [
+        job.externalUrl ? { jobLink: job.externalUrl } : { id: "__nope__" },
+        { company: job.company, role: job.title },
+      ],
+    },
+    select: { id: true },
+  });
+  if (existing) {
+    return { id: existing.id, isNew: false };
+  }
+
+  const created = await prisma.jobApplication.create({
+    data: {
+      userId,
+      company: job.company,
+      role: job.title,
+      jobLink: job.externalUrl,
+      source: job.source ?? "מקטלוג המשרות",
+      dateApplied: new Date(),
+      status: "APPLIED",
+      notes: job.summary ?? job.description ?? null,
+    },
+    select: { id: true },
+  });
+  revalidatePath("/progress");
+  revalidatePath("/dashboard");
+  return { id: created.id, isNew: true };
+}
+
+/**
+ * Quick action used by the welcome banner — add a follow-up reminder
+ * exactly N days from now, with a sensible default title. Returns the
+ * created reminder so the UI can show "+ Reminder set for D/M/Y".
+ */
+export async function addQuickFollowupReminder(applicationId: string, daysFromNow = 7) {
+  const userId = await requireUser();
+  const app = await loadOwnedApplication(applicationId, userId);
+
+  const dueAt = new Date();
+  dueAt.setDate(dueAt.getDate() + daysFromNow);
+
+  return prisma.jobApplicationReminder.create({
+    data: {
+      applicationId,
+      userId,
+      title: `Follow-up — ${app.company}`,
+      dueAt,
+      type: "FOLLOWUP",
+    },
+  });
+}
+
 export async function deleteReminder(reminderId: string) {
   const userId = await requireUser();
   const r = await prisma.jobApplicationReminder.findUnique({ where: { id: reminderId } });

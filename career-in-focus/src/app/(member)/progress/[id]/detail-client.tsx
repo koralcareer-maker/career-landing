@@ -2,12 +2,13 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronLeft, Briefcase, Calendar, Clock, Edit3,
   Plus, Trash2, CheckCircle2, Circle, Sparkles, Bell,
   BookText, AlertCircle, ExternalLink, Archive,
-  ArrowUpCircle, MessageSquare,
+  ArrowUpCircle, MessageSquare, PartyPopper, X,
+  Search as SearchIcon, BookOpen,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   addJournalEntry, deleteJournalEntry,
   addReminder, toggleReminderComplete, deleteReminder,
-  updateApplicationCore,
+  updateApplicationCore, addQuickFollowupReminder,
 } from "@/lib/actions/job-tracking";
 import type { PrepStep } from "@/lib/job-search-insights";
 
@@ -151,11 +152,16 @@ function daysSince(iso: string | null): number | null {
 
 export function ApplicationDetailClient({ application, journal: initialJournal, reminders: initialReminders, prep }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isWelcome = searchParams.get("welcome") === "1";
+
   const [app, setApp] = useState(application);
   const [journal, setJournal] = useState(initialJournal);
   const [reminders, setReminders] = useState(initialReminders);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
+  const [welcomeOpen, setWelcomeOpen] = useState(isWelcome);
+  const [followupSet, setFollowupSet] = useState(false);
 
   // ─── Quick actions: status change, interview date, next step ───────────
   function changeStatus(newStatus: string) {
@@ -310,6 +316,120 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
           <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
           <p>{error}</p>
         </div>
+      )}
+
+      {/* ─── Welcome banner (just submitted) ─── */}
+      {welcomeOpen && (
+        <Card className="p-6 border-teal/40 bg-gradient-to-l from-teal/5 to-purple-50 relative">
+          <button
+            type="button"
+            onClick={() => setWelcomeOpen(false)}
+            aria-label="סגור"
+            className="absolute top-3 left-3 text-gray-400 hover:text-gray-700 p-1"
+          >
+            <X size={16} />
+          </button>
+
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-12 h-12 bg-teal rounded-2xl flex items-center justify-center text-white shrink-0">
+              <PartyPopper size={22} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-navy">בשעה טובה — הוגשה ✨</h2>
+              <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                <span className="font-bold">{app.role}</span> ב-<span className="font-bold">{app.company}</span> נמצאת עכשיו במעקב.
+                בואי נבנה מומנטום — הנה 3 פעולות שלוקחות פחות מדקה ועושות את ההבדל:
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5">
+
+            {/* Action 1: Research the company via AI coach */}
+            <a
+              href={`/coaching?prompt=${encodeURIComponent(
+                `מה כדאי לי לדעת על החברה "${app.company}" לפני שאני מתראיינת לתפקיד "${app.role}"? תני לי 5 נקודות עיקריות: מודל עסקי, חדשות מהחודש האחרון, תרבות ארגונית, אנשים בתפקידים דומים בלינקדאין, ו-2-3 שאלות חכמות שאני יכולה לשאול בראיון.`
+              )}`}
+              className="group flex flex-col gap-2 p-4 rounded-2xl bg-white border border-slate-100 hover:border-teal/40 hover:shadow-sm transition-all"
+            >
+              <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 shrink-0">
+                <SearchIcon size={16} />
+              </div>
+              <p className="font-bold text-navy text-sm">מה כדאי לדעת על {app.company}</p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                שיחה ממוקדת עם המאמן — הוא ייתן לך מודל עסקי, תרבות, חדשות, ושאלות לראיון.
+              </p>
+              <span className="text-teal text-xs font-bold mt-auto group-hover:translate-x-[-3px] transition-transform">
+                לשיחה ←
+              </span>
+            </a>
+
+            {/* Action 2: Quick 7-day follow-up reminder */}
+            <button
+              type="button"
+              disabled={followupSet || pending}
+              onClick={() => {
+                startTransition(async () => {
+                  try {
+                    const r = await addQuickFollowupReminder(app.id, 7);
+                    setReminders([
+                      ...reminders,
+                      {
+                        id: r.id,
+                        title: r.title,
+                        dueAt: r.dueAt.toISOString(),
+                        type: r.type,
+                        notes: r.notes,
+                        completed: r.completed,
+                        completedAt: r.completedAt?.toISOString() ?? null,
+                      },
+                    ].sort((a, b) => a.dueAt.localeCompare(b.dueAt)));
+                    setFollowupSet(true);
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : "שמירה נכשלה");
+                  }
+                });
+              }}
+              className="group text-right flex flex-col gap-2 p-4 rounded-2xl bg-white border border-slate-100 hover:border-teal/40 hover:shadow-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              <div className="w-9 h-9 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600 shrink-0">
+                {followupSet ? <CheckCircle2 size={16} /> : <Bell size={16} />}
+              </div>
+              <p className="font-bold text-navy text-sm">
+                {followupSet ? "תזכורת נשמרה ✓" : "תזכורת follow-up בעוד שבוע"}
+              </p>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {followupSet
+                  ? "כל הכבוד — בעוד שבוע אזכיר לך לחזור אל המגייס/ת אם אין תגובה."
+                  : "אם אין תגובה תוך שבוע, מומלץ לשלוח follow-up קצר. אני אזכיר לך."}
+              </p>
+              {!followupSet && (
+                <span className="text-teal text-xs font-bold mt-auto group-hover:translate-x-[-3px] transition-transform">
+                  הוסיפי ←
+                </span>
+              )}
+            </button>
+
+            {/* Action 3: Interview prep course */}
+            <a
+              href="https://my.schooler.biz/s/106543/1765824391549?utm_source=HryKqw"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col gap-2 p-4 rounded-2xl bg-gradient-to-l from-navy to-[#1a3a4a] text-white hover:shadow-md transition-shadow"
+            >
+              <div className="w-9 h-9 bg-teal rounded-xl flex items-center justify-center shrink-0">
+                <BookOpen size={16} className="text-white" />
+              </div>
+              <p className="font-bold text-sm">קורס ההכנה לראיונות שלי</p>
+              <p className="text-xs text-white/70 leading-relaxed">
+                סיפורי הצלחה, תרגול שאלות קשות, משוב חי. הכי טוב לעשות ימים לפני שמזמינים אותך.
+              </p>
+              <span className="text-teal text-xs font-bold mt-auto group-hover:translate-x-[-3px] transition-transform">
+                לקורס ←
+              </span>
+            </a>
+          </div>
+        </Card>
       )}
 
       {/* ─── Interview countdown (when soon) ─── */}

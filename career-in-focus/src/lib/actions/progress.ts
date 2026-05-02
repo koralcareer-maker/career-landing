@@ -26,7 +26,7 @@ export async function addJobApplication(prevState: unknown, formData: FormData) 
   if (!result.success) return { error: result.error.issues[0].message };
 
   const data = result.data;
-  await prisma.jobApplication.create({
+  const created = await prisma.jobApplication.create({
     data: {
       userId: session.user.id,
       company: data.company,
@@ -42,7 +42,7 @@ export async function addJobApplication(prevState: unknown, formData: FormData) 
   });
 
   revalidatePath("/progress");
-  return { success: true };
+  return { success: true, id: created.id };
 }
 
 export async function updateJobApplication(

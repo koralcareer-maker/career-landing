@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,16 @@ const STATUS_OPTIONS = Object.entries(APPLICATION_STATUS_LABELS).map(([value, la
 
 export function NewApplicationForm() {
   const [state, formAction, pending] = useActionState(addJobApplication, null);
+  const router = useRouter();
+
+  // After a successful submit, navigate to the new application's detail
+  // page with ?welcome=1 — that's where the celebration banner + suggested
+  // next actions will surface.
+  useEffect(() => {
+    if (state && "success" in state && state.success && "id" in state && state.id) {
+      router.push(`/progress/${state.id}?welcome=1`);
+    }
+  }, [state, router]);
 
   return (
     <div className="space-y-5">
