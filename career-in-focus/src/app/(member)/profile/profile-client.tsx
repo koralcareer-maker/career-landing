@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   saveProfile, saveQuestionnaire, generateCareerPassport,
-  saveCvAnalysis, type CvAnalysisResult
+  saveCvAnalysis, markCvUploaded, type CvAnalysisResult
 } from "@/lib/actions/profile";
 import { getInitials } from "@/lib/utils";
 import { User, Star, Zap, BookOpen, CheckCircle, Camera, Check, X, FileText, Sparkles, Loader2, ChevronDown, Upload, TrendingUp, MessageSquare, AlertCircle } from "lucide-react";
@@ -211,6 +211,9 @@ function CvUploadStrip({ onAnalyzed, noCV, onToggleNoCV }: CvUploadStripProps) {
 
       onAnalyzed(result);
       setDone(true);
+      // Persist that a CV was uploaded so the AI Coach + readiness score reflect reality.
+      // The analyze-cv route runs on edge runtime and can't write to Prisma directly.
+      await markCvUploaded(file.name);
     } catch {
       setError("שגיאת רשת — נסה שנית");
     } finally {
