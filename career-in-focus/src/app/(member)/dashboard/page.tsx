@@ -234,6 +234,19 @@ export default async function DashboardPage() {
                     );
                   })}
                 </div>
+                {/* Interview prep course CTA — high intent */}
+                <a
+                  href="https://my.schooler.biz/s/106543/1765824391549?utm_source=HryKqw"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 flex items-center justify-between gap-2 p-3 rounded-xl bg-gradient-to-l from-navy to-[#1a3a4a] text-white hover:shadow-md transition-shadow text-xs"
+                >
+                  <span className="font-bold flex items-center gap-1.5">
+                    <Sparkles size={12} />
+                    קורס ההכנה לראיונות של קורל
+                  </span>
+                  <span className="text-teal font-bold">לקורס ←</span>
+                </a>
               </div>
             )}
 

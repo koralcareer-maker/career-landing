@@ -418,6 +418,27 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
               <PrepStepItem key={step.id} step={step} appId={app.id} />
             ))}
           </div>
+
+          {/* High-intent moment for the interview-prep course */}
+          <a
+            href="https://my.schooler.biz/s/106543/1765824391549?utm_source=HryKqw"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-l from-navy via-[#1a3a4a] to-[#0d2d3a] text-white hover:shadow-lg transition-shadow group"
+          >
+            <div className="w-10 h-10 bg-teal rounded-xl flex items-center justify-center shrink-0">
+              <Sparkles size={18} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm">רוצה הכנה עמוקה יותר?</p>
+              <p className="text-xs text-white/70 mt-0.5">
+                קורס ההכנה לראיונות של קורל — שאלות, סיפורי הצלחה, משוב חי. מוכרים בעצמם.
+              </p>
+            </div>
+            <span className="text-teal text-xs font-bold shrink-0 group-hover:translate-x-[-3px] transition-transform">
+              לקורס ←
+            </span>
+          </a>
         </Card>
       )}
 
