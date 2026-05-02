@@ -1,17 +1,41 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Camera, Upload, X, Sparkles, Download, RefreshCw, User, ChevronLeft, AlertCircle } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { upload } from "@vercel/blob/client";
+import {
+  Camera, Upload, X, Sparkles, Download, RefreshCw,
+  User, ChevronLeft, AlertCircle, Clock,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8MB raw input – we compress before upload
+const SOURCE_PREFIX = "linkedin-photos";
 
 type PhotoEntry = { file: File; preview: string };
 
-async function compressToBase64(file: File): Promise<string> {
+interface HistoryJob {
+  timestamp: number;
+  createdAt: string;
+  generatedUrls: string[];
+}
+
+interface HistoryResponse {
+  jobs?: HistoryJob[];
+  error?: string;
+}
+
+interface GenerateResponse {
+  images?: string[];
+  jobId?: number;
+  error?: string;
+  debug?: string;
+}
+
+// Compress to 1024px JPEG @0.9 → returns a File ready to upload.
+async function compressToFile(file: File, name: string): Promise<File> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -21,17 +45,21 @@ async function compressToBase64(file: File): Promise<string> {
       let w = img.width, h = img.height;
       if (w > MAX || h > MAX) {
         if (w > h) { h = Math.round((h * MAX) / w); w = MAX; }
-        else        { w = Math.round((w * MAX) / h); h = MAX; }
+        else { w = Math.round((w * MAX) / h); h = MAX; }
       }
       const canvas = document.createElement("canvas");
       canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext("2d");
       if (!ctx) { reject(new Error("הדפדפן לא תומך בעיבוד תמונות")); return; }
       ctx.drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
-      const base64 = dataUrl.split(",")[1];
-      if (!base64) { reject(new Error("עיבוד התמונה נכשל")); return; }
-      resolve(base64);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) { reject(new Error("עיבוד התמונה נכשל")); return; }
+          resolve(new File([blob], name, { type: "image/jpeg" }));
+        },
+        "image/jpeg",
+        0.9
+      );
     };
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("טעינת התמונה נכשלה")); };
     img.src = url;
@@ -44,15 +72,33 @@ const STYLES = [
   { value: "creative", label: "קריאטיב",        desc: "סגנון עריכה קולנועי" },
 ] as const;
 
-export function LinkedInPhotoClient() {
-  const [photos, setPhotos]     = useState<PhotoEntry[]>([]);
-  const [gender, setGender]     = useState<"woman" | "man">("woman");
-  const [style, setStyle]       = useState<"formal" | "casual" | "creative">("formal");
-  const [loading, setLoading]   = useState(false);
-  const [results, setResults]   = useState<string[]>([]);
-  const [error, setError]       = useState("");
+interface Props {
+  userId: string;
+  initialHistory: HistoryJob[];
+}
+
+export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
+  const [photos, setPhotos] = useState<PhotoEntry[]>([]);
+  const [gender, setGender] = useState<"woman" | "man">("woman");
+  const [style, setStyle] = useState<"formal" | "casual" | "creative">("formal");
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<string[]>([]);
+  const [error, setError] = useState("");
   const [progress, setProgress] = useState("");
-  const inputRef                = useRef<HTMLInputElement>(null);
+  const [history, setHistory] = useState<HistoryJob[]>(initialHistory);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Refresh history once on mount in case server-rendered list is stale.
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/tools/linkedin-photo/history", { cache: "no-store" })
+      .then((r) => r.json() as Promise<HistoryResponse>)
+      .then((data) => {
+        if (alive && data.jobs) setHistory(data.jobs);
+      })
+      .catch(() => { /* keep server-rendered list */ });
+    return () => { alive = false; };
+  }, []);
 
   function addFiles(files: FileList | null) {
     if (!files) return;
@@ -92,39 +138,61 @@ export function LinkedInPhotoClient() {
     setError("");
     setResults([]);
 
+    const jobId = Date.now();
+
     try {
+      // 1. Compress all 3 photos client-side
       setProgress("מעבד תמונות...");
-      let base64s: string[];
+      let compressed: File[];
       try {
-        base64s = await Promise.all(photos.map((p) => compressToBase64(p.file)));
+        compressed = await Promise.all(
+          photos.map((p, i) => compressToFile(p.file, `source-${i + 1}.jpg`))
+        );
       } catch (e) {
         setError(e instanceof Error ? e.message : "עיבוד התמונות נכשל");
         return;
       }
 
-      setProgress("יוצר תמונות תדמית עם AI (20-45 שניות)...");
+      // 2. Upload each source directly to Vercel Blob (no API-route body limit hit)
+      setProgress("מעלה את התמונות לאחסון מאובטח...");
+      let sourceUrls: string[];
+      try {
+        const uploaded = await Promise.all(
+          compressed.map((file, i) =>
+            upload(`${SOURCE_PREFIX}/${userId}/${jobId}/sources/source-${i + 1}.jpg`, file, {
+              access: "public",
+              handleUploadUrl: "/api/tools/linkedin-photo/upload",
+              contentType: "image/jpeg",
+            })
+          )
+        );
+        sourceUrls = uploaded.map((b) => b.url);
+      } catch (e) {
+        setError(
+          e instanceof Error
+            ? `העלאת התמונות נכשלה: ${e.message}`
+            : "העלאת התמונות נכשלה"
+        );
+        return;
+      }
+
+      // 3. Call generation endpoint with URLs + settings
+      setProgress("יוצר תמונות תדמית עם AI (כ-30 שניות)...");
       let res: Response;
       try {
         res = await fetch("/api/tools/linkedin-photo", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ photos: base64s, gender, style }),
+          body: JSON.stringify({ sourceUrls, gender, style, jobId }),
         });
       } catch {
         setError("שגיאת רשת — בדקי חיבור אינטרנט ונסי שנית");
         return;
       }
 
-      const data = (await res.json().catch(() => null)) as
-        | { images?: string[]; error?: string; partialErrors?: string[] }
-        | null;
-
-      if (!res.ok) {
+      const data = (await res.json().catch(() => null)) as GenerateResponse | null;
+      if (!res.ok || !data) {
         setError(data?.error ?? `שגיאת שרת (${res.status}) — נסי שוב בעוד דקה`);
-        return;
-      }
-      if (!data) {
-        setError("השרת החזיר תשובה לא תקינה — נסי שוב");
         return;
       }
       if (!data.images || data.images.length === 0) {
@@ -133,6 +201,13 @@ export function LinkedInPhotoClient() {
       }
 
       setResults(data.images);
+
+      // Refresh history so the new job appears immediately
+      try {
+        const h = (await fetch("/api/tools/linkedin-photo/history", { cache: "no-store" })
+          .then((r) => r.json())) as HistoryResponse;
+        if (h.jobs) setHistory(h.jobs);
+      } catch { /* ignore — history will reload on next mount */ }
     } finally {
       setLoading(false);
       setProgress("");
@@ -145,7 +220,7 @@ export function LinkedInPhotoClient() {
       const blob = await res.blob();
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `linkedin-headshot-${idx + 1}.jpg`;
+      a.download = `linkedin-headshot-${idx + 1}.png`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -169,14 +244,16 @@ export function LinkedInPhotoClient() {
             </div>
             <h1 className="text-2xl font-black text-navy">מחולל תמונת תדמית לינקדאין</h1>
           </div>
-          <p className="text-gray-500 text-sm mt-1 mr-11">העלי 3 תמונות פנים ברורות — AI ייצור תמונת פרופיל מקצועית</p>
+          <p className="text-gray-500 text-sm mt-1 mr-11">
+            העלי 3 תמונות פנים ברורות — AI ייצור תמונת פרופיל מקצועית
+          </p>
         </div>
       </div>
 
       <Card className="p-5">
         <h2 className="font-bold text-navy mb-1">שלב 1 — העלי 3 תמונות</h2>
         <p className="text-xs text-gray-400 mb-4">
-          זוויות שונות = תוצאה מדויקת יותר. JPG / PNG / WEBP עד 5MB.
+          זוויות שונות = תוצאה מדויקת יותר. JPG / PNG / WEBP עד 8MB.
         </p>
 
         <input
@@ -353,6 +430,45 @@ export function LinkedInPhotoClient() {
             ייצרי גרסאות חדשות
           </button>
         </div>
+      )}
+
+      {history.length > 0 && (
+        <Card className="p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Clock size={16} className="text-teal" />
+            <h2 className="font-bold text-navy">היסטוריית יצירות</h2>
+          </div>
+          <p className="text-xs text-gray-500 mb-4">
+            התמונות שיצרת בעבר — נשמרות תמיד, גם אחרי רענון.
+          </p>
+          <div className="space-y-4">
+            {history.map((job) => (
+              <div key={job.timestamp} className="border border-gray-100 rounded-xl p-3">
+                <div className="text-xs text-gray-400 mb-2">
+                  {new Date(job.timestamp).toLocaleString("he-IL")}
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {job.generatedUrls.map((url, idx) => (
+                    <div
+                      key={url}
+                      className="relative group rounded-lg overflow-hidden border border-gray-100 aspect-square"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => downloadImage(url, idx)}
+                        className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs font-bold"
+                      >
+                        <Download size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
       )}
     </div>
   );
