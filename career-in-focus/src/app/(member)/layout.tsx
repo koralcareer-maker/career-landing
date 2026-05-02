@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { TopBar } from "@/components/layout/top-bar";
+import { Footer } from "@/components/layout/footer";
 import { prisma } from "@/lib/prisma";
 
 export default async function MemberLayout({ children }: { children: React.ReactNode }) {
@@ -41,6 +42,7 @@ export default async function MemberLayout({ children }: { children: React.React
         <main className="flex-1 px-4 py-6 md:px-8 pb-24 md:pb-8 animate-fade-in">
           {children}
         </main>
+        <Footer />
       </div>
 
       {/* Mobile bottom nav */}
