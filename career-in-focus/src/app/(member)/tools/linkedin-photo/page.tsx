@@ -8,7 +8,11 @@ import { LinkedInPhotoClient } from "./linkedin-photo-client";
 export const metadata = { title: "מחולל תמונת לינקדאין | קריירה בפוקוס" };
 export const dynamic = "force-dynamic";
 
-export default async function LinkedInPhotoPage() {
+export default async function LinkedInPhotoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -16,10 +20,15 @@ export default async function LinkedInPhotoPage() {
   // The LinkedIn photo generator is a premium-tier benefit. Non-premium
   // members see the upsell component. Admins bypass the gate so they can
   // QA every feature regardless of their own membership level.
+  // Admins can pass ?preview=gate in the URL to preview the gate UI
+  // without leaving their admin account.
   const isAdmin =
     session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
   const isPremium = session.user.membershipType === "PREMIUM";
-  if (!isAdmin && !isPremium) {
+  const params = await searchParams;
+  const previewGate = isAdmin && params.preview === "gate";
+
+  if (previewGate || (!isAdmin && !isPremium)) {
     return (
       <PremiumGate
         feature="מחולל תמונת תדמית AI"
