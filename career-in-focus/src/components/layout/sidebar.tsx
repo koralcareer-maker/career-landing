@@ -44,7 +44,7 @@ export function Sidebar({ user, unreadCount = 0 }: SidebarProps) {
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
 
   return (
-    <aside className="fixed right-0 top-0 h-screen w-60 bg-white flex flex-col z-40 border-l border-slate-100 shadow-xl">
+    <aside data-tour-id="tour-sidebar" className="fixed right-0 top-0 h-screen w-60 bg-white flex flex-col z-40 border-l border-slate-100 shadow-xl">
 
       {/* ─── Logo — very prominent ─── */}
       <div className="px-5 pt-5 pb-4 border-b border-slate-100">

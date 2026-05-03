@@ -123,6 +123,26 @@ export default function GuidePage() {
         </p>
       </div>
 
+      {/* Restart Tour Banner — link to dashboard with ?tour=1 to re-trigger the onboarding */}
+      <Link
+        href="/dashboard?tour=1"
+        className="flex items-center justify-between gap-3 bg-gradient-to-l from-teal-pale via-white to-teal-pale border-2 border-teal/30 rounded-2xl px-5 py-4 hover:border-teal hover:shadow-md transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 bg-gradient-to-br from-teal to-teal-dark rounded-2xl flex items-center justify-center shadow-sm shadow-teal/30 group-hover:scale-110 transition-transform">
+            <Sparkles size={20} className="text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-black text-navy">סיור הכרות — 60 שניות במערכת</p>
+            <p className="text-xs text-navy/60">קורל תעבור איתך על כל החלקים החשובים בדשבורד</p>
+          </div>
+        </div>
+        <span className="text-teal-dark text-sm font-bold flex items-center gap-1">
+          התחילי סיור
+          <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+        </span>
+      </Link>
+
       {/* Steps */}
       <div className="space-y-4">
         <h2 className="font-black text-navy text-lg">📋 הצעדים הראשונים</h2>

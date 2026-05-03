@@ -9,12 +9,14 @@ import {
 } from "@/lib/matching";
 import Link from "next/link";
 import Image from "next/image";
+import { Suspense } from "react";
 import {
   Briefcase, CalendarDays, Users, Target,
   ChevronLeft, Flame, BookOpen, Wrench,
   MessageSquare, Search, MapPin, Clock,
   TrendingUp, Sparkles, GraduationCap
 } from "lucide-react";
+import { DashboardTourWithQueryTrigger } from "@/components/onboarding/dashboard-tour";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -114,6 +116,11 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen relative">
+      {/* ─── First-time onboarding tour — runs once per member, restart via /dashboard?tour=1 ─── */}
+      <Suspense fallback={null}>
+        <DashboardTourWithQueryTrigger />
+      </Suspense>
+
       {/* ─── Decorative ambient gradient blobs in the background ─── */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-32 -right-24 w-96 h-96 rounded-full bg-teal/10 blur-3xl" />
@@ -141,7 +148,7 @@ export default async function DashboardPage() {
         </Link>
 
         {/* ─── Hero / Welcome — two-column layout, no cropping issues ─── */}
-        <div className="rounded-3xl overflow-hidden shadow-2xl shadow-navy/15 border border-white/40 relative bg-gradient-to-br from-[#F5EFE6] via-white to-teal-pale">
+        <div data-tour-id="tour-hero" className="rounded-3xl overflow-hidden shadow-2xl shadow-navy/15 border border-white/40 relative bg-gradient-to-br from-[#F5EFE6] via-white to-teal-pale">
           {/* Decorative ambient glows */}
           <div aria-hidden className="absolute top-0 right-0 w-72 h-72 bg-teal/15 rounded-full blur-3xl -translate-y-1/3" />
           <div aria-hidden className="absolute bottom-0 left-0 w-64 h-64 bg-[#FFB088]/15 rounded-full blur-3xl translate-y-1/3" />
@@ -322,7 +329,7 @@ export default async function DashboardPage() {
         )}
 
         {/* ─── Stats — each card a different warm tint ─── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div data-tour-id="tour-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             {
               label: "משרות מתאימות לי",
@@ -571,7 +578,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* ─── HIRED success banner — Coral with the HIRED tablet ─── */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-navy via-[#23233D] to-navy text-white shadow-2xl shadow-navy/20 border border-white/10">
+        <div data-tour-id="tour-hired" className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-navy via-[#23233D] to-navy text-white shadow-2xl shadow-navy/20 border border-white/10">
           {/* Decorative glows */}
           <div aria-hidden className="absolute top-0 right-0 w-72 h-72 bg-teal/25 rounded-full blur-3xl -translate-y-1/3 translate-x-1/4" />
           <div aria-hidden className="absolute bottom-0 left-0 w-60 h-60 bg-[#10B981]/20 rounded-full blur-3xl translate-y-1/3" />
@@ -632,7 +639,7 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
           {/* Tools — yellow/butter tint */}
-          <div className="bg-gradient-to-br from-white to-[#FFFBE8] rounded-3xl shadow-sm border border-[#FCD34D]/30 p-6">
+          <div data-tour-id="tour-tools" className="bg-gradient-to-br from-white to-[#FFFBE8] rounded-3xl shadow-sm border border-[#FCD34D]/30 p-6">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-xl flex items-center justify-center shadow-sm">
