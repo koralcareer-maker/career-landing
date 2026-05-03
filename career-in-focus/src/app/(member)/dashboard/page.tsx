@@ -144,14 +144,16 @@ export default async function DashboardPage() {
         <div className="rounded-3xl overflow-hidden shadow-2xl shadow-navy/15 border border-white/40 relative bg-[#F5EFE6]">
           {/* The hero photo as a full backdrop — Coral sits on the right with
               warm cream negative space on the left. We layer text on top of
-              that empty space so nothing covers her. */}
-          <div className="relative aspect-[16/9] sm:aspect-[21/9] min-h-[320px]">
+              that empty space so nothing covers her. The photo is roughly 6:5
+              (slightly landscape), so we use a 3:2 container and anchor the
+              photo to the top-right to keep her head fully visible. */}
+          <div className="relative aspect-[16/10] sm:aspect-[3/2] min-h-[360px]">
             <Image
               src="/koral-hero.jpg"
               alt="קורל שלו - מייסדת קריירה בפוקוס"
               fill
               sizes="(max-width: 1024px) 100vw, 1024px"
-              className="object-cover object-right"
+              className="object-cover object-right-top"
               priority
             />
 
