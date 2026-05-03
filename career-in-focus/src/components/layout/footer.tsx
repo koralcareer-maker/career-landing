@@ -148,10 +148,11 @@ export async function Footer() {
                   <div className="absolute inset-0 bg-gradient-to-br from-teal to-[#FFB088] rounded-3xl blur-md opacity-60" />
                   <div className="relative w-24 h-24 rounded-3xl overflow-hidden ring-2 ring-teal/40 shadow-2xl shadow-teal/20">
                     <Image
-                      src="/koral-formal.jpg"
+                      src="/koral.jpg"
                       alt="קורל שלו - מייסדת קריירה בפוקוס"
-                      width={96}
-                      height={96}
+                      width={192}
+                      height={192}
+                      quality={95}
                       className="w-full h-full object-cover object-top"
                     />
                   </div>
