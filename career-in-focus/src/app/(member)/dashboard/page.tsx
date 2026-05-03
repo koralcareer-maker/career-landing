@@ -195,8 +195,9 @@ export default async function DashboardPage() {
                 src="/koral-casual.jpg"
                 alt="קורל שלו - מייסדת קריירה בפוקוס"
                 fill
-                sizes="(max-width: 1024px) 100vw, 420px"
-                className="object-cover object-top"
+                sizes="(max-width: 1024px) 100vw, 600px"
+                quality={95}
+                className="object-cover object-[center_18%]"
                 priority
               />
 
