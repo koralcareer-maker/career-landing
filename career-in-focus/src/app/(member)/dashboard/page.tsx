@@ -140,82 +140,78 @@ export default async function DashboardPage() {
           <ChevronLeft size={18} className="text-teal-dark shrink-0 group-hover:-translate-x-1 transition-transform" />
         </Link>
 
-        {/* ─── Hero / Welcome — Coral on the cream sofa, full bleed ─── */}
-        <div className="rounded-3xl overflow-hidden shadow-2xl shadow-navy/15 border border-white/40 relative bg-[#F5EFE6]">
-          {/* The hero photo as a full backdrop — Coral sits on the right with
-              warm cream negative space on the left. We layer text on top of
-              that empty space so nothing covers her. The photo is roughly 6:5
-              (slightly landscape), so we use a 3:2 container and anchor the
-              photo to the top-right to keep her head fully visible. */}
-          <div className="relative aspect-[16/10] sm:aspect-[3/2] min-h-[360px]">
-            <Image
-              src="/koral-hero.jpg"
-              alt="קורל שלו - מייסדת קריירה בפוקוס"
-              fill
-              sizes="(max-width: 1024px) 100vw, 1024px"
-              className="object-cover object-right-top"
-              priority
-            />
+        {/* ─── Hero / Welcome — two-column layout, no cropping issues ─── */}
+        <div className="rounded-3xl overflow-hidden shadow-2xl shadow-navy/15 border border-white/40 relative bg-gradient-to-br from-[#F5EFE6] via-white to-teal-pale">
+          {/* Decorative ambient glows */}
+          <div aria-hidden className="absolute top-0 right-0 w-72 h-72 bg-teal/15 rounded-full blur-3xl -translate-y-1/3" />
+          <div aria-hidden className="absolute bottom-0 left-0 w-64 h-64 bg-[#FFB088]/15 rounded-full blur-3xl translate-y-1/3" />
 
-            {/* Soft gradient: cream from the left fades to transparent on the right
-                so text stays legible even on smaller screens where photo cropping
-                may push Coral leftwards. */}
-            <div aria-hidden className="absolute inset-0 bg-gradient-to-l from-transparent via-[#F5EFE6]/60 to-[#F5EFE6]/95" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 relative">
 
-            {/* Decorative teal accent in the empty cream area */}
-            <div aria-hidden className="absolute top-6 right-6 w-40 h-40 bg-teal/10 rounded-full blur-3xl" />
-            <div aria-hidden className="absolute bottom-6 right-12 w-32 h-32 bg-[#FFB088]/15 rounded-full blur-3xl" />
+            {/* ─── Text column (left on desktop) ─── */}
+            <div className="lg:col-span-7 px-6 sm:px-8 lg:px-10 py-8 sm:py-10 flex flex-col justify-center">
+              <div className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur-md border border-teal/30 rounded-full px-3 py-1 text-[11px] font-bold text-teal-dark mb-4 shadow-sm self-start">
+                <Sparkles size={11} />
+                המערכת שלך מוכנה
+              </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-navy leading-[1.15] mb-4">
+                {firstName},<br/>
+                <span className="bg-gradient-to-l from-teal-dark to-teal bg-clip-text text-transparent">
+                  ברוכה הבאה ✨
+                </span>
+              </h1>
 
-            {/* Text content over the negative space */}
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full sm:w-3/5 lg:w-1/2 px-6 sm:px-10 lg:px-14 py-6">
-                <div className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur-md border border-teal/30 rounded-full px-3 py-1 text-[11px] font-bold text-teal-dark mb-3 shadow-sm">
-                  <Sparkles size={11} />
-                  המערכת שלך מוכנה
-                </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-navy leading-[1.15] mb-3">
-                  {firstName},<br/>
-                  <span className="bg-gradient-to-l from-teal-dark to-teal bg-clip-text text-transparent">
-                    ברוכה הבאה ✨
-                  </span>
-                </h1>
+              {/* Personal note from Coral */}
+              <div className="relative bg-white/80 backdrop-blur-sm border-r-4 border-teal rounded-l-2xl rounded-r-md px-4 py-3 mb-5 shadow-sm">
+                <span aria-hidden className="absolute top-1 left-2 text-teal/30 text-2xl font-serif leading-none">&ldquo;</span>
+                <p className="text-navy/85 text-sm leading-relaxed">
+                  הקמתי את המקום הזה כדי לתת לך בדיוק את מה שהייתי רוצה לקבל בעצמי
+                  — קהילה, ליווי וכלים מעשיים שעוזרים להתקדם בלי להיתקע.
+                </p>
+                <p className="text-teal-dark text-xs font-black mt-1.5">— קורל שלו</p>
+              </div>
 
-                {/* Personal note from Coral */}
-                <div className="relative bg-white/70 backdrop-blur-sm border-r-4 border-teal rounded-l-2xl rounded-r-md px-4 py-3 mb-4 shadow-sm max-w-md">
-                  <span aria-hidden className="absolute top-1 left-2 text-teal/30 text-2xl font-serif leading-none">&ldquo;</span>
-                  <p className="text-navy/85 text-sm leading-relaxed">
-                    הקמתי את המקום הזה כדי לתת לך בדיוק את מה שהייתי רוצה לקבל בעצמי
-                    — קהילה, ליווי וכלים מעשיים שעוזרים להתקדם בלי להיתקע.
-                  </p>
-                  <p className="text-teal-dark text-xs font-black mt-1.5">— קורל שלו</p>
-                </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/jobs"
+                  className="inline-flex items-center gap-2 bg-teal hover:bg-teal-dark text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow-lg shadow-teal/30 transition-all duration-150 hover:-translate-y-0.5"
+                >
+                  <Search size={15} />
+                  חיפוש משרות
+                </Link>
+                <Link
+                  href="/coaching"
+                  className="inline-flex items-center gap-2 bg-white hover:bg-white/90 border border-navy/15 hover:border-teal/40 text-navy font-bold px-5 py-2.5 rounded-xl text-sm transition-all duration-150 shadow-sm"
+                >
+                  <Sparkles size={15} className="text-teal-dark" />
+                  התחילי עם מאמן AI
+                </Link>
+              </div>
+            </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <Link
-                    href="/jobs"
-                    className="inline-flex items-center gap-2 bg-teal hover:bg-teal-dark text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow-lg shadow-teal/30 transition-all duration-150 hover:-translate-y-0.5"
-                  >
-                    <Search size={15} />
-                    חיפוש משרות
-                  </Link>
-                  <Link
-                    href="/coaching"
-                    className="inline-flex items-center gap-2 bg-white/90 hover:bg-white border border-navy/15 hover:border-teal/40 text-navy font-bold px-5 py-2.5 rounded-xl text-sm transition-all duration-150 shadow-sm"
-                  >
-                    <Sparkles size={15} className="text-teal-dark" />
-                    התחילי עם מאמן AI
-                  </Link>
+            {/* ─── Photo column (right on desktop, top on mobile) ─── */}
+            <div className="lg:col-span-5 relative min-h-[280px] sm:min-h-[360px] lg:min-h-[420px]">
+              <Image
+                src="/koral-casual.jpg"
+                alt="קורל שלו - מייסדת קריירה בפוקוס"
+                fill
+                sizes="(max-width: 1024px) 100vw, 420px"
+                className="object-cover object-top"
+                priority
+              />
+
+              {/* Soft fade on the inside edge for a smoother blend with the text column */}
+              <div aria-hidden className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#F5EFE6]/0 to-[#F5EFE6]/80 lg:bg-gradient-to-r lg:from-[#F5EFE6]/40 lg:to-transparent pointer-events-none" />
+
+              {/* Coral signature pill */}
+              <div className="absolute bottom-4 left-4 lg:bottom-5 lg:left-5">
+                <div className="bg-white/90 backdrop-blur-md border border-navy/10 rounded-2xl px-3 py-2 shadow-lg">
+                  <p className="text-[11px] text-teal-dark font-black leading-none mb-0.5">קורל שלו</p>
+                  <p className="text-[10px] text-navy/60 leading-none">מייסדת ומנכ״לית</p>
                 </div>
               </div>
             </div>
 
-            {/* Coral signature pill — bottom-left of photo area */}
-            <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 hidden sm:flex">
-              <div className="bg-white/90 backdrop-blur-md border border-navy/10 rounded-2xl px-3 py-2 shadow-lg">
-                <p className="text-[11px] text-teal-dark font-black leading-none mb-0.5">קורל שלו</p>
-                <p className="text-[10px] text-navy/60 leading-none">מייסדת ומנכ״לית</p>
-              </div>
-            </div>
           </div>
         </div>
 
