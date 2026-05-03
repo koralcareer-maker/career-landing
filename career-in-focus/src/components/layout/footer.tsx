@@ -153,7 +153,7 @@ export async function Footer() {
                       width={192}
                       height={192}
                       quality={95}
-                      className="w-full h-full object-cover object-top"
+                      className="w-full h-full object-cover object-top scale-150 origin-top"
                     />
                   </div>
                   <div className="absolute -bottom-1 -left-1 bg-teal text-navy w-7 h-7 rounded-full flex items-center justify-center shadow-lg">
