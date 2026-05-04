@@ -38,8 +38,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        // Normalize email — DB stores lowercased emails, so any case the user
+        // types (autocomplete from contacts, capital first letter on mobile,
+        // trailing whitespace) needs to be normalized before lookup.
+        const normalizedEmail = String(credentials.email).toLowerCase().trim();
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email: normalizedEmail },
         });
 
         if (!user || !user.passwordHash) return null;

@@ -61,12 +61,18 @@ export async function signup(prevState: unknown, formData: FormData) {
 }
 
 export async function login(prevState: unknown, formData: FormData) {
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
+  const rawEmail    = formData.get("email") as string;
+  const rawPassword = formData.get("password") as string;
 
-  if (!email || !password) {
+  if (!rawEmail || !rawPassword) {
     return { error: "נא למלא אימייל וסיסמה" };
   }
+
+  // Trim whitespace and lowercase the email so autocomplete or mobile
+  // capitalization doesn't break login. Password is trimmed of surrounding
+  // whitespace only — interior characters preserved.
+  const email    = rawEmail.toLowerCase().trim();
+  const password = rawPassword.trim();
 
   try {
     await signIn("credentials", {

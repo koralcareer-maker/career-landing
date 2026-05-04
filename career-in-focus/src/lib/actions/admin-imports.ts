@@ -197,6 +197,104 @@ export interface BulkResult {
   details: Array<{ email: string; action: "created" | "repaired" | "ok" | "error"; message?: string }>;
 }
 
+// ─── Diagnostic — does this user exist & can they log in? ─────────────────
+export interface DiagnoseResult {
+  emailLookedUp:    string;
+  userExists:       boolean;
+  hasPasswordHash:  boolean;
+  accessStatus:     string | null;
+  membershipType:   string | null;
+  role:             string | null;
+  passwordMatches:  boolean | null;   // null when no password supplied
+  verdict:          "OK_CAN_LOGIN" | "USER_MISSING" | "NO_PASSWORD" | "WRONG_PASSWORD" | "NOT_ACTIVE" | "OTHER";
+  hint:             string;
+}
+
+export async function diagnoseLogin(
+  email: string,
+  password?: string,
+): Promise<DiagnoseResult> {
+  await requireAdmin();
+
+  const lookup = (email ?? "").toLowerCase().trim();
+  const user = await prisma.user.findUnique({ where: { email: lookup } });
+
+  if (!user) {
+    return {
+      emailLookedUp:   lookup,
+      userExists:      false,
+      hasPasswordHash: false,
+      accessStatus:    null,
+      membershipType:  null,
+      role:            null,
+      passwordMatches: null,
+      verdict:         "USER_MISSING",
+      hint:            "המשתמשת לא קיימת במאגר. הריצי /admin/create-trainees כדי ליצור.",
+    };
+  }
+
+  if (!user.passwordHash) {
+    return {
+      emailLookedUp:   lookup,
+      userExists:      true,
+      hasPasswordHash: false,
+      accessStatus:    user.accessStatus,
+      membershipType:  user.membershipType,
+      role:            user.role,
+      passwordMatches: null,
+      verdict:         "NO_PASSWORD",
+      hint:            "המשתמשת קיימת אבל אין לה סיסמה. /admin/create-trainees יתקן.",
+    };
+  }
+
+  let passwordMatches: boolean | null = null;
+  if (password) {
+    passwordMatches = await bcrypt.compare(password.trim(), user.passwordHash);
+  }
+
+  if (password && !passwordMatches) {
+    return {
+      emailLookedUp:   lookup,
+      userExists:      true,
+      hasPasswordHash: true,
+      accessStatus:    user.accessStatus,
+      membershipType:  user.membershipType,
+      role:            user.role,
+      passwordMatches: false,
+      verdict:         "WRONG_PASSWORD",
+      hint:            "הסיסמה שהוקלדה לא תואמת. /admin/create-trainees יאפס לסיסמה הסטנדרטית.",
+    };
+  }
+
+  if (user.accessStatus !== "ACTIVE") {
+    return {
+      emailLookedUp:   lookup,
+      userExists:      true,
+      hasPasswordHash: true,
+      accessStatus:    user.accessStatus,
+      membershipType:  user.membershipType,
+      role:            user.role,
+      passwordMatches,
+      verdict:         "NOT_ACTIVE",
+      hint:            `המשתמשת קיימת אבל הסטטוס שלה הוא ${user.accessStatus}. /admin/create-trainees יתקן ל-ACTIVE.`,
+    };
+  }
+
+  return {
+    emailLookedUp:   lookup,
+    userExists:      true,
+    hasPasswordHash: true,
+    accessStatus:    user.accessStatus,
+    membershipType:  user.membershipType,
+    role:            user.role,
+    passwordMatches,
+    verdict:         "OK_CAN_LOGIN",
+    hint:            password
+      ? "הכל תקין — אם עדיין לא מתחבר, סביר שהבעיה בדפדפן (cookies / cache)."
+      : "המשתמשת קיימת ויכולה להתחבר. תזיני סיסמה כדי לבדוק האם הסיסמה הנכונה.",
+  };
+}
+
 export async function bulkCreateTrainees(): Promise<BulkResult> {
   await requireAdmin();
 
