@@ -6,11 +6,13 @@ import {
   Briefcase, Calendar, Plus,
   CheckCircle2, AlertTriangle, Sparkles, Bell, ChevronLeft,
   TrendingUp, Target, Trophy, Flame, ArrowUpCircle,
-  Search,
+  Search, Zap, Activity, BarChart3, Clock,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Insight } from "@/lib/job-search-insights";
+import type { ScoreBreakdown } from "@/lib/job-search-score";
+import type { ActionTask } from "@/lib/daily-action-plan";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -53,6 +55,9 @@ interface Props {
   upcomingReminders: ReminderDTO[];
   upcomingInterviews: InterviewDTO[];
   insights: Insight[];
+  scoreBreakdown: ScoreBreakdown;
+  actionPlan: ActionTask[];
+  weeklyGoal: number;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -127,6 +132,9 @@ export function TrackerClient({
   upcomingReminders,
   upcomingInterviews,
   insights,
+  scoreBreakdown,
+  actionPlan,
+  weeklyGoal,
 }: Props) {
   const [filter, setFilter] = useState<"all" | "active" | "archived">("active");
   const [search, setSearch] = useState("");
@@ -177,27 +185,40 @@ export function TrackerClient({
   return (
     <div className="space-y-6 max-w-6xl mx-auto" dir="rtl">
 
-      {/* ─── Hero ─── */}
-      <div className="rounded-3xl bg-gradient-to-l from-navy via-[#1a3a4a] to-[#0d2d3a] text-white p-6 sm:p-8 relative overflow-hidden">
-        <div className="absolute -top-16 -left-16 w-64 h-64 bg-teal/15 rounded-full blur-3xl" />
-        <div className="relative">
-          <div className="inline-flex items-center gap-2 bg-teal/15 border border-teal/30 text-teal px-3 py-1 rounded-full text-xs font-bold mb-3">
-            <Target size={12} />
-            המערכת האישית שלך לחיפוש עבודה
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black mb-2">מעקב חיפוש עבודה</h1>
-          <p className="text-white/70 text-sm leading-relaxed max-w-xl">
-            כל המועמדויות, הראיונות, ה-follow-ups והתובנות במקום אחד. את שולטת בקצב.
-          </p>
-        </div>
-      </div>
+      {/* ─── Hero — Effectiveness Score ─── */}
+      <ScoreHero
+        breakdown={scoreBreakdown}
+        weeklyGoal={weeklyGoal}
+        thisWeek={stats.thisWeek}
+      />
 
-      {/* ─── Stats ─── */}
+      {/* ─── Daily Action Plan ─── */}
+      <DailyActionPlan tasks={actionPlan} />
+
+      {/* ─── KPI strip ─── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <StatCard label="פעילות" value={stats.applied} icon={<Briefcase size={18} className="text-teal" />} />
         <StatCard label="ראיונות" value={stats.interviews} icon={<Calendar size={18} className="text-purple-500" />} />
-        <StatCard label="הצעות" value={stats.offers} icon={<Trophy size={18} className="text-emerald-500" />} highlight={stats.offers > 0} />
-        <StatCard label="השבוע" value={stats.thisWeek} icon={<Flame size={18} className="text-orange-500" />} sub="מועמדויות חדשות" />
+        <StatCard
+          label="שיעור תגובה"
+          value={`${scoreBreakdown.kpis.responseRate}%`}
+          icon={<Activity size={18} className="text-orange-500" />}
+          sub={
+            scoreBreakdown.kpis.totalSubmitted > 0
+              ? `מתוך ${scoreBreakdown.kpis.totalSubmitted} הוגשו`
+              : "אין מספיק נתונים"
+          }
+        />
+        <StatCard
+          label="זמן תגובה ממוצע"
+          value={
+            scoreBreakdown.kpis.avgResponseDays !== null
+              ? `${scoreBreakdown.kpis.avgResponseDays} ימים`
+              : "—"
+          }
+          icon={<Clock size={18} className="text-cyan-500" />}
+          sub="חציון מהגשה לתגובה"
+        />
       </div>
 
       {/* ─── Insights ─── */}
@@ -376,10 +397,189 @@ export function TrackerClient({
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
+const BAND_COPY: Record<ScoreBreakdown["band"], { label: string; tagline: string; color: string; ring: string; pill: string }> = {
+  excellent: {
+    label: "מצוין",
+    tagline: "הקצב והאיכות שלך מעולים. תמשיכ/י לעשות בדיוק את זה.",
+    color: "from-emerald-500 to-emerald-600",
+    ring: "ring-emerald-300",
+    pill: "bg-emerald-100 text-emerald-700",
+  },
+  strong: {
+    label: "חזק",
+    tagline: "החיפוש בכיוון הנכון. שיפור קטן באחת מהקומפוננטות יקפיץ אותך לעמוד הבא.",
+    color: "from-teal to-teal-dark",
+    ring: "ring-teal-300",
+    pill: "bg-teal/15 text-teal-dark",
+  },
+  building: {
+    label: "בנייה",
+    tagline: "יש בסיס, צריך עקביות. התוכנית היומית למטה היא הצעד הראשון.",
+    color: "from-amber-500 to-orange-500",
+    ring: "ring-amber-300",
+    pill: "bg-amber-100 text-amber-700",
+  },
+  stalling: {
+    label: "תקוע/ה",
+    tagline: "הקצב נפל. בלי 1-2 פעולות יומיות עקביות, השוק לא יודע שאת/ה בחיפוש.",
+    color: "from-red-500 to-rose-600",
+    ring: "ring-red-300",
+    pill: "bg-red-100 text-red-700",
+  },
+};
+
+function ScoreHero({
+  breakdown,
+  weeklyGoal,
+  thisWeek,
+}: {
+  breakdown: ScoreBreakdown;
+  weeklyGoal: number;
+  thisWeek: number;
+}) {
+  const bandInfo = BAND_COPY[breakdown.band];
+  const goalPct = Math.min(100, Math.round((thisWeek / Math.max(1, weeklyGoal)) * 100));
+  const goalIntent: "ontrack" | "behind" | "met" =
+    thisWeek >= weeklyGoal ? "met" : thisWeek >= weeklyGoal * 0.5 ? "ontrack" : "behind";
+  const goalBarColor =
+    goalIntent === "met"
+      ? "bg-emerald-500"
+      : goalIntent === "ontrack"
+      ? "bg-teal"
+      : "bg-amber-500";
+
+  return (
+    <div className={`rounded-3xl bg-gradient-to-l ${bandInfo.color} text-white p-6 sm:p-8 relative overflow-hidden shadow-xl`}>
+      <div className="absolute -top-16 -left-16 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6 items-center">
+        {/* Score gauge */}
+        <div className="flex items-center gap-5">
+          <div className={`relative w-28 h-28 rounded-full bg-white/15 backdrop-blur ring-4 ${bandInfo.ring} flex items-center justify-center shrink-0`}>
+            <div className="text-center">
+              <p className="text-4xl font-black leading-none">{breakdown.score}</p>
+              <p className="text-[10px] font-bold opacity-80 mt-0.5">/ 100</p>
+            </div>
+          </div>
+          <div>
+            <div className={`inline-flex items-center gap-1.5 ${bandInfo.pill} px-2.5 py-1 rounded-full text-[11px] font-black mb-2`}>
+              <Zap size={11} />
+              {bandInfo.label}
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black leading-tight">ציון יעילות חיפוש</h1>
+            <p className="text-white/80 text-xs sm:text-sm leading-relaxed mt-1 max-w-md">
+              {bandInfo.tagline}
+            </p>
+          </div>
+        </div>
+
+        {/* Weekly goal */}
+        <div className="bg-white/10 backdrop-blur rounded-2xl p-4 border border-white/15">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold opacity-80 inline-flex items-center gap-1">
+              <Target size={11} />
+              יעד שבועי
+            </span>
+            <span className="text-sm font-black">
+              {thisWeek} / {weeklyGoal} הגשות
+            </span>
+          </div>
+          <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+            <div
+              className={`h-full ${goalBarColor} transition-all duration-500`}
+              style={{ width: `${goalPct}%` }}
+            />
+          </div>
+          <p className="text-[11px] opacity-80 mt-2 leading-relaxed">
+            {goalIntent === "met"
+              ? "השלמת את היעד השבועי 🎯"
+              : goalIntent === "ontrack"
+              ? `עוד ${weeklyGoal - thisWeek} הגשות עד סוף השבוע — בקצב טוב.`
+              : `נשארו ${weeklyGoal - thisWeek} הגשות. ההמלצה: ${Math.ceil((weeklyGoal - thisWeek) / 5)} ביום עד סוף השבוע.`}
+          </p>
+        </div>
+      </div>
+
+      {/* Component breakdown */}
+      <div className="relative mt-5 grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {(Object.entries(breakdown.components) as Array<[string, ScoreBreakdown["components"][keyof ScoreBreakdown["components"]]]>).map(
+          ([key, c]) => (
+            <div key={key} className="bg-white/10 rounded-xl p-2.5 border border-white/10">
+              <p className="text-[10px] font-bold opacity-80 leading-tight">{c.label}</p>
+              <p className="text-lg font-black mt-0.5">{c.score}</p>
+              <div className="h-1 bg-white/20 rounded-full mt-1.5 overflow-hidden">
+                <div className="h-full bg-white/80" style={{ width: `${c.score}%` }} />
+              </div>
+            </div>
+          ),
+        )}
+      </div>
+    </div>
+  );
+}
+
+const ACTION_INTENT_STYLES: Record<ActionTask["intent"], { card: string; pill: string; pillLabel: string }> = {
+  urgent:   { card: "border-red-300 bg-red-50",         pill: "bg-red-500 text-white",     pillLabel: "דחוף" },
+  behind:   { card: "border-amber-300 bg-amber-50",     pill: "bg-amber-500 text-white",   pillLabel: "מאחור" },
+  ontrack:  { card: "border-teal/30 bg-teal-pale/40",   pill: "bg-teal text-white",        pillLabel: "בקצב" },
+  momentum: { card: "border-emerald-300 bg-emerald-50", pill: "bg-emerald-500 text-white", pillLabel: "מומנטום" },
+};
+
+function DailyActionPlan({ tasks }: { tasks: ActionTask[] }) {
+  if (tasks.length === 0) return null;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-black text-navy text-lg flex items-center gap-2">
+          <Sparkles size={18} className="text-teal" />
+          תוכנית היום שלך
+        </h2>
+        <span className="text-xs text-slate-400 font-semibold">
+          {tasks.length} משימות
+        </span>
+      </div>
+      <div className="space-y-2.5">
+        {tasks.map((t, idx) => {
+          const style = ACTION_INTENT_STYLES[t.intent];
+          return (
+            <div
+              key={t.id}
+              className={`rounded-2xl border-2 p-4 flex items-start gap-3 ${style.card}`}
+            >
+              <div className="w-8 h-8 rounded-xl bg-white text-navy font-black text-sm flex items-center justify-center shrink-0 shadow-sm">
+                {idx + 1}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <p className="font-black text-navy text-sm leading-snug">{t.title}</p>
+                  <span className={`text-[10px] font-bold rounded-full px-2 py-0.5 ${style.pill}`}>
+                    {style.pillLabel}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">{t.why}</p>
+                {t.cta && (
+                  <Link
+                    href={t.cta.href}
+                    className="inline-flex items-center gap-1 mt-2 text-xs font-bold text-teal hover:underline"
+                  >
+                    {t.cta.label}
+                    <ChevronLeft size={12} />
+                  </Link>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function StatCard({
   label, value, icon, sub, highlight,
 }: {
-  label: string; value: number; icon: React.ReactNode; sub?: string; highlight?: boolean;
+  label: string; value: number | string; icon: React.ReactNode; sub?: string; highlight?: boolean;
 }) {
   return (
     <Card className={`p-4 ${highlight ? "border-emerald-300 bg-emerald-50/50" : ""}`}>

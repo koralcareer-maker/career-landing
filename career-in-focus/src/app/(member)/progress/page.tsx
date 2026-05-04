@@ -6,6 +6,8 @@ import {
   getUpcomingInterviews,
 } from "@/lib/actions/job-tracking";
 import { generateInsights } from "@/lib/job-search-insights";
+import { computeScore } from "@/lib/job-search-score";
+import { buildActionPlan, DEFAULT_WEEKLY_GOAL } from "@/lib/daily-action-plan";
 import { TrackerClient } from "./tracker-client";
 
 export const dynamic = "force-dynamic";
@@ -25,24 +27,60 @@ export default async function ProgressPage() {
     getUpcomingInterviews(14),
   ]);
 
-  const overdueReminders = upcomingReminders.filter(
-    (r) => new Date(r.dueAt).getTime() < Date.now()
-  ).length;
+  const now = Date.now();
+  const overdueReminderRows = upcomingReminders.filter(
+    (r) => new Date(r.dueAt).getTime() < now,
+  );
+  const overdueReminders = overdueReminderRows.length;
+  const openRemindersOnTrack = upcomingReminders.length - overdueReminders;
 
-  // Insights are computed on the server so they appear instantly without
-  // a client roundtrip — pure heuristic, no AI cost.
+  // ─── Insights, score, action plan ─── all server-side, no AI cost ─────
+  const insightInput = apps.map((a) => ({
+    id: a.id,
+    status: a.status,
+    source: a.source,
+    dateApplied: a.dateApplied,
+    createdAt: a.createdAt,
+    updatedAt: a.updatedAt,
+    interviewDate: a.interviewDate,
+    archived: a.archived,
+  }));
+
   const insights = generateInsights({
+    applications: insightInput,
+    overdueReminders,
+  });
+
+  const weeklyGoal = DEFAULT_WEEKLY_GOAL;
+  const scoreBreakdown = computeScore({
+    applications: insightInput,
+    openRemindersOnTrack,
+    overdueReminders,
+    weeklyGoal,
+  });
+
+  const actionPlan = buildActionPlan({
     applications: apps.map((a) => ({
       id: a.id,
+      company: a.company,
+      role: a.role,
       status: a.status,
       source: a.source,
       dateApplied: a.dateApplied,
+      nextFollowUp: a.nextFollowUp,
+      interviewDate: a.interviewDate,
       createdAt: a.createdAt,
       updatedAt: a.updatedAt,
-      interviewDate: a.interviewDate,
       archived: a.archived,
     })),
-    overdueReminders,
+    upcomingInterviews,
+    overdueReminders: overdueReminderRows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      application: r.application,
+    })),
+    weeklyGoal,
+    score: scoreBreakdown,
   });
 
   // Plain-JSON serialise for client.
@@ -83,6 +121,9 @@ export default async function ProgressPage() {
           interviewDate: a.interviewDate!.toISOString(),
         }))}
         insights={insights}
+        scoreBreakdown={scoreBreakdown}
+        actionPlan={actionPlan}
+        weeklyGoal={weeklyGoal}
       />
     </div>
   );
