@@ -100,18 +100,24 @@ export async function analyzeApplication(applicationId: string): Promise<Applica
 === המשתמש ===
 שם: ${session.user.name ?? "—"}
 מגדר: ${isM ? "זכר" : "נקבה"}
-תפקיד יעד: ${profile?.targetRole ?? passport?.targetRole ?? "—"}
+תפקיד יעד: ${profile?.targetRole ?? "—"}
 תפקיד נוכחי / רקע: ${profile?.currentRole ?? "—"}
 שנות ניסיון: ${profile?.yearsExperience ?? "—"}
 חוזקות עיקריות: ${fmtField(profile?.strengths)}
 מיומנויות חסרות: ${fmtField(profile?.missingSkills)}
 מטרת מעבר: ${profile?.careerTransitionGoal ?? "—"}
 אתגר עיקרי: ${profile?.mainChallenge ?? "—"}
-${passport?.elevatorPitch ? `\n--- Elevator Pitch ---\n${passport.elevatorPitch}` : ""}
+${passport?.summary ? `\n--- סיכום דרכון קריירה ---\n${passport.summary}` : ""}
 `.trim();
 
   const journalText = journal.length > 0
-    ? journal.map((j, i) => `(${i + 1}) ${j.occurredAt.toLocaleDateString("he-IL")} — ${j.kind}: ${j.note ?? ""}`).join("\n")
+    ? journal
+        .map((j, i) => {
+          const date = j.occurredAt.toLocaleDateString("he-IL");
+          const tag = j.tag ? ` [${j.tag}]` : "";
+          return `(${i + 1}) ${date}${tag}: ${j.text}`;
+        })
+        .join("\n")
     : "—";
 
   const appBlock = `
