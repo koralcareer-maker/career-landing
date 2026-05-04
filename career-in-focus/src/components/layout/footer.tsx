@@ -73,7 +73,7 @@ export async function Footer() {
     { value: `${formatBigNumber(memberCount)}+`, label: "חברות בקהילה" },
     { value: `${jobCount}+`,                     label: "משרות פעילות" },
     { value: `${courseCount}+`,                  label: "קורסים מקצועיים" },
-    { value: "4",                                label: "כלי AI חכמים" },
+    { value: "200+",                             label: "התקבלו לעבודה" },
     { value: "100%",                             label: "ליווי אישי" },
   ];
 

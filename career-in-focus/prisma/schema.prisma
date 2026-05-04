@@ -447,6 +447,48 @@ model Tool {
 
 // ─── Jobs ─────────────────────────────────────────────────────────────────────
 
+// ─── Market Intelligence Feed ────────────────────────────────────────────────
+//
+// Replaces the old "עדכונים והודעות" page. Articles are auto-collected
+// from configured sources, processed by Gemini (translate → summarize →
+// generate insight + recommended action), filtered for relevance to job
+// seekers, and published automatically. Admin can hide / edit / pin
+// individual rows after the fact via /admin/market-intel.
+
+model MarketIntelArticle {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // ─── Source ─────
+  originalTitle     String
+  originalUrl       String   @unique
+  sourceName        String
+  language          String   // "he" or "en"
+  publishedAt       DateTime
+  detectedAt        DateTime @default(now())
+
+  // ─── Hebrew-first processed content ─────
+  hebrewTitle       String
+  summaryHebrew     String                          // 3-5 lines
+  whyItMatters      String                          // why this matters to job seekers
+  jobSearchInsight  String                          // practical takeaway
+  recommendedAction String                          // single concrete action
+
+  // ─── Classification ─────
+  category          String                          // שוק העבודה / AI ותעסוקה / וכו׳
+  importanceLabel   String?                         // חשוב למחפשי עבודה / וכו׳
+  relevanceScore    Int      @default(50)           // 0-100; below threshold not published
+
+  // ─── Visibility / curation ─────
+  status            String   @default("PUBLISHED")  // PUBLISHED / HIDDEN / DRAFT
+  isPinned          Boolean  @default(false)
+  isFeatured        Boolean  @default(false)
+
+  @@index([status, publishedAt])
+  @@index([category])
+}
+
 model Job {
   id          String   @id @default(cuid())
   createdAt   DateTime @default(now())

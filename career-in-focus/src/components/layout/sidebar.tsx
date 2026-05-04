@@ -29,7 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/jobs",                label: "משרות",                 icon: Briefcase },
   { href: "/community",           label: "קהילה",                 icon: Users },
   { href: "/events",              label: "אירועים",               icon: CalendarDays },
-  { href: "/updates",             label: "עדכונים",               icon: MessageSquare },
+  { href: "/updates",             label: "כל מה שקורה עכשיו",     icon: MessageSquare },
   { href: "/notifications",       label: "התראות",                icon: Bell },
   { href: "/koral-connections",   label: "קורל תפעילי קשרים",    icon: Network, premium: true },
 ];
