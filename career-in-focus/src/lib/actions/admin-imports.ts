@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 import {
   RACHELLI_EMAIL,
   RACHELLI_FULL_NAME,
@@ -17,6 +18,7 @@ import {
   YONI_TARGET_ROLE,
   YONI_APPLICATIONS,
 } from "@/lib/imports/yoni-data";
+import { TRAINEES } from "@/lib/imports/trainees-roster";
 
 async function requireAdmin() {
   const session = await auth();
@@ -175,4 +177,90 @@ export async function importYoniData(): Promise<ImportResult> {
     // no photo or CV in his Drive folder yet — only profile + applications.
     applications: YONI_APPLICATIONS,
   });
+}
+
+// ─── Bulk create / repair all trainees at once ────────────────────────────
+// For each trainee on the roster:
+//   • If user doesn't exist → create them with the password we emailed them
+//   • If user exists but can't log in (no passwordHash, or status != ACTIVE)
+//     → fix the password and unlock the account
+//   • If user exists and is fine → skip
+//
+// Idempotent and safe to re-run.
+
+export interface BulkResult {
+  ok: boolean;
+  created: number;
+  repaired: number;
+  alreadyOk: number;
+  total: number;
+  details: Array<{ email: string; action: "created" | "repaired" | "ok" | "error"; message?: string }>;
+}
+
+export async function bulkCreateTrainees(): Promise<BulkResult> {
+  await requireAdmin();
+
+  let created = 0;
+  let repaired = 0;
+  let alreadyOk = 0;
+  const details: BulkResult["details"] = [];
+
+  for (const t of TRAINEES) {
+    const email = t.email.toLowerCase().trim();
+    try {
+      const passwordHash = await bcrypt.hash(t.password, 12);
+      const existing = await prisma.user.findUnique({ where: { email } });
+
+      if (!existing) {
+        await prisma.user.create({
+          data: {
+            name:            t.name,
+            email,
+            passwordHash,
+            role:            "MEMBER",
+            accessStatus:    "ACTIVE",
+            membershipType:  "PREMIUM" as never,
+            paymentProvider: "MANUAL",
+            paidAt:          new Date(),
+          },
+        });
+        created++;
+        details.push({ email, action: "created" });
+      } else if (
+        !existing.passwordHash ||
+        existing.accessStatus !== "ACTIVE"
+      ) {
+        await prisma.user.update({
+          where: { id: existing.id },
+          data: {
+            passwordHash,
+            accessStatus:   "ACTIVE",
+            // only fill name if it was empty — don't clobber a name the user updated
+            ...(existing.name ? {} : { name: t.name }),
+            ...(existing.membershipType ? {} : { membershipType: "PREMIUM" as never }),
+          },
+        });
+        repaired++;
+        details.push({ email, action: "repaired" });
+      } else {
+        alreadyOk++;
+        details.push({ email, action: "ok" });
+      }
+    } catch (e) {
+      details.push({
+        email,
+        action: "error",
+        message: e instanceof Error ? e.message : "שגיאה לא ידועה",
+      });
+    }
+  }
+
+  return {
+    ok:        true,
+    created,
+    repaired,
+    alreadyOk,
+    total:     TRAINEES.length,
+    details,
+  };
 }
