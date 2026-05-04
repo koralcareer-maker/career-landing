@@ -35,28 +35,41 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
 // user manually). Goal: a warm personal welcome from Coral that makes the new
 // member feel they joined something real, with a single clear next step.
 
-const PLAN_LABELS: Record<string, string> = {
-  MEMBER:  "חברה",
-  VIP:     "VIP",
-  PREMIUM: "פרמיום • קורל מפעילה קשרים",
-  NONE:    "חברה",
+// Plan label is gender-aware: "חבר/ה" vs "חברה" matters when the recipient
+// is a man, otherwise the bracket text reads as if the system thinks he's
+// a woman.
+const PLAN_LABELS: Record<string, { f: string; m: string }> = {
+  MEMBER:  { f: "חברה",                            m: "חבר"                            },
+  VIP:     { f: "VIP",                             m: "VIP"                            },
+  PREMIUM: { f: "פרמיום • קורל מפעילה קשרים",       m: "פרמיום • קורל מפעילה קשרים"      },
+  NONE:    { f: "חברה",                            m: "חבר"                            },
 };
 
 const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/BbBAf0p0R01GrNgf5GQjMg";
+
+export type Gender = "f" | "m";
 
 export async function sendWelcomeEmail({
   name,
   email,
   membershipType = "MEMBER",
   password,
+  gender = "f",
 }: {
   name: string;
   email: string;
   membershipType?: string;
   password?: string;   // only when admin creates user manually
+  gender?: Gender;     // defaults to feminine — the brand audience is women
 }) {
-  const planLabel = PLAN_LABELS[membershipType] ?? "חברה";
-  const firstName = name?.split(" ")[0] ?? "חברה";
+  // _f / _m chooses the right gendered phrase. Feminine remains the default
+  // tone of the email (warmer, matches Coral's existing brand voice); when
+  // the recipient is a man we swap individual phrases so the message reads
+  // naturally to him without us having to maintain two whole templates.
+  const T = (f: string, m: string) => (gender === "m" ? m : f);
+
+  const planLabel = (PLAN_LABELS[membershipType] ?? PLAN_LABELS.NONE)[gender];
+  const firstName = name?.split(" ")[0] ?? T("חברה", "חבר");
 
   // Login section is only shown when an admin created the account with a
   // temp password. Self-service signups already know their password.
@@ -75,13 +88,13 @@ export async function sendWelcomeEmail({
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ברוכה הבאה לקריירה בפוקוס</title>
+  <title>${T("ברוכה הבאה לקריירה בפוקוס", "ברוך הבא לקריירה בפוקוס")}</title>
 </head>
 <body style="margin:0;padding:0;background:#F5F1EB;font-family:'Rubik','Arial',sans-serif;direction:rtl;color:#1C1C2E;">
 
   <!-- Preheader (preview text in inbox) -->
   <div style="display:none;max-height:0;overflow:hidden;">
-    התקבלת. עכשיו בואי נתחיל יחד את הצעד הראשון של הקריירה הבאה שלך.
+    התקבלת. עכשיו ${T("בואי", "בוא")} נתחיל יחד את הצעד הראשון של הקריירה הבאה שלך.
   </div>
 
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F1EB;padding:32px 16px;">
@@ -98,7 +111,7 @@ export async function sendWelcomeEmail({
               </div>
               <h1 style="color:#fff;margin:0 0 12px;font-size:30px;font-weight:900;line-height:1.15;letter-spacing:-0.5px;">
                 ${firstName},<br/>
-                <span style="background:linear-gradient(90deg,#3ECFCF 0%,#7FE7E7 100%);-webkit-background-clip:text;background-clip:text;color:transparent;">ברוכה הבאה הביתה ✨</span>
+                <span style="background:linear-gradient(90deg,#3ECFCF 0%,#7FE7E7 100%);-webkit-background-clip:text;background-clip:text;color:transparent;">${T("ברוכה הבאה הביתה", "ברוך הבא הביתה")} ✨</span>
               </h1>
               <p style="color:rgba(255,255,255,0.75);margin:0;font-size:15px;line-height:1.6;max-width:440px;">
                 התקבלת לקהילת קריירה בפוקוס. אני קורל, וזאת ההתחלה של משהו טוב.
@@ -110,10 +123,10 @@ export async function sendWelcomeEmail({
           <tr>
             <td style="padding:32px 40px 8px;">
               <p style="font-size:15px;color:#1C1C2E;line-height:1.75;margin:0 0 16px;">
-                לפני שתמשיכי הלאה — אני רוצה להגיד לך משהו אישי.
+                לפני ${T("שתמשיכי", "שתמשיך")} הלאה — אני רוצה להגיד לך משהו אישי.
               </p>
               <p style="font-size:15px;color:#1C1C2E;line-height:1.75;margin:0 0 16px;">
-                המקום הזה נבנה מהמקום שאני הייתי רוצה לקבל בעצמי כשהתחלתי את הדרך — קהילה אמיתית של נשים שמבינות את התסכול, כלים מעשיים שחוסכים שעות, וליווי שמרגיש כמו חברה ולא כמו מערכת.
+                המקום הזה נבנה מהמקום שאני הייתי רוצה לקבל בעצמי כשהתחלתי את הדרך — ${T("קהילה אמיתית של נשים שמבינות את התסכול", "קהילה אמיתית שמבינה את התסכול")}, כלים מעשיים שחוסכים שעות, וליווי שמרגיש כמו חברה ולא כמו מערכת.
               </p>
               <p style="font-size:15px;color:#1C1C2E;line-height:1.75;margin:0 0 4px;">
                 <strong>זה לא עוד אתר משרות. זה הצוות שלך לקריירה הבאה.</strong>
@@ -127,7 +140,7 @@ export async function sendWelcomeEmail({
           <tr>
             <td style="padding:24px 40px 8px;text-align:center;">
               <a href="${APP_URL}/dashboard?tour=1" style="display:inline-block;background:linear-gradient(135deg,#3ECFCF 0%,#2BAAAA 100%);color:#fff;font-weight:900;font-size:16px;padding:16px 44px;border-radius:14px;text-decoration:none;box-shadow:0 6px 20px rgba(62,207,207,0.35);">
-                בואי נתחיל את הסיור ←
+                ${T("בואי", "בוא")} נתחיל את הסיור ←
               </a>
               <p style="font-size:12px;color:#888;margin:14px 0 0;">
                 60 שניות, אני אעבור איתך על כל מה שחשוב
@@ -140,9 +153,9 @@ export async function sendWelcomeEmail({
             <td style="padding:32px 40px 16px;">
               <div style="background:linear-gradient(135deg,#FFF8F1 0%,#FFE4D6 100%);border:1px solid #FFB08840;border-radius:18px;padding:22px 24px;">
                 <p style="margin:0 0 6px;font-size:11px;font-weight:800;color:#C2410C;letter-spacing:0.5px;text-transform:uppercase;">🎯 הצעד הראשון</p>
-                <p style="margin:0 0 10px;font-size:18px;font-weight:900;color:#1C1C2E;">מלאי את דרכון הקריירה</p>
+                <p style="margin:0 0 10px;font-size:18px;font-weight:900;color:#1C1C2E;">${T("מלאי", "מלא")} את דרכון הקריירה</p>
                 <p style="margin:0 0 14px;font-size:14px;color:#444;line-height:1.6;">
-                  זה לוקח 5 דקות וזה הבסיס לכל מה שיקרה אצלך כאן. בלי דרכון — ה-AI לא ידע איזה משרות להציע, אילו קורסים מתאימים לך, ואיך להתאים לך את החוויה. <strong>זה אחד הצעדים הכי משפיעים שתעשי במערכת.</strong>
+                  זה לוקח 5 דקות וזה הבסיס לכל מה שיקרה אצלך כאן. בלי דרכון — ה-AI לא ידע איזה משרות להציע, אילו קורסים מתאימים לך, ואיך להתאים לך את החוויה. <strong>זה אחד הצעדים הכי משפיעים ${T("שתעשי", "שתעשה")} במערכת.</strong>
                 </p>
                 <a href="${APP_URL}/profile" style="display:inline-block;background:#1C1C2E;color:#fff;font-weight:800;font-size:14px;padding:11px 22px;border-radius:10px;text-decoration:none;">
                   למילוי הדרכון ←
@@ -186,10 +199,10 @@ export async function sendWelcomeEmail({
               <div style="background:linear-gradient(135deg,#25D366 0%,#128C7E 100%);border-radius:18px;padding:22px 24px;text-align:center;">
                 <p style="margin:0 0 6px;font-size:18px;font-weight:900;color:#fff;">לא לבד 💛</p>
                 <p style="margin:0 0 14px;font-size:13px;color:rgba(255,255,255,0.92);line-height:1.6;">
-                  הצטרפי לקבוצת הוואטסאפ שלנו — שם אני משתפת טיפים שבועיים, מגייסים שמחפשים, ומשרות שעוד לא פורסמו.
+                  ${T("הצטרפי", "הצטרף")} לקבוצת הוואטסאפ שלנו — שם אני משתפת טיפים שבועיים, מגייסים שמחפשים, ומשרות שעוד לא פורסמו.
                 </p>
                 <a href="${WHATSAPP_GROUP_URL}" style="display:inline-block;background:#fff;color:#128C7E;font-weight:900;font-size:14px;padding:11px 26px;border-radius:10px;text-decoration:none;">
-                  הצטרפי לקבוצה ←
+                  ${T("הצטרפי", "הצטרף")} לקבוצה ←
                 </a>
               </div>
             </td>
@@ -199,10 +212,10 @@ export async function sendWelcomeEmail({
           <tr>
             <td style="padding:32px 40px 24px;">
               <p style="margin:0;font-size:14px;color:#1C1C2E;line-height:1.7;">
-                אם משהו לא ברור או לא עובד — אני זמינה. תשלחי לי הודעה ב<a href="${WHATSAPP_GROUP_URL}" style="color:#2BAAAA;font-weight:800;text-decoration:none;">וואטסאפ</a> או <a href="https://www.instagram.com/koral_shalev/" style="color:#2BAAAA;font-weight:800;text-decoration:none;">באינסטגרם</a>, אני אנשי תוכן ולא בוט. 💌
+                אם משהו לא ברור או לא עובד — אני זמינה. ${T("תשלחי", "תשלח")} לי הודעה ב<a href="${WHATSAPP_GROUP_URL}" style="color:#2BAAAA;font-weight:800;text-decoration:none;">וואטסאפ</a> או <a href="https://www.instagram.com/koral_shalev/" style="color:#2BAAAA;font-weight:800;text-decoration:none;">באינסטגרם</a>, אני בן אדם ולא בוט. 💌
               </p>
               <p style="margin:18px 0 0;font-size:14px;color:#1C1C2E;">
-                שתצליחי,<br/>
+                ${T("שתצליחי", "שתצליח")},<br/>
                 <strong style="font-size:16px;">קורל</strong><br/>
                 <span style="color:#888;font-size:12px;">מייסדת קריירה בפוקוס</span>
               </p>
@@ -237,7 +250,7 @@ export async function sendWelcomeEmail({
 
   await sendEmail({
     to: email,
-    subject: `${firstName}, ברוכה הבאה הביתה ✨ הצעד הראשון מחכה לך`,
+    subject: `${firstName}, ${T("ברוכה הבאה הביתה", "ברוך הבא הביתה")} ✨ הצעד הראשון מחכה לך`,
     html,
   });
 }

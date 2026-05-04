@@ -4,48 +4,40 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { OnboardingTour, type TourStep } from "./onboarding-tour";
 
-// ─── Storage key — bump this when the tour content meaningfully changes
-// so existing members see the new tour once.
-export const DASHBOARD_TOUR_KEY = "career-in-focus:tour:dashboard:v1";
+// ─── Storage key — bump when content meaningfully changes so existing
+// members see the refreshed tour once.
+export const DASHBOARD_TOUR_KEY = "career-in-focus:tour:dashboard:v2";
 
-// ─── Steps — ordered narration that walks a new member through the dashboard.
-// Each step targets a `data-tour-id` placed on a real element, OR has no
-// targetId for an intro / outro card centered on screen.
+// ─── Steps — every step leads with the VALUE the member gets from the
+// feature, not a description of what's on screen. Pattern: title hooks,
+// body opens with the concrete benefit ("מה תקבל/י", "במקום X — Y"), then
+// briefly the mechanism. Slash forms (תיכנס/י, מלא/י) keep the copy
+// gender-neutral so it reads naturally to both women and men.
 const STEPS: TourStep[] = [
   {
-    title: "ברוכה הבאה לקריירה בפוקוס ✨",
-    body: "אני קורל. בואי נעבור יחד 60 שניות על הדף הזה ואני אסביר איפה כל דבר נמצא ומאיפה הכי כדאי להתחיל.",
-  },
-  {
-    targetId: "tour-hero",
-    title: "הכרטיס הראשון — את",
-    body: "כאן יוצגו לך תמיד הברכה האישית, ההמלצות שלי, וקיצורי דרך לחיפוש משרות ולמאמן AI. זה ה-״בית״ שלך כל פעם שתיכנסי.",
+    title: "60 שניות שחוסכות שבועות",
+    body: "אני קורל. אני אצביע לך על 4 דברים שיחסכו לך שעות של חיפוש לא ממוקד וניחושים — דברים שלא רואים בלי שמסבירים אותם.",
   },
   {
     targetId: "tour-stats",
-    title: "המספרים שלך",
-    body: "4 כרטיסיות סטטיסטיקה: כמה משרות מתאימות לך, כמה קורסים רלוונטיים, אחוז התאמה לקריירת היעד שלך, וכמה תהליכי גיוס פעילים.\nלחיצה על כל כרטיסיה מובילה ישר לפעולה.",
-  },
-  {
-    targetId: "tour-hired",
-    title: "כשאת מתקבלת — חוגגות יחד 🎉",
-    body: "כשתקבלי תפקיד חדש - לחצי כאן לשתף עם הקהילה. ההצלחה שלך היא בדיוק ההוכחה שמשתמשות אחרות צריכות.",
+    title: "מצפן ב-3 שניות, לא ציון",
+    body: "מה תקבל/י: בלי לפתוח 5 דפים, את/ה יודע/ת מיד מה הצעד הבא שלך. אחוז התאמה נמוך = הפרופיל לא מלא. אפס משרות מתאימות = הקריטריונים נוקשים מדי. תהליכי גיוס פעילים = איפה הפוקוס השבוע. המספרים אומרים לך מה לעשות, לא איך אתה ׳ניצב׳.",
   },
   {
     targetId: "tour-tools",
-    title: "כלי AI מוכנים לעזור",
-    body: "מחולל קורות חיים, מכין לראיונות, בודק התאמה למשרה ועוד. הכלים הם חינמיים לבעלות מינוי - השתמשי בהם מתי שצריך.",
-    cta: { label: "בואי נראה את הכלים", href: "/tools" },
+    title: "כלים שעובדים עליך — לא תבניות",
+    body: "מה תקבל/י: קורות חיים שנכתבים מהניסיון האישי שלך, מאמן ראיונות שיודע על איזה תפקיד מתראיינים, ובדיקת התאמה שמשווה את הפרופיל שלך מול דרישות אמיתיות של משרה. במקום ׳תבנית חינם׳ שכולם מקבלים — תוצר שמתחיל ממך וחוסך שעות עבודה.",
+    cta: { label: "לכל הכלים", href: "/tools" },
   },
   {
     targetId: "tour-sidebar",
-    title: "ניווט - הכל כאן בצד",
-    body: "הסרגל בצד הוא המפה של המערכת:\n• דשבורד — חזרה הביתה\n• מאמן AI — שאלות אישיות\n• פרופיל — דרכון הקריירה שלך\n• משרות / קורסים / כלים — הליבה\n• קהילה — נשים אחרות בדרך",
+    title: "מאמן AI — תשובה מיידית, 24/7",
+    body: "מה תקבל/י: תשובה אישית בכל רגע, על השאלות שלרוב אין למי לפנות איתן — ׳כדאי להגיש על המשרה הזו?׳, ׳איך לנסח הודעה למגייס שלא ענה?׳, ׳איך להציג חוסר ניסיון ב-X?׳. בסרגל הצדדי, הקיצור הכי שימושי שיש כאן.",
   },
   {
-    title: "הצעד הראשון שלך — מלאי דרכון קריירה",
-    body: "הדרכון הוא הבסיס לכל ההתאמות. ללא דרכון לא נדע מה תפקיד היעד שלך, אילו מיומנויות יש לך, ומה הפערים. זה לוקח 5 דקות וזה משנה הכל.",
-    cta: { label: "מלאי דרכון עכשיו", href: "/profile" },
+    title: "5 דקות שגורמות לכל השאר לעבוד",
+    body: "מה תקבל/י אחרי שתמלא/י את דרכון הקריירה: ההמלצות הופכות רלוונטיות, ההתאמות מדויקות, והכלים מותאמים אישית. בלי דרכון — את/ה משתמש/ת בגרסה גנרית של מערכת אישית. זה הצעד היחיד שחובה לעשות עכשיו.",
+    cta: { label: "למילוי הדרכון", href: "/profile" },
   },
 ];
 
