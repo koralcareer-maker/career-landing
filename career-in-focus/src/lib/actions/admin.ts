@@ -325,7 +325,7 @@ export async function activateUser(id: string) {
   const user = await prisma.user.update({
     where: { id },
     data: { accessStatus: "ACTIVE", membershipType: "MEMBER", paymentProvider: "MANUAL", paidAt: new Date() },
-    select: { name: true, email: true, membershipType: true },
+    select: { name: true, email: true, membershipType: true, gender: true },
   });
   await prisma.notification.create({
     data: {
@@ -341,6 +341,7 @@ export async function activateUser(id: string) {
     name:           user.name ?? user.email,
     email:          user.email,
     membershipType: user.membershipType,
+    gender:         user.gender === "m" ? "m" : "f",
   }).catch(console.error);
   revalidatePath("/admin/users");
 }
@@ -367,6 +368,8 @@ export async function createUserManually(prevState: unknown, formData: FormData)
   const email = (formData.get("email") as string)?.toLowerCase().trim();
   const password = (formData.get("password") as string)?.trim();
   const membershipType = (formData.get("membershipType") as string) || "MEMBER";
+  const genderRaw = (formData.get("gender") as string)?.trim() || "";
+  const gender: "f" | "m" = genderRaw === "m" ? "m" : "f";
 
   if (!name || !email || !password) {
     return { error: "שם, אימייל וסיסמה הם שדות חובה" };
@@ -385,6 +388,7 @@ export async function createUserManually(prevState: unknown, formData: FormData)
       name,
       email,
       passwordHash,
+      gender,
       role: "MEMBER",
       accessStatus: "ACTIVE",
       membershipType: membershipType as never,
@@ -410,6 +414,7 @@ export async function createUserManually(prevState: unknown, formData: FormData)
     email,
     membershipType,
     password,
+    gender,
   }).catch(console.error);
 
   revalidatePath("/admin/users");

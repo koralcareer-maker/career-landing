@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
           paidAt:           new Date(),
           ...(token ? { cardToken: token, cardLast4: last4 } : {}),
         },
-        select: { name: true, email: true },
+        select: { name: true, email: true, gender: true },
       });
 
       await prisma.notification.create({
@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
         name:           user.name ?? user.email,
         email:          user.email,
         membershipType: plan,
+        gender:         user.gender === "m" ? "m" : "f",
       }).catch(console.error);
 
       console.log(`CardCom: user ${userId} activated as ${plan}, tx ${transactionId}`);

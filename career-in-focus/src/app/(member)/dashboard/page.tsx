@@ -22,6 +22,12 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
   const firstName = session!.user.name?.split(" ")[0] ?? "חבר";
+  // Gender drives the user-addressed copy across the dashboard (greeting,
+  // celebration card, etc.). Default to feminine because the brand audience
+  // is mostly women — but male members get male copy when their gender is
+  // stored on the User row (set at signup or via admin tools).
+  const isM = session!.user.gender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
 
   // Pull a wider set so the matcher has enough material to filter from.
   const [profile, passport, allJobs, upcomingEvents, posts, allCourses] = await Promise.all([
@@ -164,7 +170,7 @@ export default async function DashboardPage() {
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-navy leading-[1.15] mb-4">
                 {firstName},<br/>
                 <span className="bg-gradient-to-l from-teal-dark to-teal bg-clip-text text-transparent">
-                  ברוכה הבאה ✨
+                  {t("ברוכה הבאה", "ברוך הבא")} ✨
                 </span>
               </h1>
 
@@ -173,7 +179,7 @@ export default async function DashboardPage() {
                 <span aria-hidden className="absolute top-1 left-2 text-teal/30 text-2xl font-serif leading-none">&ldquo;</span>
                 <p className="text-navy/85 text-sm leading-relaxed">
                   הקמתי את המקום הזה כדי לתת לך בדיוק את מה שהייתי רוצה לקבל בעצמי
-                  — קהילה, ליווי וכלים מעשיים שעוזרים להתקדם בלי להיתקע.
+                  — קהילה, ליווי וכלים מעשיים שבאמת יקדמו אותך לתפקיד הבא שלך.
                 </p>
                 <p className="text-teal-dark text-xs font-black mt-1.5">— קורל שלו</p>
               </div>
@@ -593,12 +599,12 @@ export default async function DashboardPage() {
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-black mb-3 leading-tight">
                 כבר התקבלת לעבודה?<br/>
                 <span className="bg-gradient-to-l from-teal to-[#7FE7E7] bg-clip-text text-transparent">
-                  בואי נחגוג איתך 🎉
+                  {t("בואי", "בוא")} נחגוג איתך 🎉
                 </span>
               </h2>
               <p className="text-white/70 text-sm leading-relaxed mb-5 max-w-md">
-                אלפי נשים בקהילה שלנו כבר מצאו את העבודה הבאה שלהן. שתפי איתנו את ההצלחה
-                שלך ועזרי לאחרות לראות שזה אפשרי גם להן.
+                חברי וחברות הקהילה שלנו כבר מצאו את העבודה הבאה שלהם. {t("שתפי", "שתף")} איתנו
+                את ההצלחה {t("שלך ועזרי", "שלך ועזור")} לאחרים לראות שזה אפשרי גם להם.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Link
@@ -606,14 +612,14 @@ export default async function DashboardPage() {
                   className="inline-flex items-center gap-2 bg-gradient-to-l from-[#10B981] to-[#047857] hover:shadow-lg hover:shadow-[#10B981]/40 hover:-translate-y-0.5 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all"
                 >
                   <Sparkles size={15} />
-                  שתפי הצלחה
+                  {t("שתפי הצלחה", "שתף הצלחה")}
                 </Link>
                 <Link
                   href="/jobs"
                   className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-teal/40 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all"
                 >
                   <Briefcase size={15} className="text-teal" />
-                  עוד מחפשת? המשיכי כאן
+                  {t("עוד מחפשת?", "עוד מחפש?")} {t("המשיכי", "המשך")} כאן
                 </Link>
               </div>
             </div>

@@ -142,7 +142,11 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
   const spotW = rect ? rect.width + PADDING * 2 : 0;
   const spotH = rect ? rect.height + PADDING * 2 : 0;
 
-  // Tooltip position — try below the target, fall back above
+  // Tooltip position — try below the target, fall back above. We assume an
+  // upper bound of ~400px on the tooltip's natural height; combined with
+  // max-height: calc(100vh - 32px) + overflow-y: auto on the card itself,
+  // the tooltip is always reachable even with long body copy.
+  const TIP_HEIGHT_ESTIMATE = 400;
   let tipX = 16;
   let tipY = 16;
   if (rect && typeof window !== "undefined") {
@@ -153,15 +157,21 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
     tipX = Math.max(16, Math.min(vw - widthOnScreen - 16, tipX));
     // Try below
     tipY = rect.bottom + 16;
-    // Estimate tooltip height (~280px) — flip above if it would overflow
-    if (tipY + 280 > vh - 16) {
-      tipY = Math.max(16, rect.top - 280 - 16);
+    if (tipY + TIP_HEIGHT_ESTIMATE > vh - 16) {
+      // Try above
+      const aboveY = rect.top - TIP_HEIGHT_ESTIMATE - 16;
+      // If neither below nor above fits, anchor at the top of the viewport
+      // (the card's own internal scroll lets the user reach the buttons).
+      tipY = aboveY > 16 ? aboveY : 16;
     }
+    // Final clamp — never let the card start below the visible viewport.
+    tipY = Math.max(16, Math.min(vh - 80, tipY));
   } else if (typeof window !== "undefined") {
     // Centered when no target
+    const vh = window.innerHeight;
     const widthOnScreen = Math.min(TIP_WIDTH, window.innerWidth - 32);
     tipX = (window.innerWidth - widthOnScreen) / 2;
-    tipY = window.innerHeight / 2 - 140;
+    tipY = Math.max(16, vh / 2 - TIP_HEIGHT_ESTIMATE / 2);
   }
 
   const isFirstStep = stepIdx === 0;
@@ -209,12 +219,17 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
       )}
 
       {/* ─── Tooltip card ─── */}
+      {/* max-height + overflow-y so a long body never makes the card extend
+          past the viewport with no way to reach the bottom (the body scroll
+          is locked while the tour is open). */}
       <div
-        className="absolute bg-white rounded-2xl shadow-2xl border border-teal/30 overflow-hidden animate-fade-in-up"
+        className="absolute bg-white rounded-2xl shadow-2xl border border-teal/30 animate-fade-in-up"
         style={{
           left: tipX,
           top: tipY,
           width: `min(${TIP_WIDTH}px, calc(100vw - 32px))`,
+          maxHeight: "calc(100vh - 32px)",
+          overflowY: "auto",
         }}
       >
         {/* Header */}

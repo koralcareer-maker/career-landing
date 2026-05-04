@@ -16,9 +16,11 @@ export function AddUserForm({
 }) {
   const [state, formAction, pending] = useActionState(action, null);
   const [showPassword, setShowPassword] = useState(false);
+  const [gender, setGender] = useState<"f" | "m">("f");
 
   return (
     <form action={formAction} className="space-y-4">
+      <input type="hidden" name="gender" value={gender} />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Name */}
         <div>
@@ -79,6 +81,30 @@ export function AddUserForm({
             <option value="VIP">VIP — 149₪</option>
             <option value="PREMIUM">קורל תפעילי קשרים — 449₪</option>
           </select>
+        </div>
+      </div>
+
+      {/* Gender — controls the welcome email tone (ברוכה / ברוך). */}
+      <div>
+        <label className="text-xs font-semibold text-gray-500 mb-1 block">איך לפנות אליו/ה במייל?</label>
+        <div className="inline-flex gap-2">
+          {[
+            { value: "f" as const, label: "אישה" },
+            { value: "m" as const, label: "גבר"  },
+          ].map((g) => (
+            <button
+              key={g.value}
+              type="button"
+              onClick={() => setGender(g.value)}
+              className={`px-4 py-2 rounded-xl border text-sm font-bold transition-all ${
+                gender === g.value
+                  ? "border-teal bg-teal text-white shadow-sm"
+                  : "border-gray-200 text-gray-500 hover:border-teal/40"
+              }`}
+            >
+              {g.label}
+            </button>
+          ))}
         </div>
       </div>
 

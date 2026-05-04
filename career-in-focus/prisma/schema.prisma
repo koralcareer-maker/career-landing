@@ -125,6 +125,11 @@ model User {
   name          String?
   image         String?
   passwordHash  String?
+  // Gender is captured at signup so we can address the member correctly
+  // in welcome emails, the dashboard, and any future copy. "f" = female,
+  // "m" = male; null = unknown (older users from before this field
+  // existed, or admin-created users where gender wasn't supplied).
+  gender        String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

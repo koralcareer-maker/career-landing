@@ -18,6 +18,10 @@ const PLAN_LABELS: Record<string, { name: string; price: string; color: string; 
 function SignupForm() {
   const [state, action, isPending] = useActionState(signup, null);
   const [showPassword, setShowPassword] = useState(false);
+  // Gender drives the tone of the welcome email and any user-addressed copy
+  // (ברוכה/ברוך, מלאי/מלא, etc.). Default to feminine — the brand audience
+  // is mostly women, so unanswered = feminine matches existing voice.
+  const [gender, setGender] = useState<"f" | "m">("f");
   const searchParams = useSearchParams();
   const planKey = searchParams.get("plan") ?? "member";
   const plan = PLAN_LABELS[planKey] ?? PLAN_LABELS.member;
@@ -56,6 +60,8 @@ function SignupForm() {
           <form action={action} className="space-y-4">
             {/* Hidden plan field */}
             <input type="hidden" name="plan" value={planKey} />
+            {/* Hidden gender field — value comes from the pill buttons below */}
+            <input type="hidden" name="gender" value={gender} />
             <Input
               id="name"
               name="name"
@@ -65,6 +71,32 @@ function SignupForm() {
               autoComplete="name"
               required
             />
+
+            {/* Gender — drives email tone (ברוכה/ברוך etc.) */}
+            <div>
+              <label className="block text-xs font-bold text-navy/70 mb-1.5">
+                איך לפנות אלייך?
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: "f" as const, label: "אישה" },
+                  { value: "m" as const, label: "גבר"  },
+                ].map((g) => (
+                  <button
+                    key={g.value}
+                    type="button"
+                    onClick={() => setGender(g.value)}
+                    className={`px-4 py-2.5 rounded-xl border text-sm font-bold transition-all ${
+                      gender === g.value
+                        ? "border-teal bg-teal text-white shadow-sm"
+                        : "border-gray-200 text-gray-500 hover:border-teal/40"
+                    }`}
+                  >
+                    {g.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <Input
               id="email"
               name="email"

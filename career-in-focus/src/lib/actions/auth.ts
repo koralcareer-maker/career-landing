@@ -11,6 +11,7 @@ const SignupSchema = z.object({
   name: z.string().min(2, "שם חייב להכיל לפחות 2 תווים"),
   email: z.string().email("כתובת אימייל לא תקינה"),
   password: z.string().min(6, "סיסמה חייבת להכיל לפחות 6 תווים"),
+  gender: z.enum(["f", "m"]).optional(),
 });
 
 const VALID_PLANS = ["MEMBER", "VIP", "PREMIUM"] as const;
@@ -21,6 +22,7 @@ export async function signup(prevState: unknown, formData: FormData) {
     name: formData.get("name") as string,
     email: formData.get("email") as string,
     password: formData.get("password") as string,
+    gender: (formData.get("gender") as string) || undefined,
   };
 
   const result = SignupSchema.safeParse(raw);
@@ -28,7 +30,7 @@ export async function signup(prevState: unknown, formData: FormData) {
     return { error: result.error.issues[0].message };
   }
 
-  const { name, email, password } = result.data;
+  const { name, email, password, gender } = result.data;
 
   // Read plan from form (passed as hidden field from pricing page)
   const planRaw = ((formData.get("plan") as string) ?? "MEMBER").toUpperCase();
@@ -46,6 +48,7 @@ export async function signup(prevState: unknown, formData: FormData) {
       name,
       email,
       passwordHash,
+      gender,
       role: "MEMBER",
       accessStatus: "PENDING",
       membershipType: plan, // store chosen plan — activated after payment

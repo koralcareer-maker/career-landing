@@ -1,8 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Search, CheckCircle, AlertCircle, XCircle, Loader2 } from "lucide-react";
-import { diagnoseLogin, type DiagnoseResult } from "@/lib/actions/admin-imports";
+import { Search, CheckCircle, AlertCircle, XCircle, Loader2, Mail } from "lucide-react";
+import {
+  diagnoseLogin,
+  resendWelcomeEmail,
+  type DiagnoseResult,
+  type ResendWelcomeResult,
+} from "@/lib/actions/admin-imports";
 
 const VERDICTS: Record<DiagnoseResult["verdict"], { color: string; emoji: string; title: string }> = {
   OK_CAN_LOGIN:    { color: "green",  emoji: "✅", title: "הכל תקין"           },
@@ -20,11 +25,17 @@ export function DiagnoseForm() {
   const [result, setResult]     = useState<DiagnoseResult | null>(null);
   const [error, setError]       = useState<string | null>(null);
 
+  // ─── Resend-welcome state — separate from diagnose state so the user can
+  // see both outputs at once.
+  const [resendPending, setResendPending] = useState(false);
+  const [resendResult,  setResendResult]  = useState<ResendWelcomeResult | null>(null);
+
   async function run() {
     if (!email.trim()) return;
     setPending(true);
     setError(null);
     setResult(null);
+    setResendResult(null);
     try {
       const r = await diagnoseLogin(email, password || undefined);
       setResult(r);
@@ -32,6 +43,20 @@ export function DiagnoseForm() {
       setError(e instanceof Error ? e.message : "שגיאה");
     } finally {
       setPending(false);
+    }
+  }
+
+  async function resend() {
+    if (!email.trim()) return;
+    setResendPending(true);
+    setResendResult(null);
+    try {
+      const r = await resendWelcomeEmail(email);
+      setResendResult(r);
+    } catch (e) {
+      setResendResult({ ok: false, message: e instanceof Error ? e.message : "שגיאה" });
+    } finally {
+      setResendPending(false);
     }
   }
 
@@ -61,16 +86,41 @@ export function DiagnoseForm() {
           />
         </div>
 
-        <button
-          type="button"
-          onClick={run}
-          disabled={pending || !email.trim()}
-          className="inline-flex items-center gap-2 bg-teal text-white font-bold px-5 py-2.5 rounded-xl hover:bg-teal-dark transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {pending ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
-          {pending ? "בודקת..." : "אבחני"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={run}
+            disabled={pending || !email.trim()}
+            className="inline-flex items-center gap-2 bg-teal text-white font-bold px-5 py-2.5 rounded-xl hover:bg-teal-dark transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {pending ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
+            {pending ? "בודקת..." : "אבחני"}
+          </button>
+
+          {/* Resend welcome email — uses the gender stored on the user row,
+              so men get the male version and women the female version. */}
+          <button
+            type="button"
+            onClick={resend}
+            disabled={resendPending || !email.trim()}
+            className="inline-flex items-center gap-2 bg-white text-navy font-bold px-5 py-2.5 rounded-xl border border-slate-200 hover:border-teal/60 hover:text-teal transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {resendPending ? <Loader2 size={15} className="animate-spin" /> : <Mail size={15} />}
+            {resendPending ? "שולחת..." : "שלחי שוב מייל ברוכה הבאה"}
+          </button>
+        </div>
       </div>
+
+      {resendResult && (
+        <div className={`rounded-xl p-4 border flex items-start gap-3 ${
+          resendResult.ok
+            ? "bg-green-50 border-green-200 text-green-800"
+            : "bg-red-50 border-red-200 text-red-800"
+        }`}>
+          {resendResult.ok ? <CheckCircle size={18} className="mt-0.5 shrink-0" /> : <AlertCircle size={18} className="mt-0.5 shrink-0" />}
+          <p className="font-bold text-sm">{resendResult.message}</p>
+        </div>
+      )}
 
       {error && (
         <div className="rounded-xl p-4 border bg-red-50 border-red-200 text-red-800 flex items-start gap-3">

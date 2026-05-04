@@ -16,12 +16,14 @@ declare module "next-auth" {
       role: Role;
       accessStatus: AccessStatus;
       membershipType?: string | null;
+      gender?: string | null;   // "f" | "m" | null — drives gendered copy
     };
   }
   interface User {
     role: Role;
     accessStatus: AccessStatus;
     membershipType?: string | null;
+    gender?: string | null;
   }
 }
 
@@ -64,6 +66,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           role: user.role,
           accessStatus: user.accessStatus,
           membershipType: user.membershipType,
+          gender: user.gender,
         };
       },
     }),
@@ -75,12 +78,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = user.role;
         token.accessStatus = user.accessStatus;
         token.membershipType = user.membershipType;
+        token.gender = user.gender;
       }
-      // Refresh role/status from DB on sign-in/token creation
+      // Refresh role/status/gender from DB on subsequent token reads so a
+      // gender update via admin/signup flows in without re-login.
       if (token.id && !user) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { role: true, accessStatus: true, membershipType: true, name: true, image: true },
+          select: { role: true, accessStatus: true, membershipType: true, name: true, image: true, gender: true },
         });
         if (dbUser) {
           token.role = dbUser.role;
@@ -88,6 +93,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.membershipType = dbUser.membershipType;
           token.name = dbUser.name;
           token.picture = dbUser.image;
+          token.gender = dbUser.gender;
         }
       }
       return token;
@@ -100,6 +106,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.membershipType = token.membershipType as string;
         session.user.name = token.name as string;
         session.user.image = token.picture as string;
+        session.user.gender = token.gender as string | null;
       }
       return session;
     },

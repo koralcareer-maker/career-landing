@@ -19,6 +19,7 @@ import {
   YONI_APPLICATIONS,
 } from "@/lib/imports/yoni-data";
 import { TRAINEES } from "@/lib/imports/trainees-roster";
+import { sendWelcomeEmail } from "@/lib/email";
 
 async function requireAdmin() {
   const session = await auth();
@@ -315,6 +316,7 @@ export async function bulkCreateTrainees(): Promise<BulkResult> {
             name:            t.name,
             email,
             passwordHash,
+            gender:          t.gender,
             role:            "MEMBER",
             accessStatus:    "ACTIVE",
             membershipType:  "PREMIUM" as never,
@@ -326,13 +328,15 @@ export async function bulkCreateTrainees(): Promise<BulkResult> {
         details.push({ email, action: "created" });
       } else if (
         !existing.passwordHash ||
-        existing.accessStatus !== "ACTIVE"
+        existing.accessStatus !== "ACTIVE" ||
+        existing.gender !== t.gender
       ) {
         await prisma.user.update({
           where: { id: existing.id },
           data: {
             passwordHash,
             accessStatus:   "ACTIVE",
+            gender:         t.gender,
             // only fill name if it was empty — don't clobber a name the user updated
             ...(existing.name ? {} : { name: t.name }),
             ...(existing.membershipType ? {} : { membershipType: "PREMIUM" as never }),
@@ -360,5 +364,52 @@ export async function bulkCreateTrainees(): Promise<BulkResult> {
     alreadyOk,
     total:     TRAINEES.length,
     details,
+  };
+}
+
+// ─── Resend welcome email — used to send the corrected (gender-aware)
+// welcome email to a trainee who originally got the feminine-only version,
+// or to anyone who needs it again. Looks up the user by email, reads
+// gender from the row, and re-sends with the right tone.
+export interface ResendWelcomeResult {
+  ok:      boolean;
+  message: string;
+  to?:     string;
+  gender?: "f" | "m";
+}
+
+export async function resendWelcomeEmail(rawEmail: string): Promise<ResendWelcomeResult> {
+  await requireAdmin();
+
+  const email = (rawEmail ?? "").toLowerCase().trim();
+  if (!email) return { ok: false, message: "חסר אימייל" };
+
+  const user = await prisma.user.findUnique({
+    where:  { email },
+    select: { name: true, email: true, gender: true, membershipType: true },
+  });
+  if (!user) return { ok: false, message: `לא מצאתי משתמשת עם המייל ${email}.` };
+
+  const gender: "f" | "m" = user.gender === "m" ? "m" : "f";
+
+  try {
+    await sendWelcomeEmail({
+      name:           user.name ?? user.email,
+      email:          user.email,
+      membershipType: user.membershipType ?? "MEMBER",
+      gender,
+    });
+  } catch (e) {
+    return {
+      ok:      false,
+      message: e instanceof Error ? `שליחת המייל נכשלה: ${e.message}` : "שליחת המייל נכשלה",
+    };
+  }
+
+  return {
+    ok:      true,
+    message: `מייל ברוכה הבאה נשלח שוב ל-${user.email} בלשון ${gender === "m" ? "זכר" : "נקבה"}.`,
+    to:      user.email,
+    gender,
   };
 }
