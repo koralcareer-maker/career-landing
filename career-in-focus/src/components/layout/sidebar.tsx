@@ -60,8 +60,8 @@ export function Sidebar({ user, unreadCount = 0 }: SidebarProps) {
             <div className="absolute -bottom-1 -left-1 w-3.5 h-3.5 bg-teal rounded-full border-2 border-white" />
           </div>
           <div>
-            <div className="text-navy font-black text-base leading-tight">קורל</div>
-            <div className="text-teal text-xs font-semibold">קריירה בפוקוס</div>
+            <div className="text-teal font-black text-base leading-tight">קריירה בפוקוס</div>
+            <div className="text-navy text-xs font-semibold">שלך</div>
           </div>
         </Link>
       </div>
