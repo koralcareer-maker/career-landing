@@ -19,6 +19,7 @@ import {
   YONI_APPLICATIONS,
 } from "@/lib/imports/yoni-data";
 import { TRAINEES } from "@/lib/imports/trainees-roster";
+import { ROLE_COURSES } from "@/lib/imports/role-courses-data";
 import { sendWelcomeEmail } from "@/lib/email";
 
 async function requireAdmin() {
@@ -413,3 +414,81 @@ export async function resendWelcomeEmail(rawEmail: string): Promise<ResendWelcom
     gender,
   };
 }
+
+
+// ─── Seed role-specific courses ───────────────────────────────────────
+// Idempotent: each course is matched on (title) — re-running the seed
+// updates content but never creates duplicates. So if Coral edits a
+// course in /admin/courses and then re-runs this seed, the row is
+// preserved on duplicate-by-title and only updated on its description /
+// category fields.
+
+export interface SeedCoursesResult {
+  ok:        boolean;
+  created:   number;
+  updated:   number;
+  total:     number;
+  byTag:     Record<string, { created: number; updated: number }>;
+  message:   string;
+}
+
+export async function seedRoleCourses(): Promise<SeedCoursesResult> {
+  const session = await requireAdmin();
+  const adminId = session.user!.id;
+
+  let created = 0;
+  let updated = 0;
+  const byTag: Record<string, { created: number; updated: number }> = {};
+
+  for (const c of ROLE_COURSES) {
+    if (!byTag[c.tag]) byTag[c.tag] = { created: 0, updated: 0 };
+
+    const existing = await prisma.course.findFirst({
+      where: { title: c.title },
+      select: { id: true },
+    });
+
+    if (existing) {
+      await prisma.course.update({
+        where: { id: existing.id },
+        data: {
+          description: c.description,
+          category:    c.category,
+          formatType:  c.formatType,
+          accessType:  c.accessType,
+          ctaText:     c.ctaText,
+          ctaUrl:      c.ctaUrl,
+          isPublished: true,
+        },
+      });
+      updated++;
+      byTag[c.tag].updated++;
+    } else {
+      await prisma.course.create({
+        data: {
+          title:       c.title,
+          description: c.description,
+          category:    c.category,
+          formatType:  c.formatType,
+          accessType:  c.accessType,
+          ctaText:     c.ctaText,
+          ctaUrl:      c.ctaUrl,
+          isPublished: true,
+          createdById: adminId,
+        },
+      });
+      created++;
+      byTag[c.tag].created++;
+    }
+  }
+
+  return {
+    ok:      true,
+    created,
+    updated,
+    total:   ROLE_COURSES.length,
+    byTag,
+    message: `${created} נוצרו, ${updated} עודכנו, מתוך ${ROLE_COURSES.length}.`,
+  };
+}
+
