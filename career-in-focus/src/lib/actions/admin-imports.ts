@@ -434,7 +434,7 @@ export interface SeedCoursesResult {
 
 export async function seedRoleCourses(): Promise<SeedCoursesResult> {
   const session = await requireAdmin();
-  const adminId = session.user!.id;
+  const adminId = session.user?.id ?? null;
 
   let created = 0;
   let updated = 0;
@@ -455,7 +455,10 @@ export async function seedRoleCourses(): Promise<SeedCoursesResult> {
           description: c.description,
           category:    c.category,
           formatType:  c.formatType,
-          accessType:  c.accessType,
+          // The same `as never` cast the existing manual create-course
+          // form uses (lib/actions/admin.ts) — Prisma 7's strict enum
+          // typing rejects plain string-union literals here.
+          accessType:  c.accessType as never,
           ctaText:     c.ctaText,
           ctaUrl:      c.ctaUrl,
           isPublished: true,
@@ -470,11 +473,11 @@ export async function seedRoleCourses(): Promise<SeedCoursesResult> {
           description: c.description,
           category:    c.category,
           formatType:  c.formatType,
-          accessType:  c.accessType,
+          accessType:  c.accessType as never,
           ctaText:     c.ctaText,
           ctaUrl:      c.ctaUrl,
           isPublished: true,
-          createdById: adminId,
+          createdById: adminId ?? undefined,
         },
       });
       created++;
