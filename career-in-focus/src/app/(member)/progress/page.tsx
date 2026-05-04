@@ -73,7 +73,15 @@ export default async function ProgressPage() {
       updatedAt: a.updatedAt,
       archived: a.archived,
     })),
-    upcomingInterviews,
+    // Action plan needs only the four fields it cares about, with a guaranteed
+    // non-null interviewDate (getUpcomingInterviews already filters those out
+    // — the cast just convinces TypeScript).
+    upcomingInterviews: upcomingInterviews.map((iv) => ({
+      id: iv.id,
+      company: iv.company,
+      role: iv.role,
+      interviewDate: iv.interviewDate as Date,
+    })),
     overdueReminders: overdueReminderRows.map((r) => ({
       id: r.id,
       title: r.title,
