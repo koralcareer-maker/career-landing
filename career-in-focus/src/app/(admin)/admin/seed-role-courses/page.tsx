@@ -16,17 +16,15 @@ const TAG_LABELS: Record<string, string> = {
 
 export default async function SeedRoleCoursesPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  if (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
-    redirect("/dashboard");
+  if (session?.user?.role !== "ADMIN" && session?.user?.role !== "SUPER_ADMIN") {
+    redirect("/login");
   }
 
   // Group courses by tag for the preview
-  const byTag = ROLE_COURSES.reduce<Record<string, typeof ROLE_COURSES>>((acc, c) => {
-    if (!acc[c.tag]) acc[c.tag] = [];
-    acc[c.tag].push(c);
-    return acc;
-  }, {});
+  const byTag: Record<string, typeof ROLE_COURSES> = {};
+  for (const c of ROLE_COURSES) {
+    (byTag[c.tag] ??= []).push(c);
+  }
 
   return (
     <div className="p-4 sm:p-6 max-w-3xl mx-auto" dir="rtl">
