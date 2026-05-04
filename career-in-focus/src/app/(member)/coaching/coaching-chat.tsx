@@ -2,15 +2,69 @@
 
 import { useState, useRef, useEffect } from "react";
 import { sendCoachingMessage, clearCoachingChat, type Message } from "@/lib/actions/coaching";
-import { Send, Trash2, Sparkles, Loader2 } from "lucide-react";
+import {
+  Send, Trash2, Sparkles, Loader2,
+  Briefcase, Building2, MessageSquare, FileText,
+  TrendingUp, AlertTriangle, ArrowLeft,
+} from "lucide-react";
 
-const SUGGESTED = [
-  "נתח את מצב חיפוש העבודה שלי",
-  "מה המשימה הכי חשובה שלי השבוע?",
-  "איך אני משפר את ציון המוכנות שלי?",
-  "תן לי טיפ לכתיבת מכתב מקדים",
-  "מה עדיף — לינקדאין או אתר חברה?",
+// ─── Quick Actions — six data-aware prompts that pre-fill the chat. Each
+// prompt is written to *force* the coach to combine the user's data with
+// market/strategy advice, not give generic answers. The exact phrasing
+// matters: it primes Gemini to follow the Analysis/Insight/Action
+// structure required by the system prompt.
+const QUICK_ACTIONS: Array<{
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  prompt: string;
+  tone: "teal" | "purple" | "amber" | "rose" | "emerald" | "navy";
+}> = [
+  {
+    icon: Briefcase,
+    label: "מצא לי משרות רלוונטיות",
+    tone: "teal",
+    prompt: "תסקור את המשרות הזמינות לי במערכת לפי תפקיד היעד שלי. תעבור על 5-7 משרות שהכי רלוונטיות, ולכל אחת תגיד: למה היא מתאימה לפרופיל שלי ספציפית, ומה הצעד הראשון להגיש (Easy Apply / פנייה ישירה / נטוורקינג).",
+  },
+  {
+    icon: Building2,
+    label: "מפה לי חברות שמגייסות בתחום שלי",
+    tone: "purple",
+    prompt: "תכין לי מפת חברות שמגייסות בתחום היעד שלי. תחלק ל-3 קבוצות: (1) מגייסות פעילות עכשיו, (2) חברות בצמיחה שכדאי לעקוב אחריהן, (3) חברות רלוונטיות שכרגע פסיביות. לכל חברה — שורה אחת על למה היא מתאימה לי, ואיך הכי טוב לפנות (לוח / ישירה / נטוורקינג).",
+  },
+  {
+    icon: MessageSquare,
+    label: "כתוב לי הודעה למגייסת",
+    tone: "rose",
+    prompt: "אני רוצה לפנות באופן יזום למגייס/ת בלינקדאין. תשאל אותי איזה תפקיד או חברה (משפט קצר), ואחר כך תנסח לי הודעה אישית של 4-5 שורות שמותאמת לפרופיל שלי ולמשרה. אחרי ההודעה — תציע גם גרסה למייל וגם follow-up אם לא יענו תוך שבוע.",
+  },
+  {
+    icon: FileText,
+    label: "מכתב מקדים מותאם",
+    tone: "amber",
+    prompt: "אני צריכ/ה מכתב מקדים. תשאל אותי איזה תפקיד וחברה, ועל בסיס הניסיון שלי בפרופיל תכתוב לי מכתב של 3 פסקאות: (1) למה הם, (2) למה אני התאמה ספציפית — עם 2-3 הישגים מהקריירה שלי שמתאימים לתפקיד, (3) קריאה לפעולה.",
+  },
+  {
+    icon: TrendingUp,
+    label: "ניתוח שוק העבודה בתחום שלי",
+    tone: "emerald",
+    prompt: "תן לי סקירה של שוק העבודה בתפקיד היעד שלי בישראל: רמת ביקוש, רמת תחרות, מגמות גיוס בחודשים האחרונים, ומיומנויות שהכי דרושות. תסיים באסטרטגיה מומלצת לחיפוש שלי השבוע (לאיזה ערוצים להתמקד).",
+  },
+  {
+    icon: AlertTriangle,
+    label: "למה לא קוראים לי לראיון?",
+    tone: "navy",
+    prompt: "תנתח את חיפוש העבודה שלי. תסתכל על מספר ההגשות שלי, שיעור התגובה, מקורות ההגשה, ויש סיכוי שאני לא מגיע/ה לראיון בגלל בעיה ספציפית: כמות לא מספיקה, איכות גרועה של הגשות, מקורות חלשים, או חוסר התאמה לתפקיד. תגיד לי מה הסיבה הסבירה ביותר על בסיס הנתונים, ומה לתקן השבוע.",
+  },
 ];
+
+const TONE_STYLES: Record<typeof QUICK_ACTIONS[number]["tone"], { card: string; icon: string }> = {
+  teal:    { card: "border-teal/30 hover:border-teal hover:bg-teal/5",         icon: "bg-teal/15 text-teal-dark" },
+  purple:  { card: "border-purple-200 hover:border-purple-400 hover:bg-purple-50", icon: "bg-purple-100 text-purple-700" },
+  amber:   { card: "border-amber-200 hover:border-amber-400 hover:bg-amber-50",    icon: "bg-amber-100 text-amber-700" },
+  rose:    { card: "border-rose-200 hover:border-rose-400 hover:bg-rose-50",       icon: "bg-rose-100 text-rose-700" },
+  emerald: { card: "border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50", icon: "bg-emerald-100 text-emerald-700" },
+  navy:    { card: "border-slate-200 hover:border-navy hover:bg-slate-50",          icon: "bg-navy/10 text-navy" },
+};
 
 // ─── Simple markdown renderer ─────────────────────────────────────────────────
 
@@ -119,21 +173,38 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full gap-5 text-center">
-            <div className="w-16 h-16 bg-teal-pale rounded-3xl flex items-center justify-center">
-              <Sparkles size={28} className="text-teal" />
+          <div className="flex flex-col items-center justify-center min-h-full gap-4 text-center py-2">
+            <div className="w-14 h-14 bg-teal-pale rounded-3xl flex items-center justify-center">
+              <Sparkles size={24} className="text-teal" />
             </div>
             <div>
-              <p className="font-bold text-navy mb-1">שלום! אני המאמן האישי שלך</p>
-              <p className="text-sm text-gray-400 max-w-xs">אני מכיר את הנתונים שלך ויכול לנתח את מצב חיפוש העבודה שלך ולעזור לך להתקדם</p>
+              <p className="font-black text-navy">שלום! אני המאמן האישי שלך</p>
+              <p className="text-xs text-gray-400 max-w-sm mt-1 leading-relaxed">
+                אני מנתח/ת אותך לפי הנתונים שלך — כמות הגשות, שיעור תגובה, מקורות, רצף פעילות — ונותן/ת לך הוראות קונקרטיות לפעולה.
+              </p>
             </div>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {SUGGESTED.map(s => (
-                <button key={s} onClick={() => handleSend(s)}
-                  className="text-xs bg-teal-pale text-teal font-medium px-3 py-1.5 rounded-full hover:bg-teal hover:text-white transition-all border border-teal/20">
-                  {s}
-                </button>
-              ))}
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mt-2">פעולות מהירות</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
+              {QUICK_ACTIONS.map((a) => {
+                const Icon = a.icon;
+                const style = TONE_STYLES[a.tone];
+                return (
+                  <button
+                    key={a.label}
+                    type="button"
+                    onClick={() => handleSend(a.prompt)}
+                    className={`text-right bg-white rounded-xl border-2 p-3 transition-all flex items-center gap-3 ${style.card}`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${style.icon}`}>
+                      <Icon size={15} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-navy leading-snug">{a.label}</p>
+                    </div>
+                    <ArrowLeft size={12} className="text-slate-400 shrink-0" />
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -178,13 +249,17 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
         <div ref={bottomRef} />
       </div>
 
-      {/* Suggested chips (when chat has messages) */}
+      {/* Quick action chips (when chat already has messages — keeps them
+          accessible without dominating the screen). */}
       {messages.length > 0 && !isPending && (
         <div className="px-4 pt-2 pb-1 flex gap-2 overflow-x-auto shrink-0">
-          {SUGGESTED.slice(0, 3).map(s => (
-            <button key={s} onClick={() => handleSend(s)}
-              className="text-xs bg-teal-pale text-teal font-medium px-3 py-1.5 rounded-full hover:bg-teal hover:text-white transition-all border border-teal/20 whitespace-nowrap shrink-0">
-              {s}
+          {QUICK_ACTIONS.slice(0, 4).map((a) => (
+            <button
+              key={a.label}
+              onClick={() => handleSend(a.prompt)}
+              className="text-xs bg-teal-pale text-teal-dark font-bold px-3 py-1.5 rounded-full hover:bg-teal hover:text-white transition-all border border-teal/20 whitespace-nowrap shrink-0"
+            >
+              {a.label}
             </button>
           ))}
         </div>

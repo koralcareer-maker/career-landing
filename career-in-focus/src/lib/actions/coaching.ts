@@ -171,6 +171,46 @@ ${passport.summary ? `סיכום: ${passport.summary}` : ""}` : "עדיין לא
 === מצב חיפוש עבודה ===
 סה"כ הגשות: ${apps.length}
 פילוח: ${Object.entries(statusCounts).map(([s, n]) => `${statusLabel(s)}: ${n}`).join(" | ") || "—"}
+
+--- הביצועים השבוע ---
+${(() => {
+  const WEEK = 7 * 86400000;
+  const now = Date.now();
+  const live = apps.filter((a) => !a.archived);
+  const submitted = live.filter((a) =>
+    ["APPLIED","PROACTIVE_OUTREACH","FOLLOWUP_SENT","INTERVIEW_SCHEDULED","FIRST_INTERVIEW","ADVANCED_INTERVIEW","TASK_HOME","OFFER","REJECTED"].includes(a.status),
+  );
+  const interviews = live.filter((a) =>
+    ["INTERVIEW_SCHEDULED","FIRST_INTERVIEW","ADVANCED_INTERVIEW","TASK_HOME","OFFER"].includes(a.status),
+  );
+  const offers = live.filter((a) => a.status === "OFFER");
+  const thisWeek = live.filter((a) => a.createdAt && now - new Date(a.createdAt).getTime() <= WEEK).length;
+  const sourceCounts: Record<string, number> = {};
+  for (const a of submitted) {
+    const k = (a.source ?? "לא צוין").trim() || "לא צוין";
+    sourceCounts[k] = (sourceCounts[k] ?? 0) + 1;
+  }
+  const sourceMix = Object.entries(sourceCounts)
+    .sort((x, y) => y[1] - x[1])
+    .slice(0, 4)
+    .map(([s, n]) => `${s}: ${n} (${Math.round((n / Math.max(1, submitted.length)) * 100)}%)`)
+    .join(" | ");
+  const responseRate = submitted.length > 0
+    ? Math.round(((interviews.length + live.filter((a) => a.status === "REJECTED").length) / submitted.length) * 100)
+    : 0;
+  const interviewRate = submitted.length > 0
+    ? Math.round(((interviews.length + offers.length) / submitted.length) * 100)
+    : 0;
+  const lastUpdate = live.length > 0
+    ? Math.min(...live.map((a) => Math.floor((now - new Date(a.updatedAt).getTime()) / 86400000)))
+    : null;
+  return `הגשות השבוע: ${thisWeek} (היעד: 15)
+שיעור תגובה כללי: ${responseRate}% (תגובה כלשהי על הגשות)
+שיעור הגעה לראיון: ${interviewRate}% (מתוך ${submitted.length} הגשות → ${interviews.length + offers.length} ראיונות)
+מקורות הגשה: ${sourceMix || "—"}
+ימים מאז עדכון אחרון על מועמדות: ${lastUpdate ?? "—"}`;
+})()}
+
 ${recentApps ? `\n5 הגשות אחרונות:\n${recentApps}` : ""}
 
 === אירועים קרובים ===
@@ -304,19 +344,34 @@ export async function sendCoachingMessage(userMessage: string) {
 
   const { text: userContext, cvAttachment } = await buildUserContext(userId);
 
-  const systemPrompt = `אתה מאמן קריירה אישי ומקצועי של "קריירה בפוקוס" — פלטפורמה ישראלית לחיפוש עבודה.
+  const isM = session.user.gender === "m";
+  const tone = isM
+    ? "פנה אל המשתמש בלשון זכר (אתה / שלך). פעלים בזכר (הגשת, תוכל, תשלח)."
+    : "פני אל המשתמשת בלשון נקבה (את / שלך). פעלים בנקבה (הגשת, תוכלי, תשלחי).";
 
-אתה מכיר את המשתמש לעומק ויש לך גישה לכל הנתונים שלו:
+  const systemPrompt = `אתה מאמן קריירה אישי ובכיר של "קריירה בפוקוס" — פלטפורמה ישראלית לחיפוש עבודה. אתה לא צ'אטבוט גנרי — אתה יועץ קריירה שמנתח את המשתמש על בסיס הנתונים האמיתיים שלו ונותן הוראות מדויקות שמשפרות תוצאות.
+
+אתה מכיר את המשתמש לעומק:
 
 ${userContext}
 
-הנחיות:
-- דבר בעברית, בגוף נקבה (את/שלך)
-- היה קונקרטי, מעשי, ומעודד — לא גנרי
-- הצע פעולות ספציפיות שהמשתמש יכול לעשות עכשיו
-- השתמש בנתונים האמיתיים שלו (כמות בקשות, ניקוד מוכנות, וכו׳)
-- שמור תשובות ממוקדות — עד 200 מילה
-- אם המשתמש שואל על נושא לא קשור לקריירה, הפנה בחזרה בעדינות`;
+═══ כללי תגובה (חובה) ═══
+
+כל תשובה שלך חייבת לעקוב אחר המבנה הזה — בדיוק:
+
+1. **🔍 ניתוח** (שורה אחת-שתיים): מה קורה אצל המשתמש לפי הנתונים. תצטט נתון אמיתי לפחות אחד (כמות הגשות, % תגובה, מקור הגשה, ימים אחרונים).
+
+2. **💡 תובנה** (שורה אחת-שתיים): למה זה קורה — הסיבה האמיתית. הקשר בין הנתונים למצב.
+
+3. **⚡ פעולה** (1-3 פעולות ספציפיות): מה לעשות עכשיו. אקשנבילי, ספציפי, עם מספרים אם אפשר. אם הפעולה מצריכה כתיבה (מכתב, הודעה למגייס) — הצע "רוצה שאכתוב לך?" כצעד הבא.
+
+═══ סגנון ═══
+- ${tone}
+- ישיר ומקצועי, מאתגר אותי לפעול — לא רך ולא גנרי
+- השתמש בנתונים אמיתיים מהקונטקסט (לעולם לא "באופן כללי")
+- אם נתון חיוני חסר — אמור איפה למלא ("מלא/י דרכון ב-/profile") אבל אל תזרוק רשימה של "לא הוגדר"
+- תשובה ממוקדת: עד 180 מילה
+- אם השאלה לא קשורה לקריירה, החזר בעדינות לדרך`;
 
   let coaching = await prisma.coachingSession.findUnique({ where: { userId } });
   if (!coaching) {
