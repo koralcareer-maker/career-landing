@@ -52,12 +52,23 @@ export async function signup(prevState: unknown, formData: FormData) {
     },
   });
 
-  // Auto sign in and redirect to payment with plan
-  await signIn("credentials", {
-    email,
-    password,
-    redirectTo: `/payment/pending?plan=${plan.toLowerCase()}`,
-  });
+  // Auto sign in. Same trick as login: redirect:false on signIn + Next.js
+  // relative redirect → keeps the user on the request's host instead of
+  // following NEXTAUTH_URL/AUTH_URL into a misconfigured absolute URL.
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+  } catch (error: unknown) {
+    if (error instanceof AuthError) {
+      return { error: "התחברות אוטומטית נכשלה — נסי להתחבר ידנית" };
+    }
+    throw error;
+  }
+
+  redirect(`/payment/pending?plan=${plan.toLowerCase()}`);
 }
 
 export async function login(prevState: unknown, formData: FormData) {
@@ -75,22 +86,27 @@ export async function login(prevState: unknown, formData: FormData) {
   const password = rawPassword.trim();
 
   try {
+    // redirect:false → NextAuth doesn't try to build an absolute redirect URL
+    // from NEXTAUTH_URL/AUTH_URL. We use Next.js's relative redirect below,
+    // which always stays on the request's actual host.
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/dashboard",
+      redirect: false,
     });
   } catch (error: unknown) {
     if (error instanceof AuthError) {
       return { error: "אימייל או סיסמה שגויים" };
     }
-    // redirect throws NEXT_REDIRECT — rethrow it
     throw error;
   }
+
+  redirect("/dashboard");
 }
 
 export async function logout() {
-  await signOut({ redirectTo: "/" });
+  await signOut({ redirect: false });
+  redirect("/");
 }
 
 export async function createAdminUser() {
