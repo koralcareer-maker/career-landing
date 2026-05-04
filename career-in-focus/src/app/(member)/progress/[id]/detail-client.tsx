@@ -8,7 +8,7 @@ import {
   Plus, Trash2, CheckCircle2, Circle, Sparkles, Bell,
   BookText, AlertCircle, ExternalLink, Archive,
   ArrowUpCircle, MessageSquare, PartyPopper, X,
-  Search as SearchIcon, BookOpen, Wand2, Loader2, Copy as CopyIcon,
+  Search as SearchIcon, BookOpen, WandSparkles, Loader2, Copy as CopyIcon,
   FileText, ArrowRight,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -564,7 +564,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
       <Card className="p-5 border-purple-200 bg-gradient-to-l from-purple-50/40 to-pink-50/40">
         <div className="flex items-start justify-between gap-3 mb-1">
           <h2 className="font-bold text-navy flex items-center gap-2">
-            <Wand2 size={16} className="text-purple-600" />
+            <WandSparkles size={16} className="text-purple-600" />
             ניתוח AI של המועמדות הזו
           </h2>
           {analysis?.generatedAt && (
@@ -663,7 +663,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
               disabled={aiPending}
               className="text-xs text-slate-500 hover:text-teal font-semibold inline-flex items-center gap-1 disabled:opacity-50"
             >
-              {aiPending ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
+              {aiPending ? <Loader2 size={12} className="animate-spin" /> : <WandSparkles size={12} />}
               ייצר/י מחדש
             </button>
           </div>

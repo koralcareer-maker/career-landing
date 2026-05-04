@@ -6,7 +6,7 @@ import {
   Briefcase, Calendar, Plus,
   CheckCircle2, AlertTriangle, Sparkles, Bell, ChevronLeft,
   TrendingUp, Target, Trophy, Flame, ArrowUpCircle,
-  Search, Zap, Activity, BarChart3, Clock,
+  Search, Zap, Activity, Clock,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
