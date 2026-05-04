@@ -116,9 +116,13 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
   }, [isOpen, stepIdx]);
 
   function close(completed: boolean) {
-    if (completed) {
-      try { window.localStorage.setItem(storageKey, "1"); } catch { /* ignore */ }
-    }
+    // Always persist the flag — once a member has seen the tour (whether they
+    // finished it, skipped it, or hit Esc), don't pester them again on every
+    // dashboard load. The `completed` value is kept on the flag for telemetry
+    // (so we can later distinguish "finished" from "dismissed early").
+    try {
+      window.localStorage.setItem(storageKey, completed ? "1" : "skipped");
+    } catch { /* ignore */ }
     setIsOpen(false);
     onClose?.();
   }
@@ -142,36 +146,41 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
   const spotW = rect ? rect.width + PADDING * 2 : 0;
   const spotH = rect ? rect.height + PADDING * 2 : 0;
 
-  // Tooltip position — try below the target, fall back above. We assume an
-  // upper bound of ~400px on the tooltip's natural height; combined with
-  // max-height: calc(100vh - 32px) + overflow-y: auto on the card itself,
-  // the tooltip is always reachable even with long body copy.
+  // Tooltip position — try below the target, fall back above. tipMaxH bounds
+  // how tall the card can become at this position so it never extends past
+  // the viewport (combined with overflow-y: auto on the card, the user can
+  // always reach every button — the previous bug was a >100vh card pinned
+  // near the bottom of the viewport with no way to scroll it).
   const TIP_HEIGHT_ESTIMATE = 400;
   let tipX = 16;
   let tipY = 16;
+  let tipMaxH = 0;
   if (rect && typeof window !== "undefined") {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const widthOnScreen = Math.min(TIP_WIDTH, vw - 32);
     tipX = rect.left + rect.width / 2 - widthOnScreen / 2;
     tipX = Math.max(16, Math.min(vw - widthOnScreen - 16, tipX));
-    // Try below
-    tipY = rect.bottom + 16;
-    if (tipY + TIP_HEIGHT_ESTIMATE > vh - 16) {
-      // Try above
-      const aboveY = rect.top - TIP_HEIGHT_ESTIMATE - 16;
-      // If neither below nor above fits, anchor at the top of the viewport
-      // (the card's own internal scroll lets the user reach the buttons).
-      tipY = aboveY > 16 ? aboveY : 16;
+
+    const spaceBelow = vh - rect.bottom - 32;  // 16px gap + 16px bottom padding
+    const spaceAbove = rect.top - 32;          // same on top
+
+    // Prefer whichever side has more room — and use that side's full
+    // available space as the card's max-height.
+    if (spaceBelow >= spaceAbove || spaceBelow >= TIP_HEIGHT_ESTIMATE) {
+      tipY = rect.bottom + 16;
+      tipMaxH = Math.max(160, spaceBelow);
+    } else {
+      tipMaxH = Math.max(160, spaceAbove);
+      tipY = Math.max(16, rect.top - tipMaxH - 16);
     }
-    // Final clamp — never let the card start below the visible viewport.
-    tipY = Math.max(16, Math.min(vh - 80, tipY));
   } else if (typeof window !== "undefined") {
-    // Centered when no target
+    // Centered when no target — pin top, let it grow to almost full viewport.
     const vh = window.innerHeight;
     const widthOnScreen = Math.min(TIP_WIDTH, window.innerWidth - 32);
     tipX = (window.innerWidth - widthOnScreen) / 2;
-    tipY = Math.max(16, vh / 2 - TIP_HEIGHT_ESTIMATE / 2);
+    tipMaxH = vh - 32;
+    tipY = Math.max(16, vh / 2 - Math.min(TIP_HEIGHT_ESTIMATE, tipMaxH) / 2);
   }
 
   const isFirstStep = stepIdx === 0;
@@ -219,16 +228,16 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
       )}
 
       {/* ─── Tooltip card ─── */}
-      {/* max-height + overflow-y so a long body never makes the card extend
-          past the viewport with no way to reach the bottom (the body scroll
-          is locked while the tour is open). */}
+      {/* maxHeight is computed at the same time as tipY so the card never
+          overflows the viewport — combined with overflow-y: auto, every
+          step's buttons are always reachable. */}
       <div
         className="absolute bg-white rounded-2xl shadow-2xl border border-teal/30 animate-fade-in-up"
         style={{
           left: tipX,
           top: tipY,
           width: `min(${TIP_WIDTH}px, calc(100vw - 32px))`,
-          maxHeight: "calc(100vh - 32px)",
+          maxHeight: tipMaxH > 0 ? `${tipMaxH}px` : "calc(100vh - 32px)",
           overflowY: "auto",
         }}
       >
