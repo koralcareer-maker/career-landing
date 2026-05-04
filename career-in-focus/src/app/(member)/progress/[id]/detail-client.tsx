@@ -8,7 +8,8 @@ import {
   Plus, Trash2, CheckCircle2, Circle, Sparkles, Bell,
   BookText, AlertCircle, ExternalLink, Archive,
   ArrowUpCircle, MessageSquare, PartyPopper, X,
-  Search as SearchIcon, BookOpen,
+  Search as SearchIcon, BookOpen, Wand2, Loader2, Copy as CopyIcon,
+  FileText, ArrowRight,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,10 @@ import {
   addReminder, toggleReminderComplete, deleteReminder,
   updateApplicationCore, addQuickFollowupReminder,
 } from "@/lib/actions/job-tracking";
+import {
+  analyzeApplication,
+  type ApplicationAnalysis,
+} from "@/lib/actions/job-application-ai";
 import type { PrepStep } from "@/lib/job-search-insights";
 
 // ─── Types from server ───────────────────────────────────────────────────────
@@ -161,6 +166,36 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
   const [welcomeOpen, setWelcomeOpen] = useState(isWelcome);
+  // AI analysis state — kicked off on demand (one model call per click)
+  const [aiPending, setAiPending] = useState(false);
+  const [analysis, setAnalysis] = useState<ApplicationAnalysis | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function runAnalysis() {
+    setAiPending(true);
+    try {
+      const r = await analyzeApplication(application.id);
+      setAnalysis(r);
+    } catch (e) {
+      setAnalysis({
+        status: "error",
+        message: e instanceof Error ? e.message : "שגיאה בלתי צפויה",
+      });
+    } finally {
+      setAiPending(false);
+    }
+  }
+
+  async function copyFollowup() {
+    if (!analysis?.followupMessage) return;
+    try {
+      await navigator.clipboard.writeText(analysis.followupMessage);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard blocked — silently fail; the text is selectable */
+    }
+  }
   const [followupSet, setFollowupSet] = useState(false);
 
   // ─── Quick actions: status change, interview date, next step ───────────
@@ -523,6 +558,116 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
             </Button>
           </div>
         </div>
+      </Card>
+
+      {/* ─── AI Analysis ─── */}
+      <Card className="p-5 border-purple-200 bg-gradient-to-l from-purple-50/40 to-pink-50/40">
+        <div className="flex items-start justify-between gap-3 mb-1">
+          <h2 className="font-bold text-navy flex items-center gap-2">
+            <Wand2 size={16} className="text-purple-600" />
+            ניתוח AI של המועמדות הזו
+          </h2>
+          {analysis?.generatedAt && (
+            <span className="text-[11px] text-slate-400">
+              נוצר ב-{new Date(analysis.generatedAt).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+          הצעת follow-up מוכנה לשליחה, התאמות ספציפיות לקו״ח, וצעד הבא הכי משפיע — מותאם לפרופיל ולסטטוס הנוכחי.
+        </p>
+
+        {!analysis && (
+          <button
+            type="button"
+            onClick={runAnalysis}
+            disabled={aiPending}
+            className="inline-flex items-center gap-2 bg-gradient-to-l from-purple-600 to-pink-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl hover:shadow-md hover:shadow-purple-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {aiPending ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+            {aiPending ? "מנתח..." : "נתח/י את המועמדות"}
+          </button>
+        )}
+
+        {analysis?.status === "error" && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-red-700 text-sm flex items-start gap-2">
+            <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
+            <p>{analysis.message ?? "שגיאה לא ידועה"}</p>
+          </div>
+        )}
+
+        {analysis?.status === "missing_key" && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-800 text-sm flex items-start gap-2">
+            <AlertCircle size={16} className="text-amber-600 mt-0.5 shrink-0" />
+            <p>{analysis.message ?? "ה-AI לא זמין כרגע"}</p>
+          </div>
+        )}
+
+        {analysis?.status === "ok" && (
+          <div className="space-y-3">
+            {/* Next action — most important, top */}
+            {analysis.nextAction && (
+              <div className="bg-white rounded-xl border border-purple-200 p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <ArrowRight size={14} className="text-purple-600" />
+                  <p className="text-xs font-black text-purple-700 uppercase tracking-wide">צעד הבא</p>
+                </div>
+                <p className="text-sm font-bold text-navy leading-relaxed">{analysis.nextAction}</p>
+              </div>
+            )}
+
+            {/* Follow-up message — copy-ready */}
+            {analysis.followupMessage && (
+              <div className="bg-white rounded-xl border border-teal/30 p-4">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare size={14} className="text-teal" />
+                    <p className="text-xs font-black text-teal-dark uppercase tracking-wide">הודעת follow-up מוכנה</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={copyFollowup}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-teal hover:underline"
+                  >
+                    <CopyIcon size={12} />
+                    {copied ? "הועתק ✓" : "העתק/י"}
+                  </button>
+                </div>
+                <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">
+                  {analysis.followupMessage}
+                </p>
+              </div>
+            )}
+
+            {/* CV suggestions */}
+            {analysis.cvSuggestions && analysis.cvSuggestions.length > 0 && (
+              <div className="bg-white rounded-xl border border-amber-200 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText size={14} className="text-amber-600" />
+                  <p className="text-xs font-black text-amber-700 uppercase tracking-wide">התאמות לקו״ח עבור המשרה הזו</p>
+                </div>
+                <ul className="space-y-1.5">
+                  {analysis.cvSuggestions.map((s, i) => (
+                    <li key={i} className="text-sm text-slate-700 leading-relaxed flex gap-2">
+                      <span className="text-amber-600 font-black shrink-0">{i + 1}.</span>
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={runAnalysis}
+              disabled={aiPending}
+              className="text-xs text-slate-500 hover:text-teal font-semibold inline-flex items-center gap-1 disabled:opacity-50"
+            >
+              {aiPending ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
+              ייצר/י מחדש
+            </button>
+          </div>
+        )}
       </Card>
 
       {/* ─── Interview prep block (only when stage is interview-related) ─── */}
