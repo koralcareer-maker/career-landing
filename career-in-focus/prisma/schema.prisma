@@ -459,6 +459,10 @@ model Job {
   summary     String?
   description String?
   location    String?
+  /// One of the seven Hebrew regions in lib/regions.ts
+  /// (צפון / חיפה / מרכז / שפלה / ירושלים / דרום / אילת),
+  /// or null when the city couldn't be classified.
+  region      String?
   field       String?
   experienceLevel String?
   source      String?

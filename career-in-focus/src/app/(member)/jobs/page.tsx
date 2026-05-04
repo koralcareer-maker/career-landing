@@ -32,6 +32,7 @@ export default async function JobsPage() {
         companyLogo: job.companyLogo,
         summary: job.summary,
         location: job.location,
+        region: job.region ?? null,
         field: job.field,
         experienceLevel: job.experienceLevel,
         source: job.source,

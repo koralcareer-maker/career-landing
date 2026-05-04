@@ -17,6 +17,8 @@ export interface JobItem {
   companyLogo: string | null;
   summary: string | null;
   location: string | null;
+  /** One of the seven Hebrew regions, or null when unclassified. */
+  region: string | null;
   field: string | null;
   experienceLevel: string | null;
   source: string | null;
@@ -27,6 +29,8 @@ export interface JobItem {
   /** Short human-readable Hebrew reasons explaining the match (max 3). */
   matchReasons?: string[];
 }
+
+const REGION_ORDER = ["צפון", "חיפה", "מרכז", "שפלה", "ירושלים", "דרום", "אילת"];
 
 // ─── Apply + Track Button ───────────────────────────────────────────────────
 // Wraps the catalogue's "open external URL" CTA so that clicking it ALSO
@@ -192,23 +196,30 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
 
 export function JobsClient({ jobs }: { jobs: JobItem[] }) {
   const [activeField, setActiveField] = useState("הכל");
-  const [activeLocation, setActiveLocation] = useState("הכל");
+  const [activeRegion, setActiveRegion] = useState("הכל");
   const [activeLevel, setActiveLevel] = useState("הכל");
 
   // Collect unique filter values
   const fields = ["הכל", ...new Set(jobs.map((j) => j.field).filter(Boolean))] as string[];
-  const locations = ["הכל", ...new Set(jobs.map((j) => j.location).filter(Boolean))] as string[];
+  // Regions: only show ones that actually have at least one job, plus "הכל".
+  const regionsPresent = new Set(jobs.map((j) => j.region).filter(Boolean) as string[]);
+  const regions = [
+    "הכל",
+    ...REGION_ORDER.filter((r) => regionsPresent.has(r)),
+    ...(jobs.some((j) => !j.region) ? ["ללא אזור"] : []),
+  ];
   const levels = ["הכל", ...new Set(jobs.map((j) => j.experienceLevel).filter(Boolean))] as string[];
 
   const filtered = jobs.filter((j) => {
     if (activeField !== "הכל" && j.field !== activeField) return false;
-    if (activeLocation !== "הכל" && j.location !== activeLocation) return false;
+    if (activeRegion === "ללא אזור" && j.region) return false;
+    if (activeRegion !== "הכל" && activeRegion !== "ללא אזור" && j.region !== activeRegion) return false;
     if (activeLevel !== "הכל" && j.experienceLevel !== activeLevel) return false;
     return true;
   });
 
   const hotCount = jobs.filter((j) => j.isHot).length;
-  const hasFilters = activeField !== "הכל" || activeLocation !== "הכל" || activeLevel !== "הכל";
+  const hasFilters = activeField !== "הכל" || activeRegion !== "הכל" || activeLevel !== "הכל";
 
   return (
     <div className="space-y-6">
@@ -247,18 +258,20 @@ export function JobsClient({ jobs }: { jobs: JobItem[] }) {
             </div>
           </div>
 
-          {/* Location filter */}
+          {/* Region filter — coarse-grained location grouping. Most useful
+              for "I want jobs near me" since exact-city filters were too
+              narrow on a board with ~100s of cities. */}
           <div>
-            <label className="text-xs font-semibold text-gray-400 mb-1.5 block">מיקום</label>
+            <label className="text-xs font-semibold text-gray-400 mb-1.5 block">אזור</label>
             <div className="relative">
               <select
-                value={activeLocation}
-                onChange={(e) => setActiveLocation(e.target.value)}
+                value={activeRegion}
+                onChange={(e) => setActiveRegion(e.target.value)}
                 className="w-full appearance-none px-3 py-2 rounded-xl border border-gray-200 bg-white text-navy text-sm focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none transition-colors"
               >
-                {locations.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
+                {regions.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
                   </option>
                 ))}
               </select>
@@ -292,7 +305,7 @@ export function JobsClient({ jobs }: { jobs: JobItem[] }) {
             <button
               onClick={() => {
                 setActiveField("הכל");
-                setActiveLocation("הכל");
+                setActiveRegion("הכל");
                 setActiveLevel("הכל");
               }}
               className="text-sm text-teal hover:underline"
