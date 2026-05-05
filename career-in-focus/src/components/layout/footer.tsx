@@ -153,7 +153,17 @@ export async function Footer() {
                       width={192}
                       height={192}
                       quality={95}
-                      className="w-full h-full object-cover object-top scale-150 origin-top"
+                      className="w-full h-full object-cover"
+                      style={{
+                        // Coral's face sits ~22% down in the source photo
+                        // (full-body, lots of negative space above her head).
+                        // Anchor the crop on her face AND scale up around the
+                        // same point so a 96x96 avatar shows her face dead
+                        // center, not her shoulders or the empty background.
+                        objectPosition: "50% 18%",
+                        transform: "scale(1.7)",
+                        transformOrigin: "50% 18%",
+                      }}
                     />
                   </div>
                   <div className="absolute -bottom-1 -left-1 bg-teal text-navy w-7 h-7 rounded-full flex items-center justify-center shadow-lg">
