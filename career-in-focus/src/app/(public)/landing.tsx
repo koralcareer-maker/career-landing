@@ -95,10 +95,10 @@ export default function LandingPage() {
       <section className="bg-white py-10 border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            { num: "1,200+", label: "חברי קהילה" },
-            { num: "84%",    label: "מצאו עבודה ב-90 יום" },
-            { num: "300+",   label: "משרות פעילות" },
-            { num: "50+",    label: "אירועים בשנה" },
+            { num: "22,000+", label: "חברי קהילה" },
+            { num: "84%",     label: "מצאו עבודה ב-90 יום" },
+            { num: "300+",    label: "משרות פעילות" },
+            { num: "פי 3",    label: "יותר ראיונות תוך 30 יום" },
           ].map((s) => (
             <div key={s.label}>
               <div className="text-3xl font-black text-teal">{s.num}</div>
@@ -181,13 +181,13 @@ export default function LandingPage() {
                 מאמנת קריירה עם תואר שני בתחום וניסיון של יותר מעשור בניהול מחלקות גיוס ומשאבי אנוש. בארבע השנים האחרונות מתמחה בליווי מקצועיים ומנהלים דרך מעברי קריירה משמעותיים.
               </p>
               <p className="text-gray-600 leading-relaxed mb-6">
-                עד היום יותר מ-200 בוגרים מצאו את התפקיד הבא שלהם בעזרת השיטה שפיתחתי — ולא על ידי שליחת קורות חיים לכולם.
+                הצטרפו למאות מחפשי עבודה שמצאו את התפקיד הבא שלהם בשיטת קריירה בפוקוס.
               </p>
               <div className="flex flex-wrap gap-3 mb-6">
                 {[
                   { icon: Award, text: "תואר שני בקריירה" },
                   { icon: Clock, text: "10+ שנות ניסיון" },
-                  { icon: Users, text: "200+ בוגרים" },
+                  { icon: Users, text: "500+ בוגרים" },
                 ].map(({ icon: Icon, text }) => (
                   <div key={text} className="flex items-center gap-1.5 bg-cream text-navy text-sm font-medium px-3 py-1.5 rounded-full border border-navy/10">
                     <Icon size={13} className="text-teal" />

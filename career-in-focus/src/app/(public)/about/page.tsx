@@ -116,7 +116,7 @@ export default function AboutPage() {
       {/* What I offer */}
       <section className="py-16 px-6">
         <div className="max-w-3xl mx-auto text-right">
-          <h2 className="text-2xl font-black text-navy mb-8">מה תמצאי בקהילה</h2>
+          <h2 className="text-2xl font-black text-navy mb-8">מה תמצאו בקהילה</h2>
           <div className="space-y-3">
             {[
               "כלים ומשאבים מעשיים לכל שלב בחיפוש העבודה",
@@ -142,8 +142,8 @@ export default function AboutPage() {
           <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-5 border-3 border-teal/40 relative shadow-lg">
             <Image src="/koral.jpg" alt="קורל שלו" fill className="object-cover object-top" />
           </div>
-          <h2 className="text-3xl font-black text-white mb-3">בואי נתחיל ביחד</h2>
-          <p className="text-white/70 mb-8">הצטרפי לקהילה וקבלי גישה לכל הכלים, התכנים, והליווי שצריכים כדי למצוא עבודה חכם יותר ומהר יותר.</p>
+          <h2 className="text-3xl font-black text-white mb-3">בואו נתחיל ביחד</h2>
+          <p className="text-white/70 mb-8">הצטרפו לקהילה וקבלו גישה לכל הכלים, התכנים, והליווי שצריכים כדי למצוא עבודה חכם יותר ומהר יותר.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/pricing" className="bg-teal text-white font-bold px-8 py-4 rounded-2xl hover:bg-teal-dark hover:-translate-y-0.5 transition-all shadow-md text-base inline-flex items-center gap-2 justify-center">
               הצטרפות לקהילה
