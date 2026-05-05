@@ -534,6 +534,12 @@ model Event {
   isPublished Boolean   @default(true)
   maxCapacity Int?
   imageUrl    String?
+
+  // ─── Workshop card structured fields (used by /events) ─────
+  audience     String?  // קהל יעד — "מחפשי עבודה בכל התחומים"
+  valueBullets String?  // JSON array of 3-5 short bullets
+  host         String?  // שם המנחה
+  hostRole     String?  // תפקיד המנחה — "מגייסת טכנולוגית בכירה"
 }
 
 // ─── Community ────────────────────────────────────────────────────────────────
