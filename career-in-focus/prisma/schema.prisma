@@ -145,6 +145,15 @@ model User {
   cardToken        String?   // CardCom recurring token
   cardLast4        String?   // last 4 digits for display
 
+  // Subscription / recurring billing
+  subscriptionStatus  String?   // "ACTIVE" | "CANCELLED" | "PAUSED" | null (legacy)
+  nextChargeAt        DateTime? // when the cron should next charge this user
+  lastChargedAt       DateTime? // last successful recurring charge
+  chargeCount         Int       @default(0) // how many monthly cycles billed
+  cancelledAt         DateTime? // when the user clicked cancel (or null)
+  cancellationReason  String?   // FOUND_JOB | NO_VALUE | STOPPED_SEARCH | OTHER
+  cancellationNote    String?   // free-text follow-up
+
   // Profile
   profile       Profile?
   careerPassport CareerPassport?

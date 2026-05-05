@@ -14,14 +14,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { amountForCycle, planLabel, type PlanKey } from "@/lib/billing";
 
 const CARDCOM_API = "https://secure.cardcom.solutions/api/v11/LowProfile/Create";
-
-const PLAN_CONFIG = {
-  MEMBER:  { amount: 49,  label: "חברות חודשית — קריירה בפוקוס" },
-  VIP:     { amount: 149, label: "חברות VIP חודשית — קריירה בפוקוס" },
-  PREMIUM: { amount: 449, label: "קורל תפעילי קשרים — קריירה בפוקוס" },
-} as const;
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -37,11 +32,16 @@ export async function GET(req: NextRequest) {
 
   // Determine plan from query param, then from user's stored membershipType
   const planParam = (req.nextUrl.searchParams.get("plan") ?? "").toUpperCase();
-  const planKey = (["MEMBER", "VIP", "PREMIUM"].includes(planParam)
+  const planKey: PlanKey = (["MEMBER", "VIP", "PREMIUM"].includes(planParam)
     ? planParam
-    : (session.user.membershipType ?? "MEMBER")) as keyof typeof PLAN_CONFIG;
+    : (session.user.membershipType ?? "MEMBER")) as PlanKey;
 
-  const plan = PLAN_CONFIG[planKey] ?? PLAN_CONFIG.MEMBER;
+  // First charge — use the launch promo amount where applicable. CardCom
+  // expects the amount in shekels (₪), but our billing module uses agorot
+  // (₪ × 100) for precision, so divide here.
+  const amountAgorot = amountForCycle(planKey, 0);
+  const amountShekels = amountAgorot / 100;
+  const productLabel = planLabel(planKey);
 
   // ReturnValue carries userId + plan so webhook can activate correctly
   const returnValue = `${session.user.id}|${planKey}`;
@@ -51,10 +51,10 @@ export async function GET(req: NextRequest) {
     ApiName:            process.env.CARDCOM_API_NAME,
     ApiPassword:        process.env.CARDCOM_API_PASSWORD,
     ReturnValue:        returnValue,
-    Amount:             plan.amount,
+    Amount:             amountShekels,
     CoinID:             1,               // ILS
     MaxNumOfPayments:   1,
-    ProductName:        plan.label,
+    ProductName:        productLabel,
     Language:           "He",
     SuccessRedirectUrl: `${appUrl}/payment/success`,
     FailedRedirectUrl:  `${appUrl}/payment/pending?error=payment_failed`,

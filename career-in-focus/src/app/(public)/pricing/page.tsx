@@ -7,9 +7,11 @@ const PLANS = [
   {
     id: "member",
     name: "חבר",
-    price: "49",
+    price: "29",
+    originalPrice: "49",
     period: "לחודש",
-    badge: null,
+    promoNote: "מבצע השקה — חודשיים ראשונים. אחר כך ₪49/חודש קבוע.",
+    badge: "מבצע השקה",
     description: "גישה מלאה לכל תכני הקהילה",
     icon: Star,
     iconColor: "text-teal",
@@ -23,13 +25,13 @@ const PLANS = [
       "מעקב התקדמות ומעקב מועמדויות",
       "תבניות נטוורקינג ו-CV",
       "גישה לקהילה ואירועים",
-      "ביטול בכל עת",
+      "ביטול בכל עת — בלי החזרים, בלי שאלות",
     ],
-    cta: "הצטרף לקהילה",
+    cta: "הצטרפו במחיר השקה",
     href: "/signup?plan=member",
     highlight: false,
-    border: "border-gray-200",
-    bg: "bg-white",
+    border: "border-amber-300",
+    bg: "bg-gradient-to-br from-amber-50 to-white",
     ctaClass: "bg-navy text-white hover:bg-navy/90",
   },
   {
@@ -143,10 +145,22 @@ export default function PricingPage() {
 
                 <p className={`text-sm mb-5 ${plan.highlight ? "text-white/80" : "text-gray-400"}`}>{plan.description}</p>
 
-                {/* Price */}
-                <div className={`flex items-end gap-1 mb-6 ${plan.highlight ? "text-white" : "text-navy"}`}>
-                  <span className="text-5xl font-black">₪{plan.price}</span>
-                  <span className="text-sm pb-2 opacity-60">{plan.period}</span>
+                {/* Price — show original crossed-out when there's a launch promo */}
+                <div className={`mb-6 ${plan.highlight ? "text-white" : "text-navy"}`}>
+                  {plan.originalPrice && (
+                    <p className={`text-base font-semibold line-through opacity-50 leading-none mb-1 ${plan.highlight ? "text-white" : "text-slate-400"}`}>
+                      ₪{plan.originalPrice}/חודש
+                    </p>
+                  )}
+                  <div className="flex items-end gap-1">
+                    <span className="text-5xl font-black">₪{plan.price}</span>
+                    <span className="text-sm pb-2 opacity-60">{plan.period}</span>
+                  </div>
+                  {plan.promoNote && (
+                    <p className="text-[11px] font-semibold mt-2 leading-relaxed text-amber-700 bg-amber-100 rounded-md px-2 py-1.5 inline-block">
+                      ✨ {plan.promoNote}
+                    </p>
+                  )}
                 </div>
 
                 {/* Features */}

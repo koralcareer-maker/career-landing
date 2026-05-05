@@ -53,14 +53,28 @@ export async function POST(req: NextRequest) {
     const isSuccess = responseCode === "000" || responseCode === "0";
 
     if (isSuccess) {
+      // Schedule first recurring charge ~30 days out — gives the launch
+      // promo (₪29 for first 2 cycles on Member) a clear timeline.
+      const next = new Date();
+      next.setDate(next.getDate() + 30);
+
       const user = await prisma.user.update({
         where: { id: userId },
         data: {
-          accessStatus:     "ACTIVE",
-          membershipType:   plan,
-          paymentProvider:  "CARDCOM",
-          paymentReference: transactionId,
-          paidAt:           new Date(),
+          accessStatus:        "ACTIVE",
+          membershipType:      plan,
+          paymentProvider:     "CARDCOM",
+          paymentReference:    transactionId,
+          paidAt:              new Date(),
+          // Subscription state
+          subscriptionStatus:  "ACTIVE",
+          chargeCount:         { increment: 1 },
+          lastChargedAt:       new Date(),
+          nextChargeAt:        next,
+          // Clear any previous cancellation if user re-subscribes
+          cancelledAt:         null,
+          cancellationReason:  null,
+          cancellationNote:    null,
           ...(token ? { cardToken: token, cardLast4: last4 } : {}),
         },
         select: { name: true, email: true, gender: true },
