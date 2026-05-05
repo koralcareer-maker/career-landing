@@ -34,7 +34,17 @@ export default async function DashboardPage() {
     prisma.profile.findUnique({ where: { userId } }),
     prisma.careerPassport.findUnique({ where: { userId } }),
     prisma.job.findMany({ where: { isPublished: true }, take: 60, orderBy: { createdAt: "desc" } }),
-    prisma.event.findMany({ where: { isPublished: true, startAt: { gte: new Date() } }, orderBy: { startAt: "asc" }, take: 3 }),
+    // Exclude JOB_DROP / LAUNCH / NETWORKING from "אירועים קרובים" — those
+    // are noise for the dashboard. Keep them visible on /events but not here.
+    prisma.event.findMany({
+      where: {
+        isPublished: true,
+        startAt: { gte: new Date() },
+        type: { notIn: ["JOB_DROP", "LAUNCH", "NETWORKING"] },
+      },
+      orderBy: { startAt: "asc" },
+      take: 3,
+    }),
     prisma.post.findMany({
       where: { isHidden: false }, orderBy: { createdAt: "desc" }, take: 4,
       include: { author: { select: { name: true, image: true } } }
@@ -501,7 +511,6 @@ export default async function DashboardPage() {
               <div className="space-y-3">
                 {[
                   { day: "28", mon: "מאי", title: "מנטורינג קידום קריירה עם מיכל לוי", time: "18:00–19:30", loc: "ZOOM" },
-                  { day: "04", mon: "יוני", title: "נטוורקינג לנשים בתעשייה", time: "19:00–20:00", loc: "תל אביב" },
                   { day: "10", mon: "יוני", title: "סדנת הכנה לראיונות עבודה", time: "18:00–20:00", loc: "ZOOM" },
                 ].map((ev) => (
                   <Link key={ev.day} href="/events"

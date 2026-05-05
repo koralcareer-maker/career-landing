@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Sparkles, ExternalLink, Pin, Search, ChevronDown,
   TrendingUp, AlertTriangle, Lightbulb, ArrowRight,
-  Newspaper, Megaphone,
+  Newspaper, ChevronLeft,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
@@ -160,15 +161,24 @@ function ArticleCard({ a }: { a: ArticleDTO }) {
         <div className="text-xs text-slate-400">
           {a.sourceName} · {formatDate(a.publishedAt)}
         </div>
-        <a
-          href={a.originalUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-teal hover:underline"
-        >
-          לקריאת הכתבה המלאה
-          <ExternalLink size={12} />
-        </a>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/updates/${a.id}`}
+            className="inline-flex items-center gap-1 text-xs font-bold text-teal hover:underline"
+          >
+            המשך קריאה
+            <ChevronLeft size={12} />
+          </Link>
+          <a
+            href={a.originalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-teal"
+          >
+            המקור
+            <ExternalLink size={11} />
+          </a>
+        </div>
       </div>
     </Card>
   );

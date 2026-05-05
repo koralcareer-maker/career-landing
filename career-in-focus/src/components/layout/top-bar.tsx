@@ -18,7 +18,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/jobs":         "משרות",
   "/community":    "קהילה",
   "/events":       "אירועים ופעילויות",
-  "/updates":      "עדכונים",
+  "/updates":      "כל מה שקורה עכשיו",
   "/notifications":"התראות",
   "/admin":        "פאנל ניהול",
 };

@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import {
-  Mail, MessageCircle, Phone,
+  Mail, MessageCircle,
   Sparkles, Heart, ChevronLeft,
 } from "lucide-react";
 
@@ -96,12 +96,11 @@ export async function Footer() {
   ];
 
   const socials = [
-    { href: "https://chat.whatsapp.com/BbBAf0p0R01GrNgf5GQjMg",                 label: "קבוצת הוואטסאפ",   icon: MessageCircle, brand: "from-[#25D366] to-[#128C7E]" },
+    { href: "https://wa.me/972535777005?text=" + encodeURIComponent("היי קורל, אני מעוניין/ת לדבר איתך"), label: "ווצאפ ישיר", icon: MessageCircle, brand: "from-[#25D366] to-[#128C7E]" },
     { href: "https://www.instagram.com/koral_shalev/",                          label: "אינסטגרם",         icon: InstagramIcon, brand: "from-[#F58529] via-[#DD2A7B] to-[#8134AF]" },
     { href: "https://www.tiktok.com/@koralshalev",                              label: "טיקטוק",            icon: TikTokIcon,    brand: "from-[#FF0050] via-[#000000] to-[#00F2EA]" },
     { href: "https://www.linkedin.com/in/koral-shalev-29430816a/",              label: "לינקדאין",          icon: LinkedinIcon,  brand: "from-[#0A66C2] to-[#004182]" },
     { href: "https://www.facebook.com/profile.php?id=100076055198052",          label: "פייסבוק",           icon: FacebookIcon,  brand: "from-[#1877F2] to-[#0E5BC2]" },
-    { href: "tel:+972535777005",                                                label: "0535777005",        icon: Phone,         brand: "from-navy-light to-navy" },
     { href: "mailto:koralcareer@gmail.com",                                     label: "koralcareer@gmail.com", icon: Mail,     brand: "from-teal to-teal-dark" },
   ];
 
@@ -146,26 +145,23 @@ export async function Footer() {
                 <div className="relative shrink-0">
                   {/* Glow ring around photo */}
                   <div className="absolute inset-0 bg-gradient-to-br from-teal to-[#FFB088] rounded-3xl blur-md opacity-60" />
-                  <div className="relative w-24 h-24 rounded-3xl overflow-hidden ring-2 ring-teal/40 shadow-2xl shadow-teal/20">
-                    <Image
-                      src="/koral.jpg"
-                      alt="קורל שלו - מייסדת קריירה בפוקוס"
-                      width={192}
-                      height={192}
-                      quality={95}
-                      className="w-full h-full object-cover"
-                      style={{
-                        // Coral's face sits ~22% down in the source photo
-                        // (full-body, lots of negative space above her head).
-                        // Anchor the crop on her face AND scale up around the
-                        // same point so a 96x96 avatar shows her face dead
-                        // center, not her shoulders or the empty background.
-                        objectPosition: "50% 18%",
-                        transform: "scale(1.7)",
-                        transformOrigin: "50% 18%",
-                      }}
-                    />
-                  </div>
+                  {/* Use a div with background-image instead of <Image> so we
+                      can independently control crop window (background-position)
+                      AND zoom level (background-size). The full-body photo has
+                      Coral's face at ~22% down + lots of negative space above
+                      and below; with a single 96x96 frame we need both knobs
+                      to land her face dead-center. */}
+                  <div
+                    className="relative w-24 h-24 rounded-3xl overflow-hidden ring-2 ring-teal/40 shadow-2xl shadow-teal/20 bg-slate-200"
+                    role="img"
+                    aria-label="קורל שלו - מייסדת קריירה בפוקוס"
+                    style={{
+                      backgroundImage:    "url('/koral.jpg')",
+                      backgroundSize:     "260%",
+                      backgroundPosition: "center 18%",
+                      backgroundRepeat:   "no-repeat",
+                    }}
+                  />
                   <div className="absolute -bottom-1 -left-1 bg-teal text-navy w-7 h-7 rounded-full flex items-center justify-center shadow-lg">
                     <Sparkles size={14} />
                   </div>
