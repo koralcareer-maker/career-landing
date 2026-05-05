@@ -154,6 +154,11 @@ model User {
   cancellationReason  String?   // FOUND_JOB | NO_VALUE | STOPPED_SEARCH | OTHER
   cancellationNote    String?   // free-text follow-up
 
+  // Active devices — anti-account-sharing. We allow MAX_DEVICES_PER_USER
+  // (3) concurrent logins per user, identified by hashed user-agent. On
+  // a 4th device the oldest one (by lastSeenAt) is auto-deactivated.
+  devices             UserDevice[]
+
   // Profile
   profile       Profile?
   careerPassport CareerPassport?
@@ -176,6 +181,27 @@ model User {
   broadcastsSent  BroadcastLog[]
   photoUpgradeStatus PhotoUpgradeStatus @default(NONE)
   photoUpgradeRequestedAt DateTime?
+}
+
+// One row per (user, device fingerprint). The fingerprint is the SHA-256
+// of the User-Agent header — stable across IP changes (so a legitimate
+// VPN user isn't penalised) but distinct per device/browser. We allow
+// at most 3 active devices per user; on a 4th login the oldest one
+// flips isActive=false.
+
+model UserDevice {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fingerprint  String   // SHA-256 of normalized User-Agent
+  userAgent    String?  // human-readable for the device list UI
+  lastIp       String?  // last seen IP (for admin sanity; not used to gate access)
+  createdAt    DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+  isActive     Boolean  @default(true)
+
+  @@unique([userId, fingerprint])
+  @@index([userId, lastSeenAt])
 }
 
 model Account {

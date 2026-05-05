@@ -20,6 +20,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/events":       "אירועים ופעילויות",
   "/updates":      "כל מה שקורה עכשיו",
   "/notifications":"התראות",
+  "/billing":      "המנוי שלי",
   "/admin":        "פאנל ניהול",
 };
 

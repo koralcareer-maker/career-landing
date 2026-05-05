@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import type { Role, AccessStatus } from "@/generated/prisma/client";
 import { authConfig } from "./auth.config";
+import { recordLogin } from "@/lib/device-limit";
 
 declare module "next-auth" {
   interface Session {
@@ -37,7 +38,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         if (!credentials?.email || !credentials?.password) return null;
 
         // Normalize email — DB stores lowercased emails, so any case the user
@@ -57,6 +58,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         );
 
         if (!isValid) return null;
+
+        // Track this device against the 3-per-user cap. New devices beyond
+        // the cap will displace the oldest one (by lastSeenAt). Best-effort:
+        // if recordLogin throws (DB transient), don't block the login.
+        try {
+          const headers = request?.headers as Headers | undefined;
+          const userAgent = headers?.get("user-agent") ?? null;
+          const ipAddress = headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+          await recordLogin({ userId: user.id, userAgent, ipAddress });
+        } catch (e) {
+          console.warn("[auth] recordLogin failed:", e instanceof Error ? e.message : e);
+        }
 
         return {
           id: user.id,

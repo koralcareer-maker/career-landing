@@ -9,6 +9,7 @@ import {
   LayoutDashboard, TrendingUp, User, BookOpen, Wrench,
   Briefcase, Users, CalendarDays, Bell, MessageSquare,
   LogOut, Star, Settings, Sparkles, Network, HelpCircle,
+  CreditCard,
 } from "lucide-react";
 
 interface NavItem {
@@ -31,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/events",              label: "אירועים",               icon: CalendarDays },
   { href: "/updates",             label: "כל מה שקורה עכשיו",     icon: MessageSquare },
   { href: "/notifications",       label: "התראות",                icon: Bell },
+  { href: "/billing",             label: "המנוי שלי",             icon: CreditCard },
   { href: "/koral-connections",   label: "קורל תפעילי קשרים",    icon: Network, premium: true },
 ];
 
