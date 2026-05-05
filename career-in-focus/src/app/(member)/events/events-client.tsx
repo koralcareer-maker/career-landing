@@ -205,17 +205,31 @@ function WorkshopCard({ ev }: { ev: EventItem }) {
           </div>
         )}
 
-        {/* CTAs */}
+        {/* CTAs — when registerUrl is empty (most workshops, since we
+            collect signups manually in WhatsApp), the primary button
+            opens wa.me with a pre-filled message naming the workshop. */}
         <div className="grid grid-cols-2 gap-2">
-          <a
-            href={ev.registerUrl ?? `#register-${ev.id}`}
-            target={ev.registerUrl ? "_blank" : undefined}
-            rel={ev.registerUrl ? "noopener noreferrer" : undefined}
-            className="inline-flex items-center justify-center gap-1.5 bg-gradient-to-l from-teal to-teal-dark text-white font-black text-sm px-4 py-2.5 rounded-xl hover:shadow-md hover:shadow-teal/30 transition-all"
-          >
-            הירשם לסדנה
-            {ev.registerUrl && <ExternalLink size={12} />}
-          </a>
+          {ev.registerUrl ? (
+            <a
+              href={ev.registerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 bg-gradient-to-l from-teal to-teal-dark text-white font-black text-sm px-4 py-2.5 rounded-xl hover:shadow-md hover:shadow-teal/30 transition-all"
+            >
+              הירשם לסדנה
+              <ExternalLink size={12} />
+            </a>
+          ) : (
+            <a
+              href={`https://wa.me/972535777005?text=${encodeURIComponent(`היי קורל, אני מעוניין/ת להירשם לסדנה: ${ev.title}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1.5 bg-gradient-to-l from-teal to-teal-dark text-white font-black text-sm px-4 py-2.5 rounded-xl hover:shadow-md hover:shadow-teal/30 transition-all"
+            >
+              הירשם לסדנה
+              <ExternalLink size={12} />
+            </a>
+          )}
           <AddToCalendar ev={ev} />
         </div>
       </div>

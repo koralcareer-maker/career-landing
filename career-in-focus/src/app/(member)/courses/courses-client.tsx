@@ -145,7 +145,7 @@ function CourseCard({ course }: { course: CourseItem }) {
               {lessonCount} {lessonCount === 1 ? "שיעור" : "שיעורים"}
             </span>
           </div>
-          {course.ctaUrl ? (
+          {course.ctaUrl && course.ctaUrl !== "#" ? (
             <a
               href={course.ctaUrl}
               target="_blank"
@@ -156,7 +156,9 @@ function CourseCard({ course }: { course: CourseItem }) {
               <ChevronLeft size={14} />
             </a>
           ) : (
-            <span className="text-xs text-gray-300">בקרוב</span>
+            <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+              בקרוב
+            </span>
           )}
         </div>
 
