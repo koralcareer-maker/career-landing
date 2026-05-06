@@ -1,12 +1,18 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { UserPlus, Eye, EyeOff, CheckCircle } from "lucide-react";
+import { useActionState, useState, useEffect } from "react";
+import { UserPlus, CheckCircle, Copy, Check } from "lucide-react";
 
 interface FormState {
   error?: string;
   success?: boolean;
   userId?: string;
+  // Returned from the server action so the admin can copy the login
+  // details straight into WhatsApp instead of waiting for the welcome
+  // email to land.
+  email?: string;
+  password?: string;
+  name?: string;
 }
 
 export function AddUserForm({
@@ -15,26 +21,32 @@ export function AddUserForm({
   action: (prevState: unknown, formData: FormData) => Promise<FormState>;
 }) {
   const [state, formAction, pending] = useActionState(action, null);
-  const [showPassword, setShowPassword] = useState(false);
   const [gender, setGender] = useState<"f" | "m">("f");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [copied, setCopied] = useState<"all" | "password" | null>(null);
+
+  // Reset copy feedback after each new submission so old "copied!" badges
+  // don't linger when Coral creates a second user.
+  useEffect(() => {
+    setCopied(null);
+  }, [state]);
+
+  async function copyToClipboard(text: string, key: "all" | "password") {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(key);
+      setTimeout(() => setCopied(null), 2500);
+    } catch {
+      /* clipboard blocked — user can still select the text manually */
+    }
+  }
 
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="gender" value={gender} />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Name */}
-        <div>
-          <label className="text-xs font-semibold text-gray-500 mb-1 block">שם מלא *</label>
-          <input
-            name="name"
-            placeholder="ישראל ישראלי"
-            required
-            dir="rtl"
-            className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-navy text-sm focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
-          />
-        </div>
 
-        {/* Email */}
+      {/* ── Quick add: email is the only required field ───────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1 block">אימייל *</label>
           <input
@@ -47,30 +59,6 @@ export function AddUserForm({
           />
         </div>
 
-        {/* Password */}
-        <div>
-          <label className="text-xs font-semibold text-gray-500 mb-1 block">סיסמה זמנית *</label>
-          <div className="relative">
-            <input
-              name="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="לפחות 6 תווים"
-              required
-              minLength={6}
-              dir="ltr"
-              className="w-full px-3 py-2 pe-9 rounded-xl border border-gray-200 bg-white text-navy text-sm focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute end-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Membership */}
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1 block">סוג חברות</label>
           <select
@@ -84,7 +72,7 @@ export function AddUserForm({
         </div>
       </div>
 
-      {/* Gender — controls the welcome email tone (ברוכה / ברוך). */}
+      {/* ── Gender — controls the welcome email tone (ברוכה / ברוך). ─── */}
       <div>
         <label className="text-xs font-semibold text-gray-500 mb-1 block">איך לפנות אליו/ה במייל?</label>
         <div className="inline-flex gap-2">
@@ -108,14 +96,80 @@ export function AddUserForm({
         </div>
       </div>
 
-      {/* Error / Success */}
+      {/* ── Advanced (collapsed by default) — name + custom password ──── */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="text-xs text-gray-500 hover:text-teal transition-colors"
+        >
+          {showAdvanced ? "▲ פחות פרטים" : "▼ אפשרויות מתקדמות (שם וסיסמה)"}
+        </button>
+        {showAdvanced && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 mb-1 block">שם מלא</label>
+              <input
+                name="name"
+                placeholder="(אם ריק — ייגזר מהאימייל)"
+                dir="rtl"
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-navy text-sm focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 mb-1 block">סיסמה זמנית</label>
+              <input
+                name="password"
+                type="text"
+                placeholder="(אם ריק — תיווצר אוטומטית)"
+                minLength={6}
+                dir="ltr"
+                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-navy text-sm focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Error / Success ──────────────────────────────────────────── */}
       {state?.error && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">{state.error}</p>
       )}
-      {state?.success && (
-        <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-2.5">
-          <CheckCircle size={16} />
-          המשתמש/ת נוצר/ה בהצלחה ויכול/ה להתחבר עם הסיסמה שהגדרת.
+      {state?.success && state?.password && state?.email && (
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
+          <div className="flex items-center gap-2 text-sm text-green-800 font-bold mb-3">
+            <CheckCircle size={18} />
+            המשתמש/ת נוצר/ה ומייל ברוכה הבאה נשלח אוטומטית.
+          </div>
+
+          <div className="bg-white rounded-xl p-3 space-y-2">
+            <p className="text-xs font-bold text-gray-500">פרטי כניסה לוואטסאפ:</p>
+            <div className="font-mono text-xs text-navy bg-cream rounded-lg p-3 leading-7" dir="ltr">
+              <div>📧 {state.email}</div>
+              <div>🔑 {state.password}</div>
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => copyToClipboard(
+                  `שלום ${state.name ?? ""}!\nנוצר לך חשבון בקריירה בפוקוס:\n\nאימייל: ${state.email}\nסיסמה: ${state.password}\n\nכניסה: https://career-landing-tau.vercel.app/login`,
+                  "all"
+                )}
+                className="flex items-center gap-1.5 text-xs font-bold bg-teal text-white px-3 py-1.5 rounded-lg hover:bg-teal-dark transition-colors"
+              >
+                {copied === "all" ? <Check size={13} /> : <Copy size={13} />}
+                {copied === "all" ? "הועתק!" : "העתק הודעה לוואטסאפ"}
+              </button>
+              <button
+                type="button"
+                onClick={() => copyToClipboard(state.password!, "password")}
+                className="flex items-center gap-1.5 text-xs font-bold border border-teal/30 text-teal px-3 py-1.5 rounded-lg hover:bg-teal/10 transition-colors"
+              >
+                {copied === "password" ? <Check size={13} /> : <Copy size={13} />}
+                {copied === "password" ? "הועתק" : "רק סיסמה"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -129,7 +183,7 @@ export function AddUserForm({
       </button>
 
       <p className="text-xs text-gray-400">
-        המשתמש/ת יכול/ה להתחבר מיד לאחר הרישום. שלח/י להם את האימייל והסיסמה.
+        מספיקה כתובת מייל. שם וסיסמה ייווצרו אוטומטית ויוצגו לך כאן אחרי היצירה.
       </p>
     </form>
   );

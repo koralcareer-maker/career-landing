@@ -59,7 +59,7 @@ export default async function AdminUsersPage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-teal text-base flex items-center gap-2">
             <UserPlus size={18} />
-            הוספת משתמש/ת ידנית (ללא תשלום)
+            הוספה מהירה — מספיקה כתובת מייל
           </CardTitle>
         </CardHeader>
         <CardContent>

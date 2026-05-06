@@ -361,19 +361,47 @@ export async function setUserRole(id: string, role: string) {
 
 // ── Manual user creation (no payment required) ────────────────────────────────
 
+// Generates an easy-to-read temporary password Coral can WhatsApp.
+// Pattern: <Capitalised name fragment>Koral2026! — same shape as the
+// passwords already in the trainee roster, so we stay consistent and
+// easy to read aloud.
+function generateTempPassword(emailLocalPart: string): string {
+  const cleaned = emailLocalPart.replace(/[^a-zA-Z]/g, "").slice(0, 8);
+  const base = cleaned.length >= 3
+    ? cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase()
+    : "User" + Math.floor(Math.random() * 900 + 100);
+  return `${base}Koral2026!`;
+}
+
+// Pulls a "first name" from an email when the admin didn't type one.
+// "almogsh10@gmail.com" → "Almogsh10". Hebrew users typically WhatsApp
+// the credentials anyway — the display name in the welcome email just
+// needs to be non-empty.
+function nameFromEmail(email: string): string {
+  const local = email.split("@")[0] ?? "user";
+  return local.charAt(0).toUpperCase() + local.slice(1);
+}
+
 export async function createUserManually(prevState: unknown, formData: FormData) {
   await requireAdmin();
 
-  const name = (formData.get("name") as string)?.trim();
   const email = (formData.get("email") as string)?.toLowerCase().trim();
-  const password = (formData.get("password") as string)?.trim();
+  const rawName = (formData.get("name") as string)?.trim() ?? "";
+  const rawPassword = (formData.get("password") as string)?.trim() ?? "";
   const membershipType = (formData.get("membershipType") as string) || "MEMBER";
   const genderRaw = (formData.get("gender") as string)?.trim() || "";
   const gender: "f" | "m" = genderRaw === "m" ? "m" : "f";
 
-  if (!name || !email || !password) {
-    return { error: "שם, אימייל וסיסמה הם שדות חובה" };
+  if (!email) {
+    return { error: "אימייל הוא שדה חובה" };
   }
+
+  // Auto-fill name + password when the admin didn't type them — that's
+  // the whole point of the "quick add" flow. Both stay deterministic-
+  // ish so Coral can predict what got generated if the email never
+  // arrives.
+  const name = rawName || nameFromEmail(email);
+  const password = rawPassword || generateTempPassword(email.split("@")[0] ?? "user");
 
   // Check for existing user
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -418,7 +446,10 @@ export async function createUserManually(prevState: unknown, formData: FormData)
   }).catch(console.error);
 
   revalidatePath("/admin/users");
-  return { success: true, userId: user.id };
+  // Returning `password` lets the client surface the credentials so
+  // Coral can copy them straight into WhatsApp without waiting for the
+  // email round-trip — and as a backup if the welcome email bounces.
+  return { success: true, userId: user.id, email, password, name };
 }
 
 // ── Change membership type ────────────────────────────────────────────────────
