@@ -163,20 +163,26 @@ export async function POST(req: NextRequest) {
   const contentHash = sha256Hex(bytes);
 
   // Cache hit? Return immediately. The DB unique index on (userId,
-  // contentHash) keeps this O(1).
-  const cached = await prisma.cvFeedback.findFirst({
-    where: { userId, contentHash },
-    orderBy: { createdAt: "desc" },
-  });
-  if (cached) {
-    try {
-      const parsed = JSON.parse(cached.result);
-      if (isCvFeedbackResult(parsed)) {
-        return NextResponse.json({ result: parsed, cached: true, fileName: cached.fileName });
+  // contentHash) keeps this O(1). Tolerate the table not existing yet —
+  // if the migration hasn't run we just skip the cache and call Gemini
+  // every time, which still works for the user.
+  try {
+    const cached = await prisma.cvFeedback.findFirst({
+      where: { userId, contentHash },
+      orderBy: { createdAt: "desc" },
+    });
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached.result);
+        if (isCvFeedbackResult(parsed)) {
+          return NextResponse.json({ result: parsed, cached: true, fileName: cached.fileName });
+        }
+      } catch {
+        // fall through and re-analyze if the cached row is corrupted
       }
-    } catch {
-      // fall through and re-analyze if the cached row is corrupted
     }
+  } catch (e) {
+    console.warn("[cv-feedback] cache read failed (table missing?):", e instanceof Error ? e.message : e);
   }
 
   // Cache miss — call Gemini.
@@ -200,13 +206,18 @@ export async function POST(req: NextRequest) {
   }
 
   // Persist (upsert by unique key — re-uploads of the same file now
-  // resolve from cache on the next call).
+  // resolve from cache on the next call). Tolerate the table being
+  // missing — the user still gets the analysis, we just don't cache.
   const result: CvFeedbackResult = parsed;
-  await prisma.cvFeedback.upsert({
-    where: { userId_contentHash: { userId, contentHash } },
-    create: { userId, contentHash, fileName, result: JSON.stringify(result) },
-    update: { fileName, result: JSON.stringify(result), createdAt: new Date() },
-  });
+  try {
+    await prisma.cvFeedback.upsert({
+      where: { userId_contentHash: { userId, contentHash } },
+      create: { userId, contentHash, fileName, result: JSON.stringify(result) },
+      update: { fileName, result: JSON.stringify(result), createdAt: new Date() },
+    });
+  } catch (e) {
+    console.warn("[cv-feedback] persist failed (table missing?):", e instanceof Error ? e.message : e);
+  }
 
   return NextResponse.json({ result, cached: false, fileName });
 }
