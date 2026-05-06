@@ -25,5 +25,5 @@ export const TRAINEES: Trainee[] = [
   { name: "תום יערי",       email: "tomyaari135@gmail.com",      password: "TomKoral2026!",    gender: "f" },
   { name: "דנה אברהם",      email: "danasuday@gmail.com",        password: "DanaKoral2026!",   gender: "f" },
   { name: "אלמוג שחר",      email: "almogsh10@gmail.com",        password: "AlmogKoral2026!",  gender: "f" },
-  { name: "רוני רזייב",     email: "280rasrza1@gmail.com",       password: "RoniKoral2026!",   gender: "f" },
+  { name: "רוני רזייב",     email: "280rasrza1@gmail.com",       password: "RoniKoral2026!",   gender: "m" },
 ];
