@@ -49,10 +49,11 @@ function SignupForm() {
   const isHighlightPlan = planKey === "vip"; // PRO display
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f0e7d2] via-cream to-[#e6d9b8] relative overflow-hidden" dir="rtl">
-      {/* Decorative orbs — warm beige palette per Coral, no teal-tinted background */}
-      <div className="absolute -top-32 -right-32 w-96 h-96 bg-amber-200/40 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-stone-300/30 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-br from-[#e6f7f7] via-[#f0fafa] to-[#d6f0f0] relative overflow-hidden" dir="rtl">
+      {/* Decorative orbs — soft turquoise palette per Coral. Same family
+          as the koral-connections page, calmer than full-saturation teal. */}
+      <div className="absolute -top-32 -right-32 w-96 h-96 bg-teal/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-emerald-200/40 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative px-4 py-8 sm:py-12">
         {/* Top brand row */}
