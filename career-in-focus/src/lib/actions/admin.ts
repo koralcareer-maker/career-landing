@@ -373,34 +373,24 @@ function generateTempPassword(emailLocalPart: string): string {
   return `${base}Koral2026!`;
 }
 
-// Pulls a "first name" from an email when the admin didn't type one.
-// "almogsh10@gmail.com" → "Almogsh10". Hebrew users typically WhatsApp
-// the credentials anyway — the display name in the welcome email just
-// needs to be non-empty.
-function nameFromEmail(email: string): string {
-  const local = email.split("@")[0] ?? "user";
-  return local.charAt(0).toUpperCase() + local.slice(1);
-}
-
 export async function createUserManually(prevState: unknown, formData: FormData) {
   await requireAdmin();
 
   const email = (formData.get("email") as string)?.toLowerCase().trim();
-  const rawName = (formData.get("name") as string)?.trim() ?? "";
+  const name = (formData.get("name") as string)?.trim() ?? "";
+  const phone = (formData.get("phone") as string)?.trim() ?? "";
   const rawPassword = (formData.get("password") as string)?.trim() ?? "";
   const membershipType = (formData.get("membershipType") as string) || "MEMBER";
   const genderRaw = (formData.get("gender") as string)?.trim() || "";
   const gender: "f" | "m" = genderRaw === "m" ? "m" : "f";
 
-  if (!email) {
-    return { error: "אימייל הוא שדה חובה" };
+  if (!email || !name || !phone) {
+    return { error: "שם, אימייל וטלפון הם שדות חובה" };
   }
 
-  // Auto-fill name + password when the admin didn't type them — that's
-  // the whole point of the "quick add" flow. Both stay deterministic-
-  // ish so Coral can predict what got generated if the email never
-  // arrives.
-  const name = rawName || nameFromEmail(email);
+  // Password auto-generates when the admin didn't type one — that's
+  // the whole point of the "quick add" flow. Stays deterministic-ish
+  // so Coral can predict what got generated if the email never arrives.
   const password = rawPassword || generateTempPassword(email.split("@")[0] ?? "user");
 
   // Check for existing user
@@ -422,6 +412,14 @@ export async function createUserManually(prevState: unknown, formData: FormData)
       membershipType: membershipType as never,
       paymentProvider: "MANUAL",
       paidAt: new Date(),
+      // Stash the phone on a fresh Profile row so it shows up in the
+      // member's profile screen and is available for CRM/follow-up.
+      profile: {
+        create: {
+          fullName: name,
+          phone,
+        },
+      },
     },
   });
 

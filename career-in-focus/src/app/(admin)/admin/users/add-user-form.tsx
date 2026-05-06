@@ -45,8 +45,19 @@ export function AddUserForm({
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="gender" value={gender} />
 
-      {/* ── Quick add: email is the only required field ───────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* ── Required fields: name + email + plan ───────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label className="text-xs font-semibold text-gray-500 mb-1 block">שם פרטי ומשפחה *</label>
+          <input
+            name="name"
+            placeholder="ישראל ישראלי"
+            required
+            dir="rtl"
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-navy text-sm focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
+          />
+        </div>
+
         <div>
           <label className="text-xs font-semibold text-gray-500 mb-1 block">אימייל *</label>
           <input
@@ -96,26 +107,32 @@ export function AddUserForm({
         </div>
       </div>
 
-      {/* ── Advanced (collapsed by default) — name + custom password ──── */}
+      {/* ── Phone — required (used for WhatsApp + CRM) ──────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs font-semibold text-gray-500 mb-1 block">טלפון *</label>
+          <input
+            name="phone"
+            type="tel"
+            placeholder="050-1234567"
+            required
+            dir="ltr"
+            className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-navy text-sm focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* ── Advanced (collapsed by default) — custom password only ───── */}
       <div>
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
           className="text-xs text-gray-500 hover:text-teal transition-colors"
         >
-          {showAdvanced ? "▲ פחות פרטים" : "▼ אפשרויות מתקדמות (שם וסיסמה)"}
+          {showAdvanced ? "▲ פחות פרטים" : "▼ אפשרות מתקדמת (להגדיר סיסמה ידנית)"}
         </button>
         {showAdvanced && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-            <div>
-              <label className="text-xs font-semibold text-gray-500 mb-1 block">שם מלא</label>
-              <input
-                name="name"
-                placeholder="(אם ריק — ייגזר מהאימייל)"
-                dir="rtl"
-                className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-navy text-sm focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
-              />
-            </div>
             <div>
               <label className="text-xs font-semibold text-gray-500 mb-1 block">סיסמה זמנית</label>
               <input
@@ -183,7 +200,7 @@ export function AddUserForm({
       </button>
 
       <p className="text-xs text-gray-400">
-        מספיקה כתובת מייל. שם וסיסמה ייווצרו אוטומטית ויוצגו לך כאן אחרי היצירה.
+        סיסמה תיווצר אוטומטית ותוצג לך כאן אחרי היצירה — מוכנה להעתקה לוואטסאפ.
       </p>
     </form>
   );
