@@ -17,9 +17,16 @@ export default async function AdminJobsPage() {
           <h1 className="text-2xl font-black text-navy">ניהול משרות</h1>
           <p className="text-gray-500 text-sm">{jobs.length} משרות</p>
         </div>
-        <Link href="/admin/jobs/new">
-          <Button><Plus size={15} /> משרה חדשה</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/admin/jobs/import-civi-batch2">
+            <Button variant="outline" className="border-teal/30 text-teal hover:bg-teal-pale">
+              ייבוא Civi (10)
+            </Button>
+          </Link>
+          <Link href="/admin/jobs/new">
+            <Button><Plus size={15} /> משרה חדשה</Button>
+          </Link>
+        </div>
       </div>
 
       <Card>

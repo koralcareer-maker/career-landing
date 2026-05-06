@@ -14,11 +14,15 @@
     },
     {
       "path": "/api/cron/market-intel",
-      "schedule": "0 */6 * * *"
+      "schedule": "0 7 * * *"
     },
     {
       "path": "/api/cron/billing",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/job-alerts",
+      "schedule": "0 8 * * *"
     }
   ]
 }

@@ -95,7 +95,7 @@ export default function LandingPage() {
       <section className="bg-white py-10 border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            { num: "22,000+", label: "חברי קהילה" },
+            { num: "22K+",   label: "חברי קהילה" },
             { num: "84%",     label: "מצאו עבודה ב-90 יום" },
             { num: "300+",    label: "משרות פעילות" },
             { num: "פי 3",    label: "יותר ראיונות תוך 30 יום" },
@@ -245,7 +245,7 @@ export default function LandingPage() {
       <section className="bg-teal py-16 px-6 text-center">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-3xl font-black text-white mb-4">מוכן להתחיל?</h2>
-          <p className="text-white/80 mb-8">הצטרפו ל-22,000+ חברי הקהילה שמוצאים את המשרה הבאה שלהם בעזרת קריירה בפוקוס</p>
+          <p className="text-white/80 mb-8">הצטרפו ל-22K+ חברי הקהילה שמוצאים את המשרה הבאה שלהם בעזרת קריירה בפוקוס</p>
           <Link href="/signup" className="bg-white text-teal font-bold px-10 py-4 rounded-2xl hover:bg-cream transition-colors text-base inline-flex items-center gap-2">
             הצטרפות חינם לשבוע ניסיון
             <ChevronLeft size={18} />

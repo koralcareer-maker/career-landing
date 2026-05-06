@@ -67,7 +67,7 @@ export async function Footer() {
     // Headline community size — hardcoded to match the public landing
     // page (22K+) instead of the live DB count, which is way smaller
     // during the launch ramp.
-    { value: "22,000+",                          label: "חברי קהילה" },
+    { value: "22K+",                             label: "חברי קהילה" },
     { value: `${jobCount}+`,                     label: "משרות פעילות" },
     { value: `${courseCount}+`,                  label: "קורסים מקצועיים" },
     { value: "200+",                             label: "התקבלו לעבודה" },
@@ -154,8 +154,8 @@ export async function Footer() {
                       fill
                       sizes="(max-width: 640px) 112px, 96px"
                       quality={95}
-                      className="object-cover scale-[2.4]"
-                      style={{ objectPosition: "50% 16%", transformOrigin: "50% 16%" }}
+                      className="object-cover scale-[1.65]"
+                      style={{ objectPosition: "50% 22%", transformOrigin: "50% 22%" }}
                       priority
                     />
                   </div>
@@ -168,7 +168,7 @@ export async function Footer() {
                     <Image src="/logo.png" alt="קריירה בפוקוס" width={28} height={28} className="rounded-lg opacity-95" />
                     <span className="font-black text-white text-lg">קריירה בפוקוס</span>
                   </div>
-                  <p className="text-teal text-sm font-bold mb-1">קורל • מייסדת ומנהלת</p>
+                  <p className="text-teal text-sm font-bold mb-1">קורל • מאסטרית קריירה ומומחית לעולם התעסוקה החדש</p>
                   <p className="text-white/60 text-xs leading-relaxed max-w-xs mx-auto sm:mx-0">
                     אני בונה את המקום שאני הייתי רוצה לקבל בתחילת הדרך — קהילה, ליווי וכלים שבאמת עובדים.
                   </p>

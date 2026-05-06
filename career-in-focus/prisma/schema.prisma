@@ -181,6 +181,11 @@ model User {
   broadcastsSent  BroadcastLog[]
   photoUpgradeStatus PhotoUpgradeStatus @default(NONE)
   photoUpgradeRequestedAt DateTime?
+
+  // Whether to email this user when a new job matches their profile (≥60%).
+  // Default true for active members; can be flipped from settings if we add
+  // an unsubscribe page later.
+  emailJobAlerts Boolean @default(true)
 }
 
 // One row per (user, device fingerprint). The fingerprint is the SHA-256
@@ -547,6 +552,24 @@ model Job {
   isHot       Boolean @default(false)
   isPublished Boolean @default(true)
   expiresAt   DateTime?
+
+  alerts      JobAlert[]
+}
+
+// One row per (job, user) every time we email a member about a new
+// matching job. Daily cron uses the unique constraint to avoid emailing
+// the same person twice for the same job, even if the matching score
+// recomputes higher next day.
+model JobAlert {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId    String
+  score     Int      // match score at time of send, 0-100
+  sentAt    DateTime @default(now())
+
+  @@unique([jobId, userId])
+  @@index([userId, sentAt])
 }
 
 // ─── Events ──────────────────────────────────────────────────────────────────

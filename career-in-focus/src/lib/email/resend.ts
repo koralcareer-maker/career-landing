@@ -185,6 +185,63 @@ export async function safeSendPremiumLeadNotification(opts: {
   });
 }
 
+// ─── Job match alert ──────────────────────────────────────────────────────────
+
+export interface JobMatchAlertItem {
+  title: string;
+  company: string;
+  location?: string | null;
+  score: number;       // 0-100
+  reasons: string[];   // up to 3 short Hebrew strings
+  url: string;         // canonical app URL — /jobs/{id}
+}
+
+export async function sendJobMatchAlert(opts: {
+  to: string;
+  name: string;
+  jobs: JobMatchAlertItem[];
+  appUrl: string;
+}) {
+  if (opts.jobs.length === 0) return null;
+
+  const cards = opts.jobs.map((j) => {
+    const reasons = j.reasons.length
+      ? `<p style="margin:8px 0 0;font-size:13px;color:#3ECFCF;">${j.reasons.map(r => `✓ ${r}`).join(" · ")}</p>`
+      : "";
+    return `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <h3 style="flex:1;">${j.title}</h3>
+        <span style="background:#3ECFCF;color:#fff;font-weight:800;font-size:13px;padding:4px 10px;border-radius:999px;white-space:nowrap;">${j.score}%</span>
+      </div>
+      <p style="margin:4px 0 0;font-size:13px;color:#1C1C2E;font-weight:600;">${j.company}${j.location ? ` · ${j.location}` : ""}</p>
+      ${reasons}
+      <a href="${j.url}" style="display:inline-block;margin-top:10px;color:#1C1C2E;font-weight:700;font-size:13px;text-decoration:underline;">למשרה המלאה ←</a>
+    </div>`;
+  }).join("");
+
+  const headline = opts.jobs.length === 1
+    ? "משרה חדשה שמתאימה לפרופיל שלך 🎯"
+    : `${opts.jobs.length} משרות חדשות שמתאימות לפרופיל שלך 🎯`;
+
+  const html = baseLayout(`
+    <h2>${headline}</h2>
+    <p>שלום ${opts.name}, סרקתי הבוקר את המשרות החדשות שעלו ומצאתי התאמות עם 60%+ לפרופיל שלך:</p>
+    ${cards}
+    <a href="${opts.appUrl}/jobs" class="btn">לכל המשרות במערכת</a>
+    <p style="font-size:12px;color:#999;margin-top:16px;">לא רוצה לקבל את ההתראות האלו? אפשר לכבות מ<a href="${opts.appUrl}/profile" style="color:#3ECFCF;">הפרופיל שלך</a>.</p>
+  `);
+
+  return safeSend({
+    from: FROM,
+    to: opts.to,
+    subject: opts.jobs.length === 1
+      ? `משרה חדשה ${opts.jobs[0].score}% התאמה: ${opts.jobs[0].title}`
+      : `${opts.jobs.length} משרות חדשות במערכת — התאמה לפרופיל שלך`,
+    html,
+  });
+}
+
 // ─── Welcome email ────────────────────────────────────────────────────────────
 
 export async function sendWelcomeEmail(opts: {
