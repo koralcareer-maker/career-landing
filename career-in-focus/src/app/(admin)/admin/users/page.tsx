@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { formatDate } from "@/lib/utils";
+import { formatDate, timeAgo } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { activateUser, suspendUser, createUserManually, setMembershipType } from "@/lib/actions/admin";
@@ -23,8 +23,18 @@ export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      profile: { select: { targetRole: true, questionnaireCompleted: true } },
+      profile: { select: { targetRole: true, questionnaireCompleted: true, resumeUrl: true } },
+      careerPassport: { select: { id: true } },
       _count: { select: { jobApplications: true } },
+      // Pull the most recent device activity per user — that's our
+      // proxy for "last login" since we don't write a dedicated
+      // lastLoginAt field. UserDevice.lastSeenAt is bumped on every
+      // authenticated request through the device-limit middleware.
+      devices: {
+        orderBy: { lastSeenAt: "desc" },
+        take: 1,
+        select: { lastSeenAt: true },
+      },
     },
   });
 
@@ -101,7 +111,9 @@ export default async function AdminUsersPage() {
                   <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">אימייל</th>
                   <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">סטטוס</th>
                   <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">חברות</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">יעד</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">פרופיל</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">משרות</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">כניסה אחרונה</th>
                   <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">הצטרף</th>
                   <th className="py-3 px-4 text-xs text-gray-500 text-center">פעולות</th>
                 </tr>
@@ -109,6 +121,22 @@ export default async function AdminUsersPage() {
               <tbody>
                 {users.map((u) => {
                   const mem = MEMBERSHIP_LABELS[u.membershipType] ?? MEMBERSHIP_LABELS.NONE;
+                  // Profile completion buckets — used to colour-code the column
+                  // so Coral can scan "who needs nudging to fill the passport".
+                  // Three states: full (questionnaire+CV+passport), partial, none.
+                  const hasProfile = !!u.profile;
+                  const hasCv = !!u.profile?.resumeUrl;
+                  const hasQuestionnaire = !!u.profile?.questionnaireCompleted;
+                  const hasPassport = !!u.careerPassport;
+                  const completionScore =
+                    Number(hasProfile) + Number(hasCv) + Number(hasQuestionnaire) + Number(hasPassport);
+                  const profileVariant: "green" | "yellow" | "gray" =
+                    completionScore >= 3 ? "green" : completionScore >= 1 ? "yellow" : "gray";
+                  const profileLabel =
+                    completionScore === 4 ? "מלא"
+                    : completionScore === 0 ? "ריק"
+                    : `${completionScore}/4`;
+                  const lastSeen = u.devices[0]?.lastSeenAt;
                   return (
                     <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                       <td className="py-3 px-4 font-medium text-navy">{u.name ?? "—"}</td>
@@ -126,7 +154,15 @@ export default async function AdminUsersPage() {
                           {mem.label}
                         </Badge>
                       </td>
-                      <td className="py-3 px-4 text-gray-500 text-xs">{u.profile?.targetRole ?? "—"}</td>
+                      <td className="py-3 px-4">
+                        <Badge variant={profileVariant} size="sm" title={`פרופיל: ${hasProfile ? "✓" : "✗"} · קו"ח: ${hasCv ? "✓" : "✗"} · שאלון: ${hasQuestionnaire ? "✓" : "✗"} · דרכון: ${hasPassport ? "✓" : "✗"}`}>
+                          {profileLabel}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-gray-700 text-xs font-bold text-center">{u._count.jobApplications}</td>
+                      <td className="py-3 px-4 text-gray-500 text-xs">
+                        {lastSeen ? timeAgo(lastSeen) : <span className="text-gray-300">לא נכנס/ה</span>}
+                      </td>
                       <td className="py-3 px-4 text-gray-400 text-xs">{formatDate(u.createdAt)}</td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-1 flex-wrap">
