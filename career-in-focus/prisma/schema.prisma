@@ -293,6 +293,22 @@ model Profile {
   q_industryInterests  String?  // JSON array
   q_roleModels         String?
   q_valuesAtWork       String?  // JSON array
+
+  // ── Job-search status fields ─────────────────────────────────────
+  // Captured in the new "הגדרת חיפוש העבודה שלך" wizard (step 3).
+  // Drives the AI coach + dashboard "next action" suggestions.
+  // js_actively  : null | "yes" | "no" | "passive"
+  // js_searchWeeks  : how many weeks the user has been searching
+  // js_recentInterviews  : count in the last month (rough self-report)
+  // js_isApplying  : has the user started sending applications
+  js_actively         String?
+  js_searchWeeks      Int?
+  js_recentInterviews Int?
+  js_isApplying       Boolean?
+
+  // ── Professional assets (step 4) ─────────────────────────────────
+  portfolioUrl     String?
+  additionalLinks  String?  // JSON array of { label, url }
 }
 
 model CareerPassport {

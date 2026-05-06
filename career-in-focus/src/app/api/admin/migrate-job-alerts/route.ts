@@ -5,15 +5,19 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 
 /**
- * One-shot migration that creates the JobAlert table and adds the
- * emailJobAlerts column to User. Same pattern as the earlier
- * job-tracking migration: schema declarations live in schema.prisma
- * for the generated Prisma client, but production DB columns are
- * added via this endpoint because Vercel's deploy doesn't run
- * `prisma migrate`.
+ * Idempotent one-shot migration. Schema declarations live in
+ * schema.prisma for the generated Prisma client; production DB columns
+ * are added via this endpoint because Vercel's deploy doesn't run
+ * `prisma migrate`. SQLite/libsql doesn't support ADD COLUMN IF NOT
+ * EXISTS, so each new column is gated by a PRAGMA table_info check
+ * (`addColumnIfMissing` helper below). Safe to click any number of
+ * times — the second run is a no-op.
  *
- * Idempotent — `IF NOT EXISTS` on every statement so a second click
- * is a no-op. Trigger from /admin/migrate-job-alerts.
+ * Adds in order:
+ *   1. JobAlert table + indexes (job-match alert system)
+ *   2. User.emailJobAlerts (opt-out flag for #1)
+ *   3. Profile.js_*  / Profile.portfolioUrl / Profile.additionalLinks
+ *      (job-search wizard step 3 + 4)
  */
 export async function POST() {
   const session = await auth();
@@ -27,6 +31,25 @@ export async function POST() {
   }
 
   const log: string[] = [];
+
+  // ── helper: add column to a table only when missing ────────────
+  async function addColumnIfMissing(
+    table: string,
+    column: string,
+    typeAndDefault: string,
+  ) {
+    const cols = await prisma.$queryRawUnsafe<Array<{ name: string }>>(
+      `PRAGMA table_info("${table}");`,
+    );
+    if (cols.some((c) => c.name === column)) {
+      log.push(`· ${table}.${column} already exists`);
+      return;
+    }
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "${table}" ADD COLUMN "${column}" ${typeAndDefault};`,
+    );
+    log.push(`✓ ${table}.${column}`);
+  }
 
   // 1. JobAlert table
   await prisma.$executeRawUnsafe(`
@@ -51,20 +74,18 @@ export async function POST() {
   `);
   log.push("✓ JobAlert userId/sentAt index");
 
-  // 2. User.emailJobAlerts column. SQLite/libsql don't support
-  //    ADD COLUMN IF NOT EXISTS, so we check pragma first.
-  const userColumns = await prisma.$queryRawUnsafe<Array<{ name: string }>>(
-    `PRAGMA table_info("User");`,
-  );
-  const hasColumn = userColumns.some((c) => c.name === "emailJobAlerts");
-  if (!hasColumn) {
-    await prisma.$executeRawUnsafe(
-      `ALTER TABLE "User" ADD COLUMN "emailJobAlerts" BOOLEAN NOT NULL DEFAULT 1;`,
-    );
-    log.push("✓ User.emailJobAlerts column");
-  } else {
-    log.push("· User.emailJobAlerts already exists");
-  }
+  // 2. User.emailJobAlerts column.
+  await addColumnIfMissing("User", "emailJobAlerts", "BOOLEAN NOT NULL DEFAULT 1");
+
+  // 3. Profile columns for the job-search wizard.
+  //    Step 3 (סטטוס חיפוש) — all nullable so legacy users aren't disturbed.
+  await addColumnIfMissing("Profile", "js_actively", "TEXT");
+  await addColumnIfMissing("Profile", "js_searchWeeks", "INTEGER");
+  await addColumnIfMissing("Profile", "js_recentInterviews", "INTEGER");
+  await addColumnIfMissing("Profile", "js_isApplying", "BOOLEAN");
+  //    Step 4 (נכסים מקצועיים).
+  await addColumnIfMissing("Profile", "portfolioUrl", "TEXT");
+  await addColumnIfMissing("Profile", "additionalLinks", "TEXT");
 
   return NextResponse.json({ ok: true, log });
 }

@@ -278,6 +278,165 @@ export async function saveQuestionnaire(prevState: unknown, formData: FormData) 
   return { success: true };
 }
 
+// ─── Job-search wizard ───────────────────────────────────────────────────────
+// Powers the new "הגדרת חיפוש העבודה שלך" 4-step experience under /profile.
+// One server action per step keeps each form payload small + lets the wizard
+// surface a "saved" tick after every step. completeWizard finalises and
+// kicks off the career-passport generation in the background.
+
+export interface WizardStep1 {
+  targetRole: string;
+  industries: string[];          // multi-select
+  desiredField: string;          // primary industry (legacy field)
+  region: string;                // צפון/חיפה/מרכז/שפלה/ירושלים/דרום/אילת
+  workType: string;              // "remote" | "hybrid" | "office"
+}
+export interface WizardStep2 {
+  currentRole: string;
+  yearsExperience: number | null;
+  strengths: string[];
+}
+export interface WizardStep3 {
+  jsActively: string;             // "yes" | "no" | "passive"
+  jsSearchWeeks: number | null;
+  jsRecentInterviews: number | null;
+  jsIsApplying: boolean | null;
+}
+export interface WizardStep4 {
+  linkedinUrl: string;
+  portfolioUrl: string;
+  additionalLinks: Array<{ label: string; url: string }>;
+}
+
+export async function saveWizardStep1(data: WizardStep1) {
+  const session = await auth();
+  if (!session?.user) return { error: "נדרשת כניסה" };
+  const userId = session.user.id;
+
+  await prisma.profile.upsert({
+    where: { userId },
+    create: {
+      userId,
+      targetRole: data.targetRole || null,
+      desiredField: data.desiredField || null,
+      q_industryInterests: data.industries.length ? stringifyArray(data.industries) : null,
+      q_remotePreference: data.workType || null,
+    },
+    update: {
+      targetRole: data.targetRole || null,
+      desiredField: data.desiredField || null,
+      q_industryInterests: data.industries.length ? stringifyArray(data.industries) : null,
+      q_remotePreference: data.workType || null,
+    },
+  });
+  // region lives on User-side data (we already classify jobs into
+  // regions; region isn't stored on Profile yet — leave for now,
+  // surface it back to the wizard via the dropdown choice).
+
+  revalidatePath("/profile");
+  return { success: true };
+}
+
+export async function saveWizardStep2(data: WizardStep2) {
+  const session = await auth();
+  if (!session?.user) return { error: "נדרשת כניסה" };
+  const userId = session.user.id;
+
+  await prisma.profile.upsert({
+    where: { userId },
+    create: {
+      userId,
+      currentRole: data.currentRole || null,
+      yearsExperience: data.yearsExperience ?? null,
+      strengths: data.strengths.length ? stringifyArray(data.strengths) : null,
+    },
+    update: {
+      currentRole: data.currentRole || null,
+      yearsExperience: data.yearsExperience ?? null,
+      strengths: data.strengths.length ? stringifyArray(data.strengths) : null,
+    },
+  });
+
+  revalidatePath("/profile");
+  return { success: true };
+}
+
+export async function saveWizardStep3(data: WizardStep3) {
+  const session = await auth();
+  if (!session?.user) return { error: "נדרשת כניסה" };
+  const userId = session.user.id;
+
+  await prisma.profile.upsert({
+    where: { userId },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    create: {
+      userId,
+      js_actively: data.jsActively || null,
+      js_searchWeeks: data.jsSearchWeeks ?? null,
+      js_recentInterviews: data.jsRecentInterviews ?? null,
+      js_isApplying: data.jsIsApplying ?? null,
+    } as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    update: {
+      js_actively: data.jsActively || null,
+      js_searchWeeks: data.jsSearchWeeks ?? null,
+      js_recentInterviews: data.jsRecentInterviews ?? null,
+      js_isApplying: data.jsIsApplying ?? null,
+    } as any,
+  });
+
+  revalidatePath("/profile");
+  return { success: true };
+}
+
+export async function saveWizardStep4(data: WizardStep4) {
+  const session = await auth();
+  if (!session?.user) return { error: "נדרשת כניסה" };
+  const userId = session.user.id;
+
+  // Sanitize URLs minimally — strip whitespace, allow empty.
+  const linkedin = data.linkedinUrl.trim();
+  const portfolio = data.portfolioUrl.trim();
+  const links = data.additionalLinks
+    .filter((l) => l.url.trim().length > 0)
+    .map((l) => ({ label: l.label.trim(), url: l.url.trim() }));
+
+  await prisma.profile.upsert({
+    where: { userId },
+    create: {
+      userId,
+      linkedinUrl: linkedin || null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      portfolioUrl: portfolio || null,
+      additionalLinks: links.length ? JSON.stringify(links) : null,
+    } as any,
+    update: {
+      linkedinUrl: linkedin || null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      portfolioUrl: portfolio || null,
+      additionalLinks: links.length ? JSON.stringify(links) : null,
+    } as any,
+  });
+
+  revalidatePath("/profile");
+  return { success: true };
+}
+
+export async function completeWizard() {
+  const session = await auth();
+  if (!session?.user) return { error: "נדרשת כניסה" };
+  const userId = session.user.id;
+
+  await prisma.profile.update({
+    where: { userId },
+    data: { questionnaireCompleted: true },
+  });
+
+  revalidatePath("/profile");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
 // ─── Career Passport — Claude AI ─────────────────────────────────────────────
 
 export async function generateCareerPassport() {
