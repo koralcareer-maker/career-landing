@@ -70,18 +70,42 @@ export async function GET(req: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await res.json();
-
-    if (data.ReturnValue !== 0 || !data.url) {
-      console.error("CardCom create error:", data);
-      return NextResponse.redirect(
-        new URL(`/payment/pending?error=cardcom_error&code=${data.ReturnValue}`, req.url)
-      );
+    // Capture the raw text first so we can surface it on the error
+    // page when CardCom responds with HTML or a non-JSON body. The
+    // previous version called res.json() unconditionally and lost
+    // anything that wasn't well-formed JSON.
+    const rawText = await res.text();
+    let data: { ReturnValue?: number; Description?: string; url?: string; ResponseCode?: number } | null = null;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      data = null;
     }
 
-    return NextResponse.redirect(data.url);
+    const ok = data?.ReturnValue === 0 && typeof data?.url === "string" && data.url.length > 0;
+    if (!ok) {
+      console.error("CardCom create error:", { status: res.status, raw: rawText.slice(0, 500), data });
+
+      // Surface useful diagnostics on the error page. ReturnValue uses
+      // CardCom's documented codes; Description is the Hebrew/English
+      // string they ship with the rejection. We truncate the raw body
+      // to keep URLs sane.
+      const params = new URLSearchParams({ error: "cardcom_error" });
+      if (typeof data?.ReturnValue === "number") params.set("code", String(data.ReturnValue));
+      else params.set("code", `http_${res.status}`);
+      if (data?.Description) params.set("desc", data.Description.slice(0, 200));
+      else if (!data && rawText) params.set("desc", `non-json: ${rawText.slice(0, 120)}`);
+      return NextResponse.redirect(new URL(`/payment/pending?${params.toString()}`, req.url));
+    }
+
+    return NextResponse.redirect(data!.url!);
   } catch (err) {
     console.error("CardCom fetch error:", err);
-    return NextResponse.redirect(new URL("/payment/pending?error=network", req.url));
+    const msg = err instanceof Error ? err.message : "unknown";
+    const params = new URLSearchParams({
+      error: "network",
+      desc: msg.slice(0, 200),
+    });
+    return NextResponse.redirect(new URL(`/payment/pending?${params.toString()}`, req.url));
   }
 }

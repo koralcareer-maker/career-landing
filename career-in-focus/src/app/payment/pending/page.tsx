@@ -18,7 +18,7 @@ const PLAN_NAMES: Record<string, string> = {
 export default async function PaymentPendingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string; error?: string; code?: string }>;
+  searchParams: Promise<{ plan?: string; error?: string; code?: string; desc?: string }>;
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -27,6 +27,7 @@ export default async function PaymentPendingPage({
   const sp = await searchParams;
   const error = sp.error;
   const errorCode = sp.code;
+  const errorDesc = sp.desc;
 
   // Determine plan: from query param or user's stored membershipType
   const planKey = ((sp.plan ?? session.user.membershipType ?? "member")).toUpperCase() as PlanKey;
@@ -69,12 +70,15 @@ export default async function PaymentPendingPage({
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 mb-5 text-right">
               <p className="font-bold mb-1">{errorMessages[error] ?? "אירעה שגיאה. נסי שוב."}</p>
-              {errorCode && (
-                <p className="text-xs text-red-600 font-mono mt-1">קוד שגיאה: {errorCode}</p>
+              {(errorCode || errorDesc) && (
+                <div className="text-xs text-red-600 font-mono mt-2 bg-white/60 rounded-lg p-2 break-words">
+                  {errorCode && <p>קוד: {errorCode}</p>}
+                  {errorDesc && <p className="mt-1">תיאור: {errorDesc}</p>}
+                </div>
               )}
               {error === "cardcom_error" && (
                 <p className="text-xs text-red-600 mt-2 leading-relaxed">
-                  זו לרוב בעיה בהגדרות הסליקה (טרמינל / API key). שלחי לי את קוד השגיאה ואוכל לאבחן.
+                  זו לרוב בעיה בהגדרות הסליקה (טרמינל / API key). שלחי לי את הקוד והתיאור שמופיעים למעלה ואוכל לאבחן.
                 </p>
               )}
             </div>
