@@ -123,7 +123,7 @@ function SignupForm() {
                 </div>
                 <div className="flex-1">
                   <p className="text-[11px] font-black tracking-wider text-teal uppercase">למה זה עובד</p>
-                  <p className="text-xs text-gray-500">שיטת הפוקוס · מאות בוגרים ובוגרות בכל שנה</p>
+                  <p className="text-xs text-gray-500">שיטת הפוקוס · מאות בוגרים בכל שנה</p>
                 </div>
               </div>
 
