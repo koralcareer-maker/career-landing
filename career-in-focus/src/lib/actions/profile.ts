@@ -366,23 +366,16 @@ export async function saveWizardStep3(data: WizardStep3) {
   if (!session?.user) return { error: "נדרשת כניסה" };
   const userId = session.user.id;
 
+  const fields = {
+    js_actively: data.jsActively || null,
+    js_searchWeeks: data.jsSearchWeeks ?? null,
+    js_recentInterviews: data.jsRecentInterviews ?? null,
+    js_isApplying: data.jsIsApplying ?? null,
+  };
   await prisma.profile.upsert({
     where: { userId },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    create: {
-      userId,
-      js_actively: data.jsActively || null,
-      js_searchWeeks: data.jsSearchWeeks ?? null,
-      js_recentInterviews: data.jsRecentInterviews ?? null,
-      js_isApplying: data.jsIsApplying ?? null,
-    } as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    update: {
-      js_actively: data.jsActively || null,
-      js_searchWeeks: data.jsSearchWeeks ?? null,
-      js_recentInterviews: data.jsRecentInterviews ?? null,
-      js_isApplying: data.jsIsApplying ?? null,
-    } as any,
+    create: { userId, ...fields },
+    update: fields,
   });
 
   revalidatePath("/profile");
@@ -401,21 +394,15 @@ export async function saveWizardStep4(data: WizardStep4) {
     .filter((l) => l.url.trim().length > 0)
     .map((l) => ({ label: l.label.trim(), url: l.url.trim() }));
 
+  const fields = {
+    linkedinUrl: linkedin || null,
+    portfolioUrl: portfolio || null,
+    additionalLinks: links.length ? JSON.stringify(links) : null,
+  };
   await prisma.profile.upsert({
     where: { userId },
-    create: {
-      userId,
-      linkedinUrl: linkedin || null,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      portfolioUrl: portfolio || null,
-      additionalLinks: links.length ? JSON.stringify(links) : null,
-    } as any,
-    update: {
-      linkedinUrl: linkedin || null,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      portfolioUrl: portfolio || null,
-      additionalLinks: links.length ? JSON.stringify(links) : null,
-    } as any,
+    create: { userId, ...fields },
+    update: fields,
   });
 
   revalidatePath("/profile");

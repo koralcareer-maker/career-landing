@@ -588,6 +588,22 @@ model JobAlert {
   @@index([userId, sentAt])
 }
 
+// Cached CV-feedback analyses keyed by (userId, content-hash). Re-uploads
+// of the exact same file resolve from cache instead of re-billing
+// Gemini. The latest row per user (by createdAt desc) drives the
+// /progress/cv-feedback "your last analysis" view.
+model CvFeedback {
+  id          String   @id @default(cuid())
+  userId      String
+  contentHash String   // SHA-256 hex of file bytes
+  fileName    String
+  result      String   // JSON-serialized CvFeedbackResult — see /api/cv-feedback/analyze
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, contentHash])
+  @@index([userId, createdAt])
+}
+
 // ─── Events ──────────────────────────────────────────────────────────────────
 
 model Event {

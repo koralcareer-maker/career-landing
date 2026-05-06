@@ -1,6 +1,6 @@
 "use client";
 
-import { Linkedin, Globe, Plus, X, Briefcase } from "lucide-react";
+import { Globe, Plus, X, Briefcase, Network } from "lucide-react";
 import type { WizardState } from "./types";
 import { Field } from "./form-bits";
 
@@ -39,7 +39,7 @@ export function StepAssets({ state, setState }: Props) {
       <Field
         label="LinkedIn"
         hint="הקישור המלא לפרופיל שלך — מתחיל ב-https://linkedin.com/in/"
-        icon={Linkedin}
+        icon={Network}
       >
         <input
           type="url"

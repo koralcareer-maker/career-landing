@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  Briefcase, Calendar, Plus,
+  Briefcase, Calendar, Plus, FileText,
   CheckCircle2, AlertTriangle, Sparkles, Bell, ChevronLeft,
   TrendingUp, Target, Trophy, Flame, ArrowUpCircle,
   Search, Zap, Activity, Clock,
@@ -340,6 +340,13 @@ export function TrackerClient({
               className="flex-1 bg-transparent text-sm py-2 outline-none"
             />
           </div>
+          <Link
+            href="/progress/cv-feedback"
+            className="inline-flex items-center justify-center gap-1.5 bg-white border border-teal/30 text-teal hover:bg-teal/5 font-bold px-3 py-2 rounded-xl text-sm shrink-0"
+            title="ניתוח קורות חיים — איכות, ATS ומה לתקן"
+          >
+            <FileText size={14} /> ניתוח CV
+          </Link>
           <Link
             href="/progress/new"
             className="inline-flex items-center justify-center gap-1.5 bg-teal hover:bg-teal/90 text-white font-bold px-4 py-2 rounded-xl text-sm shrink-0"

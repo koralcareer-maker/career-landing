@@ -87,5 +87,28 @@ export async function POST() {
   await addColumnIfMissing("Profile", "portfolioUrl", "TEXT");
   await addColumnIfMissing("Profile", "additionalLinks", "TEXT");
 
+  // 4. CvFeedback table — caches CV-feedback analyses per (user, file).
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "CvFeedback" (
+      "id" TEXT NOT NULL PRIMARY KEY,
+      "userId" TEXT NOT NULL,
+      "contentHash" TEXT NOT NULL,
+      "fileName" TEXT NOT NULL,
+      "result" TEXT NOT NULL,
+      "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+  log.push("✓ CvFeedback table");
+
+  await prisma.$executeRawUnsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS "CvFeedback_userId_contentHash_key" ON "CvFeedback"("userId", "contentHash");
+  `);
+  log.push("✓ CvFeedback unique index");
+
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "CvFeedback_userId_createdAt_idx" ON "CvFeedback"("userId", "createdAt");
+  `);
+  log.push("✓ CvFeedback userId/createdAt index");
+
   return NextResponse.json({ ok: true, log });
 }
