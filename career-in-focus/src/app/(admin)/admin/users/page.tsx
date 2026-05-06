@@ -2,9 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { formatDate, timeAgo } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { activateUser, suspendUser, createUserManually, setMembershipType, resendCredentials } from "@/lib/actions/admin";
+import { activateUser, suspendUser, createUserManually, setMembershipType, resendCredentials, impersonateUser } from "@/lib/actions/admin";
 import { auth } from "@/auth";
-import { UserCheck, UserX, UserPlus, Crown } from "lucide-react";
+import { UserCheck, UserX, UserPlus, Crown, LogIn } from "lucide-react";
 import { AddUserForm } from "./add-user-form";
 import { ResendCredentialsButton } from "./resend-credentials-button";
 
@@ -191,6 +191,18 @@ export default async function AdminUsersPage() {
                               userEmail={u.email}
                               action={resendCredentials}
                             />
+                          )}
+                          {/* Impersonate — view the system as this user */}
+                          {u.id !== session?.user?.id && u.accessStatus === "ACTIVE" && (
+                            <form action={async () => { "use server"; await impersonateUser(u.id); }}>
+                              <button
+                                type="submit"
+                                title={`כניסה כ-${u.name ?? u.email} — לראות את המערכת כפי שהוא רואה אותה`}
+                                className="p-1.5 bg-teal/10 text-teal rounded-lg hover:bg-teal/20 transition-colors"
+                              >
+                                <LogIn size={13} />
+                              </button>
+                            </form>
                           )}
                           {/* Upgrade to VIP */}
                           {u.membershipType === "MEMBER" && (

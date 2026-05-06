@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { TopBar } from "@/components/layout/top-bar";
 import { Footer } from "@/components/layout/footer";
+import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import { prisma } from "@/lib/prisma";
 
 export default async function MemberLayout({ children }: { children: React.ReactNode }) {
@@ -29,8 +30,12 @@ export default async function MemberLayout({ children }: { children: React.React
     image: session.user.image,
   };
 
+  const isImpersonating = !!session.user.impersonatedByAdminId;
+
   return (
     <div className="min-h-screen bg-cream">
+      {isImpersonating && <ImpersonationBanner asName={session.user.name ?? session.user.email} />}
+
       {/* Sidebar — hidden on mobile */}
       <div className="hidden md:block">
         <Sidebar user={user} unreadCount={unreadCount} />

@@ -4,8 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { sendWelcomeEmail } from "@/lib/email";
+import { IMPERSONATE_COOKIE, signImpersonationToken } from "@/lib/impersonation";
 
 async function requireAdmin() {
   const session = await auth();
@@ -501,6 +503,50 @@ export async function resendCredentials(id: string) {
 
   revalidatePath("/admin/users");
   return { success: true, email: user.email, password, name: user.name ?? user.email };
+}
+
+// ── Impersonate a user ("view as") ────────────────────────────────────────────
+// Coral wants to click a member's row and see exactly what they see —
+// dashboard, jobs, profile, the works — so she can spot dead ends and
+// answer "what's broken for X" questions without asking the member.
+//
+// Implementation: an HMAC-signed cookie carrying the target userId.
+// The jwt callback in auth.ts swaps the session identity to that user
+// when the cookie is present AND the underlying token is admin. To
+// stop, we clear the cookie. The original admin id is stashed on the
+// token as `impersonatedByAdminId` so the banner can revert cleanly.
+
+export async function impersonateUser(targetUserId: string) {
+  await requireAdmin();
+
+  const target = await prisma.user.findUnique({
+    where: { id: targetUserId },
+    select: { id: true, email: true },
+  });
+  if (!target) {
+    throw new Error("המשתמש/ת לא נמצא/ה");
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.set(IMPERSONATE_COOKIE, signImpersonationToken(target.id), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 4, // 4 hours — long enough for a debug session, short enough to time out automatically
+  });
+
+  redirect("/dashboard");
+}
+
+export async function stopImpersonating() {
+  // No admin guard — anyone "trapped" in an impersonated session
+  // (e.g. session hung after the admin cookie rotated) should always
+  // be able to clear it. Worst case for a random member: they clear
+  // a cookie they don't have, no-op.
+  const cookieStore = await cookies();
+  cookieStore.delete(IMPERSONATE_COOKIE);
+  redirect("/admin/users");
 }
 
 // ── Change membership type ────────────────────────────────────────────────────
