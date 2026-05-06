@@ -1,22 +1,24 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Clock, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
+import { Clock, CreditCard, AlertCircle } from "lucide-react";
+import { amountForCycle, formatPrice, type PlanKey } from "@/lib/billing";
 
-const PLAN_LABELS: Record<string, { name: string; price: string }> = {
-  MEMBER:  { name: "חבר/ה",               price: "49₪/חודש" },
-  // Internal enum names (VIP / PREMIUM) stay the same in DB and code,
-  // but the displayed labels were re-shuffled per Coral: 149 = "פרו",
-  // 499 = "VIP". Don't rename the enum keys — that would need a
-  // migration and would break existing rows.
-  VIP:     { name: "פרו",                  price: "149₪/חודש" },
-  PREMIUM: { name: "VIP",                  price: "499₪/חודש" },
+// Display names only — the price is computed dynamically below from
+// amountForCycle so it stays in sync with the launch promo (₪19 until
+// 2026-07-01, ₪49 afterwards). Internal enum names (MEMBER / VIP /
+// PREMIUM) stay the same in DB and code; the displayed labels were
+// re-shuffled per Coral (149 = "פרו", 499 = "VIP").
+const PLAN_NAMES: Record<string, string> = {
+  MEMBER:  "השקה",
+  VIP:     "פרו",
+  PREMIUM: "VIP",
 };
 
 export default async function PaymentPendingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string; error?: string }>;
+  searchParams: Promise<{ plan?: string; error?: string; code?: string }>;
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -24,10 +26,15 @@ export default async function PaymentPendingPage({
 
   const sp = await searchParams;
   const error = sp.error;
+  const errorCode = sp.code;
 
   // Determine plan: from query param or user's stored membershipType
-  const planKey = ((sp.plan ?? session.user.membershipType ?? "member")).toUpperCase() as keyof typeof PLAN_LABELS;
-  const plan = PLAN_LABELS[planKey] ?? PLAN_LABELS.MEMBER;
+  const planKey = ((sp.plan ?? session.user.membershipType ?? "member")).toUpperCase() as PlanKey;
+  const planName = PLAN_NAMES[planKey] ?? PLAN_NAMES.MEMBER;
+  // Live price — respects the launch promo (₪19 → ₪49 cutoff). The
+  // hardcoded ₪49 in the previous version was the source of Coral's
+  // "why does it say 49 if launch is 19?" question.
+  const planPriceLabel = `${formatPrice(amountForCycle(planKey, 0))}/חודש`;
 
   const errorMessages: Record<string, string> = {
     payment_failed: "התשלום לא הצליח. נסי שוב או השתמשי בכרטיס אחר.",
@@ -60,8 +67,16 @@ export default async function PaymentPendingPage({
           </h1>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600 mb-5 text-right">
-              {errorMessages[error] ?? "אירעה שגיאה. נסי שוב."}
+            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 mb-5 text-right">
+              <p className="font-bold mb-1">{errorMessages[error] ?? "אירעה שגיאה. נסי שוב."}</p>
+              {errorCode && (
+                <p className="text-xs text-red-600 font-mono mt-1">קוד שגיאה: {errorCode}</p>
+              )}
+              {error === "cardcom_error" && (
+                <p className="text-xs text-red-600 mt-2 leading-relaxed">
+                  זו לרוב בעיה בהגדרות הסליקה (טרמינל / API key). שלחי לי את קוד השגיאה ואוכל לאבחן.
+                </p>
+              )}
             </div>
           )}
 
@@ -73,27 +88,11 @@ export default async function PaymentPendingPage({
           )}
 
           {/* Selected plan */}
-          <div className="bg-teal-pale border border-teal/20 rounded-xl px-4 py-3 mb-5 flex items-center justify-between text-sm">
+          <div className="bg-teal-pale border border-teal/20 rounded-xl px-4 py-3 mb-6 flex items-center justify-between text-sm">
             <span className="font-semibold text-teal-dark">תוכנית נבחרת:</span>
             <div className="text-right">
-              <span className="font-black text-navy">{plan.name}</span>
-              <span className="text-gray-500 mr-2">{plan.price}</span>
-            </div>
-          </div>
-
-          {/* What you get */}
-          <div className="bg-slate-50 rounded-xl p-4 mb-6 text-right">
-            <div className="flex items-start gap-3">
-              <CheckCircle size={16} className="text-teal shrink-0 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-semibold text-navy">מה מצפה לך?</p>
-                <ul className="text-gray-500 mt-1 space-y-0.5 text-xs">
-                  <li>• גישה לכל התכנים, הכלים והקורסים</li>
-                  <li>• ניתוח קריירה AI אישי</li>
-                  <li>• 371+ קבוצות וואטסאפ ופייסבוק</li>
-                  <li>• קהילה ואירועים</li>
-                </ul>
-              </div>
+              <span className="font-black text-navy">{planName}</span>
+              <span className="text-gray-500 mr-2">{planPriceLabel}</span>
             </div>
           </div>
 
@@ -103,7 +102,7 @@ export default async function PaymentPendingPage({
             className="w-full flex items-center justify-center gap-2 bg-teal text-white font-bold py-4 rounded-xl hover:bg-teal-dark transition-colors text-base"
           >
             <CreditCard size={18} />
-            {error ? "נסי שוב" : `תשלום ${plan.price}`}
+            {error ? "נסי שוב" : `תשלום ${planPriceLabel}`}
           </a>
 
           <p className="text-xs text-gray-400 mt-3">
