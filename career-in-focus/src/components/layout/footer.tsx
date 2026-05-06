@@ -49,28 +49,25 @@ function LinkedinIcon({ size = 16, className }: IconProps) {
 // we show curated marketing figures the team can update over time.
 async function getFooterStats() {
   try {
-    const [memberCount, jobCount, courseCount] = await Promise.all([
-      prisma.user.count(),
+    const [jobCount, courseCount] = await Promise.all([
       prisma.job.count({ where: { isPublished: true } }),
       prisma.course.count({ where: { isPublished: true } }),
     ]);
-    return { memberCount, jobCount, courseCount };
+    return { jobCount, courseCount };
   } catch {
-    return { memberCount: 0, jobCount: 0, courseCount: 0 };
+    return { jobCount: 0, courseCount: 0 };
   }
 }
 
-function formatBigNumber(n: number) {
-  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
-  return `${n}`;
-}
-
 export async function Footer() {
-  const { memberCount, jobCount, courseCount } = await getFooterStats();
+  const { jobCount, courseCount } = await getFooterStats();
 
   // Live + curated stats — like brain's hero strip but in teal/cream.
   const stats = [
-    { value: `${formatBigNumber(memberCount)}+`, label: "חברות בקהילה" },
+    // Headline community size — hardcoded to match the public landing
+    // page (22K+) instead of the live DB count, which is way smaller
+    // during the launch ramp.
+    { value: "22,000+",                          label: "חברי קהילה" },
     { value: `${jobCount}+`,                     label: "משרות פעילות" },
     { value: `${courseCount}+`,                  label: "קורסים מקצועיים" },
     { value: "200+",                             label: "התקבלו לעבודה" },
@@ -86,14 +83,8 @@ export async function Footer() {
     { href: "/community",  label: "קהילה" },
   ];
 
-  const services = [
-    { href: "/coaching",          label: "מאמן AI אישי" },
-    { href: "/koral-connections", label: "קורל תפעילי קשרים" },
-    { href: "/events",            label: "אירועים ומפגשים" },
-    { href: "/skills",            label: "פיתוח מיומנויות" },
-    { href: "/recruiters",        label: "מאגר מגייסים" },
-    { href: "/guide",             label: "מדריך למשתמשת" },
-  ];
+  // Services list removed — was a duplicate of navLinks. Quick nav now
+  // covers all the important destinations.
 
   const socials = [
     { href: "https://wa.me/972535777005?text=" + encodeURIComponent("היי קורל, אני מעוניין/ת לדבר איתך"), label: "ווצאפ ישיר", icon: MessageCircle, brand: "from-[#25D366] to-[#128C7E]" },
@@ -137,73 +128,61 @@ export async function Footer() {
         <div aria-hidden className="absolute bottom-0 left-1/3 w-80 h-80 bg-[#A78BFA]/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-8">
 
-            {/* ─── Brand area — Coral as the face of the brand ─── */}
-            <div className="md:col-span-5 lg:col-span-4">
-              <div className="flex items-start gap-4 mb-5">
+            {/* ─── Brand area — Coral as the face of the brand.
+                On mobile we stack the photo above the text and center
+                everything; on desktop we put them side-by-side. The
+                services column was removed (it was a duplicate of the
+                quick nav), and the standalone WhatsApp CTA was also
+                removed (the same icon already lives in the socials
+                column below — pointing at wa.me direct). ─── */}
+            <div className="md:col-span-5 lg:col-span-5">
+              <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-right gap-4 mb-3">
                 <div className="relative shrink-0">
                   {/* Glow ring around photo */}
                   <div className="absolute inset-0 bg-gradient-to-br from-teal to-[#FFB088] rounded-3xl blur-md opacity-60" />
-                  {/* Use a div with background-image instead of <Image> so we
-                      can independently control crop window (background-position)
-                      AND zoom level (background-size). The full-body photo has
-                      Coral's face at ~22% down + lots of negative space above
-                      and below; with a single 96x96 frame we need both knobs
-                      to land her face dead-center. */}
-                  <div
-                    className="relative w-24 h-24 rounded-3xl overflow-hidden ring-2 ring-teal/40 shadow-2xl shadow-teal/20 bg-slate-200"
-                    role="img"
-                    aria-label="קורל שלו - מייסדת קריירה בפוקוס"
-                    style={{
-                      backgroundImage:    "url('/koral.jpg')",
-                      backgroundSize:     "260%",
-                      backgroundPosition: "center 18%",
-                      backgroundRepeat:   "no-repeat",
-                    }}
-                  />
+                  {/* Switch to next/image with explicit object-cover +
+                      object-position. The previous background-image
+                      approach broke on iOS Safari (the image loaded but
+                      the crop window behaved differently per device).
+                      next/image is consistent across browsers. */}
+                  <div className="relative w-28 h-28 sm:w-24 sm:h-24 rounded-3xl overflow-hidden ring-2 ring-teal/40 shadow-2xl shadow-teal/20 bg-slate-200">
+                    <Image
+                      src="/koral.jpg"
+                      alt="קורל שלו - מייסדת קריירה בפוקוס"
+                      fill
+                      sizes="(max-width: 640px) 112px, 96px"
+                      quality={95}
+                      className="object-cover scale-[2.4]"
+                      style={{ objectPosition: "50% 16%", transformOrigin: "50% 16%" }}
+                      priority
+                    />
+                  </div>
                   <div className="absolute -bottom-1 -left-1 bg-teal text-navy w-7 h-7 rounded-full flex items-center justify-center shadow-lg">
                     <Sparkles size={14} />
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
                     <Image src="/logo.png" alt="קריירה בפוקוס" width={28} height={28} className="rounded-lg opacity-95" />
                     <span className="font-black text-white text-lg">קריירה בפוקוס</span>
                   </div>
                   <p className="text-teal text-sm font-bold mb-1">קורל • מייסדת ומנהלת</p>
-                  <p className="text-white/60 text-xs leading-relaxed">
+                  <p className="text-white/60 text-xs leading-relaxed max-w-xs mx-auto sm:mx-0">
                     אני בונה את המקום שאני הייתי רוצה לקבל בתחילת הדרך — קהילה, ליווי וכלים שבאמת עובדים.
                   </p>
                 </div>
               </div>
-
-              {/* Signature CTA — WhatsApp group join */}
-              <a
-                href="https://chat.whatsapp.com/BbBAf0p0R01GrNgf5GQjMg"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between gap-3 bg-gradient-to-l from-[#25D366] to-[#128C7E] hover:shadow-xl hover:shadow-[#25D366]/30 hover:-translate-y-0.5 transition-all rounded-2xl px-5 py-3.5 text-white font-bold group"
-              >
-                <span className="flex items-center gap-2.5">
-                  <MessageCircle size={18} />
-                  <span className="text-sm">הצטרפי לקבוצת הוואטסאפ</span>
-                </span>
-                <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-              </a>
-
-              <p className="text-white/40 text-[11px] mt-3 leading-relaxed">
-                עדכוני משרות, טיפים שבועיים וקהילה תומכת
-              </p>
             </div>
 
             {/* ─── Quick nav ─── */}
-            <div className="md:col-span-3 lg:col-span-2">
-              <h3 className="text-teal font-black text-sm mb-4 flex items-center gap-1.5">
+            <div className="md:col-span-3 lg:col-span-3">
+              <h3 className="text-teal font-black text-sm mb-4 flex items-center gap-1.5 justify-center sm:justify-start">
                 <span className="w-1 h-4 bg-teal rounded-full" />
                 ניווט מהיר
               </h3>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2.5 grid grid-cols-2 sm:block gap-x-3 sm:gap-0">
                 {navLinks.map((l) => (
                   <li key={l.href}>
                     <Link href={l.href} className="text-white/70 hover:text-teal text-sm transition-colors flex items-center gap-1.5 group">
@@ -215,27 +194,9 @@ export async function Footer() {
               </ul>
             </div>
 
-            {/* ─── Services ─── */}
-            <div className="md:col-span-4 lg:col-span-3">
-              <h3 className="text-teal font-black text-sm mb-4 flex items-center gap-1.5">
-                <span className="w-1 h-4 bg-teal rounded-full" />
-                השירותים שלנו
-              </h3>
-              <ul className="space-y-2.5">
-                {services.map((l) => (
-                  <li key={l.href}>
-                    <Link href={l.href} className="text-white/70 hover:text-teal text-sm transition-colors flex items-center gap-1.5 group">
-                      <ChevronLeft size={12} className="text-teal/40 group-hover:text-teal group-hover:-translate-x-0.5 transition-all" />
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
             {/* ─── Social CTAs — colorful brand-colored buttons ─── */}
-            <div className="md:col-span-12 lg:col-span-3">
-              <h3 className="text-teal font-black text-sm mb-4 flex items-center gap-1.5">
+            <div className="md:col-span-4 lg:col-span-4">
+              <h3 className="text-teal font-black text-sm mb-4 flex items-center gap-1.5 justify-center sm:justify-start">
                 <span className="w-1 h-4 bg-teal rounded-full" />
                 בואו נתחבר
               </h3>
