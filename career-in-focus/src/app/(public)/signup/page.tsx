@@ -12,7 +12,7 @@ import { useState, Suspense } from "react";
 const PLAN_LABELS: Record<string, { name: string; price: string; color: string; icon: React.ReactNode }> = {
   member:  { name: "חבר/ה",                  price: "49₪/חודש",  color: "text-teal",      icon: <Star size={14} /> },
   vip:     { name: "VIP",                     price: "149₪/חודש", color: "text-navy",      icon: <Zap size={14} /> },
-  premium: { name: "קורל תפעילי קשרים",        price: "449₪/חודש", color: "text-purple-600",icon: <Crown size={14} /> },
+  premium: { name: "קורל תפעילי קשרים",        price: "499₪/חודש", color: "text-purple-600",icon: <Crown size={14} /> },
 };
 
 function SignupForm() {

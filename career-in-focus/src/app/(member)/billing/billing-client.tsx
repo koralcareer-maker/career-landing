@@ -78,9 +78,9 @@ export function BillingClient({ data }: { data: BillingData }) {
             <div>
               <p className="text-xs font-black text-teal uppercase tracking-wide mb-1">המסלול הנוכחי</p>
               <h2 className="text-xl font-black text-navy">{data.planLabel}</h2>
-              {data.plan === "MEMBER" && data.chargeCount < 2 && !isCancelled && (
+              {data.plan === "MEMBER" && new Date() < new Date("2026-07-01T00:00:00+03:00") && !isCancelled && (
                 <p className="text-xs text-amber-700 font-bold mt-1.5 inline-flex items-center gap-1 bg-amber-100 px-2 py-0.5 rounded-full">
-                  ✨ מבצע השקה — ₪29 לחודש לעוד {2 - data.chargeCount} {2 - data.chargeCount === 1 ? "מחזור" : "מחזורים"}, ואז ₪49 קבוע
+                  ✨ מבצע השקה — ₪19 לחודש עד 1 ביולי, ואז ₪49 קבוע
                 </p>
               )}
             </div>

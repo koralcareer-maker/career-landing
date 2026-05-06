@@ -452,6 +452,59 @@ export async function createUserManually(prevState: unknown, formData: FormData)
   return { success: true, userId: user.id, email, password, name };
 }
 
+// ── Resend credentials / password reset ───────────────────────────────────────
+// Coral's manual support flow: a member loses their welcome email or
+// can't sign in. From /admin/users she clicks "send credentials" on
+// the row, we mint a fresh temporary password, replace the hash in DB,
+// fire the welcome-email template, and surface the new password back
+// to her so she can also paste it into WhatsApp on the spot.
+
+export async function resendCredentials(id: string) {
+  await requireAdmin();
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: { id: true, email: true, name: true, gender: true, membershipType: true },
+  });
+  if (!user) {
+    return { error: "המשתמש/ת לא נמצא/ה" };
+  }
+
+  const password = generateTempPassword(user.email.split("@")[0] ?? "user");
+  const passwordHash = await bcrypt.hash(password, 12);
+
+  await prisma.user.update({
+    where: { id },
+    data: { passwordHash },
+  });
+
+  // Fire the welcome email so the member gets the password by email
+  // even if WhatsApp/SMS isn't an option. Same template Coral already
+  // sees for new users — keeps the experience consistent.
+  await sendWelcomeEmail({
+    name:           user.name ?? user.email,
+    email:          user.email,
+    password,
+    membershipType: user.membershipType,
+    gender:         (user.gender === "m" ? "m" : "f"),
+  }).catch(console.error);
+
+  // Drop a notification too — if they're already logged in elsewhere,
+  // the bell badge surfaces "we just reset your password".
+  await prisma.notification.create({
+    data: {
+      userId:  user.id,
+      type:    "general",
+      title:   "פרטי כניסה חדשים",
+      message: `שלחנו לך מייל עם סיסמה זמנית חדשה (${password}). התחבר/י איתה ואז שני/ה אותה ב'אבטחה'.`,
+      link:    "/dashboard",
+    },
+  });
+
+  revalidatePath("/admin/users");
+  return { success: true, email: user.email, password, name: user.name ?? user.email };
+}
+
 // ── Change membership type ────────────────────────────────────────────────────
 
 export async function setMembershipType(id: string, membershipType: string) {

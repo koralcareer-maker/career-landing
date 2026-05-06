@@ -67,7 +67,7 @@ export function AddUserForm({
           >
             <option value="MEMBER">חבר/ה — 49₪</option>
             <option value="VIP">VIP — 149₪</option>
-            <option value="PREMIUM">קורל תפעילי קשרים — 449₪</option>
+            <option value="PREMIUM">קורל תפעילי קשרים — 499₪</option>
           </select>
         </div>
       </div>

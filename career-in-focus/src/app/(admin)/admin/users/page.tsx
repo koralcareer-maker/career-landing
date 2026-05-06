@@ -2,10 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { formatDate, timeAgo } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { activateUser, suspendUser, createUserManually, setMembershipType } from "@/lib/actions/admin";
+import { activateUser, suspendUser, createUserManually, setMembershipType, resendCredentials } from "@/lib/actions/admin";
 import { auth } from "@/auth";
 import { UserCheck, UserX, UserPlus, Crown } from "lucide-react";
 import { AddUserForm } from "./add-user-form";
+import { ResendCredentialsButton } from "./resend-credentials-button";
 
 // ─── Membership badge config ───────────────────────────────────────────────────
 
@@ -13,7 +14,7 @@ const MEMBERSHIP_LABELS: Record<string, { label: string; variant: "teal" | "gree
   NONE:    { label: "ללא חברות",    variant: "gray" },
   MEMBER:  { label: "חבר | 49₪",   variant: "teal" },
   VIP:     { label: "VIP | 149₪",  variant: "navy" },
-  PREMIUM: { label: "פרמיום | 449₪", variant: "purple" },
+  PREMIUM: { label: "פרמיום | 499₪", variant: "purple" },
 };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -182,6 +183,15 @@ export default async function AdminUsersPage() {
                               </button>
                             </form>
                           )}
+                          {/* Resend credentials / password reset */}
+                          {u.id !== session?.user?.id && (
+                            <ResendCredentialsButton
+                              userId={u.id}
+                              userName={u.name ?? u.email}
+                              userEmail={u.email}
+                              action={resendCredentials}
+                            />
+                          )}
                           {/* Upgrade to VIP */}
                           {u.membershipType === "MEMBER" && (
                             <form action={async () => { "use server"; await setMembershipType(u.id, "VIP"); }}>
@@ -193,7 +203,7 @@ export default async function AdminUsersPage() {
                           {/* Upgrade to Premium */}
                           {(u.membershipType === "MEMBER" || u.membershipType === "VIP") && (
                             <form action={async () => { "use server"; await setMembershipType(u.id, "PREMIUM"); }}>
-                              <button type="submit" title="שדרג לפרמיום (449₪)" className="p-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors">
+                              <button type="submit" title="שדרג לפרמיום (499₪)" className="p-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors">
                                 <Crown size={12} />
                               </button>
                             </form>
@@ -231,7 +241,7 @@ export default async function AdminUsersPage() {
               <p className="text-xs text-gray-400">לחודש</p>
             </div>
             <div className="text-center p-3 bg-white rounded-xl border border-purple-200">
-              <p className="font-black text-purple-700 text-lg">449₪</p>
+              <p className="font-black text-purple-700 text-lg">499₪</p>
               <p className="text-xs text-gray-500">קורל תפעילי קשרים</p>
               <p className="text-xs text-gray-400">לחודש</p>
             </div>

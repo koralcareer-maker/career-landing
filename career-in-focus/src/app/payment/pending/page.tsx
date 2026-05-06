@@ -6,7 +6,7 @@ import { Clock, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
 const PLAN_LABELS: Record<string, { name: string; price: string }> = {
   MEMBER:  { name: "חבר/ה",               price: "49₪/חודש" },
   VIP:     { name: "VIP",                  price: "149₪/חודש" },
-  PREMIUM: { name: "קורל תפעילי קשרים",   price: "449₪/חודש" },
+  PREMIUM: { name: "קורל תפעילי קשרים",   price: "499₪/חודש" },
 };
 
 export default async function PaymentPendingPage({

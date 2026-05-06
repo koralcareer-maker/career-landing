@@ -7,10 +7,10 @@ const PLANS = [
   {
     id: "member",
     name: "חבר",
-    price: "29",
+    price: "19",
     originalPrice: "49",
     period: "לחודש",
-    promoNote: "מבצע השקה — חודשיים ראשונים. אחר כך ₪49/חודש קבוע.",
+    promoNote: "מבצע השקה — עד 1 ביולי 2026. אחר כך ₪49/חודש קבוע.",
     badge: "מבצע השקה",
     description: "גישה מלאה לכל תכני הקהילה",
     icon: Star,
@@ -63,7 +63,7 @@ const PLANS = [
   {
     id: "premium",
     name: "קורל תפעילי קשרים",
-    price: "449",
+    price: "499",
     period: "לחודש",
     badge: "Premium",
     description: "קורל מפעילה עבורך קשרים עם מגייסים",
