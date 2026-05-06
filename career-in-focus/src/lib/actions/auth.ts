@@ -71,7 +71,11 @@ export async function signup(prevState: unknown, formData: FormData) {
     throw error;
   }
 
-  redirect(`/payment/pending?plan=${plan.toLowerCase()}`);
+  // Per Coral: signup flow goes straight to CardCom — no intermediate
+  // /payment/pending step. The redirect route handles the CardCom
+  // call and bounces back to /payment/success on success or to
+  // /payment/pending only when something went wrong.
+  redirect(`/api/payment/cardcom/redirect?plan=${plan.toLowerCase()}`);
 }
 
 export async function login(prevState: unknown, formData: FormData) {
