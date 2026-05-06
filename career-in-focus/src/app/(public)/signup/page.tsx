@@ -49,10 +49,10 @@ function SignupForm() {
   const isHighlightPlan = planKey === "vip"; // PRO display
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream via-white to-[#f0fafa] relative overflow-hidden" dir="rtl">
-      {/* Decorative orbs — same language as koral-connections, low-key on signup */}
-      <div className="absolute -top-32 -right-32 w-96 h-96 bg-teal/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-br from-[#f0e7d2] via-cream to-[#e6d9b8] relative overflow-hidden" dir="rtl">
+      {/* Decorative orbs — warm beige palette per Coral, no teal-tinted background */}
+      <div className="absolute -top-32 -right-32 w-96 h-96 bg-amber-200/40 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-stone-300/30 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative px-4 py-8 sm:py-12">
         {/* Top brand row */}
@@ -74,11 +74,8 @@ function SignupForm() {
               שיטת הפוקוס · המקפצה הבאה בקריירה שלך
             </div>
             <h1 className="text-3xl sm:text-[34px] font-black text-navy leading-[1.15] mb-2">
-              צרי חשבון<br />והתחילי את חיפוש העבודה שלך מחדש
+              צרי חשבון<br />תתחיל למצוא עבודה
             </h1>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              חשבון בחינם — התשלום בשלב הבא, ביטול בכל עת בלחיצה.
-            </p>
           </div>
 
           {/* ─── Selected plan strip ─────────────────────────────────── */}
