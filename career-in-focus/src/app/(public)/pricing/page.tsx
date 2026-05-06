@@ -18,8 +18,6 @@ const PLANS = [
     badge: "השקה",
     description: "כל הכלים והקהילה — להתחיל לחפש עבודה בצורה חכמה",
     icon: Star,
-    iconColor: "text-teal",
-    iconBg: "bg-teal/10",
     features: [
       "משרות איכותיות ו״מתחת לרדאר״ שלא מגיעות ללוחות הדרושים הרגילים",
       "מערכת AI אישית שמכוונת אותך איך לשפר את חיפוש העבודה ולהגדיל סיכוי לראיונות",
@@ -35,9 +33,14 @@ const PLANS = [
     cta: "הצטרפו במחיר השקה",
     href: "/signup?plan=member",
     highlight: false,
-    border: "border-amber-300",
-    bg: "bg-gradient-to-br from-amber-50 to-white",
-    ctaClass: "bg-navy text-white hover:bg-navy/90",
+    // Light warm cream — pulled from Coral's logo background — with
+    // black accents (icon tile, CTA, promo note). Reads as "אפור-שחור
+    // עם חום בהיר" rather than yellow.
+    iconColor: "text-stone-100",
+    iconBg: "bg-stone-900",
+    border: "border-stone-900",
+    bg: "bg-gradient-to-br from-[#f3ead7] via-[#efe6d0] to-[#e7dcc4]",
+    ctaClass: "bg-stone-900 text-stone-100 hover:bg-black",
   },
   {
     id: "vip",
@@ -165,7 +168,7 @@ export default function PricingPage() {
                     <span className="text-sm pb-2 opacity-60">{plan.period}</span>
                   </div>
                   {plan.promoNote && (
-                    <p className="text-[11px] font-semibold mt-2 leading-relaxed text-amber-700 bg-amber-100 rounded-md px-2 py-1.5 inline-block">
+                    <p className="text-[11px] font-semibold mt-2 leading-relaxed text-stone-100 bg-stone-900 rounded-md px-2 py-1.5 inline-block">
                       ✨ {plan.promoNote}
                     </p>
                   )}

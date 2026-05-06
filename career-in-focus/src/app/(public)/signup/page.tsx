@@ -14,13 +14,11 @@ const PLAN_LABELS: Record<string, { name: string; price: string; color: string; 
   member: {
     name: "השקה",
     price: "₪19/חודש",
-    // Dark black-and-brown gradient per Coral — replaced the bright
-    // amber tint that was reading as a yellow square.
-    color: "text-stone-100",
-    bg: "from-zinc-900 via-stone-900 to-[#3d2814] border-stone-800",
-    // Brown icon tile + cream icon — same black-and-brown palette as the
-    // card, no yellow.
-    iconWrap: "bg-[#4a2d1a] text-stone-100",
+    // Light warm cream — same family as Coral's logo background. Black
+    // icon tile + dark text for a clean, "אפור-שחור עם חום בהיר" look.
+    color: "text-stone-900",
+    bg: "from-[#f3ead7] via-[#efe6d0] to-[#e7dcc4] border-stone-900",
+    iconWrap: "bg-stone-900 text-stone-100",
     icon: <Star size={14} />,
   },
   // Display labels — internal enum keys (vip / premium) keep their
