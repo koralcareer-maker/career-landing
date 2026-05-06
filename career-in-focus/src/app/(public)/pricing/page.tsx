@@ -33,14 +33,15 @@ const PLANS = [
     cta: "הצטרפו במחיר השקה",
     href: "/signup?plan=member",
     highlight: false,
-    // Light warm cream — pulled from Coral's logo background — with
-    // black accents (icon tile, CTA, promo note). Reads as "אפור-שחור
-    // עם חום בהיר" rather than yellow.
-    iconColor: "text-stone-100",
-    iconBg: "bg-stone-900",
-    border: "border-stone-900",
+    // Light warm cream pulled from Coral's logo background, with teal
+    // text (her brand colour). Black icon tile keeps the high-contrast
+    // accent without leaning on amber/yellow tones anywhere.
+    accentText: "text-teal-dark", // overrides the default text-navy / text-gray-* on this card
+    iconColor: "text-teal",
+    iconBg: "bg-teal/10",
+    border: "border-teal/40",
     bg: "bg-gradient-to-br from-[#f3ead7] via-[#efe6d0] to-[#e7dcc4]",
-    ctaClass: "bg-stone-900 text-stone-100 hover:bg-black",
+    ctaClass: "bg-teal text-white hover:bg-teal-dark",
   },
   {
     id: "vip",
@@ -146,20 +147,22 @@ export default function PricingPage() {
                   </span>
                 )}
 
-                {/* Icon + name */}
+                {/* Icon + name. accentText overrides the default
+                    navy/gray on cards that need a different default
+                    (e.g. cream member card → teal). */}
                 <div className="flex items-center gap-3 mb-4">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${plan.iconBg}`}>
                     <Icon size={20} className={plan.iconColor} />
                   </div>
-                  <h3 className={`font-black text-lg leading-tight ${plan.highlight ? "text-white" : "text-navy"}`}>{plan.name}</h3>
+                  <h3 className={`font-black text-lg leading-tight ${plan.highlight ? "text-white" : (plan.accentText ?? "text-navy")}`}>{plan.name}</h3>
                 </div>
 
-                <p className={`text-sm mb-5 ${plan.highlight ? "text-white/80" : "text-gray-400"}`}>{plan.description}</p>
+                <p className={`text-sm mb-5 ${plan.highlight ? "text-white/80" : (plan.accentText ? "text-teal/70" : "text-gray-400")}`}>{plan.description}</p>
 
                 {/* Price — show original crossed-out when there's a launch promo */}
-                <div className={`mb-6 ${plan.highlight ? "text-white" : "text-navy"}`}>
+                <div className={`mb-6 ${plan.highlight ? "text-white" : (plan.accentText ?? "text-navy")}`}>
                   {plan.originalPrice && (
-                    <p className={`text-base font-semibold line-through opacity-50 leading-none mb-1 ${plan.highlight ? "text-white" : "text-slate-400"}`}>
+                    <p className={`text-base font-semibold line-through opacity-50 leading-none mb-1 ${plan.highlight ? "text-white" : (plan.accentText ? "text-teal/40" : "text-slate-400")}`}>
                       ₪{plan.originalPrice}/חודש
                     </p>
                   )}
@@ -168,7 +171,7 @@ export default function PricingPage() {
                     <span className="text-sm pb-2 opacity-60">{plan.period}</span>
                   </div>
                   {plan.promoNote && (
-                    <p className="text-[11px] font-semibold mt-2 leading-relaxed text-stone-100 bg-stone-900 rounded-md px-2 py-1.5 inline-block">
+                    <p className="text-[11px] font-semibold mt-2 leading-relaxed text-white bg-teal rounded-md px-2 py-1.5 inline-block">
                       ✨ {plan.promoNote}
                     </p>
                   )}
@@ -177,7 +180,7 @@ export default function PricingPage() {
                 {/* Features */}
                 <ul className="space-y-2.5 mb-8 flex-1">
                   {plan.features.map((f) => (
-                    <li key={f} className={`flex items-start gap-2 text-sm ${plan.highlight ? "text-white/90" : "text-gray-700"}`}>
+                    <li key={f} className={`flex items-start gap-2 text-sm ${plan.highlight ? "text-white/90" : (plan.accentText ? "text-teal-dark/85" : "text-gray-700")}`}>
                       <CheckCircle size={15} className={`mt-0.5 shrink-0 ${plan.highlight ? "text-white" : "text-teal"}`} />
                       {f}
                     </li>
