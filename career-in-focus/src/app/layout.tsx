@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/logo.png",
-        width: 1080,
-        height: 1080,
+        width: 1254,
+        height: 1254,
         alt: "קריירה בפוקוס",
       },
     ],
