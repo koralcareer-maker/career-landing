@@ -223,7 +223,7 @@ export async function POST(req: NextRequest) {
     // Defense-in-depth — the page-level gate already redirects non-premium
     // users, but the API enforces the same rule so it can't be bypassed.
     return NextResponse.json(
-      { error: "מחולל התמונות זמין רק במסלול הפרמיום. שדרגי כדי להשתמש בו." },
+      { error: "מחולל התמונות זמין רק במסלול VIP. שדרגי כדי להשתמש בו." },
       { status: 403 }
     );
   }

@@ -8,8 +8,8 @@ const AUDIENCE_OPTIONS = [
   { value: "ALL",     label: "כל המשתמשים הפעילים",   color: "bg-navy/10 text-navy" },
   { value: "PAYING",  label: "כל המשלמים (לא NONE)",   color: "bg-teal/10 text-teal" },
   { value: "MEMBER",  label: "חבר/ה — 49₪ בלבד",       color: "bg-teal/10 text-teal-dark" },
-  { value: "VIP",     label: "VIP — 149₪ בלבד",         color: "bg-navy/10 text-navy" },
-  { value: "PREMIUM", label: "קורל תפעילי קשרים בלבד", color: "bg-purple-100 text-purple-700" },
+  { value: "VIP",     label: "פרו — 149₪ בלבד",         color: "bg-navy/10 text-navy" },
+  { value: "PREMIUM", label: "VIP — 499₪ בלבד",         color: "bg-purple-100 text-purple-700" },
 ];
 
 export function BroadcastForm({ userCounts }: {

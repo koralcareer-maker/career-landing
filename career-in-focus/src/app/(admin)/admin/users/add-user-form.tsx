@@ -77,8 +77,8 @@ export function AddUserForm({
             className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-navy text-sm focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
           >
             <option value="MEMBER">חבר/ה — 49₪</option>
-            <option value="VIP">VIP — 149₪</option>
-            <option value="PREMIUM">קורל תפעילי קשרים — 499₪</option>
+            <option value="VIP">פרו — 149₪</option>
+            <option value="PREMIUM">VIP — 499₪</option>
           </select>
         </div>
       </div>

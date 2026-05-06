@@ -23,7 +23,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const isPremium = session.user.membershipType === "PREMIUM";
   if (!isAdmin && !isPremium) {
     return NextResponse.json(
-      { error: "מחולל התמונות זמין רק במסלול הפרמיום." },
+      { error: "מחולל התמונות זמין רק במסלול VIP." },
       { status: 403 }
     );
   }

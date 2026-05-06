@@ -44,11 +44,11 @@ export const PLANS: Record<PlanKey, PlanConfig> = {
   },
   VIP: {
     baseAmount: 14900,
-    label:      "VIP — קריירה בפוקוס",
+    label:      "פרו — קריירה בפוקוס",
   },
   PREMIUM: {
     baseAmount: 49900,
-    label:      "פרמיום — קורל מפעילה קשרים",
+    label:      "VIP — קורל מפעילה קשרים",
   },
 };
 

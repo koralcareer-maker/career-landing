@@ -40,7 +40,7 @@ const PREMIUM_BENEFITS: { icon: React.ReactNode; title: string; desc: string }[]
   },
   {
     icon: <BookOpen size={20} className="text-teal" />,
-    title: "תכני פרמיום: קורסים וסדנאות",
+    title: "תכני VIP: קורסים וסדנאות",
     desc: "גישה לקורסים בלעדיים שמותאמים למסלול שלך.",
   },
   {
@@ -65,7 +65,7 @@ const PREMIUM_BENEFITS: { icon: React.ReactNode; title: string; desc: string }[]
   },
   {
     icon: <CalendarDays size={20} className="text-teal" />,
-    title: "מפגשי פרמיום סגורים",
+    title: "מפגשי VIP סגורים",
     desc: "מפגש קבוצתי קטן — Q&A, פאנלים ומאסטרקלאסים בלעדיים.",
   },
   {
@@ -86,7 +86,7 @@ export function PremiumGate({ feature, featureDesc, featureIcon }: PremiumGatePr
         <div className="relative max-w-3xl mx-auto px-6 py-16 sm:py-20 text-center">
           <div className="inline-flex items-center gap-2 bg-teal/15 border border-teal/30 text-teal px-4 py-1.5 rounded-full text-sm font-semibold mb-6">
             <Lock size={14} />
-            פיצ&apos;ר פרמיום
+            פיצ&apos;ר VIP
           </div>
 
           <div className="inline-flex items-center justify-center w-16 h-16 bg-teal/15 border border-teal/30 rounded-2xl mb-6">
@@ -94,7 +94,7 @@ export function PremiumGate({ feature, featureDesc, featureIcon }: PremiumGatePr
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-black mb-4 leading-tight">
-            {feature} זמין רק במסלול הפרמיום
+            {feature} זמין רק במסלול VIP
           </h1>
 
           {featureDesc && (
@@ -104,14 +104,14 @@ export function PremiumGate({ feature, featureDesc, featureIcon }: PremiumGatePr
           )}
 
           <p className="text-white/60 text-sm sm:text-base mb-10 max-w-xl mx-auto">
-            הפיצ&apos;ר הזה כלול בחבילת <span className="text-teal font-bold">קורל תפעילי קשרים</span> — מסלול פרמיום אישי שמלווה אותך לקריירה הבאה.
+            הפיצ&apos;ר הזה כלול בחבילת <span className="text-teal font-bold">VIP</span> — מסלול ליווי אישי שמלווה אותך לקריירה הבאה (כולל "קורל תפעילי קשרים").
           </p>
 
           <Link
             href="/koral-connections"
             className="inline-flex items-center gap-2 px-8 py-4 bg-teal hover:bg-teal/90 text-white font-bold rounded-2xl text-base shadow-xl shadow-teal/30 transition-all duration-200 hover:-translate-y-0.5"
           >
-            אני רוצה לשדרג לפרמיום
+            אני רוצה לשדרג ל-VIP
             <ArrowLeft size={18} />
           </Link>
         </div>
@@ -122,7 +122,7 @@ export function PremiumGate({ feature, featureDesc, featureIcon }: PremiumGatePr
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 text-teal text-sm font-bold mb-2">
             <Users size={14} />
-            מה כלול במסלול פרמיום
+            מה כלול במסלול VIP
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-navy mb-2">
             9 הטבות מקיפות לקריירה שלך

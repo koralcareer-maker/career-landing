@@ -5,8 +5,12 @@ import { Clock, CreditCard, CheckCircle, AlertCircle } from "lucide-react";
 
 const PLAN_LABELS: Record<string, { name: string; price: string }> = {
   MEMBER:  { name: "חבר/ה",               price: "49₪/חודש" },
-  VIP:     { name: "VIP",                  price: "149₪/חודש" },
-  PREMIUM: { name: "קורל תפעילי קשרים",   price: "499₪/חודש" },
+  // Internal enum names (VIP / PREMIUM) stay the same in DB and code,
+  // but the displayed labels were re-shuffled per Coral: 149 = "פרו",
+  // 499 = "VIP". Don't rename the enum keys — that would need a
+  // migration and would break existing rows.
+  VIP:     { name: "פרו",                  price: "149₪/חודש" },
+  PREMIUM: { name: "VIP",                  price: "499₪/חודש" },
 };
 
 export default async function PaymentPendingPage({

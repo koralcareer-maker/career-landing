@@ -10,11 +10,13 @@ import { ResendCredentialsButton } from "./resend-credentials-button";
 
 // ─── Membership badge config ───────────────────────────────────────────────────
 
+// Internal enum names (MEMBER/VIP/PREMIUM) stay; displayed labels shifted:
+// VIP enum → "פרו" (₪149), PREMIUM enum → "VIP" (₪499).
 const MEMBERSHIP_LABELS: Record<string, { label: string; variant: "teal" | "green" | "navy" | "purple" | "yellow" | "gray" | "red" }> = {
   NONE:    { label: "ללא חברות",    variant: "gray" },
   MEMBER:  { label: "חבר | 49₪",   variant: "teal" },
-  VIP:     { label: "VIP | 149₪",  variant: "navy" },
-  PREMIUM: { label: "פרמיום | 499₪", variant: "purple" },
+  VIP:     { label: "פרו | 149₪",  variant: "navy" },
+  PREMIUM: { label: "VIP | 499₪", variant: "purple" },
 };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -204,18 +206,18 @@ export default async function AdminUsersPage() {
                               </button>
                             </form>
                           )}
-                          {/* Upgrade to VIP */}
+                          {/* Upgrade to Pro (₪149 — internal enum: VIP) */}
                           {u.membershipType === "MEMBER" && (
                             <form action={async () => { "use server"; await setMembershipType(u.id, "VIP"); }}>
-                              <button type="submit" title="שדרג ל-VIP (149₪)" className="p-1.5 bg-navy/10 text-navy rounded-lg hover:bg-navy/20 transition-colors text-xs font-bold">
-                                VIP
+                              <button type="submit" title="שדרג לפרו (149₪)" className="p-1.5 bg-navy/10 text-navy rounded-lg hover:bg-navy/20 transition-colors text-xs font-bold">
+                                פרו
                               </button>
                             </form>
                           )}
-                          {/* Upgrade to Premium */}
+                          {/* Upgrade to VIP (₪499 — internal enum: PREMIUM) */}
                           {(u.membershipType === "MEMBER" || u.membershipType === "VIP") && (
                             <form action={async () => { "use server"; await setMembershipType(u.id, "PREMIUM"); }}>
-                              <button type="submit" title="שדרג לפרמיום (499₪)" className="p-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors">
+                              <button type="submit" title="שדרג ל-VIP (499₪)" className="p-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors">
                                 <Crown size={12} />
                               </button>
                             </form>
@@ -249,12 +251,12 @@ export default async function AdminUsersPage() {
             </div>
             <div className="text-center p-3 bg-white rounded-xl border border-navy/20">
               <p className="font-black text-navy text-lg">149₪</p>
-              <p className="text-xs text-gray-500">VIP</p>
+              <p className="text-xs text-gray-500">פרו</p>
               <p className="text-xs text-gray-400">לחודש</p>
             </div>
             <div className="text-center p-3 bg-white rounded-xl border border-purple-200">
               <p className="font-black text-purple-700 text-lg">499₪</p>
-              <p className="text-xs text-gray-500">קורל תפעילי קשרים</p>
+              <p className="text-xs text-gray-500">VIP</p>
               <p className="text-xs text-gray-400">לחודש</p>
             </div>
           </div>
