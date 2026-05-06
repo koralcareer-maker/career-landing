@@ -10,12 +10,17 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, CheckCircle2, Star, Zap, Crown, ShieldCheck, Lock, Sparkles } from "lucide-react";
 import { useState, Suspense } from "react";
 
-const PLAN_LABELS: Record<string, { name: string; price: string; color: string; bg: string; icon: React.ReactNode }> = {
+const PLAN_LABELS: Record<string, { name: string; price: string; color: string; bg: string; iconWrap: string; icon: React.ReactNode }> = {
   member: {
     name: "השקה",
     price: "₪19/חודש",
-    color: "text-teal",
-    bg: "from-amber-50 to-white border-amber-200",
+    // Dark black-and-brown gradient per Coral — replaced the bright
+    // amber tint that was reading as a yellow square.
+    color: "text-stone-100",
+    bg: "from-zinc-900 via-stone-900 to-[#3d2814] border-stone-800",
+    // Brown icon tile + cream icon — same black-and-brown palette as the
+    // card, no yellow.
+    iconWrap: "bg-[#4a2d1a] text-stone-100",
     icon: <Star size={14} />,
   },
   // Display labels — internal enum keys (vip / premium) keep their
@@ -25,6 +30,7 @@ const PLAN_LABELS: Record<string, { name: string; price: string; color: string; 
     price: "₪149/חודש",
     color: "text-white",
     bg: "from-teal to-teal-dark border-teal",
+    iconWrap: "bg-white/20 text-white",
     icon: <Zap size={14} />,
   },
   premium: {
@@ -32,6 +38,7 @@ const PLAN_LABELS: Record<string, { name: string; price: string; color: string; 
     price: "₪499/חודש",
     color: "text-purple-700",
     bg: "from-purple-50 to-white border-purple-200",
+    iconWrap: "bg-white text-purple-700",
     icon: <Crown size={14} />,
   },
 };
@@ -83,7 +90,7 @@ function SignupForm() {
           <div className={`relative bg-gradient-to-br ${plan.bg} border-2 rounded-2xl p-4 mb-5 shadow-md ${isHighlightPlan ? "shadow-teal/20" : ""}`}>
             <div className="flex items-center justify-between gap-3">
               <div className={`flex items-center gap-2 font-black text-base ${plan.color}`}>
-                <div className={`w-9 h-9 rounded-xl ${isHighlightPlan ? "bg-white/20" : "bg-white"} flex items-center justify-center shadow-sm`}>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-sm ${plan.iconWrap}`}>
                   {plan.icon}
                 </div>
                 <span>מסלול {plan.name}</span>
@@ -267,7 +274,7 @@ function SignupForm() {
 
             <div className="mt-5 pt-5 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-500">
-                כבר חברה?{" "}
+                כבר חבר/ה?{" "}
                 <Link href="/login" className="text-teal font-bold hover:underline">כניסה</Link>
               </p>
             </div>
