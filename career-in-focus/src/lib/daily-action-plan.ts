@@ -141,7 +141,7 @@ export function buildActionPlan(input: ActionPlanInput): ActionTask[] {
       id: "daily-apps",
       priority: 3,
       intent: submittedThisWeek === 0 ? "behind" : "ontrack",
-      title: `הגש/י ${today} מועמדות${today === 1 ? "" : "ות"} חדש${today === 1 ? "ה" : "ות"} היום`,
+      title: `הגש/י ${today} ${today === 1 ? "מועמדות חדשה" : "מועמדויות חדשות"} היום`,
       why:
         submittedThisWeek === 0
           ? `עדיין 0 השבוע. היעד: ${weeklyGoal}. ${today} היום מחזיר/ה אותך לקצב.`
