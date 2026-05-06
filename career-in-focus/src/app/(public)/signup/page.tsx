@@ -102,15 +102,53 @@ function SignupForm() {
             </Link>
           </div>
 
-          {/* ─── Headline social-proof line ─────────────────────────── */}
-          <div className="bg-gradient-to-l from-teal/10 via-emerald-50 to-white border border-teal/30 rounded-2xl p-4 mb-6 shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="w-7 h-7 rounded-full bg-teal text-white flex items-center justify-center shrink-0 shadow-sm shadow-teal/30 mt-0.5">
-                <CheckCircle2 size={15} strokeWidth={3} />
+          {/* ─── Headline social-proof — the page's emotional core ───── */}
+          <div className="relative mb-7">
+            {/* Decorative glow behind the card */}
+            <div className="absolute inset-0 -m-2 bg-gradient-to-br from-teal/30 via-emerald-200/40 to-amber-200/30 rounded-[28px] blur-xl opacity-60 pointer-events-none" />
+
+            <div className="relative bg-gradient-to-br from-white via-emerald-50/70 to-teal/10 border-2 border-teal/40 rounded-[24px] p-6 sm:p-7 shadow-[0_20px_50px_-15px_rgba(62,207,207,0.35)] overflow-hidden">
+              {/* Subtle sparkle accents */}
+              <Sparkles size={14} className="absolute top-4 left-4 text-teal/40" />
+              <Sparkles size={10} className="absolute bottom-5 right-7 text-emerald-400/50" />
+
+              {/* Big circular check badge */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-teal rounded-full blur-md opacity-40" />
+                  <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-teal to-emerald-500 text-white flex items-center justify-center shadow-lg shadow-teal/40">
+                    <CheckCircle2 size={24} strokeWidth={2.5} />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="text-[11px] font-black tracking-wider text-teal uppercase">למה זה עובד</p>
+                  <p className="text-xs text-gray-500">שיטת הפוקוס · מאות בוגרות בכל שנה</p>
+                </div>
               </div>
-              <p className="text-sm leading-relaxed text-navy font-bold">
-                הצטרפו למאות שעצרו את הלופ המתיש של חיפוש העבודה בשיטת הפוקוס ומצאו את המקפצה הבאה בקריירה שלהם.
+
+              {/* The headline itself — broken into emphasis lines */}
+              <p className="text-[19px] sm:text-xl leading-[1.55] text-navy font-bold">
+                הצטרפו ל
+                <span className="text-teal-dark">מאות</span>
+                {" "}שעצרו את{" "}
+                <span className="bg-gradient-to-l from-teal to-emerald-600 bg-clip-text text-transparent font-black">
+                  הלופ המתיש
+                </span>
+                {" "}של חיפוש העבודה בשיטת הפוקוס ומצאו את{" "}
+                <span className="bg-gradient-to-l from-emerald-600 to-teal bg-clip-text text-transparent font-black">
+                  המקפצה הבאה
+                </span>
+                {" "}בקריירה שלהם.
               </p>
+
+              {/* Bottom accent line */}
+              <div className="mt-5 pt-4 border-t border-teal/20 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-teal-dark">
+                  <span className="inline-block w-2 h-2 bg-teal rounded-full animate-pulse" />
+                  זוהי לא תוכנה — זוהי שיטה
+                </div>
+                <p className="text-[11px] text-gray-400 font-semibold">חשבון בחינם · ביטול בלחיצה</p>
+              </div>
             </div>
           </div>
 
