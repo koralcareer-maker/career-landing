@@ -2,15 +2,15 @@
 
 import type { WizardState } from "./types";
 import { Field, TagInput } from "./form-bits";
-import { Briefcase, Award, Calendar, Upload, FileCheck2 } from "lucide-react";
+import { Briefcase, Award, Calendar, Upload } from "lucide-react";
+import { CvUploader } from "./cv-uploader";
 
 interface Props {
   state: WizardState;
   setState: (patch: Partial<WizardState>) => void;
-  onCvUploadClick?: () => void;
 }
 
-export function StepBackground({ state, setState, onCvUploadClick }: Props) {
+export function StepBackground({ state, setState }: Props) {
   return (
     <div className="space-y-7">
       <header>
@@ -69,31 +69,7 @@ export function StepBackground({ state, setState, onCvUploadClick }: Props) {
       </Field>
 
       <Field label="קורות חיים" hint="העלאה אוטומטית — המערכת תקרא ותחלץ חוזקות וכישורים" icon={Upload}>
-        {state.resumeUrl ? (
-          <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-emerald-200 bg-emerald-50">
-            <div className="flex items-center gap-2 text-emerald-700 font-bold text-sm">
-              <FileCheck2 size={16} />
-              קורות חיים הועלו · המערכת קוראת ומנתחת
-            </div>
-            <a
-              href={state.resumeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-emerald-700 underline hover:no-underline"
-            >
-              צפיה
-            </a>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={onCvUploadClick}
-            className="w-full flex items-center justify-center gap-2 px-4 py-6 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 text-sm font-bold hover:border-teal hover:bg-teal/5 hover:text-teal transition-all"
-          >
-            <Upload size={16} />
-            לחצי כדי להעלות קורות חיים (PDF / DOCX)
-          </button>
-        )}
+        <CvUploader resumeUrl={state.resumeUrl} setState={setState} />
       </Field>
     </div>
   );

@@ -198,6 +198,7 @@ export function JobSearchWizard({ initial, firstName }: Props) {
           {step === 2 && <StepBackground state={state} setState={patch} />}
           {step === 3 && <StepStatus state={state} setState={patch} />}
           {step === 4 && <StepAssets state={state} setState={patch} />}
+          {/* StepBackground takes only state+setState now; CV uploader is internal */}
 
           {/* Footer: nav buttons */}
           <div className="flex items-center justify-between gap-3 mt-8 pt-6 border-t border-gray-100">

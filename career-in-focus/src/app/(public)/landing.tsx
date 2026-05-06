@@ -19,23 +19,63 @@ const TESTIMONIALS = [
   { name: "לירן כ.", role: "FullStack Developer", text: "ניתוח פערי המיומנויות שלי היה מדויק להפתיע. השקעתי בשני קורסים שהמליצו לי ועברתי ראיונות שלפני לא עברתי.", avatar: "ל" },
 ];
 
+// 3 tier teasers — full feature lists live on /pricing. The landing
+// surfaces only the headline benefits per tier so the section stays
+// scannable; CTA on each card jumps to the matching plan on /pricing.
 const PLANS = [
   {
-    name: "חברות חודשית",
-    price: "₪149",
+    id: "member",
+    name: "השקה",
+    price: "₪19",
+    originalPrice: "₪49",
     period: "לחודש",
-    features: ["גישה לכל התכנים", "ניתוח קריירה AI", "מעקב התקדמות", "כלים ומשאבים", "קהילה ואירועים"],
-    cta: "הצטרפות עכשיו",
+    promoNote: "במחיר השקה עד 1.7.26",
+    features: [
+      "מערכת AI אישית להכוונת חיפוש עבודה",
+      "דשבורד לניהול משרות, ראיונות ופניות",
+      "כלים, קורסים וסדנאות מקצועיות",
+      "דרכון קריירה — ניתוח חוזקות ופערים",
+      "מודיעין שוק ועדכונים בזמן אמת",
+      "קהילה, אירועים וטיפים מהשטח",
+    ],
+    cta: "הצטרפו במחיר השקה",
+    href: "/signup?plan=member",
     highlight: false,
   },
   {
-    name: "חברות שנתית",
-    price: "₪990",
-    period: "לשנה",
-    badge: "חסכון של 44%",
-    features: ["הכל בחברות חודשית", "עדיפות באירועים", "ייעוץ אישי × 1", "גישה לארכיון סדנאות", "קדימות בתמיכה"],
-    cta: "הצטרפות עכשיו",
+    id: "pro",
+    name: "PRO",
+    price: "₪149",
+    period: "לחודש",
+    badge: "הכי פופולרי",
+    features: [
+      "הכל מחבילת ההשקה",
+      "אסטרטגיית חיפוש מסודרת ויעדים אישיים",
+      "הגדלת חשיפה למגייסים — CV ו-LinkedIn",
+      "הכוונה אישית לפנייה למשרות וחברות יעד",
+      "מענה מקצועי כשנתקעים בתהליך",
+      "גישה מוקדמת לסדנאות ותכנים",
+    ],
+    cta: "הצטרפו ל-PRO",
+    href: "/signup?plan=vip",
     highlight: true,
+  },
+  {
+    id: "vip",
+    name: "VIP",
+    price: "₪499",
+    period: "לחודש",
+    features: [
+      "הכל מחבילת PRO",
+      "פגישת ייעוץ אישית עם קורל",
+      "כתיבת קורות חיים מקצועיים",
+      "סימולציות ראיונות והכנה אישית",
+      "ליווי אישי וצמוד לאורך התהליך",
+      "גישה למשרות 'מתחת לרדאר'",
+    ],
+    cta: "אני רוצה ליווי אישי",
+    href: "/koral-connections",
+    highlight: false,
   },
 ];
 
@@ -204,41 +244,63 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="py-20 px-6 max-w-4xl mx-auto">
+      <section className="py-20 px-6 max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-black text-navy mb-3">הצטרפות פשוטה וברורה</h2>
-          <p className="text-gray-500">בחרו את תוכנית החברות המתאימה לכם</p>
+          <h2 className="text-3xl font-black text-navy mb-3">בחרו את המסלול שמתאים לכם</h2>
+          <p className="text-gray-500">3 מסלולים — כל אחד כולל את הקודם, מתאים לשלב שאתם נמצאים בו</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {PLANS.map((p) => (
-            <div key={p.name} className={`rounded-2xl p-7 border-2 relative ${p.highlight ? "border-teal bg-teal/5" : "border-gray-200 bg-white"}`}>
+            <div
+              key={p.id}
+              className={`rounded-2xl p-7 border-2 relative flex flex-col ${
+                p.highlight ? "border-teal bg-teal/5 shadow-xl shadow-teal/10 md:scale-105 z-10" : "border-gray-200 bg-white"
+              }`}
+            >
               {p.badge && (
                 <span className="absolute -top-3 right-5 bg-teal text-white text-xs font-bold px-3 py-1 rounded-full">{p.badge}</span>
               )}
               <div className="mb-5">
-                <h3 className="font-bold text-navy text-base">{p.name}</h3>
-                <div className="flex items-end gap-1 mt-2">
+                <h3 className="font-black text-navy text-lg">{p.name}</h3>
+                {p.originalPrice && (
+                  <p className="text-sm font-semibold line-through opacity-50 leading-none mt-1.5 mb-1 text-slate-400">
+                    {p.originalPrice}/{p.period}
+                  </p>
+                )}
+                <div className="flex items-end gap-1 mt-1">
                   <span className="text-4xl font-black text-navy">{p.price}</span>
                   <span className="text-gray-400 text-sm pb-1">{p.period}</span>
                 </div>
+                {p.promoNote && (
+                  <p className="text-[11px] font-semibold mt-2 text-amber-700 bg-amber-100 rounded-md px-2 py-1 inline-block">
+                    ✨ {p.promoNote}
+                  </p>
+                )}
               </div>
-              <ul className="space-y-2.5 mb-7">
+              <ul className="space-y-2.5 mb-7 flex-1">
                 {p.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-gray-700">
-                    <CheckCircle size={15} className="text-teal shrink-0" />
-                    {f}
+                  <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                    <CheckCircle size={15} className="text-teal shrink-0 mt-0.5" />
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
               <Link
-                href="/signup"
-                className={`w-full flex items-center justify-center py-3 rounded-xl font-bold text-sm transition-all ${p.highlight ? "bg-teal text-white hover:bg-teal-dark" : "bg-navy text-white hover:bg-navy-light"}`}
+                href={p.href}
+                className={`w-full flex items-center justify-center py-3 rounded-xl font-bold text-sm transition-all ${
+                  p.highlight ? "bg-teal text-white hover:bg-teal-dark" : "bg-navy text-white hover:bg-navy-light"
+                }`}
               >
                 {p.cta}
               </Link>
             </div>
           ))}
         </div>
+        <p className="text-center text-xs text-gray-400 mt-6">
+          <Link href="/pricing" className="text-teal hover:underline font-bold">
+            לפירוט מלא של כל המסלולים ←
+          </Link>
+        </p>
       </section>
 
       {/* CTA */}

@@ -19,16 +19,17 @@ export default function KoralConnectionsPage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-teal/15 border border-teal/30 text-teal px-4 py-1.5 rounded-full text-sm font-semibold mb-6">
             <Sparkles size={14} />
-            מסלול פרימיום אישי — מקומות מוגבלים
+            מסלול VIP — מקומות מוגבלים
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-black mb-5 leading-tight">
-            קורל תפעילי קשרים
+            VIP — קורל תפעילי קשרים
           </h1>
 
           <p className="text-lg sm:text-xl text-white/75 leading-relaxed max-w-2xl mx-auto mb-10">
-            מסלול פרימיום אישי שבו קורל נכנסת איתך לתהליך ממוקד, מדייקת את כיוון הקריירה שלך
-            ומפעילה קשרים רלוונטיים כדי לקדם אותך לשלב הבא.
+            המסלול הגבוה ביותר. קורל נכנסת איתך אישית לתהליך, מדייקת את כיוון הקריירה,
+            ומפעילה את הרשת שלה כדי לקדם אותך לשלב הבא — כולל פגישת ייעוץ, שיפור CV,
+            סימולציות ראיונות וליווי צמוד לאורך כל הדרך.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -211,7 +212,7 @@ export default function KoralConnectionsPage() {
           <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-teal/8 rounded-full blur-2xl pointer-events-none" />
           <div className="relative">
             <div className="inline-flex items-center gap-2 bg-teal/20 border border-teal/30 text-teal px-4 py-1.5 rounded-full text-sm font-semibold mb-5">
-              <Sparkles size={13} /> מסלול פרימיום אישי
+              <Sparkles size={13} /> מסלול VIP
             </div>
             <h3 className="text-2xl font-black mb-3">מקומות מוגבלים בכל חודש</h3>
             <p className="text-white/65 mb-6 max-w-md mx-auto text-sm leading-relaxed">
@@ -220,7 +221,7 @@ export default function KoralConnectionsPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center text-sm text-white/60 mb-6">
               <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-teal" /> תשומת לב אישית מקורל</span>
               <span className="hidden sm:block">·</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-teal" /> תמיכה פרימיום לאורך כל התהליך</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-teal" /> ליווי VIP לאורך כל התהליך</span>
               <span className="hidden sm:block">·</span>
               <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-teal" /> מקומות מוגבלים</span>
             </div>
