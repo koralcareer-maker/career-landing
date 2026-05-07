@@ -14,11 +14,12 @@ const PLAN_LABELS: Record<string, { name: string; price: string; color: string; 
   member: {
     name: "השקה",
     price: "₪19/חודש",
-    // Light warm cream from Coral's logo background, with teal text
-    // (her brand colour) instead of black per her last note.
+    // Logo-true palette: solid neutral cream + black target-style
+    // icon tile + teal silhouette inside (the icon star). Replaces
+    // the warm gradient that read as 'mustard'.
     color: "text-teal-dark",
-    bg: "from-[#f3ead7] via-[#efe6d0] to-[#e7dcc4] border-teal/40",
-    iconWrap: "bg-teal/10 text-teal",
+    bg: "from-[#ece5d3] to-[#ece5d3] border-stone-900",
+    iconWrap: "bg-stone-900 text-teal",
     icon: <Star size={14} />,
   },
   // Display labels — internal enum keys (vip / premium) keep their

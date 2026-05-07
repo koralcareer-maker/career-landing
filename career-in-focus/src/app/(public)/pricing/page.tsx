@@ -33,15 +33,17 @@ const PLANS = [
     cta: "הצטרפו במחיר השקה",
     href: "/signup?plan=member",
     highlight: false,
-    // Light warm cream pulled from Coral's logo background, with teal
-    // text (her brand colour). Black icon tile keeps the high-contrast
-    // accent without leaning on amber/yellow tones anywhere.
-    accentText: "text-teal-dark", // overrides the default text-navy / text-gray-* on this card
+    // Logo-true palette: solid neutral cream (the previous gradient
+    // pushed warm/khaki tones that Coral called 'mustard'). Border
+    // and icon tile mirror the logo's black target-frame with the
+    // teal silhouette inside — black is the dominant accent, teal
+    // is the focused pop.
+    accentText: "text-teal-dark",
     iconColor: "text-teal",
-    iconBg: "bg-teal/10",
-    border: "border-teal/40",
-    bg: "bg-gradient-to-br from-[#f3ead7] via-[#efe6d0] to-[#e7dcc4]",
-    ctaClass: "bg-teal text-white hover:bg-teal-dark",
+    iconBg: "bg-stone-900",
+    border: "border-stone-900",
+    bg: "bg-[#ece5d3]",
+    ctaClass: "bg-stone-900 text-stone-100 hover:bg-black",
   },
   {
     id: "vip",
@@ -171,7 +173,7 @@ export default function PricingPage() {
                     <span className="text-sm pb-2 opacity-60">{plan.period}</span>
                   </div>
                   {plan.promoNote && (
-                    <p className="text-[11px] font-semibold mt-2 leading-relaxed text-white bg-teal rounded-md px-2 py-1.5 inline-block">
+                    <p className="text-[11px] font-semibold mt-2 leading-relaxed text-stone-100 bg-stone-900 rounded-md px-2 py-1.5 inline-block">
                       ✨ {plan.promoNote}
                     </p>
                   )}
