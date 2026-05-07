@@ -110,5 +110,17 @@ export async function POST() {
   `);
   log.push("✓ CvFeedback userId/createdAt index");
 
+  // 5. Setting table — generic key/value store for runtime config
+  //    (CardCom credentials, etc.). The admin manages it from
+  //    /admin/settings/cardcom instead of editing Vercel env vars.
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "Setting" (
+      "key" TEXT NOT NULL PRIMARY KEY,
+      "value" TEXT NOT NULL,
+      "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+  log.push("✓ Setting table");
+
   return NextResponse.json({ ok: true, log });
 }

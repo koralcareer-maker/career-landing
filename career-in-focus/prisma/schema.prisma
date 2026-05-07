@@ -849,3 +849,14 @@ model Recruiter {
   notes       String?       // הערות פנימיות
   isActive    Boolean       @default(true)
 }
+
+// Generic key/value config store. Lets the admin manage runtime
+// settings (CardCom API credentials, etc.) from the app UI instead
+// of editing Vercel env vars + redeploying. Reads in lib/settings.ts
+// fall back to env vars when a row is missing, so existing
+// deployments keep working without setup.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @default(now())
+}

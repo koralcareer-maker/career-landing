@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getCardcomCredentials } from "@/lib/settings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,24 +25,33 @@ export async function POST() {
     return NextResponse.json({ error: "פעולה זו זמינה לאדמין בלבד" }, { status: 403 });
   }
 
-  const terminal = process.env.CARDCOM_TERMINAL ?? "";
-  const apiName = process.env.CARDCOM_API_NAME ?? "";
-  const apiPassword = process.env.CARDCOM_API_PASSWORD ?? "";
+  // Read DB-first / env-fallback. The diagnose page surfaces which
+  // source each value is coming from so the admin knows whether the
+  // last save through /admin/settings/cardcom landed in the DB.
+  const creds = await getCardcomCredentials();
+  const sourceLabel = (k: "db" | "env" | "missing", len: number) =>
+    k === "missing" ? "MISSING" :
+    k === "db"      ? `set (DB · ${len} chars)` :
+                      `set (Env · ${len} chars)`;
 
   const env = {
-    CARDCOM_TERMINAL: terminal ? `set (${terminal.length} chars)` : "MISSING",
-    CARDCOM_API_NAME: apiName ? `set (${apiName.length} chars)` : "MISSING",
-    CARDCOM_API_PASSWORD: apiPassword ? `set (${apiPassword.length} chars)` : "MISSING",
+    CARDCOM_TERMINAL:    sourceLabel(creds.source.terminal,    creds.terminal.length),
+    CARDCOM_API_NAME:    sourceLabel(creds.source.apiName,     creds.apiName.length),
+    CARDCOM_API_PASSWORD: sourceLabel(creds.source.apiPassword, creds.apiPassword.length),
   };
 
-  if (!terminal || !apiName || !apiPassword) {
+  if (!creds.terminal || !creds.apiName || !creds.apiPassword) {
     return NextResponse.json({
       ok: false,
       env,
       diagnosis:
-        "חסרים ערכי CardCom בסביבת הפרודקשן. צריך להגדיר ב-Vercel את CARDCOM_TERMINAL, CARDCOM_API_NAME, CARDCOM_API_PASSWORD.",
+        "חסרים ערכי CardCom. תיכנסי ל-/admin/settings/cardcom והוסיפי אותם, או הגדירי ב-Vercel את CARDCOM_TERMINAL, CARDCOM_API_NAME, CARDCOM_API_PASSWORD.",
     });
   }
+
+  const terminal = creds.terminal;
+  const apiName = creds.apiName;
+  const apiPassword = creds.apiPassword;
 
   // Live ping with a ₪1 placeholder. We don't redirect anywhere — just
   // examine CardCom's response to surface the actual code + description.

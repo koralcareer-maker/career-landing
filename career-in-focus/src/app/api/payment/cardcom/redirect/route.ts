@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { amountForCycle, planLabel, type PlanKey } from "@/lib/billing";
+import { getCardcomCredentials } from "@/lib/settings";
 
 const CARDCOM_API = "https://secure.cardcom.solutions/api/v11/LowProfile/Create";
 
@@ -46,10 +47,24 @@ export async function GET(req: NextRequest) {
   // ReturnValue carries userId + plan so webhook can activate correctly
   const returnValue = `${session.user.id}|${planKey}`;
 
+  // Pull credentials DB-first (admin can edit them at
+  // /admin/settings/cardcom) with env-var fallback. Surface a clean
+  // error if any are missing so the admin sees a useful message
+  // instead of a 401 from CardCom.
+  const creds = await getCardcomCredentials();
+  if (!creds.terminal || !creds.apiName || !creds.apiPassword) {
+    return NextResponse.redirect(
+      new URL(
+        `/payment/pending?error=cardcom_error&code=missing_credentials&desc=${encodeURIComponent("פרטי הסליקה לא הוגדרו עדיין באדמין")}`,
+        req.url,
+      ),
+    );
+  }
+
   const body = {
-    TerminalNumber:     Number(process.env.CARDCOM_TERMINAL),
-    ApiName:            process.env.CARDCOM_API_NAME,
-    ApiPassword:        process.env.CARDCOM_API_PASSWORD,
+    TerminalNumber:     Number(creds.terminal),
+    ApiName:            creds.apiName,
+    ApiPassword:        creds.apiPassword,
     ReturnValue:        returnValue,
     Amount:             amountShekels,
     CoinID:             1,               // ILS
