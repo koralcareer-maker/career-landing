@@ -68,7 +68,7 @@ export function StepBackground({ state, setState }: Props) {
         />
       </Field>
 
-      <Field label="קורות חיים" hint="העלאה אוטומטית — המערכת תקרא ותחלץ חוזקות וכישורים" icon={Upload}>
+      <Field label="קורות חיים" hint="המערכת תסרוק ותמלא את דרכון הקריירה שלך בהתאם לפרופיל ותתן ציון" icon={Upload}>
         <CvUploader resumeUrl={state.resumeUrl} setState={setState} />
       </Field>
     </div>
