@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { isCvFeedbackResult, type CvFeedbackResult } from "@/lib/cv-feedback-types";
+import { isProOrHigher } from "@/lib/membership";
 
 // Node runtime + 60s budget — we hit Prisma directly for the cache, and
 // edge-runtime Prisma pulls 'node:path' which the bundler refuses. Gemini
@@ -110,6 +111,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "נדרשת כניסה" }, { status: 401 });
   }
   const userId = session.user.id;
+
+  // PRO+ gate. Defense-in-depth — the page-level check in
+  // /progress/cv-feedback/page.tsx already shows the upgrade card,
+  // but locking the API too means a member can't bypass the UI by
+  // hand-crafting a POST.
+  if (!isProOrHigher(session.user.membershipType, session.user.role)) {
+    return NextResponse.json(
+      {
+        error:
+          "ניתוח עומק עם ציון איכות, ATS וניסוח מחדש זמין במסלול PRO ומעלה. שדרגי ב-/pricing.",
+      },
+      { status: 403 },
+    );
+  }
 
   if (!GEMINI_KEY()) {
     return NextResponse.json(
