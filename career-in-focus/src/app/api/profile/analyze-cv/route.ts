@@ -204,15 +204,41 @@ export async function POST(req: NextRequest) {
     aiVisionExtract: async (b, m) => callGemini(VISION_EXTRACTION_PROMPT, b, m),
   });
 
+  // Per Coral: PDF is ALWAYS scanned. Never tell the user "we couldn't
+  // read your file" — the file IS the file, the result is the score.
+  // If extraction came back empty/poor, that's itself a signal to
+  // recruiters and ATS that the CV is unreadable → return synthetic
+  // RED result instead of blocking with a 422.
   if (!extracted.text || extracted.text.length < 30) {
-    return NextResponse.json(
-      {
-        error:
-          extracted.warning ??
-          "לא הצלחנו לחלץ טקסט מקורות החיים. ייתכן שזה PDF סרוק. נסי לפתוח ב-Word ולשמור מחדש כ-PDF.",
+    const tooLittleText: Record<string, unknown> = {
+      currentRole: "—",
+      targetRole:  "—",
+      yearsExperience: 0,
+      strengths: [],
+      skillGaps: [],
+      marketSkills: [],
+      cvFeedback: [
+        "הקובץ קשה לקריאה אוטומטית — מערכות ATS לא יוכלו לעבד אותו",
+        "אם זה PDF סרוק/מצולם — צרי גרסת PDF דיגיטלית מתוך Word",
+        "אם זה PDF עם הצפנה/הגנת סיסמה — שמרי גרסה ללא הגנות",
+        "וודאי שהטקסט בקובץ ניתן לבחירה ולהעתקה (סימן לקריאות)",
+        "במקרה הקיצון — הקלידי את הקורות חיים ב-Word ושמרי שוב כ-PDF",
+      ],
+      summary: "הקובץ קיים אבל הטקסט לא ניתן לחילוץ אוטומטי — מערכות ATS יתקשו או יתעלמו.",
+      atsLevel: "red",
+      atsReasons: [
+        "המערכת לא הצליחה לחלץ טקסט קריא מהקובץ",
+        "מערכות ATS אוטומטיות יתקלו באותה בעיה",
+      ],
+      _extraction: {
+        source: extracted.source,
+        format: extracted.format,
+        usedFallback: extracted.usedFallback,
+        textLength: extracted.text.length,
+        warning: extracted.warning ?? "טקסט לא חולץ — סקירה מבוססת על קריאות אוטומטית בלבד",
       },
-      { status: 422 },
-    );
+    };
+    return NextResponse.json(tooLittleText);
   }
 
   // === Stage 3: structured analysis on the extracted text ===

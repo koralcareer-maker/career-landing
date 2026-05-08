@@ -860,3 +860,29 @@ model Setting {
   value     String
   updatedAt DateTime @updatedAt @default(now())
 }
+
+// VIP-tier "קורל תכין לי קוח" requests. Created when a user upgrades
+// to VIP via the post-CV-scan upgrade flow OR clicks the equivalent
+// CTA elsewhere. Coral's queue lives at /admin/cv-requests.
+//
+// Status flow:
+//   PENDING       — request created, waiting for Coral to schedule
+//   SCHEDULED     — phone call scheduled
+//   IN_PROGRESS   — call done, CV being written
+//   DELIVERED     — final CV file sent
+//   CANCELLED     — request cancelled (by user or admin)
+model CvWritingRequest {
+  id           String    @id @default(cuid())
+  userId       String
+  status       String    @default("PENDING")
+  createdAt    DateTime  @default(now())
+  scheduledAt  DateTime?
+  deliveredAt  DateTime?
+  cvFileUrl    String?
+  // Internal admin notes — phone call summary, target role focus,
+  // anything Coral wants to remember between sessions.
+  adminNotes   String?
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+}

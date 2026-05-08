@@ -122,5 +122,27 @@ export async function POST() {
   `);
   log.push("✓ Setting table");
 
+  // 6. CvWritingRequest — VIP "קורל תכין לי קוח" queue.
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "CvWritingRequest" (
+      "id"           TEXT NOT NULL PRIMARY KEY,
+      "userId"       TEXT NOT NULL,
+      "status"       TEXT NOT NULL DEFAULT 'PENDING',
+      "createdAt"    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "scheduledAt"  DATETIME,
+      "deliveredAt"  DATETIME,
+      "cvFileUrl"    TEXT,
+      "adminNotes"   TEXT
+    );
+  `);
+  log.push("✓ CvWritingRequest table");
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "CvWritingRequest_userId_createdAt_idx" ON "CvWritingRequest"("userId", "createdAt");
+  `);
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS "CvWritingRequest_status_createdAt_idx" ON "CvWritingRequest"("status", "createdAt");
+  `);
+  log.push("✓ CvWritingRequest indexes");
+
   return NextResponse.json({ ok: true, log });
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Info, Sparkles, ArrowLeft, X } from "lucide-react";
+import { Info, Sparkles, X, FileSearch, UserCheck, CheckCircle2, Loader2 } from "lucide-react";
+import { requestCvWriting } from "@/lib/actions/cv-requests";
 
 interface Props {
   level: "green" | "yellow" | "red";
@@ -51,7 +52,32 @@ const LEVELS = {
  */
 export function AtsBadge({ level, reasons }: Props) {
   const [showInfo, setShowInfo] = useState(false);
+  // Confirmation state for the "קורל תכין לי קוח" flow.
+  // 'idle' → user can click. 'sending' → server action in flight.
+  // 'sent'  → request created, customer + admin emailed; show success card.
+  const [vipPhase, setVipPhase] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [vipError, setVipError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
   const cfg = LEVELS[level];
+
+  function handleVipClick() {
+    setVipError(null);
+    setVipPhase("sending");
+    startTransition(async () => {
+      try {
+        const r = await requestCvWriting();
+        if (r?.success) {
+          setVipPhase("sent");
+        } else {
+          setVipError(r?.error ?? "משהו השתבש. נסי שוב.");
+          setVipPhase("error");
+        }
+      } catch (e) {
+        setVipError(e instanceof Error ? e.message : "משהו השתבש. נסי שוב.");
+        setVipPhase("error");
+      }
+    });
+  }
 
   return (
     <>
@@ -87,19 +113,78 @@ export function AtsBadge({ level, reasons }: Props) {
           </ul>
         )}
 
-        <div className={`mt-4 pt-3 border-t ${cfg.border} flex items-center justify-between gap-3`}>
-          <p className={`text-[11px] ${cfg.text} opacity-90`}>
-            רוצה לדעת איך להגיע ל-100%?
-          </p>
-          <Link
-            href="/pricing"
-            className="inline-flex items-center gap-1 text-xs font-black bg-white text-teal hover:bg-teal hover:text-white px-3 py-1.5 rounded-lg transition-colors border border-teal/30"
-          >
-            <Sparkles size={11} />
-            לשדרוג
-            <ArrowLeft size={11} />
-          </Link>
-        </div>
+        {/* Two upgrade CTAs — visible for ALL ratings (per Coral). The
+            ones who just got "green" might still want a deeper review
+            or a Coral-prepared CV; the ones who got "red" need it. */}
+        {vipPhase !== "sent" ? (
+          <div className={`mt-4 pt-4 border-t ${cfg.border} space-y-2`}>
+            <p className={`text-xs font-bold ${cfg.text} mb-2`}>
+              {level === "green" ? "רוצה לקחת את הקוח לרמה הבאה?" : "איך לשפר את הציון:"}
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {/* PRO — full feedback */}
+              <Link
+                href="/pricing?upgrade=pro&from=cv"
+                className="group bg-white border border-teal/30 hover:border-teal hover:bg-teal hover:text-white rounded-xl p-3 transition-all"
+              >
+                <div className="flex items-start gap-2">
+                  <FileSearch size={18} className="text-teal group-hover:text-white shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-black text-navy group-hover:text-white leading-tight">
+                      פידבק מלא לשיפור הקוח
+                    </p>
+                    <p className="text-[11px] text-gray-500 group-hover:text-white/85 mt-0.5 leading-snug">
+                      שדרוג ל-PRO · ניסוחים מדויקים, שיפור מבנה ו-ATS
+                    </p>
+                  </div>
+                </div>
+              </Link>
+
+              {/* VIP — Coral writes the CV */}
+              <button
+                type="button"
+                onClick={handleVipClick}
+                disabled={pending || vipPhase === "sending"}
+                className="group bg-white border border-purple-300 hover:border-purple-600 hover:bg-purple-600 hover:text-white rounded-xl p-3 transition-all text-right disabled:opacity-60"
+              >
+                <div className="flex items-start gap-2">
+                  {vipPhase === "sending"
+                    ? <Loader2 size={18} className="text-purple-600 group-hover:text-white shrink-0 mt-0.5 animate-spin" />
+                    : <UserCheck size={18} className="text-purple-600 group-hover:text-white shrink-0 mt-0.5" />}
+                  <div>
+                    <p className="text-xs font-black text-navy group-hover:text-white leading-tight">
+                      קורל תכין לי קורות חיים
+                    </p>
+                    <p className="text-[11px] text-gray-500 group-hover:text-white/85 mt-0.5 leading-snug">
+                      שדרוג ל-VIP · אבחון אישי + קובץ מוכן תוך 7 ימי עסקים
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            {vipPhase === "error" && vipError && (
+              <p className="text-xs text-red-700 mt-2">{vipError}</p>
+            )}
+          </div>
+        ) : (
+          <div className="mt-4 pt-4 border-t border-emerald-300 bg-white rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 size={20} className="text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-black text-emerald-800 mb-1">
+                  קיבלנו את הבקשה שלך 🎯
+                </p>
+                <p className="text-xs text-gray-700 leading-relaxed">
+                  שלחנו לך מייל עם פרטי התהליך. <strong>קורל תיצור איתך קשר תוך 1-2 ימי עסקים</strong> לתיאום
+                  שיחת אבחון של 30 דקות. תוך 7 ימי עסקים מהשיחה, קורות החיים החדשים יחכו לך במייל
+                  ובמערכת.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* "What is ATS?" explainer modal */}

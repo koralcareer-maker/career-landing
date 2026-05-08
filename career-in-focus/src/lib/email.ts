@@ -254,3 +254,101 @@ export async function sendWelcomeEmail({
     html,
   });
 }
+
+// ─── VIP CV Writing Confirmation (customer) ───────────────────────────────────
+// Sent immediately after a user submits a "קורל תכין לי קוח" request.
+// Sets expectations clearly: process, timeline, what happens next.
+
+export async function sendCvWritingRequestEmail({
+  name, email, gender = "f",
+}: { name: string; email: string; gender?: Gender }) {
+  const firstName = name.split(" ")[0];
+  const T = (f: string, m: string) => (gender === "m" ? m : f);
+
+  const html = `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>קיבלנו את הבקשה</title></head>
+<body style="margin:0;padding:0;background:#f6f7fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;direction:rtl;">
+<table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="background:#f6f7fb;padding:24px 12px;">
+<tr><td align="center">
+<table role="presentation" cellspacing="0" cellpadding="0" width="600" style="max-width:600px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 6px 24px rgba(28,28,46,0.08);">
+<tr><td style="background:linear-gradient(135deg,#1C1C2E 0%,#2A2A45 100%);padding:36px 32px;text-align:center;">
+  <p style="margin:0 0 6px 0;color:#3ECFCF;font-size:13px;font-weight:700;letter-spacing:1px;">CAREER IN FOCUS · VIP</p>
+  <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;line-height:1.3;">${firstName}, קיבלנו את הבקשה שלך 🎯</h1>
+</td></tr>
+
+<tr><td style="padding:32px;">
+  <p style="margin:0 0 16px 0;color:#1C1C2E;font-size:16px;line-height:1.7;">
+    ${T("שמחה", "שמח")} שבחרת בליווי האישי שלי לכתיבת קורות החיים. ${T("את", "אתה")} בידיים מקצועיות.
+  </p>
+
+  <div style="background:#f0fafa;border-right:4px solid #3ECFCF;padding:18px 20px;border-radius:8px;margin:20px 0;">
+    <p style="margin:0 0 8px 0;color:#1C1C2E;font-size:14px;font-weight:700;">איך התהליך עובד:</p>
+    <ol style="margin:0;padding-right:20px;color:#1C1C2E;font-size:14px;line-height:1.8;">
+      <li><strong>תוך 1-2 ימי עסקים</strong> — אצור איתך קשר טלפוני לתיאום שיחה</li>
+      <li><strong>שיחת אבחון של 30 דקות</strong> — נדייק את כיוון הקריירה, החוזקות, ותפקידי היעד</li>
+      <li><strong>תוך 7 ימי עסקים מהשיחה</strong> — תקבל${T("י", "")} קורות חיים מקצועיים מותאמים אישית</li>
+      <li><strong>הקובץ יישלח אלי${T("יך", "ך")}</strong> — גם במייל וגם דרך המערכת</li>
+    </ol>
+  </div>
+
+  <p style="margin:20px 0 0 0;color:#666;font-size:14px;line-height:1.7;">
+    ${T("אם את רוצה", "אם אתה רוצה")} לזרז את התהליך, ${T("תוכלי", "תוכל")} לכתוב לי בוואטסאפ ישירות.
+    אני זמינה לכל שאלה לאורך הדרך.
+  </p>
+
+  <p style="margin:24px 0 0 0;color:#1C1C2E;font-size:15px;line-height:1.7;">
+    מחכה לדבר${T("", "")} ${T("איתך", "איתך")},<br/>
+    <strong>קורל</strong>
+  </p>
+</td></tr>
+
+<tr><td style="background:#f6f7fb;padding:18px 32px;text-align:center;border-top:1px solid #eee;">
+  <p style="margin:0;color:#999;font-size:12px;">קריירה בפוקוס · ${APP_URL.replace("https://","")}</p>
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+
+  await sendEmail({
+    to: email,
+    subject: "קיבלנו את הבקשה שלך לכתיבת קורות חיים — קורל תיצור איתך קשר",
+    html,
+  });
+}
+
+// ─── VIP CV Writing — Admin notification ──────────────────────────────────────
+// Sent to Coral whenever a new request comes in. Simple text so it
+// reads cleanly on phone notifications.
+
+export async function notifyAdminOfCvRequest({
+  to, userName, userEmail, userPhone, targetRole,
+}: {
+  to: string;
+  userName: string;
+  userEmail: string;
+  userPhone: string | null;
+  targetRole: string | null;
+}) {
+  const html = `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<body style="font-family:-apple-system,sans-serif;direction:rtl;background:#f6f7fb;padding:20px;">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,.06);">
+    <h2 style="margin:0 0 12px 0;color:#1C1C2E;font-size:20px;">📋 בקשה חדשה לכתיבת קורות חיים</h2>
+    <p style="margin:0 0 18px 0;color:#666;font-size:14px;">לקוח/ה שדרגו ל-VIP וביקשו ממך להכין קורות חיים.</p>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      <tr><td style="padding:6px 0;color:#888;">שם:</td><td style="padding:6px 0;font-weight:600;">${userName}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">אימייל:</td><td style="padding:6px 0;direction:ltr;">${userEmail}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">טלפון:</td><td style="padding:6px 0;direction:ltr;">${userPhone ?? "(לא צוין)"}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">תפקיד יעד:</td><td style="padding:6px 0;">${targetRole ?? "(לא צוין)"}</td></tr>
+    </table>
+    <a href="${APP_URL}/admin/cv-requests" style="display:inline-block;margin-top:20px;background:#3ECFCF;color:#fff;font-weight:700;padding:10px 20px;border-radius:8px;text-decoration:none;">לפאנל הבקשות ←</a>
+  </div>
+</body></html>`;
+
+  await sendEmail({
+    to,
+    subject: `📋 בקשת VIP חדשה: ${userName} (כתיבת קוח)`,
+    html,
+  });
+}
