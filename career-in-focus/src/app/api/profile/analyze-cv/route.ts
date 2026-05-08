@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { extractCvText } from "@/lib/cv-extract";
 
 /**
@@ -25,7 +26,31 @@ export const maxDuration = 60;
 
 const GEMINI_KEY = () => (process.env.GEMINI_API_KEY ?? "").trim();
 
-const ANALYSIS_PROMPT = `אתה מומחה גיוס ומיתוג מקצועי ישראלי עם ניסיון רב. נתח את הטקסט הבא של קורות חיים.
+const ANALYSIS_PROMPT = `את מגייסת בכירה בישראל עם 15+ שנות ניסיון, סקרת אלפי קורות חיים. את ביקורתית, מחמירה, ומסרבת לעבור על פגמים.
+
+⚠️ שלב 0 — זיהוי האם זה בכלל קורות חיים:
+
+לפני כל ניתוח, בדקי האם הטקסט שלפניך הוא באמת קורות חיים מקצועיים:
+- האם יש סעיפי CV מובהקים (ניסיון תעסוקתי, השכלה, מיומנויות)?
+- האם יש שמות חברות + תפקידים + תאריכים?
+- האם יש פרטי קשר (טלפון/מייל/לינקדאין)?
+
+אם הקובץ הוא לא קורות חיים — חשבונית, חוזה, מסמך משפטי, מצגת, תמונה ריקה, הודעה אישית, חוברת, כל דבר אחר — אסור לתת ציון. החזירי במקום זאת:
+{
+  "isNotCv": true,
+  "currentRole": "—",
+  "targetRole": "—",
+  "yearsExperience": 0,
+  "strengths": [],
+  "skillGaps": [],
+  "marketSkills": [],
+  "cvFeedback": ["הקובץ שהועלה לא נראה כקורות חיים. נסי להעלות קובץ קורות חיים מקצועי."],
+  "summary": "הקובץ לא זוהה כקורות חיים מקצועיים.",
+  "atsLevel": "red",
+  "atsReasons": ["הקובץ לא נראה כקורות חיים", "אין מבנה מקצועי של CV"]
+}
+
+⚠️ שלב 1 — אם זה כן קורות חיים, נתחי אותו (כל שאר ההוראות מטה):
 
 ענה אך ורק ב-JSON תקין (ללא markdown, ללא הסברים):
 {
@@ -41,16 +66,44 @@ const ANALYSIS_PROMPT = `אתה מומחה גיוס ומיתוג מקצועי י
   "atsReasons": ["סיבה קצרה 1", "סיבה קצרה 2"]
 }
 
-חוזקות: מה בולט ומוכח בקורות החיים.
-פערים: מה חסר להפוך למועמד תחרותי יותר.
-marketSkills: מיומנויות שחמות בשוק העכשווי לתפקיד זה (2025).
-cvFeedback: עצות ספציפיות ופרקטיות — כל פריט = פעולה אחת ברורה.
+הוראות:
+- חוזקות: מה בולט ומוכח בקו"ח.
+- פערים: מה חסר להפוך למועמד תחרותי.
+- marketSkills: מיומנויות חמות בשוק 2025 לתפקיד זה.
+- cvFeedback: 5 עצות פרקטיות וקונקרטיות לשיפור.
 
-atsLevel: דירוג כללי של תאימות הקורות חיים למערכות ATS:
-  - "green"  = עוברים ATS ברוב המערכות (מבנה נקי, מילות מפתח, ללא טבלאות מורכבות)
-  - "yellow" = עוברים בחלק מהמערכות אבל יש סיכון (טבלאות, פורמט לא סטנדרטי, מילות מפתח חלשות)
-  - "red"    = סיכון גבוה לא להגיע למגייס (תמונות, עמודות, גרפיקה, מילות מפתח חסרות)
-atsReasons: 2 סיבות קצרות (עד 8 מילים כל אחת) למה הציון הנוכחי. בלי מונחים טכניים — בעברית פשוטה.
+⚠️ דירוג atsLevel — קריטריונים מחמירים:
+
+"green" (5-10% מהקו"ח בלבד — שמור רק לקו"ח באיכות גבוהה במיוחד) חייב לעמוד ב-כל-הקריטריונים:
+✓ הישגים מספריים/אחוזיים מוכחים בכל תפקיד עיקרי ("חיסכון של X%", "ניהול תקציב של Y₪")
+✓ פסקת תקציר מקצועית מובהקת בראש הקובץ (3-5 שורות)
+✓ תאריכי עבודה מדויקים ומלאים (חודש + שנה) בכל ניסיון
+✓ מבנה ברור עם כותרות סטנדרטיות (ניסיון תעסוקתי / השכלה / מיומנויות)
+✓ שמות חברות וכותרות תפקיד ספציפיים וברורים
+✓ מילות מפתח מקצועיות חזקות שתואמות את תפקיד היעד
+✓ אורך תוכן הולם (1-2 עמודים, לא חצי עמוד)
+✓ ללא שגיאות כתיב או דקדוק
+
+"yellow" (רוב הקו"ח — ~60%): מבנה בסיסי תקין אבל חסר משהו משמעותי:
+- חסרים הישגים כמותיים מוכחים, או
+- אין פסקת תקציר מקצועי, או
+- תיאורי תפקיד כלליים בלי ייחוד, או
+- מילות מפתח חלשות לתחום היעד, או
+- היעדר ציון תוצאות עסקיות
+
+"red" (~30% מהקו"ח — אם אחד מאלה קורה): סיכון גבוה לא להגיע לראיון:
+- תיאורי תפקיד גנריים בלבד ("השתתפתי", "עזרתי", "ביצעתי", בלי תוצאה)
+- אין הישגים כמותיים בכלל בקובץ
+- חוסר בהירות לגבי תפקיד היעד / מיקוד מקצועי
+- מבנה לא ברור או חסרות כותרות סטנדרטיות
+- תוכן קצר מדי או שטחי (פחות מעמוד, או חצי עמוד עם פיסקה אחת)
+- שגיאות כתיב/דקדוק/תרגום
+- חסרים תאריכים או לא ברורים
+- מבנה ויזואלי בעייתי (טבלאות מורכבות, עמודות, גרפיקה)
+
+חוק ברזל: היות מחמירה. אם יש ספק בין "ירוק" ל-"צהוב" — תני "צהוב". אם יש ספק בין "צהוב" ל-"אדום" — תני "אדום". זה לא מקצועי לתת לקו"ח גרועים ציון טוב — זה גורם להם לא להבין למה הם לא מקבלים ראיונות.
+
+atsReasons: 2 סיבות ספציפיות מהקובץ עצמו — מה חסר/חזק (עד 12 מילים כל סיבה). בעברית פשוטה.
 
 החזר JSON בלבד.`;
 
@@ -163,9 +216,31 @@ export async function POST(req: NextRequest) {
   }
 
   // === Stage 3: structured analysis on the extracted text ===
+  // Pull the user's target role + years experience from their profile
+  // so the recruiter prompt scores AGAINST a real target instead of
+  // guessing one. Strict scoring needs role context to grade keyword
+  // alignment / market relevance honestly.
+  let userTargetRole = "";
+  try {
+    const profile = await prisma.profile.findUnique({
+      where: { userId: session.user.id },
+      select: { targetRole: true, desiredField: true },
+    });
+    userTargetRole = profile?.targetRole?.trim() || "";
+    if (!userTargetRole && profile?.desiredField) {
+      userTargetRole = `תחום: ${profile.desiredField}`;
+    }
+  } catch {
+    /* ignore — analysis still works without target context */
+  }
+
+  const targetContext = userTargetRole
+    ? `\n\n📍 תפקיד היעד שהמשתמשת ציינה ב-onboarding: "${userTargetRole}". התאימי את הסקירה לתפקיד הזה — מה רלוונטי, מה חסר, מה לא בקו"ח שמגייס/ת לתפקיד זה היה מצפה לראות.`
+    : `\n\nהמשתמשת לא ציינה תפקיד יעד ספציפי. הסיקי את התפקיד הסביר ביותר לפי הקו"ח עצמו וסקרי כאילו זה היעד.`;
+
   let analysisText = "";
   try {
-    analysisText = await callGemini(`${ANALYSIS_PROMPT}\n\n--- קורות חיים ---\n${extracted.text}`);
+    analysisText = await callGemini(`${ANALYSIS_PROMPT}${targetContext}\n\n--- קורות חיים ---\n${extracted.text}`);
   } catch (e) {
     console.error("[analyze-cv] analysis failed:", e);
     return NextResponse.json(
@@ -186,13 +261,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // If Gemini detected the file isn't a CV at all (invoice / contract
+  // / random PDF / blank file etc.), trust that classification — don't
+  // run the format-based override on top, the existing reasons explain
+  // the real problem.
+  const isNotCv = result.isNotCv === true;
+
   // Per Coral's ATS-grade direction: any non-PDF upload (Word, RTF,
-  // image, etc.) gets an automatic red ATS rating. Real ATS systems
-  // do best with PDFs; Word renders unpredictably across parsers and
-  // an honest reading of "will this pass ATS?" is "risky" by default.
-  // We override regardless of what Gemini said about atsLevel —
-  // Coral wants this to be the firm rule, not a suggestion.
-  if (extracted.format !== "pdf") {
+  // image, etc.) gets an automatic red ATS rating. Skipped when the
+  // file isn't a CV — that case has its own (worse) explanation.
+  if (extracted.format !== "pdf" && !isNotCv) {
     result.atsLevel = "red";
     result.atsReasons = [
       "פורמט הקובץ אינו PDF — חלק ממערכות ATS לא יקראו אותו נקי",

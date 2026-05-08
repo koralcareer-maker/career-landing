@@ -149,6 +149,18 @@ export function CvUploader({ resumeUrl, setState }: Props) {
         return;
       }
 
+      // Server flagged the upload as "not actually a CV" (invoice,
+      // contract, blank PDF, etc.). Don't persist anything to the
+      // user's profile — that would pollute the wizard fields with
+      // garbage. Show a clear Hebrew message and let them retry.
+      if ((result as unknown as { isNotCv?: boolean }).isNotCv) {
+        setError(
+          "הקובץ שהעלית לא נראה כקורות חיים מקצועיים. נסי להעלות קובץ אחר — קובץ שכולל ניסיון תעסוקתי, השכלה, מיומנויות ופרטי קשר.",
+        );
+        setPhase("error");
+        return;
+      }
+
       // Success path delegates to the shared helper so both first-try
       // and auto-retry land the same way.
       await persistAndShow(file.name, result);
