@@ -17,19 +17,12 @@
  * extraction concern from the analysis concern keeps both reliable.
  */
 
-// pdf-parse v2 exposes a class-based API. Wrap it to match the v1
-// promise-style flow the rest of this module expects.
-import { PDFParse } from "pdf-parse";
+// mammoth handles DOCX in pure JS — runs cleanly on Vercel's Node
+// serverless runtime. PDF / DOC go straight to the AI vision fallback
+// because pdf-parse v2 (pdfjs-dist) has native/worker dependencies
+// that the serverless bundle can't resolve, and Gemini multimodal
+// reads PDFs better than text extraction does for Hebrew anyway.
 import mammoth from "mammoth";
-
-async function pdfParse(buf: Buffer): Promise<{ text: string }> {
-  // Convert Node Buffer → Uint8Array (PDFParse asks for ArrayBuffer-
-  // backed bytes; passing a raw Buffer crashes pdfjs-dist internally).
-  const data = new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
-  const parser = new PDFParse({ data });
-  const r = await parser.getText();
-  return { text: r.text ?? "" };
-}
 
 export type CvFormat = "pdf" | "docx" | "doc" | "unknown";
 
@@ -99,18 +92,16 @@ export async function extractCvText(
   let source: ExtractionResult["source"] = "none";
 
   try {
-    if (format === "pdf") {
-      const r = await pdfParse(buf);
-      text = (r?.text ?? "").trim();
-      source = text.length > 0 ? "native-pdf" : "none";
-    } else if (format === "docx") {
+    if (format === "docx") {
       const r = await mammoth.extractRawText({ buffer: buf });
       text = (r?.value ?? "").trim();
       source = text.length > 0 ? "native-docx" : "none";
-    } else if (format === "doc") {
-      // No first-class .doc parser bundled; fall through to AI.
-      source = "none";
     }
+    // PDF and DOC paths: skip native extraction entirely, fall through
+    // to the AI vision fallback below. This is intentional — pdf-parse
+    // doesn't bundle cleanly for Vercel's Node serverless runtime, and
+    // Gemini multimodal handles RTL Hebrew PDFs (incl. scanned ones)
+    // more accurately anyway.
   } catch {
     // swallow — try the AI fallback, then surface a friendly warning
   }
