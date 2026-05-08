@@ -55,6 +55,11 @@ export interface CvAnalysisResult {
   summary: string;
   marketSkills?: string[];  // hot skills employers want NOW for this role
   cvFeedback?: string[];    // actionable tips to improve the CV
+  // Lightweight traffic-light ATS rating included on the free tier.
+  // The full breakdown (per-system risk, rewrite suggestions, ...)
+  // lives in /progress/cv-feedback (PRO+ only).
+  atsLevel?: "green" | "yellow" | "red";
+  atsReasons?: string[];    // 1-3 short Hebrew reasons
 }
 
 export async function analyzeCvContent(cvText: string): Promise<CvAnalysisResult> {

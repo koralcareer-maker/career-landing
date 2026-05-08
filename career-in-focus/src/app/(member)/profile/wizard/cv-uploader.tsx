@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Upload, Loader2, FileCheck2, AlertCircle, Sparkles } from "lucide-react";
 import { markCvUploaded, saveCvAnalysis, type CvAnalysisResult } from "@/lib/actions/profile";
 import type { WizardState } from "./types";
+import { AtsBadge } from "./ats-badge";
 
 interface Props {
   resumeUrl: string | null;
@@ -13,10 +14,14 @@ interface Props {
 
 /**
  * CV uploader for wizard step 2. Encodes the file as base64, ships it
- * to /api/profile/analyze-cv (Edge runtime, 30s budget vs server-action
- * 10s), persists the extracted strengths/skills via saveCvAnalysis, and
- * auto-fills the wizard state so the user doesn't have to retype what
- * the AI already pulled out of the document.
+ * to /api/profile/analyze-cv (Node runtime, 60s budget), persists the
+ * extracted strengths/skills via saveCvAnalysis, and auto-fills the
+ * wizard state so the user doesn't have to retype what the AI already
+ * pulled out of the document.
+ *
+ * After a successful analysis we also surface the lightweight ATS
+ * traffic-light rating returned by the server — that's the free-tier
+ * appetiser that nudges base members toward PRO for the deeper view.
  */
 export function CvUploader({ resumeUrl, setState }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -25,6 +30,9 @@ export function CvUploader({ resumeUrl, setState }: Props) {
   );
   const [error, setError] = useState("");
   const [fileName, setFileName] = useState(resumeUrl ?? "");
+  // Last analysis output, kept locally so the ATS badge survives
+  // re-renders / step navigation without a refetch.
+  const [lastAts, setLastAts] = useState<{ level: "green" | "yellow" | "red"; reasons?: string[] } | null>(null);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -116,6 +124,11 @@ export function CvUploader({ resumeUrl, setState }: Props) {
         yearsExperience: result.yearsExperience,
         strengths: result.strengths,
       });
+      // Cache the lightweight ATS rating so the badge renders below
+      // the success state.
+      if (result.atsLevel) {
+        setLastAts({ level: result.atsLevel, reasons: result.atsReasons });
+      }
       setPhase("done");
     } catch (e) {
       console.error("[cv-uploader] upload error:", e);
@@ -141,23 +154,30 @@ export function CvUploader({ resumeUrl, setState }: Props) {
       />
 
       {phase === "done" ? (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-          <div className="flex items-center gap-2 text-emerald-700 font-bold text-sm mb-2">
-            <FileCheck2 size={16} />
-            קורות חיים נטענו{fileName && ` · ${fileName}`}
+        <>
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <div className="flex items-center gap-2 text-emerald-700 font-bold text-sm mb-2">
+              <FileCheck2 size={16} />
+              קורות חיים נטענו{fileName && ` · ${fileName}`}
+            </div>
+            <p className="text-xs text-emerald-700/80 leading-relaxed flex items-start gap-1.5">
+              <Sparkles size={12} className="mt-0.5 shrink-0" />
+              המערכת חילצה אוטומטית את התפקיד, שנות הניסיון והחוזקות שלך — מילאתי לך את השדות.
+            </p>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="mt-3 text-xs font-bold text-emerald-700 underline hover:no-underline"
+            >
+              החלפה לקובץ אחר
+            </button>
           </div>
-          <p className="text-xs text-emerald-700/80 leading-relaxed flex items-start gap-1.5">
-            <Sparkles size={12} className="mt-0.5 shrink-0" />
-            המערכת חילצה אוטומטית את התפקיד, שנות הניסיון והחוזקות שלך — מילאתי לך את השדות.
-          </p>
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="mt-3 text-xs font-bold text-emerald-700 underline hover:no-underline"
-          >
-            החלפה לקובץ אחר
-          </button>
-        </div>
+
+          {/* Free-tier traffic-light ATS rating. Only renders when the
+              server returned a level — older analyses without the field
+              just show the upload-confirmation card. */}
+          {lastAts && <AtsBadge level={lastAts.level} reasons={lastAts.reasons} />}
+        </>
       ) : phase === "uploading" || phase === "analyzing" ? (
         <div className="rounded-xl border border-teal/20 bg-teal/5 p-4 flex items-center gap-3">
           <Loader2 size={18} className="text-teal animate-spin shrink-0" />
