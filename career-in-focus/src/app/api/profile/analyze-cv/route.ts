@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/auth";
 import { extractCvText } from "@/lib/cv-extract";
 
 /**
@@ -89,13 +89,15 @@ async function callGemini(prompt: string, fileBuf?: Buffer, mime?: string): Prom
 }
 
 export async function POST(req: NextRequest) {
-  // Node runtime auth check — getToken works fine here, no need for
-  // PrismaAdapter session lookup since we just need user-id-or-bust.
-  const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
-  const token = await getToken({ req, secret });
-  if (!token) {
+  // Use auth() — NextAuth v5's canonical session reader. The previous
+  // getToken() call was an Edge-runtime workaround that doesn't see
+  // v5's session cookie under the same name in Node runtime, which is
+  // why customers saw "נדרשת כניסה" right after my Edge → Node move.
+  const session = await auth();
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "נדרשת כניסה" }, { status: 401 });
   }
+  void req; // not used in Node runtime — auth() reads cookies internally
 
   if (!GEMINI_KEY()) {
     console.error("[analyze-cv] GEMINI_API_KEY missing");
