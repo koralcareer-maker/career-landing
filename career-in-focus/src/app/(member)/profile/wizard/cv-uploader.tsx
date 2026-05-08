@@ -34,6 +34,37 @@ export function CvUploader({ resumeUrl, setState }: Props) {
   // re-renders / step navigation without a refetch.
   const [lastAts, setLastAts] = useState<{ level: "green" | "yellow" | "red"; reasons?: string[] } | null>(null);
 
+  // Shared success-path: persist + update wizard state + flip phase.
+  // Extracted as a helper so both the first attempt and the auto-retry
+  // can call into it without duplicating the bookkeeping.
+  async function persistAndShow(
+    fileName: string,
+    result: CvAnalysisResult & { atsLevel?: "green" | "yellow" | "red"; atsReasons?: string[] },
+  ) {
+    try {
+      await markCvUploaded(fileName);
+      await saveCvAnalysis({
+        currentRole: result.currentRole,
+        targetRole: result.targetRole,
+        yearsExperience: result.yearsExperience,
+        strengths: result.strengths,
+        missingSkills: result.skillGaps,
+      });
+    } catch (e) {
+      console.warn("[cv-uploader] persist failed (will retry on next-step save):", e);
+    }
+    setState({
+      resumeUrl: fileName,
+      currentRole: result.currentRole,
+      yearsExperience: result.yearsExperience,
+      strengths: result.strengths,
+    });
+    if (result.atsLevel) {
+      setLastAts({ level: result.atsLevel, reasons: result.atsReasons });
+    }
+    setPhase("done");
+  }
+
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -86,50 +117,44 @@ export function CvUploader({ resumeUrl, setState }: Props) {
       }
 
       if (!resp.ok || !result || result.error) {
+        // 401 = session expired / cookie wasn't sent. Auto-fix: tell
+        // the user, then retry once — by then NextAuth has refreshed
+        // the JWT (usually transparent on subsequent requests).
+        if (resp.status === 401) {
+          // Single auto-retry. If still 401, ask the user to log in.
+          await new Promise((r) => setTimeout(r, 600));
+          const retry = await fetch("/api/profile/analyze-cv", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ base64Data: b64, mimeType, fileName: file.name }),
+          });
+          if (retry.ok) {
+            const retryBody = (await retry.json()) as CvAnalysisResult & { error?: string; atsLevel?: "green" | "yellow" | "red"; atsReasons?: string[] };
+            if (!retryBody.error) {
+              await persistAndShow(file.name, retryBody);
+              return;
+            }
+          }
+          // Real auth failure — friendly UX with a 1-click recovery.
+          setError("פג תוקף החיבור שלך — תרעני את הדף ונסי שוב. הקובץ שלך לא נשמר, יהיה צריך לבחור אותו מחדש.");
+          setPhase("error");
+          return;
+        }
         const reason =
           result?.error ??
           (resp.status === 413 ? "הקובץ גדול מדי. שמרי כ-PDF דחוס יותר." :
-           resp.status === 401 ? "פג תוקף הסשן. רענני את הדף ונסי שוב." :
            resp.status === 503 ? "שירות הניתוח לא זמין כרגע. פני לקורל." :
                                  "הניתוח נכשל. נסי שוב בעוד רגע.");
-        // Log detail to console for support-side debugging without
-        // dumping it to the user.
         if (result?.detail) console.warn("[cv-uploader] detail:", result.detail);
         setError(reason);
         setPhase("error");
         return;
       }
 
-      // Persist the upload + AI-extracted profile fields. Wrap in a
-      // try so a DB error here doesn't lose the analysis we already
-      // got back — we still show "done" and update the form, the
-      // server-side persistence just retries on the next step save.
-      try {
-        await markCvUploaded(file.name);
-        await saveCvAnalysis({
-          currentRole: result.currentRole,
-          targetRole: result.targetRole,
-          yearsExperience: result.yearsExperience,
-          strengths: result.strengths,
-          missingSkills: result.skillGaps,
-        });
-      } catch (e) {
-        console.warn("[cv-uploader] persist failed (will retry on next-step save):", e);
-      }
-
-      // Reflect in wizard state so the form fields update live.
-      setState({
-        resumeUrl: file.name,
-        currentRole: result.currentRole,
-        yearsExperience: result.yearsExperience,
-        strengths: result.strengths,
-      });
-      // Cache the lightweight ATS rating so the badge renders below
-      // the success state.
-      if (result.atsLevel) {
-        setLastAts({ level: result.atsLevel, reasons: result.atsReasons });
-      }
-      setPhase("done");
+      // Success path delegates to the shared helper so both first-try
+      // and auto-retry land the same way.
+      await persistAndShow(file.name, result);
     } catch (e) {
       console.error("[cv-uploader] upload error:", e);
       setError(
