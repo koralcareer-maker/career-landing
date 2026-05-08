@@ -175,9 +175,9 @@ export async function POST(req: NextRequest) {
   }
 
   const cleaned = analysisText.replace(/```json\n?|\n?```/g, "").trim();
-  let result: unknown;
+  let result: Record<string, unknown>;
   try {
-    result = JSON.parse(cleaned);
+    result = JSON.parse(cleaned) as Record<string, unknown>;
   } catch {
     console.error("[analyze-cv] failed to parse Gemini JSON:", cleaned.slice(0, 300));
     return NextResponse.json(
@@ -186,17 +186,32 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Per Coral's ATS-grade direction: any non-PDF upload (Word, RTF,
+  // image, etc.) gets an automatic red ATS rating. Real ATS systems
+  // do best with PDFs; Word renders unpredictably across parsers and
+  // an honest reading of "will this pass ATS?" is "risky" by default.
+  // We override regardless of what Gemini said about atsLevel —
+  // Coral wants this to be the firm rule, not a suggestion.
+  if (extracted.format !== "pdf") {
+    result.atsLevel = "red";
+    result.atsReasons = [
+      "פורמט הקובץ אינו PDF — חלק ממערכות ATS לא יקראו אותו נקי",
+      "מומלץ לשמור מחדש כ-PDF לפני שליחה למשרה",
+    ];
+  }
+
   // Surface the extraction telemetry alongside the result so the UI
   // (and future debugging) can see whether we used the fast path or
   // had to fall back. Doesn't affect existing consumers.
   return NextResponse.json({
-    ...(result as Record<string, unknown>),
+    ...result,
     _extraction: {
       source: extracted.source,
       format: extracted.format,
       usedFallback: extracted.usedFallback,
       textLength: extracted.text.length,
       warning: extracted.warning ?? null,
+      atsOverridden: extracted.format !== "pdf",
     },
   });
 }

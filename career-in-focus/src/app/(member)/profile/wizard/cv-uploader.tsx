@@ -71,16 +71,13 @@ export function CvUploader({ resumeUrl, setState }: Props) {
     setError("");
     setFileName(file.name);
 
-    // Client-side guard so the user gets immediate feedback for the
-    // common 'file is too big' case instead of waiting for the upload
-    // to round-trip and 413 from the route. Cap matches the server.
+    // Client-side size guard only. Per Coral's 'think like an ATS'
+    // direction — accept any file format (PDF, Word, RTF, even an
+    // image) and let the server decide. Non-PDF uploads get an
+    // automatic red ATS rating server-side, but the analysis still
+    // populates the wizard's profile fields.
     if (file.size > 10 * 1024 * 1024) {
       setError("הקובץ גדול מ-10MB. שמרי כ-PDF דחוס או הסירי תמונות מהמסמך.");
-      setPhase("error");
-      return;
-    }
-    if (!/\.(pdf|docx?|doc)$/i.test(file.name)) {
-      setError("פורמט לא נתמך. תומכים ב-PDF, DOC, DOCX.");
       setPhase("error");
       return;
     }
@@ -173,7 +170,9 @@ export function CvUploader({ resumeUrl, setState }: Props) {
       <input
         ref={fileRef}
         type="file"
-        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        // accept="*" — ATS-grade. Take any file the user offers; the
+        // server decides which formats get the red ATS flag.
+        accept="*/*"
         className="hidden"
         onChange={handleFile}
       />
@@ -220,7 +219,7 @@ export function CvUploader({ resumeUrl, setState }: Props) {
           className="w-full flex items-center justify-center gap-2 px-4 py-6 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 text-sm font-bold hover:border-teal hover:bg-teal/5 hover:text-teal transition-all"
         >
           <Upload size={16} />
-          לחצי כדי להעלות קורות חיים (PDF / DOCX)
+          לחצי כדי להעלות קורות חיים (כל סוג קובץ)
         </button>
       )}
 
