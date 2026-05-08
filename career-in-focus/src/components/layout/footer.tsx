@@ -70,7 +70,7 @@ export async function Footer() {
     { value: "22K+",                             label: "חברי קהילה" },
     { value: `${jobCount}+`,                     label: "משרות פעילות" },
     { value: `${courseCount}+`,                  label: "קורסים מקצועיים" },
-    { value: "200+",                             label: "התקבלו לעבודה" },
+    { value: "800+",                             label: "התקבלו לעבודה" },
     { value: "100%",                             label: "ליווי אישי" },
   ];
 
