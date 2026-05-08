@@ -10,7 +10,7 @@ import { amountForCycle, formatPrice, type PlanKey } from "@/lib/billing";
 // PREMIUM) stay the same in DB and code; the displayed labels were
 // re-shuffled per Coral (149 = "פרו", 499 = "VIP").
 const PLAN_NAMES: Record<string, string> = {
-  MEMBER:  "השקה",
+  MEMBER:  "חבר/ה",
   VIP:     "פרו",
   PREMIUM: "VIP",
 };

@@ -25,7 +25,7 @@ const TESTIMONIALS = [
 const PLANS = [
   {
     id: "member",
-    name: "השקה",
+    name: "חבר",
     price: "₪19",
     originalPrice: "₪49",
     period: "לחודש",
@@ -49,7 +49,7 @@ const PLANS = [
     period: "לחודש",
     badge: "הכי פופולרי",
     features: [
-      "הכל מחבילת ההשקה",
+      "הכל מחבילת חבר",
       "אסטרטגיית חיפוש מסודרת ויעדים אישיים",
       "הגדלת חשיפה למגייסים — CV ו-LinkedIn",
       "הכוונה אישית לפנייה למשרות וחברות יעד",

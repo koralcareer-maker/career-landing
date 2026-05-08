@@ -3,7 +3,7 @@
  * features behind PRO+ or VIP-only.
  *
  * Internal enum vs. display labels (after Coral's rename):
- *   MEMBER   → "השקה"  (₪19 launch / ₪49 base)
+ *   MEMBER   → "חבר/ה" (₪19 launch promo / ₪49 base)
  *   VIP      → "PRO"   (₪149)
  *   PREMIUM  → "VIP"   (₪499)
  *

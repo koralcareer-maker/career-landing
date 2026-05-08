@@ -12,7 +12,7 @@ import { useState, Suspense } from "react";
 
 const PLAN_LABELS: Record<string, { name: string; price: string; color: string; bg: string; iconWrap: string; icon: React.ReactNode }> = {
   member: {
-    name: "השקה",
+    name: "חבר/ה",
     price: "₪19/חודש",
     // Logo-true palette: solid neutral cream + black target-style
     // icon tile + teal silhouette inside (the icon star). Replaces
