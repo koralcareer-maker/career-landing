@@ -34,9 +34,9 @@ export function CvUploader({ resumeUrl, setState }: Props) {
 
     // Client-side guard so the user gets immediate feedback for the
     // common 'file is too big' case instead of waiting for the upload
-    // to round-trip and 413 from the edge route.
-    if (file.size > 6 * 1024 * 1024) {
-      setError("הקובץ גדול מ-6MB. שמרי כ-PDF דחוס או הסירי תמונות מהמסמך.");
+    // to round-trip and 413 from the route. Cap matches the server.
+    if (file.size > 10 * 1024 * 1024) {
+      setError("הקובץ גדול מ-10MB. שמרי כ-PDF דחוס או הסירי תמונות מהמסמך.");
       setPhase("error");
       return;
     }
@@ -61,7 +61,9 @@ export function CvUploader({ resumeUrl, setState }: Props) {
       const resp = await fetch("/api/profile/analyze-cv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ base64Data: b64, mimeType }),
+        // fileName lets the server's format detector use the
+        // extension as a tiebreaker after signature-byte sniffing.
+        body: JSON.stringify({ base64Data: b64, mimeType, fileName: file.name }),
       });
 
       // Read the body even on non-2xx — the server now returns a

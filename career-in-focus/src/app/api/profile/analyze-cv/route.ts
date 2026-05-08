@@ -1,13 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { extractCvText } from "@/lib/cv-extract";
 
-// Edge runtime: 30-second timeout vs 10s for serverless
-// Needed because Gemini PDF analysis typically takes 10-25 seconds
-export const runtime = "edge";
+/**
+ * CV upload + analysis. Three-stage pipeline:
+ *
+ *   1. Native extraction (mammoth for DOCX, pdf-parse for PDF) handles
+ *      ~95% of normal CVs in <1s, completely free.
+ *   2. AI vision fallback (Gemini multimodal) rescues image-only PDFs
+ *      and weird formats that native parsers miss.
+ *   3. AI analysis (Gemini text mode) runs the structured-feedback
+ *      prompt against whatever text we got out.
+ *
+ * Stage 3 is run regardless of which extraction stage succeeded,
+ * because the analysis prompt is what produces the JSON the UI
+ * expects.
+ *
+ * Uses Node runtime (not Edge) so we can use Buffer + mammoth +
+ * pdf-parse, and so we get the longer Vercel function timeout
+ * (default 60s on hobby/pro).
+ */
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
-const GEMINI_KEY = () => process.env.GEMINI_API_KEY ?? "";
+const GEMINI_KEY = () => (process.env.GEMINI_API_KEY ?? "").trim();
 
-const PROMPT = `אתה מומחה גיוס ומיתוג מקצועי ישראלי עם ניסיון רב. אתה מנתח את קורות החיים המצורפים.
+const ANALYSIS_PROMPT = `אתה מומחה גיוס ומיתוג מקצועי ישראלי עם ניסיון רב. נתח את הטקסט הבא של קורות חיים.
 
 ענה אך ורק ב-JSON תקין (ללא markdown, ללא הסברים):
 {
@@ -17,13 +35,7 @@ const PROMPT = `אתה מומחה גיוס ומיתוג מקצועי ישראל�
   "strengths": ["חוזקה 1", "חוזקה 2", "חוזקה 3", "חוזקה 4", "חוזקה 5"],
   "skillGaps": ["פער 1", "פער 2", "פער 3", "פער 4"],
   "marketSkills": ["מיומנות חמה 1 שמעסיקים מחפשים עכשיו", "מיומנות 2", "מיומנות 3"],
-  "cvFeedback": [
-    "פידבק ספציפי 1 לשיפור קורות החיים",
-    "פידבק 2",
-    "פידבק 3",
-    "פידבק 4",
-    "פידבק 5"
-  ],
+  "cvFeedback": ["פידבק ספציפי 1 לשיפור קורות החיים","פידבק 2","פידבק 3","פידבק 4","פידבק 5"],
   "summary": "סיכום פרופיל מקצועי בעברית — 2 משפטים"
 }
 
@@ -33,18 +45,49 @@ marketSkills: מיומנויות שחמות בשוק העכשווי לתפקיד
 cvFeedback: עצות ספציפיות ופרקטיות — כל פריט = פעולה אחת ברורה.
 החזר JSON בלבד.`;
 
+const VISION_EXTRACTION_PROMPT = `קרא את הטקסט המלא בקובץ קורות החיים המצורף וצא אותו בלבד. אם הקובץ הוא PDF סרוק או תמונה, חלץ טקסט באמצעות OCR. אל תוסיף הקדמות או הסברים — רק את הטקסט המלא, מסודר לפי הסדר שמופיע בקובץ.`;
+
+async function callGemini(prompt: string, fileBuf?: Buffer, mime?: string): Promise<string> {
+  const parts: Array<Record<string, unknown>> = [];
+  if (fileBuf && mime) {
+    parts.push({ inline_data: { mime_type: mime, data: fileBuf.toString("base64") } });
+  }
+  parts.push({ text: prompt });
+
+  const r = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY()}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts }],
+        generationConfig: { maxOutputTokens: 4096, temperature: 0.4 },
+      }),
+      signal: AbortSignal.timeout(45_000),
+    },
+  );
+  if (!r.ok) {
+    const err = await r.text();
+    throw new Error(`gemini http ${r.status}: ${err.slice(0, 300)}`);
+  }
+  const data = await r.json() as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    error?: { message?: string };
+  };
+  if (data.error) throw new Error(`gemini api: ${data.error.message}`);
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  return text;
+}
+
 export async function POST(req: NextRequest) {
-  // Use getToken (edge-safe JWT check) instead of auth() which uses PrismaAdapter
+  // Node runtime auth check — getToken works fine here, no need for
+  // PrismaAdapter session lookup since we just need user-id-or-bust.
   const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
   const token = await getToken({ req, secret });
   if (!token) {
     return NextResponse.json({ error: "נדרשת כניסה" }, { status: 401 });
   }
 
-  // Hard error when the AI key is missing instead of returning fake
-  // data dressed as success — that path used to silently lie to the
-  // user and was almost certainly the source of 'CV upload doesn't
-  // work' reports.
   if (!GEMINI_KEY()) {
     console.error("[analyze-cv] GEMINI_API_KEY missing");
     return NextResponse.json(
@@ -53,90 +96,96 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let base64Data: string;
-  let mimeType: string;
+  let base64Data = "";
+  let mimeType = "";
+  let fileName = "cv";
   try {
-    const body = await req.json() as { base64Data: string; mimeType: string };
-    base64Data = body.base64Data;
-    mimeType   = body.mimeType;
+    const body = await req.json() as { base64Data: string; mimeType: string; fileName?: string };
+    base64Data = body.base64Data ?? "";
+    mimeType = body.mimeType ?? "";
+    fileName = body.fileName ?? "cv";
     if (!base64Data) throw new Error("missing base64Data");
   } catch {
-    return NextResponse.json({ error: "לא הצלחנו לקרוא את הקובץ. נסי להעלות PDF או Word פשוט יותר." }, { status: 400 });
+    return NextResponse.json(
+      { error: "לא הצלחנו לקרוא את הקובץ. נסי להעלות PDF או Word פשוט יותר." },
+      { status: 400 },
+    );
   }
 
-  // Size guard — base64 is ~1.37× the byte length, hard cap at ~6MB
-  // raw to keep Gemini happy and avoid Vercel body-size rejections.
+  // 10MB raw cap — generous, since native extraction is fast and
+  // bandwidth from the user's browser is the main constraint.
   const approxBytes = (base64Data.length * 3) / 4;
-  if (approxBytes > 6 * 1024 * 1024) {
+  if (approxBytes > 10 * 1024 * 1024) {
     return NextResponse.json(
-      { error: "הקובץ גדול מדי (מעל 6MB). שמרי כ-PDF דחוס או הסירי תמונות." },
+      { error: "הקובץ גדול מדי (מעל 10MB). שמרי כ-PDF דחוס או הסירי תמונות." },
       { status: 413 },
     );
   }
 
+  let buf: Buffer;
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY()}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            role: "user",
-            parts: [
-              { inline_data: { mime_type: mimeType, data: base64Data } },
-              { text: PROMPT },
-            ],
-          }],
-          generationConfig: { maxOutputTokens: 2048, temperature: 0.4 },
-        }),
-      }
-    );
-
-    const data = await res.json() as {
-      candidates?: Array<{ content: { parts: Array<{ text: string }> } }>;
-      error?: { message: string };
-    };
-
-    if (!res.ok || data.error) {
-      const detail = data.error?.message ?? `HTTP ${res.status}`;
-      console.error("[analyze-cv] Gemini rejected:", detail);
-      // Surface a friendly Hebrew error to the user with the underlying
-      // detail truncated, so support can see the cause without exposing
-      // raw API errors in the UI.
-      return NextResponse.json(
-        { error: "הניתוח נכשל מול שירות ה-AI. נסי שוב בעוד רגע. אם הבעיה ממשיכה, פני לקורל.", detail: detail.slice(0, 200) },
-        { status: 502 },
-      );
-    }
-
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    if (!raw.trim()) {
-      console.error("[analyze-cv] empty Gemini response", data);
-      return NextResponse.json(
-        { error: "לא הצלחנו לפענח את הקובץ. נסי PDF פשוט יותר (בלי טבלאות מורכבות / תמונות)." },
-        { status: 502 },
-      );
-    }
-    const clean = raw.replace(/```json\n?|\n?```/g, "").trim();
-    let result: unknown;
-    try {
-      result = JSON.parse(clean);
-    } catch {
-      console.error("[analyze-cv] failed to parse Gemini JSON:", clean.slice(0, 300));
-      return NextResponse.json(
-        { error: "הניתוח חזר בפורמט לא תקין. נסי שוב." },
-        { status: 502 },
-      );
-    }
-    return NextResponse.json(result);
-
-  } catch (e) {
-    console.error("[analyze-cv] edge error:", e);
-    const msg = e instanceof Error ? e.message : String(e);
+    buf = Buffer.from(base64Data, "base64");
+    if (buf.length === 0) throw new Error("empty");
+  } catch {
     return NextResponse.json(
-      { error: "הניתוח התעכב או נכשל ברשת. נסי שוב.", detail: msg.slice(0, 200) },
-      { status: 504 },
+      { error: "הקובץ פגום או ריק. נסי קובץ אחר." },
+      { status: 400 },
     );
   }
+
+  // === Stage 1+2: extract text ===
+  // Native first; if the file is a scanned/image PDF we call Gemini
+  // multimodal as the AI vision fallback. The extractor never throws.
+  const extracted = await extractCvText(buf, fileName, {
+    aiVisionExtract: async (b, m) => callGemini(VISION_EXTRACTION_PROMPT, b, m),
+  });
+
+  if (!extracted.text || extracted.text.length < 30) {
+    return NextResponse.json(
+      {
+        error:
+          extracted.warning ??
+          "לא הצלחנו לחלץ טקסט מקורות החיים. ייתכן שזה PDF סרוק. נסי לפתוח ב-Word ולשמור מחדש כ-PDF.",
+      },
+      { status: 422 },
+    );
+  }
+
+  // === Stage 3: structured analysis on the extracted text ===
+  let analysisText = "";
+  try {
+    analysisText = await callGemini(`${ANALYSIS_PROMPT}\n\n--- קורות חיים ---\n${extracted.text}`);
+  } catch (e) {
+    console.error("[analyze-cv] analysis failed:", e);
+    return NextResponse.json(
+      { error: "הניתוח התעכב או נכשל. נסי שוב בעוד רגע." },
+      { status: 502 },
+    );
+  }
+
+  const cleaned = analysisText.replace(/```json\n?|\n?```/g, "").trim();
+  let result: unknown;
+  try {
+    result = JSON.parse(cleaned);
+  } catch {
+    console.error("[analyze-cv] failed to parse Gemini JSON:", cleaned.slice(0, 300));
+    return NextResponse.json(
+      { error: "הניתוח חזר בפורמט לא תקין. נסי שוב." },
+      { status: 502 },
+    );
+  }
+
+  // Surface the extraction telemetry alongside the result so the UI
+  // (and future debugging) can see whether we used the fast path or
+  // had to fall back. Doesn't affect existing consumers.
+  return NextResponse.json({
+    ...(result as Record<string, unknown>),
+    _extraction: {
+      source: extracted.source,
+      format: extracted.format,
+      usedFallback: extracted.usedFallback,
+      textLength: extracted.text.length,
+      warning: extracted.warning ?? null,
+    },
+  });
 }
