@@ -107,3 +107,33 @@ export async function POST() {
     cardcomDescription: r.Description,
   });
 }
+
+// Bonus: GET hits a quick env-var check for ALL critical integrations
+// (Gemini, Resend, etc.) so the admin page can also surface 'CV upload
+// will fail because GEMINI_API_KEY is missing' without leaving values.
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "נדרשת כניסה" }, { status: 401 });
+  }
+  const isAdmin =
+    session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
+  if (!isAdmin) {
+    return NextResponse.json({ error: "אדמין בלבד" }, { status: 403 });
+  }
+
+  const checks = [
+    { key: "GEMINI_API_KEY", purpose: "ניתוח קורות חיים + דרכון AI", value: process.env.GEMINI_API_KEY ?? "" },
+    { key: "AUTH_SECRET",    purpose: "התחברות / JWT",                value: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "" },
+    { key: "RESEND_API_KEY", purpose: "שליחת מיילים",                  value: process.env.RESEND_API_KEY ?? "" },
+    { key: "DATABASE_URL",   purpose: "מסד נתונים",                    value: process.env.DATABASE_URL ?? "" },
+  ];
+
+  return NextResponse.json({
+    integrations: checks.map((c) => ({
+      key: c.key,
+      purpose: c.purpose,
+      status: c.value ? `set (${c.value.length} chars)` : "MISSING",
+    })),
+  });
+}

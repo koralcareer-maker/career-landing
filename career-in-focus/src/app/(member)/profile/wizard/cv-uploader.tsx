@@ -31,6 +31,21 @@ export function CvUploader({ resumeUrl, setState }: Props) {
     if (!file) return;
     setError("");
     setFileName(file.name);
+
+    // Client-side guard so the user gets immediate feedback for the
+    // common 'file is too big' case instead of waiting for the upload
+    // to round-trip and 413 from the edge route.
+    if (file.size > 6 * 1024 * 1024) {
+      setError("הקובץ גדול מ-6MB. שמרי כ-PDF דחוס או הסירי תמונות מהמסמך.");
+      setPhase("error");
+      return;
+    }
+    if (!/\.(pdf|docx?|doc)$/i.test(file.name)) {
+      setError("פורמט לא נתמך. תומכים ב-PDF, DOC, DOCX.");
+      setPhase("error");
+      return;
+    }
+
     setPhase("uploading");
 
     try {
@@ -48,23 +63,49 @@ export function CvUploader({ resumeUrl, setState }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ base64Data: b64, mimeType }),
       });
-      const result = (await resp.json()) as CvAnalysisResult & { error?: string };
 
-      if (!resp.ok || result.error) {
-        setError(result.error ?? "הניתוח נכשל — נסי שוב");
+      // Read the body even on non-2xx — the server now returns a
+      // friendly Hebrew `error` field on every failure, so we can
+      // surface the real reason ('AI service down', 'file invalid',
+      // etc.) instead of a generic network message.
+      let result: (CvAnalysisResult & { error?: string; detail?: string }) | null = null;
+      try {
+        result = await resp.json();
+      } catch {
+        result = null;
+      }
+
+      if (!resp.ok || !result || result.error) {
+        const reason =
+          result?.error ??
+          (resp.status === 413 ? "הקובץ גדול מדי. שמרי כ-PDF דחוס יותר." :
+           resp.status === 401 ? "פג תוקף הסשן. רענני את הדף ונסי שוב." :
+           resp.status === 503 ? "שירות הניתוח לא זמין כרגע. פני לקורל." :
+                                 "הניתוח נכשל. נסי שוב בעוד רגע.");
+        // Log detail to console for support-side debugging without
+        // dumping it to the user.
+        if (result?.detail) console.warn("[cv-uploader] detail:", result.detail);
+        setError(reason);
         setPhase("error");
         return;
       }
 
-      // Persist the upload + AI-extracted profile fields.
-      await markCvUploaded(file.name);
-      await saveCvAnalysis({
-        currentRole: result.currentRole,
-        targetRole: result.targetRole,
-        yearsExperience: result.yearsExperience,
-        strengths: result.strengths,
-        missingSkills: result.skillGaps,
-      });
+      // Persist the upload + AI-extracted profile fields. Wrap in a
+      // try so a DB error here doesn't lose the analysis we already
+      // got back — we still show "done" and update the form, the
+      // server-side persistence just retries on the next step save.
+      try {
+        await markCvUploaded(file.name);
+        await saveCvAnalysis({
+          currentRole: result.currentRole,
+          targetRole: result.targetRole,
+          yearsExperience: result.yearsExperience,
+          strengths: result.strengths,
+          missingSkills: result.skillGaps,
+        });
+      } catch (e) {
+        console.warn("[cv-uploader] persist failed (will retry on next-step save):", e);
+      }
 
       // Reflect in wizard state so the form fields update live.
       setState({
@@ -74,8 +115,13 @@ export function CvUploader({ resumeUrl, setState }: Props) {
         strengths: result.strengths,
       });
       setPhase("done");
-    } catch {
-      setError("שגיאת רשת — נסי שוב");
+    } catch (e) {
+      console.error("[cv-uploader] upload error:", e);
+      setError(
+        e instanceof Error && /aborted|timeout|timed out/i.test(e.message)
+          ? "הקובץ עלה לאט מדי. נסי קובץ קטן יותר או חיבור אינטרנט יציב."
+          : "לא הצלחנו להעלות. בדקי חיבור אינטרנט ונסי שוב.",
+      );
       setPhase("error");
     } finally {
       e.target.value = "";
