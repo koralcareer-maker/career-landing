@@ -2,12 +2,20 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Info, Sparkles, X, FileSearch, UserCheck, CheckCircle2, Loader2 } from "lucide-react";
+import { Info, Sparkles, X, FileSearch, UserCheck, CheckCircle2, Loader2, TrendingUp, AlertTriangle } from "lucide-react";
 import { requestCvWriting } from "@/lib/actions/cv-requests";
 
 interface Props {
   level: "green" | "yellow" | "red";
   reasons?: string[];
+  // ChatGPT-level depth on the free tier — shown alongside the
+  // traffic light. Gemini already produces these every analysis;
+  // we just surface them in the wizard so the user gets meaningful
+  // feedback before deciding whether to upgrade.
+  summary?: string;
+  strengths?: string[];
+  skillGaps?: string[];
+  cvFeedback?: string[];
 }
 
 const LEVELS = {
@@ -50,7 +58,7 @@ const LEVELS = {
  * ATS is in plain Hebrew — many of Coral's members are non-tech
  * career-changers who haven't met the term.
  */
-export function AtsBadge({ level, reasons }: Props) {
+export function AtsBadge({ level, reasons, summary, strengths, skillGaps, cvFeedback }: Props) {
   const [showInfo, setShowInfo] = useState(false);
   // Confirmation state for the "קורל תכין לי קוח" flow.
   // 'idle' → user can click. 'sending' → server action in flight.
@@ -112,6 +120,53 @@ export function AtsBadge({ level, reasons }: Props) {
             ))}
           </ul>
         )}
+
+        {/* Professional analysis layer — Gemini produces all of this
+            anyway, surfacing it free gives users ChatGPT-level value
+            on the base tier. The PRO upgrade is still differentiated
+            by quality score / per-system ATS / rewrites / keywords. */}
+        {summary && summary.length > 0 && (
+          <div className={`mt-4 pt-4 border-t ${cfg.border}`}>
+            <p className={`text-[11px] font-black uppercase tracking-wide ${cfg.text} mb-1.5`}>
+              📊 הניתוח שלי
+            </p>
+            <p className={`text-sm ${cfg.text} leading-relaxed opacity-90`}>{summary}</p>
+          </div>
+        )}
+
+        {strengths && strengths.length > 0 && (
+          <div className="mt-4 pt-3 border-t border-white/30 bg-white/40 -mx-4 -mb-4 rounded-b-2xl px-4 pb-3 pt-3">
+            <p className="text-[11px] font-black uppercase tracking-wide text-emerald-700 mb-2 flex items-center gap-1">
+              <TrendingUp size={11} />
+              נקודות חזקות שזיהינו
+            </p>
+            <ul className="space-y-1">
+              {strengths.slice(0, 3).map((s, i) => (
+                <li key={i} className="text-xs text-emerald-800 leading-relaxed flex items-start gap-1.5">
+                  <CheckCircle2 size={11} className="mt-0.5 shrink-0 text-emerald-600" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {(cvFeedback && cvFeedback.length > 0) || (skillGaps && skillGaps.length > 0) ? (
+          <div className="mt-3 bg-white/40 -mx-4 rounded-2xl px-4 py-3">
+            <p className="text-[11px] font-black uppercase tracking-wide text-orange-700 mb-2 flex items-center gap-1">
+              <AlertTriangle size={11} />
+              מה לתקן עכשיו
+            </p>
+            <ul className="space-y-1">
+              {(cvFeedback ?? skillGaps ?? []).slice(0, 3).map((s, i) => (
+                <li key={i} className="text-xs text-orange-800 leading-relaxed flex items-start gap-1.5">
+                  <span className="inline-block w-1 h-1 bg-orange-500 rounded-full mt-1.5 shrink-0" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         {/* Two upgrade CTAs — visible for ALL ratings (per Coral). The
             ones who just got "green" might still want a deeper review

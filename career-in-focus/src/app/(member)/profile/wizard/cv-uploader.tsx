@@ -32,7 +32,14 @@ export function CvUploader({ resumeUrl, setState }: Props) {
   const [fileName, setFileName] = useState(resumeUrl ?? "");
   // Last analysis output, kept locally so the ATS badge survives
   // re-renders / step navigation without a refetch.
-  const [lastAts, setLastAts] = useState<{ level: "green" | "yellow" | "red"; reasons?: string[] } | null>(null);
+  const [lastAts, setLastAts] = useState<{
+    level: "green" | "yellow" | "red";
+    reasons?: string[];
+    summary?: string;
+    strengths?: string[];
+    skillGaps?: string[];
+    cvFeedback?: string[];
+  } | null>(null);
 
   // Shared success-path: persist + update wizard state + flip phase.
   // Extracted as a helper so both the first attempt and the auto-retry
@@ -60,7 +67,17 @@ export function CvUploader({ resumeUrl, setState }: Props) {
       strengths: result.strengths,
     });
     if (result.atsLevel) {
-      setLastAts({ level: result.atsLevel, reasons: result.atsReasons });
+      setLastAts({
+        level:      result.atsLevel,
+        reasons:    result.atsReasons,
+        // Pass through the deeper analysis Gemini already produced —
+        // AtsBadge surfaces 1-3 of each so the free tier shows
+        // ChatGPT-level value, not just a color.
+        summary:    result.summary,
+        strengths:  result.strengths,
+        skillGaps:  result.skillGaps,
+        cvFeedback: result.cvFeedback,
+      });
     }
     setPhase("done");
   }
@@ -212,7 +229,16 @@ export function CvUploader({ resumeUrl, setState }: Props) {
           {/* Free-tier traffic-light ATS rating. Only renders when the
               server returned a level — older analyses without the field
               just show the upload-confirmation card. */}
-          {lastAts && <AtsBadge level={lastAts.level} reasons={lastAts.reasons} />}
+          {lastAts && (
+            <AtsBadge
+              level={lastAts.level}
+              reasons={lastAts.reasons}
+              summary={lastAts.summary}
+              strengths={lastAts.strengths}
+              skillGaps={lastAts.skillGaps}
+              cvFeedback={lastAts.cvFeedback}
+            />
+          )}
         </>
       ) : phase === "uploading" || phase === "analyzing" ? (
         <div className="rounded-xl border border-teal/20 bg-teal/5 p-4 flex items-center gap-3">
