@@ -5,7 +5,7 @@ import { sendCoachingMessage, clearCoachingChat, type Message } from "@/lib/acti
 import {
   Send, Trash2, Sparkles, Loader2,
   Briefcase, Building2, MessageSquare, FileText,
-  TrendingUp, AlertTriangle, ArrowLeft,
+  TrendingUp, AlertTriangle, ArrowLeft, Radar,
 } from "lucide-react";
 
 // ─── Quick Actions — six data-aware prompts that pre-fill the chat. Each
@@ -24,6 +24,12 @@ const QUICK_ACTIONS: Array<{
     label: "מצא לי משרות רלוונטיות",
     tone: "teal",
     prompt: "תסקור את המשרות הזמינות לי במערכת לפי תפקיד היעד שלי. תעבור על 5-7 משרות שהכי רלוונטיות, ולכל אחת תגיד: למה היא מתאימה לפרופיל שלי ספציפית, ומה הצעד הראשון להגיש (Easy Apply / פנייה ישירה / נטוורקינג).",
+  },
+  {
+    icon: Radar,
+    label: "משרות 'מתחת לרדאר' עבורי",
+    tone: "purple",
+    prompt: "תסרוק עבורי משרות 'מתחת לרדאר' — משרות שלא מתפרסמות בלוחות הדרושים הרגילים אבל קיימות בשוק. תתחשב בתפקיד היעד שלי, בתחומי הניסיון, ובמיומנויות שלי. תיתן לי: (1) 3-5 חברות שכרגע מגייסות בשקט/לא בפומבי בתחום שלי, (2) טייטל התפקיד שמתאים לי בכל אחת, (3) דרך פנייה ספציפית — מי האדם הנכון לפנות אליו (HRBP, מנהל גיוס, ראש צוות) ובאיזה אפיק (LinkedIn DM, מייל ישיר, חבר משותף). זה השוק הסמוי שאני מלמדת — תעבוד לפי זה.",
   },
   {
     icon: Building2,
