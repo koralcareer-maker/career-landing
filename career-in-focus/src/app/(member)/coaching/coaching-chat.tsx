@@ -8,14 +8,19 @@ import {
   TrendingUp, AlertTriangle, ArrowLeft, Radar,
 } from "lucide-react";
 
-// ─── Quick Actions — six data-aware prompts that pre-fill the chat. Each
-// prompt is written to *force* the coach to combine the user's data with
-// market/strategy advice, not give generic answers. The exact phrasing
-// matters: it primes Gemini to follow the Analysis/Insight/Action
-// structure required by the system prompt.
+// ─── Quick Actions ─────────────────────────────────────────────────────────
+// Each action carries TWO strings:
+//   - userMessage: the short, natural Hebrew sentence the chat shows as if
+//     the user typed it ('מפה לי חברות מתחת לרדאר'). Clean, friendly UX.
+//   - prompt: the full multi-paragraph instruction the AI actually receives
+//     behind the scenes — the structural rules, the format requirements,
+//     the 'don't invent links' guard. Never visible to the user.
+// Splitting them makes the chat read naturally while still steering Gemini
+// to a specific, professional output structure.
 const QUICK_ACTIONS: Array<{
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
+  userMessage: string;
   prompt: string;
   tone: "teal" | "purple" | "amber" | "rose" | "emerald" | "navy";
 }> = [
@@ -23,12 +28,14 @@ const QUICK_ACTIONS: Array<{
     icon: Briefcase,
     label: "מצא לי משרות רלוונטיות",
     tone: "teal",
+    userMessage: "מצאי לי 5-7 משרות רלוונטיות עבורי",
     prompt: "תסקרי את המשרות הזמינות לי בלוח המשרות של המערכת לפי תפקיד היעד שלי. תעברי על 5-7 משרות שהכי רלוונטיות מתוך הרשימה במערכת (אסור להמציא), ולכל אחת תציגי: שם חברה + טייטל + הקישור המלא להגשה + למה היא מתאימה לפרופיל שלי + הצעד הראשון להגיש (Easy Apply / פנייה ישירה / נטוורקינג).",
   },
   {
     icon: Radar,
     label: "משרות 'מתחת לרדאר' עבורי",
     tone: "purple",
+    userMessage: "תכיני לי מיפוי חברות 'מתחת לרדאר' עבורי",
     prompt: `תכיני לי מיפוי חברות "מתחת לרדאר" באיכות של מגייסת בכירה — בדיוק באותו סטנדרט שקורל שולחת ללקוחות בכיר/ות שלה במייל. הדוח חייב להיות מובנה כך:
 
 **פסקת פתיחה (3-4 שורות):**
@@ -69,30 +76,35 @@ const QUICK_ACTIONS: Array<{
     icon: Building2,
     label: "מפה לי חברות שמגייסות בתחום שלי",
     tone: "purple",
+    userMessage: "מפי לי חברות שמגייסות בתחום שלי",
     prompt: "תכין לי מפת חברות שמגייסות בתחום היעד שלי. תחלק ל-3 קבוצות: (1) מגייסות פעילות עכשיו, (2) חברות בצמיחה שכדאי לעקוב אחריהן, (3) חברות רלוונטיות שכרגע פסיביות. לכל חברה — שורה אחת על למה היא מתאימה לי, ואיך הכי טוב לפנות (לוח / ישירה / נטוורקינג).",
   },
   {
     icon: MessageSquare,
     label: "כתוב לי הודעה למגייסת",
     tone: "rose",
+    userMessage: "כתבי לי הודעה לפנייה יזומה למגייסת בלינקדאין",
     prompt: "אני רוצה לפנות באופן יזום למגייס/ת בלינקדאין. תשאל אותי איזה תפקיד או חברה (משפט קצר), ואחר כך תנסח לי הודעה אישית של 4-5 שורות שמותאמת לפרופיל שלי ולמשרה. אחרי ההודעה — תציע גם גרסה למייל וגם follow-up אם לא יענו תוך שבוע.",
   },
   {
     icon: FileText,
     label: "מכתב מקדים מותאם",
     tone: "amber",
+    userMessage: "כתבי לי מכתב מקדים מותאם לתפקיד",
     prompt: "אני צריכ/ה מכתב מקדים. תשאל אותי איזה תפקיד וחברה, ועל בסיס הניסיון שלי בפרופיל תכתוב לי מכתב של 3 פסקאות: (1) למה הם, (2) למה אני התאמה ספציפית — עם 2-3 הישגים מהקריירה שלי שמתאימים לתפקיד, (3) קריאה לפעולה.",
   },
   {
     icon: TrendingUp,
     label: "ניתוח שוק העבודה בתחום שלי",
     tone: "emerald",
+    userMessage: "תני לי סקירת שוק העבודה בתחום שלי",
     prompt: "תן לי סקירה של שוק העבודה בתפקיד היעד שלי בישראל: רמת ביקוש, רמת תחרות, מגמות גיוס בחודשים האחרונים, ומיומנויות שהכי דרושות. תסיים באסטרטגיה מומלצת לחיפוש שלי השבוע (לאיזה ערוצים להתמקד).",
   },
   {
     icon: AlertTriangle,
     label: "למה לא קוראים לי לראיון?",
     tone: "navy",
+    userMessage: "למה לא קוראים לי לראיון?",
     prompt: "תנתח את חיפוש העבודה שלי. תסתכל על מספר ההגשות שלי, שיעור התגובה, מקורות ההגשה, ויש סיכוי שאני לא מגיע/ה לראיון בגלל בעיה ספציפית: כמות לא מספיקה, איכות גרועה של הגשות, מקורות חלשים, או חוסר התאמה לתפקיד. תגיד לי מה הסיבה הסבירה ביותר על בסיס הנתונים, ומה לתקן השבוע.",
   },
 ];
@@ -175,16 +187,22 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
     }
   }, [messages, isPending]);
 
-  async function handleSend(text?: string) {
-    const msg = (text ?? input).trim();
-    if (!msg || isPending) return;
+  // Two parameters now:
+  //   displayText — what the chat bubble shows (clean, short, natural).
+  //   sendText    — what the AI actually receives (may be long with
+  //                 explicit instructions). Defaults to displayText
+  //                 for normal user-typed messages.
+  async function handleSend(displayText?: string, sendText?: string) {
+    const display = (displayText ?? input).trim();
+    if (!display || isPending) return;
+    const aiPayload = (sendText ?? display).trim();
 
     setInput("");
-    setMessages(prev => [...prev, { role: "user", content: msg }]);
+    setMessages(prev => [...prev, { role: "user", content: display }]);
     setIsPending(true);
 
     try {
-      const reply = await sendCoachingMessage(msg);
+      const reply = await sendCoachingMessage(aiPayload);
       setMessages(prev => [...prev, { role: "assistant", content: reply }]);
     } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "אירעה שגיאת רשת. נסה שנית." }]);
@@ -245,7 +263,7 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
                   <button
                     key={a.label}
                     type="button"
-                    onClick={() => handleSend(a.prompt)}
+                    onClick={() => handleSend(a.userMessage, a.prompt)}
                     className={`text-right bg-white rounded-xl border-2 p-3 transition-all flex items-center gap-3 ${style.card}`}
                   >
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${style.icon}`}>
@@ -307,7 +325,7 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
           {QUICK_ACTIONS.slice(0, 4).map((a) => (
             <button
               key={a.label}
-              onClick={() => handleSend(a.prompt)}
+              onClick={() => handleSend(a.userMessage, a.prompt)}
               className="text-xs bg-teal-pale text-teal-dark font-bold px-3 py-1.5 rounded-full hover:bg-teal hover:text-white transition-all border border-teal/20 whitespace-nowrap shrink-0"
             >
               {a.label}
