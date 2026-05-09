@@ -312,10 +312,16 @@ async function callClaude(
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
-  // Models tried in order — if the primary hits a quota wall, we
-  // automatically fall through to a different model (different quota
-  // pool on Google's side). 2.0-flash has separate limits from 2.5-flash.
-  const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
+  // Models tried in order. Each Gemini model has its own quota pool
+  // on the free tier — if 2.5-flash hits its 250 RPD wall, 2.0-flash
+  // and 1.5-flash often still have budget. Listed cheapest/lightest
+  // last so we exhaust the heavier models first.
+  const MODELS = [
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-1.5-flash",
+  ];
   const buildUrl = (model: string) =>
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
