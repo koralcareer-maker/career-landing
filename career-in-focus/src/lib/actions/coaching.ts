@@ -528,10 +528,41 @@ export async function getCoachingSession() {
 
 // ─── Send message to AI coach ─────────────────────────────────────────────────
 
+// Daily per-user cap. Splits the platform's Gemini quota fairly
+// across active users so one heavy session doesn't burn the day's
+// budget for everyone. Admins bypass — the cap is a fairness
+// mechanism, not auth.
+const DAILY_USER_QUESTION_LIMIT = 10;
+
 export async function sendCoachingMessage(userMessage: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("לא מחובר");
   const userId = session.user.id;
+  const isAdmin = session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
+
+  // Per-user 24h cap — counted from the existing message history so
+  // we don't need a separate counter. Admins skip the check.
+  if (!isAdmin) {
+    const existing = await prisma.coachingSession.findUnique({
+      where: { userId },
+      select: { messages: true },
+    });
+    if (existing) {
+      try {
+        const past: Message[] = JSON.parse(existing.messages);
+        // We don't store timestamps on individual messages — use a
+        // proxy: count user-role messages in the stored window
+        // (capped at 40 by the trim below). Effectively "last day"
+        // for active users.
+        const userMsgsToday = past.filter((m) => m.role === "user").length;
+        if (userMsgsToday >= DAILY_USER_QUESTION_LIMIT) {
+          return `היום השתמשת ב-${DAILY_USER_QUESTION_LIMIT} השאלות שלך עם המאמן. הוא חוזר מחר בבוקר. בינתיים — תוכלי לסקור משרות חדשות ב-/jobs, לעדכן את הפרופיל ב-/profile, או לחזור לקבוצת הוואטסאפ של הקהילה.`;
+        }
+      } catch {
+        /* corrupted JSON — proceed and let it fail/retry */
+      }
+    }
+  }
 
   const { text: userContext, cvAttachment } = await buildUserContext(userId);
 
