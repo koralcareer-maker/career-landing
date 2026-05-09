@@ -311,7 +311,13 @@ async function callClaude(
     return "המאמן AI אינו זמין כרגע. אנא פני למנהלת המערכת.";
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+  const apiKey = process.env.GEMINI_API_KEY;
+  // Models tried in order — if the primary hits a quota wall, we
+  // automatically fall through to a different model (different quota
+  // pool on Google's side). 2.0-flash has separate limits from 2.5-flash.
+  const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
+  const buildUrl = (model: string) =>
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   // Gemini requires strict alternating user/model turns, starting with "user"
   // Filter and fix the message sequence
@@ -386,8 +392,8 @@ async function callClaude(
     promptFeedback?: { blockReason?: string };
   };
 
-  async function callOnce(): Promise<{ data: GeminiResp; status: number }> {
-    const res = await fetch(url, {
+  async function callOnce(model: string): Promise<{ data: GeminiResp; status: number }> {
+    const res = await fetch(buildUrl(model), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -395,26 +401,81 @@ async function callClaude(
     return { data: await res.json() as GeminiResp, status: res.status };
   }
 
-  try {
-    let { data, status } = await callOnce();
+  function isQuotaError(d: GeminiResp, status: number): boolean {
+    return status === 429 || /exceeded|quota|rate|429/i.test(d.error?.message ?? "");
+  }
 
-    // Auto-retry once on rate-limit / quota errors. Free-tier Gemini
-    // sometimes throttles a single burst — a 4s pause + retry gets
-    // through ~80% of the time.
-    if (data.error && /exceeded|quota|rate|429/i.test(data.error.message ?? "") || status === 429) {
-      console.warn("[coaching] rate-limit hit, retrying after 4s:", data.error?.message);
-      await new Promise((r) => setTimeout(r, 4000));
-      ({ data, status } = await callOnce());
+  // Notify Coral via in-app admin notification when quota hits — best
+  // effort, doesn't block the user response. Throttled to once/hour
+  // by checking for a recent identical notification first.
+  async function notifyAdminOfQuota(model: string, message: string) {
+    try {
+      const admin = await prisma.user.findFirst({
+        where: { OR: [{ role: "SUPER_ADMIN" }, { role: "ADMIN" }] },
+        select: { id: true },
+        orderBy: { createdAt: "asc" },
+      });
+      if (!admin) return;
+      const recent = await prisma.notification.findFirst({
+        where: {
+          userId: admin.id,
+          title: { startsWith: "🚨 מגבלת Gemini" },
+          createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) },
+        },
+      });
+      if (recent) return; // already alerted in the last hour
+      await prisma.notification.create({
+        data: {
+          userId: admin.id,
+          type: "general",
+          title: "🚨 מגבלת Gemini API נגמרה",
+          message: `המאמן AI הגיע למגבלה (${model}). פרטים: ${message.slice(0, 200)}. צריך לשדרג ב-aistudio.google.com`,
+          link: "/coaching",
+        },
+      });
+    } catch (e) {
+      console.warn("[coaching] admin quota notification failed:", e);
+    }
+  }
+
+  try {
+    // Try each model in sequence until one succeeds or we exhaust them.
+    // First model with a non-quota error wins (we don't try fallback for
+    // safety blocks etc.) — only quota errors trigger the fallback.
+    let data: GeminiResp = {};
+    let status = 0;
+    let modelUsed = MODELS[0];
+    for (let i = 0; i < MODELS.length; i++) {
+      const model = MODELS[i];
+      modelUsed = model;
+      ({ data, status } = await callOnce(model));
+
+      // First-try retry within the same model after 4s — handles
+      // momentary RPM throttling.
+      if (isQuotaError(data, status) && i === 0) {
+        console.warn(`[coaching] rate-limit on ${model}, retrying in 4s`);
+        await new Promise((r) => setTimeout(r, 4000));
+        ({ data, status } = await callOnce(model));
+      }
+
+      // Still quota-blocked? Try the next model in the list.
+      if (isQuotaError(data, status)) {
+        console.warn(`[coaching] ${model} quota exhausted, falling through to next model`);
+        // Fire admin notification on the first quota hit per request.
+        if (i === 0) await notifyAdminOfQuota(model, data.error?.message ?? "");
+        continue;
+      }
+      // Got a real response (success OR non-quota error) — stop here.
+      break;
     }
 
     if (data.error) {
-      console.error("[coaching] Gemini API error:", data.error.message);
+      console.error(`[coaching] Gemini API error (${modelUsed}):`, data.error.message);
       const m = data.error.message ?? "";
-      if (/exceeded|quota|rate|429/i.test(m) || status === 429) {
-        // Surface the underlying message — it's usually 'quota exceeded
-        // for X requests per minute' or 'requests per day' which is
-        // actionable info.
-        return `המערכת הגיעה למגבלת השימוש של היום (${m.slice(0, 80)}). נסי שוב בעוד מספר דקות. אם זה חוזר — נצטרך לשדרג את חבילת ה-API.`;
+      if (isQuotaError(data, status)) {
+        // Customer-facing copy — DO NOT mention quota / billing / API.
+        // The user shouldn't see the operator's infrastructure problems.
+        return `המאמן עמוס כרגע. בינתיים את יכולה לסקור משרות חדשות ב-/jobs, לעדכן את הפרופיל שלך, או לחזור עוד כמה דקות. אם זה דחוף — תכתבי לקורל ישירות.`;
       }
       if (/safety|blocked|filtered/i.test(m)) {
         return "השאלה נחסמה על ידי סינון בטיחות. נסי לנסח אחרת.";
