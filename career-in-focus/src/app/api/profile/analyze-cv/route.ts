@@ -397,6 +397,19 @@ export async function POST(req: NextRequest) {
     ];
   }
 
+  // Coral's gold standard. CVs prepared by her hit a distinctive
+  // textual fingerprint (section names, pipe-emdash dates, contact
+  // block layout, etc.) — when 4+ markers match, override to green
+  // regardless of Gemini's grading. These are professionally written
+  // CVs that pass ATS by definition.
+  if ("isCoralTemplate" in fingerprint && fingerprint.isCoralTemplate) {
+    result.atsLevel = "green";
+    result.atsReasons = [
+      "CV בפורמט המקצועי של קריירה בפוקוס — עובר מערכות ATS",
+      "מבנה, ניסוחים ומילות מפתח מותאמים לסטנדרטים בשוק",
+    ];
+  }
+
   // Surface the extraction telemetry alongside the result so the UI
   // (and future debugging) can see whether we used the fast path or
   // had to fall back. Doesn't affect existing consumers.

@@ -17,7 +17,7 @@
  */
 
 export type FingerprintVerdict =
-  | { isCv: true;  confidence: number; signals: string[] }
+  | { isCv: true;  confidence: number; signals: string[]; isCoralTemplate?: boolean; coralMatches?: string[] }
   | { isCv: false; confidence: number; reason: string; suggestedFileType?: string };
 
 interface RegexCheck {
@@ -58,6 +58,34 @@ const NON_CV_SIGNALS: Array<{ regex: RegExp; type: string; description: string }
 const MIN_TEXT_LENGTH    = 250;   // CVs almost always have at least this much text
 const MIN_TEXT_LENGTH_WARNING = 600;
 const MIN_CV_SIGNALS     = 3;     // need this many positive signals (weighted) to pass
+
+// Coral's template fingerprint — distinctive markers that appear
+// together only in CVs Coral prepared herself. When 4+ of these
+// match, we mark the CV as Coral-template and short-circuit to a
+// guaranteed green ATS rating regardless of what Gemini thinks.
+//
+// Identifying the template by content (not visual layout) means
+// even when the PDF is converted, re-saved, or has its visual
+// styling changed, the textual markers persist.
+const CORAL_TEMPLATE_MARKERS: Array<{ name: string; regex: RegExp; }> = [
+  // Coral spells it 'נסיון תעסוקתי' (without yod) intentionally —
+  // most other CV authors use 'ניסיון תעסוקתי'. Distinctive.
+  { name: "non-yod-experience", regex: /נסיון\s+תעסוקתי/                                    },
+  // Skills section header — 'מיומנויות' (Coral never uses 'כישורים' or 'יכולות').
+  { name: "skills-header",      regex: /^\s*מיומנויות\s*$/m                                 },
+  // Languages: 'שפת אם' is Coral's exact phrasing.
+  { name: "language-native",    regex: /שפת\s+אם/                                           },
+  // Education section header.
+  { name: "education-header",   regex: /^\s*השכלה\s*$/m                                     },
+  // Job header pattern with em-dash dates: '<role> | <company> | YYYY–YYYY'
+  // En-dash is U+2013, em-dash is U+2014. Coral uses en-dash.
+  { name: "pipe-emdash-dates",  regex: /\|\s*(?:20|19)\d\d\s*[–—\-]\s*(?:20|19)\d\d/ },
+  // Top contact block layout — phone with hyphens + email + city in close proximity.
+  // Use a fuzzy proximity check: an Israeli mobile within 200 chars of an email.
+  { name: "contact-block",      regex: /(05\d-\d{3}-\d{4}|05\d-\d{7})[\s\S]{0,200}@/         },
+];
+
+const CORAL_TEMPLATE_THRESHOLD = 4; // out of 6 markers
 
 /**
  * Inspect extracted text and decide whether it looks like a CV.
@@ -123,5 +151,20 @@ export function looksLikeCv(text: string): FingerprintVerdict {
     ? Math.min(0.7, score / 12)
     : Math.min(0.95, score / 10);
 
-  return { isCv: true, confidence, signals: matched };
+  // Check Coral's signature template. If enough markers are present,
+  // we trust it as a Coral-prepared CV and the route can short-circuit
+  // to a guaranteed green ATS rating.
+  const coralMatches: string[] = [];
+  for (const m of CORAL_TEMPLATE_MARKERS) {
+    if (m.regex.test(t)) coralMatches.push(m.name);
+  }
+  const isCoralTemplate = coralMatches.length >= CORAL_TEMPLATE_THRESHOLD;
+
+  return {
+    isCv: true,
+    confidence,
+    signals: matched,
+    isCoralTemplate,
+    coralMatches: isCoralTemplate ? coralMatches : undefined,
+  };
 }
