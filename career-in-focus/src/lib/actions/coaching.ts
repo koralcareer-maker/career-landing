@@ -363,9 +363,11 @@ async function callClaude(
       // + strategic reasons + 5-step plan + title variants) need room.
       // Short conversational replies still cap themselves naturally;
       // higher ceiling doesn't make them ramble.
+      // (Removed thinkingConfig — caused 'invalid argument' errors on
+      // some Gemini API versions. The 8192 cap is high enough that
+      // thinking eating into it isn't the bottleneck.)
       maxOutputTokens: 8192,
       temperature: 0.7,
-      thinkingConfig: { thinkingBudget: 0 },
     },
     safetySettings: [
       { category: "HARM_CATEGORY_HARASSMENT",        threshold: "BLOCK_NONE" },
@@ -393,7 +395,17 @@ async function callClaude(
 
     if (data.error) {
       console.error("[coaching] Gemini API error:", data.error.message);
-      return "אירעה שגיאה זמנית במאמן ה-AI. נסי שנית בעוד רגע.";
+      // Surface the underlying Gemini error to the user (truncated)
+      // so we can diagnose without server-log access. If it's a
+      // common pattern we recognise, give a friendlier message.
+      const m = data.error.message ?? "";
+      if (/exceeded|quota|rate/i.test(m)) {
+        return "המערכת עמוסה כרגע. נסי שוב בעוד 30 שניות.";
+      }
+      if (/safety|blocked|filtered/i.test(m)) {
+        return "השאלה נחסמה על ידי סינון בטיחות. נסי לנסח אחרת.";
+      }
+      return `אירעה שגיאה במאמן ה-AI: ${m.slice(0, 120)}. נסי שנית — או שלחי לי screenshot של ההודעה.`;
     }
     if (data.promptFeedback?.blockReason) {
       console.error("[coaching] prompt blocked:", data.promptFeedback.blockReason);
