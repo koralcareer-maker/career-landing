@@ -84,12 +84,29 @@ async function buildUserContext(userId: string): Promise<{
   text: string;
   cvAttachment: { mimeType: string; data: string } | null;
 }> {
-  const [profile, passport, apps, events, user] = await Promise.all([
+  const [profile, passport, apps, events, user, allJobs] = await Promise.all([
     prisma.profile.findUnique({ where: { userId } }),
     prisma.careerPassport.findUnique({ where: { userId } }),
     prisma.jobApplication.findMany({ where: { userId }, orderBy: { updatedAt: "desc" }, take: 20 }),
     prisma.event.findMany({ where: { isPublished: true, startAt: { gte: new Date() } }, take: 3 }),
     prisma.user.findUnique({ where: { id: userId }, select: { name: true, createdAt: true } }),
+    // Live job board — coach gets REAL openings with REAL apply links,
+    // not hallucinated 'company hiring quietly' guesses. Filtered to
+    // active + not expired; relevance scoring + 'hidden vs public'
+    // labelling happens below with the user's target role in mind.
+    prisma.job.findMany({
+      where: {
+        isPublished: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
+      },
+      orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
+      take: 80,
+      select: {
+        title: true, company: true, location: true, region: true,
+        field: true, experienceLevel: true, source: true,
+        externalUrl: true, isHot: true, summary: true,
+      },
+    }),
   ]);
 
   // Pull the CV in parallel with everything else so it doesn't add latency.
@@ -213,6 +230,54 @@ ${(() => {
 
 ${recentApps ? `\n5 הגשות אחרונות:\n${recentApps}` : ""}
 
+=== משרות זמינות במערכת (לוח החי) ===
+${(() => {
+  // Score each job by how well it matches the user's target. Title +
+  // field overlap go furthest; region match is a tiebreaker. We keep
+  // the top 12 scored jobs so the prompt doesn't blow up on token cost.
+  const targetTokens = (profile?.targetRole ?? "").toLowerCase().split(/\s+/).filter(Boolean);
+  const fieldTokens = [profile?.desiredField, profile?.q_industryInterests]
+    .filter(Boolean).join(" ").toLowerCase().split(/[\s,]+/).filter(Boolean);
+
+  const scored = allJobs.map((j) => {
+    const titleLc = j.title.toLowerCase();
+    const fieldLc = (j.field ?? "").toLowerCase();
+    let score = 0;
+    for (const t of targetTokens) if (t.length > 2 && titleLc.includes(t)) score += 5;
+    for (const t of fieldTokens) if (t.length > 2 && (titleLc.includes(t) || fieldLc.includes(t))) score += 2;
+    if (j.isHot) score += 1;
+    return { j, score };
+  })
+  .filter((x) => x.score > 0 || allJobs.length < 15) // when DB is small, surface everything
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 12)
+  .map((x) => x.j);
+
+  if (scored.length === 0) {
+    return "(אין כרגע משרות שמתאימות לפרופיל המשתמשת — אם נשאלת על משרות, הציעי להמתין לעדכון או להרחיב את תפקיד היעד.)";
+  }
+
+  // 'Below the radar' heuristic: source isn't a public board (drushim/
+  // alljobs/jobnet/linkedin), OR isHot=true (Coral's curated picks).
+  // Public boards = source includes one of the well-known names.
+  const isPublicBoard = (src: string | null) =>
+    /drushim|alljobs|jobnet|jobmaster|sales|linkedin|all-?jobs|דרושים/i.test(src ?? "");
+
+  return scored.map((j) => {
+    const hidden = j.isHot || !isPublicBoard(j.source);
+    const label = hidden ? "🔒 מתחת לרדאר" : "📰 לוח דרושים";
+    const lines = [
+      `[${label}] ${j.title} ב-${j.company}`,
+      j.location ? `  אזור: ${j.region ?? j.location}` : "",
+      j.field ? `  תחום: ${j.field}` : "",
+      j.experienceLevel ? `  רמת ניסיון: ${j.experienceLevel}` : "",
+      j.summary ? `  תיאור: ${j.summary.slice(0, 150)}` : "",
+      j.externalUrl ? `  קישור להגשה: ${j.externalUrl}` : "  (אין קישור — הגשה דרך פנייה ישירה לחברה)",
+    ].filter(Boolean);
+    return lines.join("\n");
+  }).join("\n\n");
+})()}
+
 === אירועים קרובים ===
 ${events.map(e => `• ${e.title} — ${new Date(e.startAt).toLocaleDateString("he-IL")}`).join("\n") || "אין"}
 
@@ -221,6 +286,9 @@ ${events.map(e => `• ${e.title} — ${new Date(e.startAt).toLocaleDateString("
 - אל תזכירי שדות שמסומנים — או "לא הוגדר" — כי זו תהיה הצפה. אם נתון חיוני חסר, עודדי בעדינות להשלים אותו ב-/profile או ב-/guide.
 - אם המשתמשת שאלה על מצב מסוים (למשל "האם להגיש?") — תמיד שילבי תוך התייחסות ל-targetRole, החוזקות מהדרכון, וההעדפות שלה.
 - אם יש סתירות בין הצהרות המשתמשת לבין הנתונים בפרופיל — הני לטובתה את ההצהרה האחרונה בצ'אט.
+- 🚨 כשהמשתמשת שואלת על משרות — השתמשי **אך ורק במשרות מסעיף "משרות זמינות במערכת"** למעלה. אסור להמציא חברות / תפקידים / קישורים. אם אין משרה מתאימה ברשימה, אמרי זאת בכנות ("אין כרגע משרה רלוונטית במערכת — נעדכן בהקדם") במקום להמציא.
+- כשמצטטת משרה — תמיד צטטי את **שם החברה + טייטל התפקיד + הקישור המלא להגשה** (אם יש). זה מה שהמשתמשת באה לקבל.
+- "🔒 מתחת לרדאר" = משרה מקורות סמויים / hand-picked של קורל. "📰 לוח דרושים" = משרה מלוחות פומביים. כשנשאלת על השוק הסמוי — הציעי קודם משרות עם תווית 🔒.
 ${cvAttachment ? "- צורף לבקשה הזו קובץ קורות החיים של המשתמשת. עיינו בו וצטטו ממנו פרטים אמיתיים (חברות, תפקידים, הישגים מספריים) כשרלוונטי, במקום להניח." : ""}
 `.trim();
 
