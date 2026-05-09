@@ -115,11 +115,24 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
   const [input, setInput] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  // messagesContainerRef scrolls only its own contents — replaces
+  // the previous bottomRef.scrollIntoView() which dragged the whole
+  // page when the chat wasn't fully in view (Coral's complaint).
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Auto-scroll only inside the chat container, never the page. Also
+  // respect the user's scroll position — if they've scrolled up to
+  // read older messages, don't yank them down on every new message.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    // Within 200px of bottom = "user is following the conversation"
+    // → auto-scroll. Further up = they're reading history → don't move.
+    if (distanceFromBottom < 200) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
   }, [messages, isPending]);
 
   async function handleSend(text?: string) {
@@ -171,7 +184,7 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center min-h-full gap-4 text-center py-2">
             <div className="w-14 h-14 bg-teal-pale rounded-3xl flex items-center justify-center">
@@ -245,8 +258,6 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
             </div>
           </div>
         )}
-
-        <div ref={bottomRef} />
       </div>
 
       {/* Quick action chips (when chat already has messages — keeps them
