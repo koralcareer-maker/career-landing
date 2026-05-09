@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { extractCvText } from "@/lib/cv-extract";
+import { looksLikeCv } from "@/lib/cv-fingerprint";
 
 /**
  * CV upload + analysis. Three-stage pipeline:
@@ -253,6 +254,44 @@ export async function POST(req: NextRequest) {
       },
     };
     return NextResponse.json(tooLittleText);
+  }
+
+  // === Stage 2.5: deterministic CV fingerprint check ===
+  // Catch invoices / contracts / recipes / random docs BEFORE we
+  // pay Gemini for an expensive analysis. Faster fail (sub-second),
+  // cheaper, and produces a more specific Hebrew error than Gemini's
+  // generic isNotCv response. See lib/cv-fingerprint.ts for the
+  // signal/anti-signal lists.
+  const fingerprint = looksLikeCv(extracted.text);
+  if (!fingerprint.isCv) {
+    return NextResponse.json({
+      currentRole: "—",
+      targetRole:  "—",
+      yearsExperience: 0,
+      strengths: [],
+      skillGaps: [],
+      marketSkills: [],
+      cvFeedback: [
+        fingerprint.reason,
+        "וודאי שהעלית קובץ קורות חיים מקצועי שכולל ניסיון תעסוקתי, השכלה, מיומנויות ופרטי קשר.",
+      ],
+      summary: fingerprint.reason,
+      atsLevel: "red",
+      atsReasons: [
+        "הקובץ לא מזוהה כקורות חיים",
+        fingerprint.suggestedFileType
+          ? `נראה כי הקובץ הוא ${fingerprint.suggestedFileType === "invoice" ? "חשבונית/קבלה" : fingerprint.suggestedFileType === "contract" ? "חוזה" : fingerprint.suggestedFileType === "recipe" ? "מתכון" : fingerprint.suggestedFileType === "form" ? "טופס" : "מסמך אחר"}`
+          : "תוכן הקובץ לא מתאים למבנה של CV",
+      ],
+      isNotCv: true,
+      _extraction: {
+        source: extracted.source,
+        format: extracted.format,
+        usedFallback: extracted.usedFallback,
+        textLength: extracted.text.length,
+        fingerprintReason: fingerprint.reason,
+      },
+    });
   }
 
   // === Stage 3: structured analysis on the extracted text ===
