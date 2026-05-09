@@ -109,12 +109,26 @@ atsReasons: 2 סיבות ספציפיות מהקובץ עצמו — מה חסר/
 
 const VISION_EXTRACTION_PROMPT = `קרא את הטקסט המלא בקובץ קורות החיים המצורף וצא אותו בלבד. אם הקובץ הוא PDF סרוק או תמונה, חלץ טקסט באמצעות OCR. אל תוסיף הקדמות או הסברים — רק את הטקסט המלא, מסודר לפי הסדר שמופיע בקובץ.`;
 
-async function callGemini(prompt: string, fileBuf?: Buffer, mime?: string): Promise<string> {
+async function callGemini(prompt: string, fileBuf?: Buffer, mime?: string, opts: { jsonMode?: boolean } = {}): Promise<string> {
   const parts: Array<Record<string, unknown>> = [];
   if (fileBuf && mime) {
     parts.push({ inline_data: { mime_type: mime, data: fileBuf.toString("base64") } });
   }
   parts.push({ text: prompt });
+
+  // jsonMode: forces Gemini to emit clean JSON only (no markdown
+  // wrapping, no preamble). Critical for the analysis call where we
+  // JSON.parse the result; without it Gemini occasionally pads with
+  // explanations and breaks parsing. 8192 token cap because Gemini
+  // 2.5's 'thinking' tokens count toward maxOutputTokens — strict
+  // recruiter prompts can spend 2-3K reasoning before emitting JSON.
+  const generationConfig: Record<string, unknown> = {
+    maxOutputTokens: opts.jsonMode ? 8192 : 4096,
+    temperature: 0.4,
+  };
+  if (opts.jsonMode) {
+    generationConfig.responseMimeType = "application/json";
+  }
 
   const r = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY()}`,
@@ -123,7 +137,7 @@ async function callGemini(prompt: string, fileBuf?: Buffer, mime?: string): Prom
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ role: "user", parts }],
-        generationConfig: { maxOutputTokens: 4096, temperature: 0.4 },
+        generationConfig,
       }),
       signal: AbortSignal.timeout(45_000),
     },
@@ -266,7 +280,12 @@ export async function POST(req: NextRequest) {
 
   let analysisText = "";
   try {
-    analysisText = await callGemini(`${ANALYSIS_PROMPT}${targetContext}\n\n--- קורות חיים ---\n${extracted.text}`);
+    analysisText = await callGemini(
+      `${ANALYSIS_PROMPT}${targetContext}\n\n--- קורות חיים ---\n${extracted.text}`,
+      undefined,
+      undefined,
+      { jsonMode: true }, // force JSON, no markdown wrapping
+    );
   } catch (e) {
     console.error("[analyze-cv] analysis failed:", e);
     return NextResponse.json(
@@ -275,16 +294,51 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Best-effort JSON extraction. Try in order:
+  //   1. Strip markdown fences and parse straight (the responseMimeType
+  //      hint above usually means there's nothing to strip).
+  //   2. Slice between the first '{' and last '}' — rescues cases where
+  //      Gemini included a preamble or truncated mid-output.
+  //   3. Synthesize a graceful red result so the user always gets a
+  //      response, never the cryptic 'invalid format' error.
+  function tryParse(s: string): Record<string, unknown> | null {
+    try { return JSON.parse(s) as Record<string, unknown>; }
+    catch { return null; }
+  }
+
   const cleaned = analysisText.replace(/```json\n?|\n?```/g, "").trim();
-  let result: Record<string, unknown>;
-  try {
-    result = JSON.parse(cleaned) as Record<string, unknown>;
-  } catch {
-    console.error("[analyze-cv] failed to parse Gemini JSON:", cleaned.slice(0, 300));
-    return NextResponse.json(
-      { error: "הניתוח חזר בפורמט לא תקין. נסי שוב." },
-      { status: 502 },
-    );
+  let result: Record<string, unknown> | null = tryParse(cleaned);
+
+  if (!result) {
+    const open = cleaned.indexOf("{");
+    const close = cleaned.lastIndexOf("}");
+    if (open >= 0 && close > open) {
+      result = tryParse(cleaned.slice(open, close + 1));
+    }
+  }
+
+  if (!result) {
+    console.error("[analyze-cv] could not parse Gemini JSON. Raw output:", cleaned.slice(0, 500));
+    // Don't surface a hard error — give the user a usable response with
+    // a friendly red rating so they can still see something happened
+    // and try a different file.
+    result = {
+      currentRole: "—",
+      targetRole: "—",
+      yearsExperience: 0,
+      strengths: [],
+      skillGaps: [],
+      marketSkills: [],
+      cvFeedback: [
+        "המערכת לא הצליחה לסרוק את הקובץ הזה במלואו. נסי קובץ אחר או PDF פשוט יותר.",
+      ],
+      summary: "הסקירה לא הושלמה — ייתכן שהקובץ מורכב מדי לסריקה אוטומטית.",
+      atsLevel: "red",
+      atsReasons: [
+        "המערכת התקשתה לסרוק את הקובץ לעומקו",
+        "מומלץ לוודא שהקובץ הוא PDF דיגיטלי קריא",
+      ],
+    };
   }
 
   // If Gemini detected the file isn't a CV at all (invoice / contract
