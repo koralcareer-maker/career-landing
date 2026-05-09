@@ -281,10 +281,20 @@ async function callClaude(
     }
   }
 
+  // Gemini 2.5-flash burns hidden 'thinking' tokens against the
+  // maxOutputTokens cap. The previous 1024 budget was getting eaten
+  // by thinking → empty / truncated chat replies (the symptom Coral
+  // reported). 4096 leaves comfortable room AND we explicitly disable
+  // thinking for the chat — it's a 5-line conversational reply, not
+  // a complex reasoning task; speed > thinking depth here.
   const body = {
     system_instruction: { parts: [{ text: systemPrompt }] },
     contents,
-    generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+    generationConfig: {
+      maxOutputTokens: 4096,
+      temperature: 0.7,
+      thinkingConfig: { thinkingBudget: 0 },
+    },
     safetySettings: [
       { category: "HARM_CATEGORY_HARASSMENT",        threshold: "BLOCK_NONE" },
       { category: "HARM_CATEGORY_HATE_SPEECH",       threshold: "BLOCK_NONE" },
@@ -301,18 +311,34 @@ async function callClaude(
     });
 
     const data = await res.json() as {
-      candidates?: Array<{ content: { parts: Array<{ text: string }> } }>;
+      candidates?: Array<{
+        content?: { parts?: Array<{ text?: string }> };
+        finishReason?: string;
+      }>;
       error?: { message: string };
+      promptFeedback?: { blockReason?: string };
     };
 
     if (data.error) {
-      console.error("Gemini API error:", data.error.message);
+      console.error("[coaching] Gemini API error:", data.error.message);
       return "אירעה שגיאה זמנית במאמן ה-AI. נסי שנית בעוד רגע.";
     }
+    if (data.promptFeedback?.blockReason) {
+      console.error("[coaching] prompt blocked:", data.promptFeedback.blockReason);
+      return "השאלה הזו לא מאפשרת לי לענות. נסי לנסח אחרת.";
+    }
 
-    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "לא התקבלה תשובה. נסי שנית.";
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    if (!reply.trim()) {
+      const finish = data.candidates?.[0]?.finishReason ?? "(unknown)";
+      console.error("[coaching] empty reply, finishReason=", finish, "| candidates:", JSON.stringify(data.candidates).slice(0, 300));
+      // Token-budget ran out / safety filter / etc. — give the user
+      // something useful instead of generic 'try again'.
+      return "התשובה לא התקבלה במלואה. נסי לשאול שאלה ממוקדת יותר (לדוגמה: 'איזו משרה אני צריכה להגיש השבוע?') או לחצי על אחד מהכפתורים המהירים למעלה.";
+    }
+    return reply;
   } catch (err) {
-    console.error("Gemini fetch error:", err);
+    console.error("[coaching] Gemini fetch error:", err);
     return "אירעה שגיאת רשת. נסי שנית.";
   }
 }
