@@ -352,3 +352,413 @@ export async function notifyAdminOfCvRequest({
     html,
   });
 }
+
+// ─── Password Reset Email ─────────────────────────────────────────────────────
+// Sent when a user requests a password reset from /forgot-password.
+// Contains a one-click link with a single-use token (24h expiry).
+// Gender-aware copy so the recipient doesn't get a feminine email when
+// they're a man (or vice versa).
+
+export async function sendPasswordResetEmail({
+  to,
+  name,
+  resetUrl,
+  gender = "f",
+}: {
+  to: string;
+  name: string;
+  resetUrl: string;
+  gender?: Gender;
+}) {
+  const T = (f: string, m: string) => (gender === "m" ? m : f);
+  const firstName = name?.split(" ")[0] ?? T("חברה", "חבר");
+
+  const html = `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>איפוס סיסמה — קריירה בפוקוס</title>
+</head>
+<body style="margin:0;padding:0;background:#F5F1EB;font-family:'Rubik','Arial',sans-serif;direction:rtl;color:#1C1C2E;">
+  <div style="display:none;max-height:0;overflow:hidden;">
+    קישור לאיפוס סיסמה — תקף ל-24 שעות
+  </div>
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F1EB;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 8px 40px rgba(28,28,46,0.08);">
+
+          <tr>
+            <td style="background:linear-gradient(135deg,#1C1C2E 0%,#23233D 100%);padding:32px 40px 28px;">
+              <div style="display:inline-block;background:rgba(62,207,207,0.15);border:1px solid rgba(62,207,207,0.4);border-radius:999px;padding:5px 12px;margin-bottom:14px;">
+                <span style="color:#3ECFCF;font-weight:800;font-size:11px;letter-spacing:0.5px;">🔐 איפוס סיסמה</span>
+              </div>
+              <h1 style="color:#fff;margin:0;font-size:24px;font-weight:900;line-height:1.2;">
+                ${firstName}, ${T("ביקשת לאפס את הסיסמה", "ביקשת לאפס את הסיסמה")}
+              </h1>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:28px 40px 8px;">
+              <p style="font-size:15px;color:#1C1C2E;line-height:1.7;margin:0 0 14px;">
+                קיבלנו בקשה לאפס את הסיסמה לחשבון שלך.
+                ${T("לחצי על הכפתור למטה", "לחץ על הכפתור למטה")} כדי לבחור סיסמה חדשה.
+              </p>
+              <p style="font-size:13px;color:#888;line-height:1.6;margin:0 0 24px;">
+                הקישור תקף ל-24 שעות בלבד.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding:0 40px 28px;">
+              <a href="${resetUrl}" style="display:inline-block;background:#3ECFCF;color:#fff;font-weight:800;font-size:15px;padding:14px 36px;border-radius:14px;text-decoration:none;box-shadow:0 4px 12px rgba(62,207,207,0.3);">
+                בחירת סיסמה חדשה ←
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 40px 28px;">
+              <div style="background:#FBFAF7;border:1px solid #EFEAE0;border-radius:12px;padding:14px 18px;">
+                <p style="margin:0 0 6px;font-size:12px;color:#888;font-weight:700;">לא ביקשת איפוס?</p>
+                <p style="margin:0;font-size:12px;color:#888;line-height:1.6;">
+                  ${T("את יכולה להתעלם מהמייל הזה — הסיסמה שלך לא תשונה.", "אתה יכול להתעלם מהמייל הזה — הסיסמה שלך לא תשונה.")}
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:0 40px 28px;">
+              <p style="margin:0;font-size:11px;color:#aaa;line-height:1.6;word-break:break-all;direction:ltr;text-align:left;">
+                אם הכפתור לא עובד — העתק את הקישור הבא לדפדפן:<br/>
+                <span style="color:#3ECFCF;">${resetUrl}</span>
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background:#FBFAF7;padding:18px 40px;text-align:center;border-top:1px solid #EFEAE0;">
+              <p style="margin:0;color:#888;font-size:12px;">
+                קריירה בפוקוס · ${T("המקום של נשים שמחפשות עבודה אחרת", "המקום של מי שמחפש עבודה אחרת")}
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body></html>`;
+
+  await sendEmail({
+    to,
+    subject: "🔐 איפוס סיסמה — קריירה בפוקוס",
+    html,
+  });
+}
+
+// ─── Cancellation Confirmation ────────────────────────────────────────────────
+// Sent immediately when a user cancels their subscription. Confirms the
+// cancellation, tells them when access ends, and offers a single one-click
+// reactivation in case they regret it. Warm tone — Coral wants ex-members
+// to feel respected, not punished.
+
+export async function sendCancellationEmail({
+  to,
+  name,
+  endsAt,
+  gender = "f",
+}: {
+  to: string;
+  name: string;
+  /** When the user's access actually expires — typically the end of the paid cycle. */
+  endsAt: Date | null;
+  gender?: Gender;
+}) {
+  const T = (f: string, m: string) => (gender === "m" ? m : f);
+  const firstName = name?.split(" ")[0] ?? T("חברה", "חבר");
+  const endsAtLabel = endsAt
+    ? endsAt.toLocaleDateString("he-IL", { day: "2-digit", month: "long", year: "numeric" })
+    : T("סוף תקופת המנוי הנוכחית", "סוף תקופת המנוי הנוכחית");
+
+  const html = `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>אישור ביטול מנוי</title></head>
+<body style="margin:0;padding:0;background:#F5F1EB;font-family:'Rubik','Arial',sans-serif;direction:rtl;color:#1C1C2E;">
+  <div style="display:none;max-height:0;overflow:hidden;">המנוי שלך בוטל — הגישה ממשיכה עד ${endsAtLabel}</div>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F1EB;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 8px 40px rgba(28,28,46,0.08);">
+        <tr><td style="background:linear-gradient(135deg,#1C1C2E 0%,#23233D 100%);padding:32px 40px;">
+          <div style="display:inline-block;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:999px;padding:5px 12px;margin-bottom:14px;">
+            <span style="color:#fff;font-weight:800;font-size:11px;letter-spacing:0.5px;">אישור ביטול</span>
+          </div>
+          <h1 style="color:#fff;margin:0;font-size:22px;font-weight:900;">${firstName}, ${T("קיבלנו את הבקשה שלך", "קיבלנו את הבקשה שלך")}</h1>
+        </td></tr>
+
+        <tr><td style="padding:28px 40px 8px;">
+          <p style="font-size:15px;color:#1C1C2E;line-height:1.7;margin:0 0 16px;">
+            ${T("המנוי שלך בוטל כפי שביקשת.", "המנוי שלך בוטל כפי שביקשת.")}
+            ${T("את ממשיכה ליהנות מהגישה המלאה עד", "אתה ממשיך ליהנות מהגישה המלאה עד")}
+            <strong style="color:#1C1C2E;">${endsAtLabel}</strong> —
+            ${T("בלי הפרעה ובלי חיובים נוספים.", "בלי הפרעה ובלי חיובים נוספים.")}
+          </p>
+          <p style="font-size:14px;color:#666;line-height:1.6;margin:0 0 8px;">
+            ${T("רוצה לבדוק שוב לפני שאת הולכת? תמיד אפשר להפעיל מחדש בלחיצה אחת:", "רוצה לבדוק שוב לפני שאתה הולך? תמיד אפשר להפעיל מחדש בלחיצה אחת:")}
+          </p>
+        </td></tr>
+
+        <tr><td align="center" style="padding:0 40px 28px;">
+          <a href="${APP_URL}/billing" style="display:inline-block;background:#3ECFCF;color:#fff;font-weight:800;font-size:14px;padding:12px 28px;border-radius:12px;text-decoration:none;box-shadow:0 4px 12px rgba(62,207,207,0.25);">
+            הפעלה מחדש של המנוי
+          </a>
+        </td></tr>
+
+        <tr><td style="padding:0 40px 28px;">
+          <div style="background:#FBFAF7;border:1px solid #EFEAE0;border-radius:12px;padding:16px 18px;">
+            <p style="margin:0 0 6px;font-size:12px;color:#666;font-weight:700;">${T("רגע לפני שאת הולכת —", "רגע לפני שאתה הולך —")}</p>
+            <p style="margin:0;font-size:12px;color:#666;line-height:1.6;">
+              ${T("גם בלי המנוי, את חלק מהקהילה. תוכלי להישאר מעודכנת בקבוצת הוואטסאפ ובאינסטגרם של קריירה בפוקוס.", "גם בלי המנוי, אתה חלק מהקהילה. תוכל להישאר מעודכן בקבוצת הוואטסאפ ובאינסטגרם של קריירה בפוקוס.")}
+            </p>
+          </div>
+        </td></tr>
+
+        <tr><td style="background:#FBFAF7;padding:18px 40px;text-align:center;border-top:1px solid #EFEAE0;">
+          <p style="margin:0;color:#888;font-size:12px;">קריירה בפוקוס · תודה על הזמן שהיית איתנו 🤍</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+
+  await sendEmail({
+    to,
+    subject: `אישור ביטול מנוי — קריירה בפוקוס`,
+    html,
+  });
+}
+
+// ─── Event Registration Confirmation ──────────────────────────────────────────
+// Sent right after a user registers for an event. Confirms registration,
+// includes date/time + zoom or location + add-to-calendar tip. The
+// existing reminder cron sends a follow-up 24h before — this is the
+// immediate confirmation users expect right after they click "register".
+
+export async function sendEventRegistrationEmail({
+  to,
+  name,
+  eventTitle,
+  eventStartAt,
+  eventLocation,
+  isOnline,
+  zoomLink,
+  gender = "f",
+}: {
+  to: string;
+  name: string;
+  eventTitle: string;
+  eventStartAt: Date;
+  eventLocation: string | null;
+  isOnline: boolean;
+  zoomLink?: string | null;
+  gender?: Gender;
+}) {
+  const T = (f: string, m: string) => (gender === "m" ? m : f);
+  const firstName = name?.split(" ")[0] ?? T("חברה", "חבר");
+  const dateLabel = eventStartAt.toLocaleDateString("he-IL", {
+    weekday: "long", day: "2-digit", month: "long", year: "numeric",
+  });
+  const timeLabel = eventStartAt.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+  const locationLabel = isOnline
+    ? "ZOOM (קישור יישלח לפני האירוע)"
+    : eventLocation ?? "פרטים יישלחו לפני האירוע";
+
+  const html = `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>אישור הרשמה — ${eventTitle}</title></head>
+<body style="margin:0;padding:0;background:#F5F1EB;font-family:'Rubik','Arial',sans-serif;direction:rtl;color:#1C1C2E;">
+  <div style="display:none;max-height:0;overflow:hidden;">נרשמת לאירוע — ${dateLabel} בשעה ${timeLabel}</div>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F1EB;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 8px 40px rgba(28,28,46,0.08);">
+        <tr><td style="background:linear-gradient(135deg,#1C1C2E 0%,#23233D 50%,#1C1C2E 100%);padding:36px 40px 30px;">
+          <div style="display:inline-block;background:rgba(62,207,207,0.15);border:1px solid rgba(62,207,207,0.4);border-radius:999px;padding:5px 12px;margin-bottom:14px;">
+            <span style="color:#3ECFCF;font-weight:800;font-size:11px;letter-spacing:0.5px;">✅ ההרשמה אושרה</span>
+          </div>
+          <h1 style="color:#fff;margin:0 0 6px;font-size:24px;font-weight:900;line-height:1.2;">${firstName}, ${T("שמורה לך מקום!", "שמור לך מקום!")} ✨</h1>
+          <p style="color:rgba(255,255,255,0.75);margin:0;font-size:14px;">${eventTitle}</p>
+        </td></tr>
+
+        <tr><td style="padding:28px 40px 8px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FBFAF7;border:1px solid #EFEAE0;border-radius:14px;">
+            <tr><td style="padding:18px 22px;">
+              <p style="margin:0 0 12px;font-size:12px;color:#888;font-weight:700;letter-spacing:0.3px;">פרטי האירוע</p>
+              <p style="margin:0 0 6px;font-size:14px;color:#1C1C2E;"><strong>📅 תאריך:</strong> ${dateLabel}</p>
+              <p style="margin:0 0 6px;font-size:14px;color:#1C1C2E;"><strong>🕐 שעה:</strong> ${timeLabel}</p>
+              <p style="margin:0;font-size:14px;color:#1C1C2E;"><strong>📍 מיקום:</strong> ${locationLabel}</p>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        ${zoomLink ? `
+        <tr><td align="center" style="padding:20px 40px 8px;">
+          <a href="${zoomLink}" style="display:inline-block;background:#3ECFCF;color:#fff;font-weight:800;font-size:14px;padding:12px 28px;border-radius:12px;text-decoration:none;">
+            פתחי קישור Zoom
+          </a>
+        </td></tr>` : ""}
+
+        <tr><td style="padding:8px 40px 24px;">
+          <p style="font-size:13px;color:#666;line-height:1.6;margin:0;">
+            💡 <strong>טיפ:</strong> ${T("הוסיפי את האירוע ליומן עכשיו, לא תתחרטי.", "הוסף את האירוע ליומן עכשיו, לא תתחרט.")}
+            ${T("נשלח לך תזכורת יום לפני וקצת לפני שמתחילים.", "נשלח לך תזכורת יום לפני וקצת לפני שמתחילים.")}
+          </p>
+        </td></tr>
+
+        <tr><td align="center" style="padding:0 40px 28px;">
+          <a href="${APP_URL}/events" style="color:#3ECFCF;font-weight:700;font-size:13px;text-decoration:none;">לכל האירועים שלי ←</a>
+        </td></tr>
+
+        <tr><td style="background:#FBFAF7;padding:18px 40px;text-align:center;border-top:1px solid #EFEAE0;">
+          <p style="margin:0;color:#888;font-size:12px;">קריירה בפוקוס · נתראה באירוע 🤍</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+
+  await sendEmail({
+    to,
+    subject: `✅ נרשמת ל-${eventTitle}`,
+    html,
+  });
+}
+
+// ─── New Document From Coral ──────────────────────────────────────────────────
+// Sent when Coral uploads a document into a member's folder from
+// /admin/users/<id>/documents. Highlights that this is a personal,
+// hand-prepared deliverable from Coral (not a system email) — same
+// premium tone as the welcome email so it reads like a small gift.
+
+const DOC_TYPE_LABELS_FOR_EMAIL: Record<string, string> = {
+  cv: "קורות חיים",
+  "cover-letter": "מכתב מקדים",
+  certificate: "תעודה / הסמכה",
+  recommendation: "מכתב המלצה",
+  portfolio: "תיק עבודות",
+  other: "מסמך",
+};
+
+export async function sendNewDocumentFromCoralEmail({
+  to,
+  name,
+  docTypeLabel,
+  filename,
+  gender = "f",
+}: {
+  to: string;
+  name: string;
+  /** Either the canonical DOC_TYPE_LABELS value or one of our keys ("cv" etc.). */
+  docTypeLabel: string;
+  filename: string;
+  gender?: Gender;
+}) {
+  const T = (f: string, m: string) => (gender === "m" ? m : f);
+  const firstName = name?.split(" ")[0] ?? T("חברה", "חבר");
+  // If the caller passed a key like "cv", look up the Hebrew label.
+  const docLabel = DOC_TYPE_LABELS_FOR_EMAIL[docTypeLabel] ?? docTypeLabel;
+
+  const html = `<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>קורל הכינה לך משהו</title>
+</head>
+<body style="margin:0;padding:0;background:#F5F1EB;font-family:'Rubik','Arial',sans-serif;direction:rtl;color:#1C1C2E;">
+  <div style="display:none;max-height:0;overflow:hidden;">
+    קורל הכינה לך ${docLabel} חדש — מחכה לך במערכת
+  </div>
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F1EB;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 8px 40px rgba(28,28,46,0.08);">
+
+          <!-- Hero -->
+          <tr>
+            <td style="position:relative;background:linear-gradient(135deg,#1C1C2E 0%,#23233D 50%,#1C1C2E 100%);padding:40px 40px 32px;">
+              <div style="display:inline-block;background:rgba(62,207,207,0.15);border:1px solid rgba(62,207,207,0.4);border-radius:999px;padding:5px 12px;margin-bottom:18px;">
+                <span style="color:#3ECFCF;font-weight:800;font-size:11px;letter-spacing:0.5px;">📎 מסמך חדש בשבילך</span>
+              </div>
+              <h1 style="color:#fff;margin:0 0 10px;font-size:26px;font-weight:900;line-height:1.2;">
+                ${firstName}, ${T("הכנתי לך משהו", "הכנתי לך משהו")} ✨
+              </h1>
+              <p style="color:rgba(255,255,255,0.78);margin:0;font-size:15px;line-height:1.55;">
+                ${T("העלית לי בקשה ועבדתי עליה — ה", "העלית לי בקשה ועבדתי עליה — ה")}${docLabel}
+                ${T("מוכן ומחכה לך במערכת.", "מוכן ומחכה לך במערכת.")}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Document card -->
+          <tr>
+            <td style="padding:28px 40px 8px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#FBFAF7;border:1px solid #EFEAE0;border-radius:14px;">
+                <tr><td style="padding:18px 22px;">
+                  <p style="margin:0 0 4px;font-size:11px;color:#888;font-weight:700;letter-spacing:0.5px;">סוג המסמך</p>
+                  <p style="margin:0 0 12px;font-size:16px;color:#1C1C2E;font-weight:800;">${docLabel}</p>
+                  <p style="margin:0 0 4px;font-size:11px;color:#888;font-weight:700;letter-spacing:0.5px;">שם הקובץ</p>
+                  <p style="margin:0;font-size:13px;color:#1C1C2E;direction:ltr;text-align:right;word-break:break-all;">${filename}</p>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td align="center" style="padding:24px 40px 14px;">
+              <a href="${APP_URL}/profile/documents" style="display:inline-block;background:#3ECFCF;color:#fff;font-weight:800;font-size:15px;padding:14px 36px;border-radius:14px;text-decoration:none;box-shadow:0 4px 12px rgba(62,207,207,0.3);">
+                לצפייה / הורדה ←
+              </a>
+            </td>
+          </tr>
+
+          <!-- Personal note -->
+          <tr>
+            <td style="padding:8px 40px 28px;">
+              <p style="font-size:14px;color:#444;line-height:1.7;margin:0;">
+                ${T("כל המסמכים שלך תמיד יחכו לך ב'המסמכים שלי' בעמוד הפרופיל. תוכלי להוריד, לשתף ולעדכן בכל זמן.", "כל המסמכים שלך תמיד יחכו לך ב'המסמכים שלי' בעמוד הפרופיל. תוכל להוריד, לשתף ולעדכן בכל זמן.")}
+              </p>
+              <p style="font-size:13px;color:#888;line-height:1.6;margin:14px 0 0;">
+                ${T("בהצלחה 💪", "בהצלחה 💪")}<br/>
+                <strong style="color:#1C1C2E;">קורל</strong>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#FBFAF7;padding:18px 40px;text-align:center;border-top:1px solid #EFEAE0;">
+              <p style="margin:0;color:#888;font-size:12px;">
+                קריירה בפוקוס · ${T("כאן בשבילך", "כאן בשבילך")} 🤍
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body></html>`;
+
+  await sendEmail({
+    to,
+    subject: `📎 ${firstName}, קורל הכינה לך ${docLabel}`,
+    html,
+  });
+}

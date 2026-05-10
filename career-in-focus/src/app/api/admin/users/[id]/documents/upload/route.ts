@@ -8,6 +8,7 @@ import {
   ALLOWED_DOC_MIME_TYPES,
   MAX_DOC_SIZE_BYTES,
 } from "@/lib/documents";
+import { sendNewDocumentFromCoralEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -86,9 +87,9 @@ export async function POST(
         };
       },
       onUploadCompleted: async ({ blob, tokenPayload }) => {
-        // Drop a notification for the target user so they discover the
-        // file on their next visit. Best-effort — don't block the
-        // upload completion on the notify DB write.
+        // Drop a notification + send an email so the user discovers the
+        // file even if they're not logged in. Both best-effort — don't
+        // block the upload completion on either side effect.
         try {
           const payload = tokenPayload
             ? (JSON.parse(tokenPayload) as { targetUserId?: string; docType?: string })
@@ -102,16 +103,38 @@ export async function POST(
           const tail = blob.pathname.split("/").pop() ?? "";
           const dash = tail.indexOf("-");
           const filename = dash !== -1 ? tail.slice(dash + 1) : tail;
+          const docLabel = docType ? DOC_TYPE_LABELS[docType] : "מסמך";
 
+          // In-app notification (always works)
           await prisma.notification.create({
             data: {
               userId,
               type: "general",
-              title: `קורל העלתה לך מסמך חדש — ${docType ? DOC_TYPE_LABELS[docType] : "מסמך"}`,
+              title: `קורל העלתה לך מסמך חדש — ${docLabel}`,
               message: `הקובץ "${filename}" מחכה לך במסמכים שלי.`,
               link: "/profile/documents",
             },
           });
+
+          // Email notification — fire-and-forget. Will silently
+          // no-op while Resend domain isn't verified yet (the
+          // sendEmail helper logs a warning and returns); kicks in
+          // automatically once Dolev finishes the DNS setup.
+          const target = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { email: true, name: true, gender: true },
+          });
+          if (target) {
+            sendNewDocumentFromCoralEmail({
+              to: target.email,
+              name: target.name ?? "",
+              docTypeLabel: docType ?? "מסמך",
+              filename,
+              gender: (target.gender as "f" | "m" | undefined) ?? "f",
+            }).catch((err) =>
+              console.error("[admin upload email] failed:", err),
+            );
+          }
         } catch (e) {
           console.error("[admin upload notify] failed:", e);
         }
