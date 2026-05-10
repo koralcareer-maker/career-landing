@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { upload } from "@vercel/blob/client";
 import {
   Camera, Upload, X, Sparkles, Download, RefreshCw,
-  User, ChevronLeft, AlertCircle, Clock,
+  User, ChevronLeft, AlertCircle, Clock, Lock, ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -33,6 +33,9 @@ interface GenerateResponse {
   images?: string[];
   jobId?: number;
   error?: string;
+  /** Server flags this when the error should be framed as an upgrade
+   *  invitation, not a system failure (capacity, quota, permission). */
+  upgradePrompt?: boolean;
   debug?: string;
   quotaUsed?: number;
   quotaMax?: number;
@@ -88,6 +91,11 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<string[]>([]);
   const [error, setError] = useState("");
+  // When the API flags upgradePrompt:true (capacity / quota /
+  // permission paths that customers shouldn't see as failures), we
+  // render an inline upgrade-to-Pro CTA instead of just the red
+  // error banner — same pattern as the coach quota path.
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const [progress, setProgress] = useState("");
   const [history, setHistory] = useState<HistoryJob[]>(initialHistory);
   const [quota, setQuota] = useState<{ used: number; max: number } | null>(null);
@@ -145,6 +153,7 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
     }
     setLoading(true);
     setError("");
+    setShowUpgrade(false);
     setResults([]);
 
     const jobId = Date.now();
@@ -202,10 +211,12 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
       const data = (await res.json().catch(() => null)) as GenerateResponse | null;
       if (!res.ok || !data) {
         setError(data?.error ?? `שגיאת שרת (${res.status}) — נסי שוב בעוד דקה`);
+        setShowUpgrade(data?.upgradePrompt === true);
         return;
       }
       if (!data.images || data.images.length === 0) {
         setError(data.error ?? "לא נוצרו תמונות הפעם — נסי שוב");
+        setShowUpgrade(data.upgradePrompt === true);
         return;
       }
 
@@ -408,13 +419,42 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
       </Button>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm flex items-start gap-3">
-          <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
-          <div>
-            <p className="font-bold">משהו לא הסתדר</p>
-            <p className="text-xs text-red-600 mt-0.5">{error}</p>
+        showUpgrade ? (
+          // Upgrade CTA — replaces the red error banner when the server
+          // tells us this should be framed as an invitation to upgrade
+          // rather than a system failure. Same visual pattern as the
+          // coach quota-reached card.
+          <Link
+            href="/pricing"
+            className="block bg-gradient-to-l from-navy via-[#1a3a4a] to-[#0d2d3a] text-white rounded-2xl p-5 hover:shadow-lg hover:shadow-navy/30 transition-all group"
+          >
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 bg-teal rounded-xl flex items-center justify-center shrink-0">
+                <Lock size={20} className="text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-black text-teal uppercase tracking-wider mb-1">
+                  פיצ&apos;ר במסלול פרו
+                </p>
+                <p className="font-black text-sm leading-snug mb-1">
+                  {error}
+                </p>
+                <p className="text-xs text-white/70 leading-relaxed">
+                  שדרגי כדי לקבל גישה מלאה לכלי AI + עדיפות שירות.
+                </p>
+              </div>
+              <ArrowLeft size={20} className="text-teal shrink-0 mt-1 group-hover:-translate-x-1 transition-transform" />
+            </div>
+          </Link>
+        ) : (
+          <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm flex items-start gap-3">
+            <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-bold">משהו לא הסתדר</p>
+              <p className="text-xs text-red-600 mt-0.5">{error}</p>
+            </div>
           </div>
-        </div>
+        )
       )}
 
       {results.length > 0 && (

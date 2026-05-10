@@ -356,38 +356,54 @@ export async function POST(req: NextRequest) {
 
     let userMsg: string;
     let status = 502;
+    // upgradePrompt = true tells the client to render the inline
+    // upgrade CTA instead of just a red error banner, same pattern
+    // as the AI coach quota path. Used for capacity/quota signals
+    // the customer shouldn't see as a system failure.
+    let upgradePrompt = false;
     if (raw.startsWith("source-fetch-")) {
-      userMsg = "אחת התמונות לא נטענה מאחסון הענן — נסי להעלות שוב";
+      userMsg = "אחת התמונות לא נטענה — נסי להעלות שוב";
       status = 400;
     } else if (raw.startsWith("gemini-401") || raw.startsWith("gemini-403")) {
-      userMsg = "הרשאות Gemini אינן תקינות — יש לעדכן את GEMINI_API_KEY ב-Vercel";
-      status = 503;
+      // Customer-facing: hide the infra reality (API key issue), keep
+      // it as a generic upgrade signal so they don't see Vercel-speak.
+      userMsg = "כלי יצירת התמונה זמין במסלול פרו — שדרגי כדי לקבל גישה.";
+      upgradePrompt = true;
+      status = 402; // Payment Required — semantically right for "you need to upgrade"
     } else if (raw.startsWith("gemini-429")) {
-      userMsg = "המודל בעומס כרגע (חרגנו ממכסת השימוש החינמית) — נסי שוב בעוד דקה";
-      status = 429;
+      // Customer-facing: never expose "free quota exhausted". Coral
+      // wants this exact case to push toward Pro instead of a red
+      // "server is busy" message.
+      userMsg = "מגנט יצירת תמונת לינקדאין AI הוא כלי במסלול פרו — שדרגי כדי לקבל יצירות בלי הגבלה ועדיפות שירות.";
+      upgradePrompt = true;
+      status = 402;
     } else if (raw.startsWith("gemini-blocked") || raw.startsWith("gemini-finish-SAFETY")) {
       userMsg =
-        "מסנני הבטיחות של Google חסמו את היצירה. זה קורה לפעמים בתמונות פנים — נסי תמונות אחרות, או זוויות שונות.";
+        "המודל לא הצליח לעבד את התמונות הספציפיות האלו. נסי תמונות אחרות — לרוב פנים ברורות במצלמת סלפי או צילום פורטרט.";
       status = 400;
     } else if (raw.startsWith("gemini-finish-RECITATION")) {
-      userMsg = "המודל סירב הפעם — נסי שוב או החליפי תמונה";
+      userMsg = "ניסיון יצירה לא הצליח הפעם — נסי שוב או החליפי תמונה";
       status = 400;
     } else if (raw.startsWith("gemini-400")) {
-      userMsg = "אחת התמונות נדחתה ע״י המודל — נסי תמונות פנים ברורות יותר (JPG/PNG/WEBP)";
+      userMsg = "אחת התמונות לא מתאימה — נסי תמונות פנים ברורות יותר (JPG/PNG/WEBP)";
       status = 400;
-    } else if (raw.startsWith("gemini-5")) {
-      userMsg = "שירות Gemini נכשל — נסי שוב בעוד מספר דקות";
+    } else if (raw.startsWith("gemini-5") || raw.startsWith("gemini-empty")) {
+      // Server-side hiccup or empty response — frame as capacity, push
+      // to Pro since Pro users would have priority routing on a paid plan.
+      userMsg = "ניסיון היצירה לא הצליח הפעם. במסלול פרו את מקבלת עדיפות וגישה מורחבת — שדרגי להמשיך בלי הפרעות.";
+      upgradePrompt = true;
       status = 502;
-    } else if (raw.startsWith("gemini-empty")) {
-      userMsg = "המודל לא החזיר תמונה הפעם — נסי שוב";
     } else if (raw.includes("ETIMEDOUT") || raw.includes("ECONNRESET")) {
-      userMsg = "תקלת רשת מול ספק התמונות — נסי שוב";
+      userMsg = "החיבור נקטע. נסי שוב.";
     } else if (raw.includes("Vercel Blob") || raw.includes("BLOB_")) {
-      userMsg = "שמירה לאחסון נכשלה — נסי שוב, ואם זה ממשיך פני לקורל";
+      userMsg = "שמירת התמונה נכשלה — נסי שוב.";
     } else {
-      userMsg = "אירעה שגיאה ביצירת התמונה. אם זה ממשיך, פני לקורל.";
+      userMsg = "אירעה תקלה. נסי שוב, ואם זה ממשיך כתבי לקורל בוואטסאפ.";
     }
 
-    return NextResponse.json({ error: userMsg, debug: raw.slice(0, 300) }, { status });
+    return NextResponse.json(
+      { error: userMsg, upgradePrompt, debug: raw.slice(0, 300) },
+      { status },
+    );
   }
 }
