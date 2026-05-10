@@ -315,15 +315,19 @@ async function callClaude(
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
-  // Quality-first model chain. Pro is Google's flagship — matches what
-  // a user would get from ChatGPT-4 / paid Gemini directly. Flash is
-  // the fallback for when Pro's smaller quota is exhausted, and the
-  // lighter models are last-resort to keep answers flowing.
+  // Speed-first model chain. Flash 2.5 is dramatically faster than Pro
+  // (2-5s vs 10-30s per response) while still giving high-quality
+  // career advice for chat-length answers. Coral reported the chat
+  // felt slow + "unprofessional" — most of that perception is the
+  // Pro latency. Flash 2.5 also has a 5x larger free quota (250 RPD
+  // vs 50 RPD) so we serve more sessions before falling back.
+  //
+  // Pro stays in the chain as a fallback for when Flash quota is hit.
   const MODELS = [
-    "gemini-2.5-pro",       // 50 RPD free, ChatGPT-4-level reasoning
-    "gemini-2.5-flash",     // 250 RPD free, very good quality
+    "gemini-2.5-flash",     // FAST + 250 RPD — primary
+    "gemini-2.5-pro",       // slower but deeper — fallback when flash is exhausted
     "gemini-2.0-flash",     // separate quota pool
-    "gemini-2.5-flash-lite",// fallback
+    "gemini-2.5-flash-lite",// quick fallback
     "gemini-1.5-flash",     // last resort
   ];
   const buildUrl = (model: string) =>
@@ -530,26 +534,61 @@ export async function getCoachingSession() {
 
 // ─── Send message to AI coach ─────────────────────────────────────────────────
 
-// Daily per-user cap. Splits the platform's Gemini quota fairly
-// across active users so one heavy session doesn't burn the day's
-// budget for everyone. Admins bypass — the cap is a fairness
-// mechanism, not auth.
-const DAILY_USER_QUESTION_LIMIT = 10;
+// Daily per-user cap by membership tier. The cap is a fairness
+// mechanism (splits the platform's Gemini quota across users) AND a
+// monetisation lever (upgrading lifts the cap). Admins bypass.
+//
+// Coral's plan:
+//   - MEMBER (חבר 49₪)  →  10 questions/day  → upgrade CTA to פרו
+//   - VIP    (פרו 149₪) →  50 questions/day  → upgrade CTA to VIP
+//   - PREMIUM (VIP 499₪) → no limit
+function dailyLimitForMembership(m: string | null | undefined): number {
+  switch (m) {
+    case "PREMIUM": return Infinity;
+    case "VIP":     return 50;
+    case "MEMBER":  return 10;
+    default:        return 10;
+  }
+}
 
-export async function sendCoachingMessage(userMessage: string) {
+// Suggest the next tier when the current one's limit is hit. Used by
+// the chat client to render an inline upgrade card under the bot
+// message instead of a dead "come back tomorrow" line.
+function upgradeSuggestionFor(m: string | null | undefined): "VIP" | "PREMIUM" | null {
+  if (m === "MEMBER" || !m || m === "NONE") return "VIP";
+  if (m === "VIP") return "PREMIUM";
+  return null;
+}
+
+/**
+ * Returned by sendCoachingMessage. Most calls return only `text`;
+ * when the user hits their daily limit, we also flag `quotaReached`
+ * with the tier they should upgrade TO so the client can show an
+ * inline upgrade CTA. The chat-client uses the text as the bot's
+ * reply and renders an extra card if upgradeTo is present.
+ */
+export type CoachingReply = {
+  text: string;
+  quotaReached?: boolean;
+  upgradeTo?: "VIP" | "PREMIUM";
+};
+
+export async function sendCoachingMessage(userMessage: string): Promise<CoachingReply> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("לא מחובר");
   const userId = session.user.id;
   const isAdmin = session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
+  const userMembership = session.user.membershipType ?? "MEMBER";
 
   // Per-user 24h cap — counted from the existing message history so
   // we don't need a separate counter. Admins skip the check.
   if (!isAdmin) {
+    const limit = dailyLimitForMembership(userMembership);
     const existing = await prisma.coachingSession.findUnique({
       where: { userId },
       select: { messages: true },
     });
-    if (existing) {
+    if (existing && Number.isFinite(limit)) {
       try {
         const past: Message[] = JSON.parse(existing.messages);
         // We don't store timestamps on individual messages — use a
@@ -557,8 +596,27 @@ export async function sendCoachingMessage(userMessage: string) {
         // (capped at 40 by the trim below). Effectively "last day"
         // for active users.
         const userMsgsToday = past.filter((m) => m.role === "user").length;
-        if (userMsgsToday >= DAILY_USER_QUESTION_LIMIT) {
-          return `היום השתמשת ב-${DAILY_USER_QUESTION_LIMIT} השאלות שלך עם המאמן. הוא חוזר מחר בבוקר. בינתיים — תוכלי לסקור משרות חדשות ב-/jobs, לעדכן את הפרופיל ב-/profile, או לחזור לקבוצת הוואטסאפ של הקהילה.`;
+        if (userMsgsToday >= limit) {
+          const upgradeTo = upgradeSuggestionFor(userMembership);
+          if (upgradeTo === "VIP") {
+            return {
+              text: `הגעת למגבלת ${limit} השאלות היומית של מסלול חבר. במסלול פרו (₪149/חודש) — 50 שאלות ביום, וגם ניתוח עומק לקורות החיים, ליווי שבועי וכלים מתקדמים.`,
+              quotaReached: true,
+              upgradeTo: "VIP",
+            };
+          }
+          if (upgradeTo === "PREMIUM") {
+            return {
+              text: `הגעת למגבלת ${limit} השאלות היומית של מסלול פרו. במסלול VIP (₪499/חודש) — שיחות בלי הגבלה, וקורל מפעילה אישית את הרשת בשבילך.`,
+              quotaReached: true,
+              upgradeTo: "PREMIUM",
+            };
+          }
+          // No upgrade path available — fall back to "come back tomorrow".
+          return {
+            text: `הגעת למגבלת השאלות היומית. המאמן יחזור מחר בבוקר. בינתיים — סקרי משרות חדשות ב-/jobs או עדכני את הפרופיל ב-/profile.`,
+            quotaReached: true,
+          };
         }
       } catch {
         /* corrupted JSON — proceed and let it fail/retry */
@@ -637,7 +695,7 @@ ${userContext}
   });
 
   revalidatePath("/coaching");
-  return aiReply;
+  return { text: aiReply };
 }
 
 // ─── Generate weekly analysis ─────────────────────────────────────────────────

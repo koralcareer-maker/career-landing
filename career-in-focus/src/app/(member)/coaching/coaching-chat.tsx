@@ -1,12 +1,24 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { sendCoachingMessage, clearCoachingChat, type Message } from "@/lib/actions/coaching";
 import {
   Send, Trash2, Sparkles, Loader2,
   Briefcase, Building2, MessageSquare, FileText,
   TrendingUp, AlertTriangle, ArrowLeft, Radar,
+  Lock,
 } from "lucide-react";
+
+// Extend the persisted Message with an optional upgrade-tier flag so we
+// can render an inline upgrade CTA under the bot reply when the user
+// has just hit their daily quota. The flag is only set client-side
+// (server returns CoachingReply with upgradeTo) and is NOT persisted
+// to the DB session — when the user reloads, the upgrade banner
+// disappears and only the plain message text remains.
+type LocalMessage = Message & {
+  upgradeTo?: "VIP" | "PREMIUM";
+};
 
 // ─── Quick Actions ─────────────────────────────────────────────────────────
 // Each action carries TWO strings:
@@ -163,7 +175,7 @@ function MessageContent({ content }: { content: string }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function CoachingChat({ initialMessages }: { initialMessages: Message[] }) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<LocalMessage[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -203,9 +215,19 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
 
     try {
       const reply = await sendCoachingMessage(aiPayload);
-      setMessages(prev => [...prev, { role: "assistant", content: reply }]);
+      // sendCoachingMessage now returns { text, upgradeTo? } — old
+      // callers expecting a plain string are gone. Attach the upgrade
+      // flag so the renderer can show an inline CTA card.
+      setMessages(prev => [
+        ...prev,
+        {
+          role: "assistant",
+          content: reply.text,
+          ...(reply.upgradeTo ? { upgradeTo: reply.upgradeTo } : {}),
+        },
+      ]);
     } catch {
-      setMessages(prev => [...prev, { role: "assistant", content: "אירעה שגיאת רשת. נסה שנית." }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "אירעה שגיאת רשת. נסי/נסה שוב." }]);
     } finally {
       setIsPending(false);
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -281,25 +303,58 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
         )}
 
         {messages.map((m, i) => (
-          <div key={i} className={`flex items-start gap-2 ${m.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-            {/* Avatar */}
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs shrink-0 mt-0.5 shadow-sm ${
-              m.role === "assistant" ? "bg-teal" : "bg-navy"
-            }`}>
-              {m.role === "assistant" ? <Sparkles size={12} /> : "א"}
+          <div key={i} className="space-y-2">
+            <div className={`flex items-start gap-2 ${m.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+              {/* Avatar */}
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-xs shrink-0 mt-0.5 shadow-sm ${
+                m.role === "assistant" ? "bg-teal" : "bg-navy"
+              }`}>
+                {m.role === "assistant" ? <Sparkles size={12} /> : "א"}
+              </div>
+
+              <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                m.role === "user"
+                  ? "bg-navy text-white rounded-tr-sm"
+                  : "bg-teal-pale text-navy rounded-tl-sm border border-teal/15"
+              }`}>
+                {m.role === "assistant" ? (
+                  <MessageContent content={m.content} />
+                ) : (
+                  <span>{m.content}</span>
+                )}
+              </div>
             </div>
 
-            <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-              m.role === "user"
-                ? "bg-navy text-white rounded-tr-sm"
-                : "bg-teal-pale text-navy rounded-tl-sm border border-teal/15"
-            }`}>
-              {m.role === "assistant" ? (
-                <MessageContent content={m.content} />
-              ) : (
-                <span>{m.content}</span>
-              )}
-            </div>
+            {/* Inline upgrade CTA — only when the bot reply flagged a
+                quota hit and suggested a tier. Sits under the message
+                bubble (not inside it) so it's clearly an action area,
+                not part of the AI's words. Disappears on reload because
+                upgradeTo is client-only state. */}
+            {m.role === "assistant" && m.upgradeTo && (
+              <div className="mr-9 max-w-[78%]">
+                <Link
+                  href="/pricing"
+                  className="block bg-gradient-to-l from-navy via-[#1a3a4a] to-[#0d2d3a] text-white rounded-2xl p-4 hover:shadow-lg hover:shadow-navy/30 transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-teal rounded-xl flex items-center justify-center shrink-0">
+                      <Lock size={18} className="text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-black text-teal uppercase tracking-wider mb-0.5">
+                        להמשיך בלי הגבלה
+                      </p>
+                      <p className="font-black text-sm">
+                        {m.upgradeTo === "VIP"
+                          ? "מסלול פרו · 50 שאלות יומיות + ניתוח עומק"
+                          : "מסלול VIP · ללא הגבלה + ליווי אישי של קורל"}
+                      </p>
+                    </div>
+                    <ArrowLeft size={18} className="text-teal shrink-0 group-hover:-translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+              </div>
+            )}
           </div>
         ))}
 
@@ -342,13 +397,16 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && !e.shiftKey && !isPending && handleSend()}
-            placeholder="שאל את המאמן שלך..."
+            placeholder="שאלי/שאל את המאמן שלך..."
+            aria-label="שדה הודעה למאמן"
             disabled={isPending}
-            className="flex-1 bg-cream rounded-xl px-4 py-2.5 text-sm text-navy placeholder:text-gray-400 border border-transparent focus:border-teal/40 focus:outline-none transition-colors disabled:opacity-60"
+            // text-base on mobile (16px) prevents iOS Safari auto-zoom on focus.
+            className="flex-1 bg-cream rounded-xl px-4 py-3 md:py-2.5 text-base md:text-sm text-navy placeholder:text-gray-400 border border-transparent focus:border-teal/40 focus:outline-none transition-colors disabled:opacity-60"
           />
           <button
             onClick={() => handleSend()}
             disabled={!input.trim() || isPending}
+            aria-label="שליחת הודעה"
             className="w-10 h-10 bg-teal rounded-xl flex items-center justify-center text-white hover:bg-teal-dark hover:-translate-y-0.5 hover:shadow-md transition-all disabled:opacity-40 disabled:translate-y-0 disabled:shadow-none">
             <Send size={16} />
           </button>
