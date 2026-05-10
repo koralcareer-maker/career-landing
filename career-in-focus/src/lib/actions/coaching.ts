@@ -5,7 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { getReadinessScore } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 
-const APP_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+// Hardcoded — NEXTAUTH_URL on Vercel points at the unconfigured
+// app.careerinfocus.co.il domain. Any links sent in coach emails
+// (weekly digest, action items) would be dead. Reverts when DNS is live.
+const APP_URL = "https://career-landing-tau.vercel.app";
 
 export type Message = { role: "user" | "assistant"; content: string };
 

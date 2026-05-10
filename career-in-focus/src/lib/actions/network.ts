@@ -5,7 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { sendNetworkRequestToAdmin } from "@/lib/email/resend";
 import { revalidatePath } from "next/cache";
 
-const APP_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+// Hardcoded — NEXTAUTH_URL on Vercel still points at the unconfigured
+// app.careerinfocus.co.il domain, so any URL we build from it breaks
+// email links. Same pattern as src/lib/email.ts and the CardCom routes.
+const APP_URL = "https://career-landing-tau.vercel.app";
 
 export async function submitNetworkRequest(formData: FormData) {
   const session = await auth();
