@@ -422,30 +422,62 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
         showUpgrade ? (
           // Upgrade CTA — replaces the red error banner when the server
           // tells us this should be framed as an invitation to upgrade
-          // rather than a system failure. Same visual pattern as the
-          // coach quota-reached card.
-          <Link
-            href="/pricing"
-            className="block bg-gradient-to-l from-navy via-[#1a3a4a] to-[#0d2d3a] text-white rounded-2xl p-5 hover:shadow-lg hover:shadow-navy/30 transition-all group"
-          >
-            <div className="flex items-start gap-3">
+          // rather than a system failure. Copy approved by Coral on
+          // 2026-05-11: explains WHY a LinkedIn photo is critical
+          // (recruiters' first impression, hidden cost of a bad photo)
+          // before pushing toward the PRO tier.
+          <div className="bg-gradient-to-l from-navy via-[#1a3a4a] to-[#0d2d3a] text-white rounded-3xl p-6 sm:p-7 shadow-xl shadow-navy/20">
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4">
               <div className="w-11 h-11 bg-teal rounded-xl flex items-center justify-center shrink-0">
                 <Lock size={20} className="text-white" />
               </div>
-              <div className="flex-1">
+              <div>
                 <p className="text-[10px] font-black text-teal uppercase tracking-wider mb-1">
-                  פיצ&apos;ר במסלול פרו
+                  פיצ&apos;ר במסלול PRO
                 </p>
-                <p className="font-black text-sm leading-snug mb-1">
-                  {error}
-                </p>
-                <p className="text-xs text-white/70 leading-relaxed">
-                  שדרגי כדי לקבל גישה מלאה לכלי AI + עדיפות שירות.
-                </p>
+                <h3 className="font-black text-base sm:text-lg leading-tight">
+                  תמונת לינקדאין מקצועית
+                </h3>
               </div>
-              <ArrowLeft size={20} className="text-teal shrink-0 mt-1 group-hover:-translate-x-1 transition-transform" />
             </div>
-          </Link>
+
+            {/* Why this matters */}
+            <p className="text-sm text-white/85 leading-relaxed mb-2">
+              תמונת הפרופיל שלך היא אחד הדברים <strong className="text-white">הראשונים שמגייסים רואים</strong> — עוד לפני שקראו מילה אחת עלייך.
+            </p>
+            <p className="text-sm text-white/70 leading-relaxed mb-5">
+              תמונה לא מקצועית, ישנה או לא מותאמת עלולה לפגוע ברושם הראשוני ובסיכוי שיפנו אלייך.
+            </p>
+
+            {/* Benefit list */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 mb-5">
+              <p className="text-[11px] font-black text-teal mb-3">במסלול PRO תקבלי:</p>
+              <ul className="space-y-2 text-sm text-white/90">
+                <li className="flex items-start gap-2">
+                  <span className="text-teal shrink-0">✓</span>
+                  <span>יצירת תמונת LinkedIn מקצועית בעזרת AI</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-teal shrink-0">✓</span>
+                  <span>התאמה לסגנון התפקיד והתחום שלך</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-teal shrink-0">✓</span>
+                  <span>שיפור הנראות והמיתוג המקצועי שלך מול מגייסים</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* CTA */}
+            <Link
+              href="/pricing"
+              className="inline-flex items-center justify-center gap-2 w-full bg-teal hover:bg-teal-dark text-white font-black text-sm px-5 py-3.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-teal/30"
+            >
+              שדרגי למסלול PRO (149₪/חודש)
+              <ArrowLeft size={16} />
+            </Link>
+          </div>
         ) : (
           <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm flex items-start gap-3">
             <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
