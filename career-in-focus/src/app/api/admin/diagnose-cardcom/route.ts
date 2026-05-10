@@ -89,21 +89,34 @@ export async function POST() {
     });
   }
 
-  const r = cardcomResp as { ReturnValue?: number; Description?: string; url?: string };
-  if (r.ReturnValue === 0 && r.url) {
+  // CardCom's v11 API uses `ResponseCode` + `Url`. Older docs/terminals
+  // sometimes still return `ReturnValue` + `url`. Accept either so the
+  // diagnose result reflects the *actual* outcome on the live terminal.
+  const r = cardcomResp as {
+    ReturnValue?: number;
+    ResponseCode?: number;
+    Description?: string;
+    url?: string;
+    Url?: string;
+    LowProfileId?: string;
+  };
+  const code = r.ResponseCode ?? r.ReturnValue;
+  const url = r.Url ?? r.url;
+
+  if (code === 0 && url) {
     return NextResponse.json({
       ok: true,
       env,
-      diagnosis: "CardCom החזיר ReturnValue=0 + URL תקין. ההגדרות תקינות. אם משתמשים מקבלים שגיאה, הבעיה בנתוני התשלום שלהם או בנכסים על הטרמינל (CreateTokenForRecurring דורש הפעלה).",
-      cardcomReturnValue: 0,
+      diagnosis: "CardCom החזיר קוד 0 + URL תקין. ההגדרות עובדות. אם משתמשים עדיין מקבלים שגיאה — תבדקי שב-CardCom מאופשר 'יצירת טוקן חוזר' (CreateTokenForRecurring) על הטרמינל הזה.",
+      cardcomReturnValue: code,
     });
   }
 
   return NextResponse.json({
     ok: false,
     env,
-    diagnosis: `CardCom סירב: ReturnValue=${r.ReturnValue}, Description="${r.Description ?? "(ריק)"}"`,
-    cardcomReturnValue: r.ReturnValue,
+    diagnosis: `CardCom סירב: code=${code ?? "undefined"}, Description="${r.Description ?? "(ריק)"}"`,
+    cardcomReturnValue: code,
     cardcomDescription: r.Description,
   });
 }

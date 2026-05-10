@@ -90,30 +90,46 @@ export async function GET(req: NextRequest) {
     // previous version called res.json() unconditionally and lost
     // anything that wasn't well-formed JSON.
     const rawText = await res.text();
-    let data: { ReturnValue?: number; Description?: string; url?: string; ResponseCode?: number } | null = null;
+    // CardCom's v11 API renamed `ReturnValue` → `ResponseCode` and
+    // `url` → `Url`. We accept BOTH because some legacy terminals
+    // still respond with the old field names. Coral confirmed the
+    // diagnose run on her live terminal returned ResponseCode/Url
+    // shaped output (Description="OK", no ReturnValue), so the old
+    // field-name check was rejecting valid successes.
+    type CardcomLpResponse = {
+      ReturnValue?: number;
+      ResponseCode?: number;
+      Description?: string;
+      url?: string;
+      Url?: string;
+      LowProfileId?: string;
+    };
+    let data: CardcomLpResponse | null = null;
     try {
-      data = JSON.parse(rawText);
+      data = JSON.parse(rawText) as CardcomLpResponse;
     } catch {
       data = null;
     }
 
-    const ok = data?.ReturnValue === 0 && typeof data?.url === "string" && data.url.length > 0;
+    const code = data?.ResponseCode ?? data?.ReturnValue;
+    const url = data?.Url ?? data?.url;
+    const ok = code === 0 && typeof url === "string" && url.length > 0;
     if (!ok) {
       console.error("CardCom create error:", { status: res.status, raw: rawText.slice(0, 500), data });
 
-      // Surface useful diagnostics on the error page. ReturnValue uses
-      // CardCom's documented codes; Description is the Hebrew/English
-      // string they ship with the rejection. We truncate the raw body
-      // to keep URLs sane.
+      // Surface useful diagnostics on the error page. The numeric
+      // code is CardCom's documented rejection code; Description is
+      // the Hebrew/English string they ship with the rejection. We
+      // truncate the raw body to keep URLs sane.
       const params = new URLSearchParams({ error: "cardcom_error" });
-      if (typeof data?.ReturnValue === "number") params.set("code", String(data.ReturnValue));
+      if (typeof code === "number") params.set("code", String(code));
       else params.set("code", `http_${res.status}`);
       if (data?.Description) params.set("desc", data.Description.slice(0, 200));
       else if (!data && rawText) params.set("desc", `non-json: ${rawText.slice(0, 120)}`);
       return NextResponse.redirect(new URL(`/payment/pending?${params.toString()}`, req.url));
     }
 
-    return NextResponse.redirect(data!.url!);
+    return NextResponse.redirect(url!);
   } catch (err) {
     console.error("CardCom fetch error:", err);
     const msg = err instanceof Error ? err.message : "unknown";
