@@ -23,10 +23,6 @@
     {
       "path": "/api/cron/job-alerts",
       "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/cron/cleanup-inactive-jobs",
-      "schedule": "0 0 */2 * *"
     }
   ]
 }
