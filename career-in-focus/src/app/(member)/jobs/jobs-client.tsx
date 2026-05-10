@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getMatchLabel } from "@/lib/utils";
 import { trackApplicationFromJob } from "@/lib/actions/job-tracking";
+import { JOB_CATEGORIES, mapFieldToCategory } from "@/lib/job-categories";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -199,8 +200,13 @@ export function JobsClient({ jobs }: { jobs: JobItem[] }) {
   const [activeRegion, setActiveRegion] = useState("הכל");
   const [activeLevel, setActiveLevel] = useState("הכל");
 
-  // Collect unique filter values
-  const fields = ["הכל", ...new Set(jobs.map((j) => j.field).filter(Boolean))] as string[];
+  // Categories — fixed taxonomy from Coral (32 entries, sorted
+  // alphabetically). We always show ALL of them in the filter, even
+  // if currently 0 jobs match, so customers see the full menu and
+  // it stays stable across data churn. mapFieldToCategory does
+  // best-effort bucketing of the legacy free-form `field` strings
+  // (until every job carries a canonical category at import time).
+  const fields = ["הכל", ...JOB_CATEGORIES];
   // Regions: only show ones that actually have at least one job, plus "הכל".
   const regionsPresent = new Set(jobs.map((j) => j.region).filter(Boolean) as string[]);
   const regions = [
@@ -211,7 +217,7 @@ export function JobsClient({ jobs }: { jobs: JobItem[] }) {
   const levels = ["הכל", ...new Set(jobs.map((j) => j.experienceLevel).filter(Boolean))] as string[];
 
   const filtered = jobs.filter((j) => {
-    if (activeField !== "הכל" && j.field !== activeField) return false;
+    if (activeField !== "הכל" && mapFieldToCategory(j.field) !== activeField) return false;
     if (activeRegion === "ללא אזור" && j.region) return false;
     if (activeRegion !== "הכל" && activeRegion !== "ללא אזור" && j.region !== activeRegion) return false;
     if (activeLevel !== "הכל" && j.experienceLevel !== activeLevel) return false;
