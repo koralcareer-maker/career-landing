@@ -2,10 +2,7 @@ import { auth } from "@/auth";
 import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { listUserDocuments, DOC_TYPE_LABELS } from "@/lib/documents";
-import {
-  uploadDocumentForUser,
-  deleteDocumentForUser,
-} from "@/lib/actions/admin-documents";
+import { deleteDocumentForUser } from "@/lib/actions/admin-documents";
 import { AdminDocumentsClient } from "./admin-documents-client";
 
 export const dynamic = "force-dynamic";
@@ -49,7 +46,6 @@ export default async function AdminUserDocumentsPage({
         targetUser={user}
         initialDocuments={docs}
         docTypeLabels={DOC_TYPE_LABELS}
-        uploadAction={uploadDocumentForUser}
         deleteAction={deleteDocumentForUser}
       />
     </div>

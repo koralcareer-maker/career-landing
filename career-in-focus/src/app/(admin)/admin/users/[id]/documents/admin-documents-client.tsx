@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
+import { upload } from "@vercel/blob/client";
 import {
   Upload,
   FileText,
@@ -12,7 +13,13 @@ import {
   ChevronRight,
   Bell,
 } from "lucide-react";
-import { DOC_TYPES, type DocType } from "@/lib/documents";
+import {
+  DOC_TYPES,
+  ALLOWED_DOC_MIME_TYPES,
+  MAX_DOC_SIZE_BYTES,
+  sanitiseFilename,
+  type DocType,
+} from "@/lib/documents";
 
 interface DocumentItem {
   pathname: string;
@@ -21,12 +28,6 @@ interface DocumentItem {
   filename: string;
   uploadedAt: string;
   sizeBytes: number;
-}
-
-interface UploadState {
-  error?: string;
-  ok?: true;
-  filename?: string;
 }
 
 interface Props {
@@ -38,10 +39,9 @@ interface Props {
   };
   initialDocuments: DocumentItem[];
   docTypeLabels: Record<string, string>;
-  uploadAction: (
-    prev: unknown,
-    formData: FormData,
-  ) => Promise<UploadState>;
+  // Kept in props for signature compatibility but no longer used —
+  // uploads now go client-direct to Vercel Blob via the /upload route.
+  uploadAction?: unknown;
   deleteAction: (
     userId: string,
     pathname: string,
@@ -66,19 +66,79 @@ export function AdminDocumentsClient({
   targetUser,
   initialDocuments,
   docTypeLabels,
-  uploadAction,
   deleteAction,
 }: Props) {
   const [docs, setDocs] = useState<DocumentItem[]>(initialDocuments);
-  const [state, formAction, pending] = useActionState(uploadAction, null);
   const [docType, setDocType] = useState<DocType>("cv");
   const [deletingPath, setDeletingPath] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // When upload succeeds, the page calls revalidatePath so a refresh
-  // shows the new file. We also optimistically add it locally so it
-  // appears immediately. (The next time the user navigates here, the
-  // server-rendered list will be authoritative.)
-  const showSuccess = state?.ok && state.filename;
+  /**
+   * Client-direct upload. Skips the Next.js server-action body limit
+   * (which bites on larger PDFs / Hebrew filenames) by hitting
+   * Vercel Blob from the browser with a presigned token issued by
+   * /api/admin/users/<id>/documents/upload.
+   *
+   * Path scheme matches the rest of the system:
+   *   documents/<userId>/<docType>/<unix-ms>-<safe-filename>
+   */
+  async function handleUpload(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (uploading) return;
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      setUploadError("לא נבחר קובץ");
+      return;
+    }
+    if (file.size > MAX_DOC_SIZE_BYTES) {
+      setUploadError(`הקובץ גדול מ-10MB (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+      return;
+    }
+    if (!ALLOWED_DOC_MIME_TYPES.includes(file.type)) {
+      setUploadError(
+        `פורמט לא נתמך (${file.type || "לא ידוע"}). מותר: PDF, DOC, DOCX, JPG, PNG, WEBP`,
+      );
+      return;
+    }
+
+    setUploading(true);
+    setUploadError(null);
+    setUploadSuccess(null);
+
+    const safe = sanitiseFilename(file.name);
+    const pathname = `documents/${targetUser.id}/${docType}/${Date.now()}-${safe}`;
+
+    try {
+      const blob = await upload(pathname, file, {
+        access: "public",
+        handleUploadUrl: `/api/admin/users/${targetUser.id}/documents/upload`,
+        contentType: file.type,
+      });
+
+      // Optimistically push the new document into the local list so
+      // Coral sees the upload land immediately, without a full refresh.
+      setDocs((prev) => [
+        {
+          pathname: blob.pathname,
+          url: blob.url,
+          type: docType,
+          filename: safe,
+          uploadedAt: new Date().toISOString(),
+          sizeBytes: file.size,
+        },
+        ...prev,
+      ]);
+      setUploadSuccess(safe);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "ההעלאה נכשלה");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function handleDelete(pathname: string) {
     if (deletingPath) return;
@@ -136,9 +196,7 @@ export function AdminDocumentsClient({
           <h2 className="font-black text-navy text-base">העלאת קובץ חדש</h2>
         </div>
 
-        <form action={formAction} className="space-y-4">
-          <input type="hidden" name="userId" value={targetUser.id} />
-
+        <form onSubmit={handleUpload} className="space-y-4">
           {/* Document type — radio group, more obvious than a dropdown */}
           <div>
             <label className="text-xs font-bold text-navy mb-2 block">
@@ -175,6 +233,7 @@ export function AdminDocumentsClient({
             </label>
             <input
               id="file"
+              ref={fileInputRef}
               name="file"
               type="file"
               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*"
@@ -188,29 +247,29 @@ export function AdminDocumentsClient({
           </div>
 
           {/* Errors / success */}
-          {state?.error && (
+          {uploadError && (
             <div
               role="alert"
               className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700"
             >
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
-              <p>{state.error}</p>
+              <p>{uploadError}</p>
             </div>
           )}
-          {showSuccess && (
+          {uploadSuccess && (
             <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-sm text-emerald-700">
               <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
-              <p>הקובץ &quot;{state.filename}&quot; הועלה בהצלחה. רענני את הדף כדי לראות אותו ברשימה למטה.</p>
+              <p>הקובץ &quot;{uploadSuccess}&quot; הועלה בהצלחה ומופיע ברשימה למטה.</p>
             </div>
           )}
 
           <button
             type="submit"
-            disabled={pending}
+            disabled={uploading}
             className="inline-flex items-center gap-2 bg-teal text-white font-black px-5 py-3 rounded-xl hover:bg-teal-dark disabled:opacity-50"
           >
-            {pending ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-            {pending ? "מעלה..." : "העלאת הקובץ"}
+            {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+            {uploading ? "מעלה..." : "העלאת הקובץ"}
           </button>
         </form>
       </div>
