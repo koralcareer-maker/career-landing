@@ -22,6 +22,7 @@ export const DOC_TYPES = [
   "certificate",
   "recommendation",
   "portfolio",
+  "summaries",
   "other",
 ] as const;
 export type DocType = (typeof DOC_TYPES)[number];
@@ -32,6 +33,10 @@ export const DOC_TYPE_LABELS: Record<DocType, string> = {
   certificate: "תעודות והסמכות",
   recommendation: "מכתבי המלצה",
   portfolio: "תיק עבודות",
+  // Added for Coral's Drive sync. Catches everything that isn't a CV:
+  // LinkedIn assets, interview prep, job-search strategy, career-
+  // direction summaries, recruiter coordination notes.
+  summaries: "סיכומים",
   other: "אחר",
 };
 
