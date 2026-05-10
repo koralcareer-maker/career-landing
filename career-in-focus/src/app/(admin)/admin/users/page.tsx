@@ -2,11 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { formatDate, timeAgo } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { activateUser, suspendUser, createUserManually, setMembershipType, resendCredentials, impersonateUser } from "@/lib/actions/admin";
+import { activateUser, suspendUser, createUserManually, setMembershipType, resendCredentials, impersonateUser, deleteUser } from "@/lib/actions/admin";
 import { auth } from "@/auth";
 import { UserCheck, UserX, UserPlus, Crown, LogIn } from "lucide-react";
 import { AddUserForm } from "./add-user-form";
 import { ResendCredentialsButton } from "./resend-credentials-button";
+import { DeleteUserButton } from "./delete-user-button";
 
 // ─── Membership badge config ───────────────────────────────────────────────────
 
@@ -227,6 +228,16 @@ export default async function AdminUsersPage() {
                             <form action={async () => { "use server"; await setMembershipType(u.id, "MEMBER"); }}>
                               <button type="submit" title="הורד לחבר רגיל" className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200 transition-colors text-xs">↓</button>
                             </form>
+                          )}
+                          {/* Delete — never on yourself, and the button itself
+                              is two-click (arm → confirm) so a stray tap
+                              doesn't wipe anyone by accident. */}
+                          {u.id !== session?.user?.id && (
+                            <DeleteUserButton
+                              userId={u.id}
+                              userName={u.name ?? u.email}
+                              action={async (id: string) => { "use server"; await deleteUser(id); }}
+                            />
                           )}
                         </div>
                       </td>

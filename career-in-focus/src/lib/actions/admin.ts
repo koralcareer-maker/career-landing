@@ -354,6 +354,32 @@ export async function suspendUser(id: string) {
   revalidatePath("/admin/users");
 }
 
+/**
+ * Hard-delete a user. Cascade rules in schema.prisma will remove their
+ * Profile, JobApplications, EventRegistrations, etc. We block deleting
+ * yourself or other admins so a stray click can't lock everyone out.
+ */
+export async function deleteUser(id: string) {
+  const admin = await requireAdmin();
+  if (id === admin.id) {
+    throw new Error("לא ניתן למחוק את עצמך");
+  }
+  // Prevent collateral lockout — only SUPER_ADMIN can delete admins.
+  const target = await prisma.user.findUnique({
+    where: { id },
+    select: { role: true },
+  });
+  if (!target) return; // already gone — no-op
+  if (
+    (target.role === "ADMIN" || target.role === "SUPER_ADMIN") &&
+    admin.role !== "SUPER_ADMIN"
+  ) {
+    throw new Error("רק סופר-אדמין יכול למחוק אדמינים");
+  }
+  await prisma.user.delete({ where: { id } });
+  revalidatePath("/admin/users");
+}
+
 export async function setUserRole(id: string, role: string) {
   const admin = await requireAdmin();
   if (admin.role !== "SUPER_ADMIN") throw new Error("Only Super Admin can change roles");
