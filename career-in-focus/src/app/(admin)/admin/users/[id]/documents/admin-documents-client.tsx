@@ -74,25 +74,21 @@ export function AdminDocumentsClient({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const [pickedFileName, setPickedFileName] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /**
-   * Client-direct upload. Skips the Next.js server-action body limit
-   * (which bites on larger PDFs / Hebrew filenames) by hitting
-   * Vercel Blob from the browser with a presigned token issued by
-   * /api/admin/users/<id>/documents/upload.
+   * Validate + upload a File via client-direct Vercel Blob. Skips the
+   * Next.js server-action body limit (which bites on larger PDFs /
+   * Hebrew filenames). Called by BOTH the form-submit handler and the
+   * drag-and-drop handler — both end up here.
    *
    * Path scheme matches the rest of the system:
    *   documents/<userId>/<docType>/<unix-ms>-<safe-filename>
    */
-  async function handleUpload(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function doUpload(file: File) {
     if (uploading) return;
-    const file = fileInputRef.current?.files?.[0];
-    if (!file) {
-      setUploadError("לא נבחר קובץ");
-      return;
-    }
     if (file.size > MAX_DOC_SIZE_BYTES) {
       setUploadError(`הקובץ גדול מ-10MB (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
       return;
@@ -118,8 +114,6 @@ export function AdminDocumentsClient({
         contentType: file.type,
       });
 
-      // Optimistically push the new document into the local list so
-      // Coral sees the upload land immediately, without a full refresh.
       setDocs((prev) => [
         {
           pathname: blob.pathname,
@@ -132,12 +126,45 @@ export function AdminDocumentsClient({
         ...prev,
       ]);
       setUploadSuccess(safe);
+      setPickedFileName(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "ההעלאה נכשלה");
     } finally {
       setUploading(false);
     }
+  }
+
+  async function handleUpload(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      setUploadError("לא נבחר קובץ");
+      return;
+    }
+    await doUpload(file);
+  }
+
+  // Drag-and-drop handlers — visual state + auto-upload on drop. Coral
+  // asked for drag support because the file-picker dialog on macOS
+  // wouldn't show her Hebrew-filename PDF; dragging from Finder skips
+  // the picker entirely.
+  function onDragOver(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    if (!isDragging) setIsDragging(true);
+  }
+  function onDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+  function onDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const dropped = e.dataTransfer.files;
+    if (!dropped || dropped.length === 0) return;
+    const file = dropped[0];
+    setPickedFileName(file.name);
+    void doUpload(file);
   }
 
   async function handleDelete(pathname: string) {
@@ -226,19 +253,64 @@ export function AdminDocumentsClient({
             </div>
           </div>
 
-          {/* File picker */}
+          {/* Drop zone — combo of drag-target + click-to-browse. The
+              visible <div> handles the drag events; the hidden <input>
+              is the file picker triggered when the user clicks the
+              "Browse" button inside the zone. */}
           <div>
-            <label htmlFor="file" className="text-xs font-bold text-navy mb-2 block">
+            <label className="text-xs font-bold text-navy mb-2 block">
               קובץ (עד 10MB · PDF, DOC, DOCX, JPG, PNG, WEBP)
             </label>
+            <div
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
+              className={`cursor-pointer rounded-2xl border-2 border-dashed p-6 text-center transition-all ${
+                isDragging
+                  ? "border-teal bg-teal/10"
+                  : pickedFileName
+                    ? "border-emerald-300 bg-emerald-50/50"
+                    : "border-gray-300 bg-white hover:border-teal/60 hover:bg-teal/5"
+              }`}
+            >
+              <Upload size={22} className={`mx-auto mb-2 ${isDragging ? "text-teal" : pickedFileName ? "text-emerald-600" : "text-gray-400"}`} />
+              {pickedFileName ? (
+                <p className="text-sm font-bold text-navy break-all">
+                  {pickedFileName}
+                </p>
+              ) : isDragging ? (
+                <p className="text-sm font-bold text-teal">שחררי כאן —</p>
+              ) : (
+                <>
+                  <p className="text-sm font-bold text-navy">
+                    גררי קובץ לכאן או <span className="text-teal">לחצי לבחירה</span>
+                  </p>
+                  <p className="text-[11px] text-gray-500 mt-1">
+                    PDF, DOC, DOCX, JPG, PNG, WEBP · עד 10MB
+                  </p>
+                </>
+              )}
+            </div>
             <input
               id="file"
               ref={fileInputRef}
               name="file"
               type="file"
               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*"
-              required
-              className="block w-full text-sm text-navy file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-teal/10 file:text-teal hover:file:bg-teal/20"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) setPickedFileName(f.name);
+              }}
             />
             <p className="mt-1.5 text-[11px] text-gray-500 flex items-center gap-1">
               <Bell size={11} />
