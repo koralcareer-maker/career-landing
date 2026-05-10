@@ -411,6 +411,28 @@ export function ProfileClient({ user, profile, passport, readinessScore, complet
         />
       )}
 
+      {/* Documents shortcut — ALWAYS visible. Previously this lived
+          inside the post-passport collapse, so members who had already
+          completed their passport (i.e. exactly the audience that
+          benefits most from Coral's proactive document drops) couldn't
+          find their documents page from the profile. Moved up here so
+          every member sees it regardless of passport state. */}
+      <a
+        href="/profile/documents"
+        className="flex items-center justify-between gap-3 bg-white border border-slate-100 rounded-2xl px-5 py-3.5 hover:border-teal/40 hover:shadow-sm transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-teal/10 rounded-xl flex items-center justify-center group-hover:bg-teal/20 transition-colors">
+            <BookOpen size={18} className="text-teal" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-navy">המסמכים שלי</p>
+            <p className="text-xs text-gray-400">קורות חיים, תעודות, מכתבי המלצה ועוד</p>
+          </div>
+        </div>
+        <span className="text-teal text-xs font-bold">פתח →</span>
+      </a>
+
       {/* Once the user has both a passport AND a completed questionnaire,
           hide the long edit form / questionnaire / passport-tab. The user
           can still re-generate the passport via the "השתדרגתי" button in
@@ -429,23 +451,6 @@ export function ProfileClient({ user, profile, passport, readinessScore, complet
           <p className="text-xs text-gray-400 mt-1.5">מלא את כל הפרטים לקבלת ניתוח קריירה מלא</p>
         )}
       </div>
-
-      {/* Documents shortcut */}
-      <a
-        href="/profile/documents"
-        className="flex items-center justify-between gap-3 bg-white border border-slate-100 rounded-2xl px-5 py-3.5 hover:border-teal/40 hover:shadow-sm transition-all group"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-teal/10 rounded-xl flex items-center justify-center group-hover:bg-teal/20 transition-colors">
-            <BookOpen size={18} className="text-teal" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-navy">המסמכים שלי</p>
-            <p className="text-xs text-gray-400">קורות חיים, תעודות, מכתבי המלצה ועוד</p>
-          </div>
-        </div>
-        <span className="text-teal text-xs font-bold">פתח →</span>
-      </a>
 
       {/* Tabs */}
       <div className="flex gap-1 bg-cream-dark rounded-xl p-1">
