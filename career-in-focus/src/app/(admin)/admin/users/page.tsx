@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { activateUser, suspendUser, createUserManually, setMembershipType, resendCredentials, impersonateUser, deleteUser } from "@/lib/actions/admin";
 import { auth } from "@/auth";
-import { UserCheck, UserX, UserPlus, Crown, LogIn } from "lucide-react";
+import { UserCheck, UserX, UserPlus, Crown, LogIn, FolderOpen } from "lucide-react";
+import Link from "next/link";
 import { AddUserForm } from "./add-user-form";
 import { ResendCredentialsButton } from "./resend-credentials-button";
 import { DeleteUserButton } from "./delete-user-button";
@@ -170,6 +171,15 @@ export default async function AdminUsersPage() {
                       <td className="py-3 px-4 text-gray-400 text-xs">{formatDate(u.createdAt)}</td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-1 flex-wrap">
+                          {/* Documents — proactive uploads (CV, cover letters, etc.) */}
+                          <Link
+                            href={`/admin/users/${u.id}/documents`}
+                            title={`מסמכים של ${u.name ?? u.email}`}
+                            aria-label={`מסמכים של ${u.name ?? u.email}`}
+                            className="p-1.5 bg-teal/10 text-teal rounded-lg hover:bg-teal/20 transition-colors"
+                          >
+                            <FolderOpen size={13} />
+                          </Link>
                           {/* Activate */}
                           {u.accessStatus === "PENDING" && (
                             <form action={async () => { "use server"; await activateUser(u.id); }}>
