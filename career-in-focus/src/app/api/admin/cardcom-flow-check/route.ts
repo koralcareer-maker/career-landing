@@ -48,10 +48,9 @@ export async function POST() {
     detail: string;
   }[] = [];
 
-  const appUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    process.env.NEXTAUTH_URL ??
-    "https://career-landing-tau.vercel.app";
+  // Hardcoded — same reason as src/app/api/payment/cardcom/redirect/route.ts:
+  // the env var still points at app.careerinfocus.co.il (no DNS).
+  const appUrl = "https://career-landing-tau.vercel.app";
 
   // ─── Step 1: Credentials + LowProfile/Create ───────────────────────────
   let lpUrl: string | null = null;

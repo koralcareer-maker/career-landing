@@ -55,7 +55,9 @@ export async function POST() {
 
   // Live ping with a ₪1 placeholder. We don't redirect anywhere — just
   // examine CardCom's response to surface the actual code + description.
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://career-landing-tau.vercel.app";
+  // Hardcoded host because the NEXT_PUBLIC_APP_URL env var still points
+  // at app.careerinfocus.co.il (no DNS).
+  const appUrl = "https://career-landing-tau.vercel.app";
   const body = {
     TerminalNumber: Number(terminal),
     ApiName: apiName,

@@ -29,7 +29,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL ?? "https://career-landing-tau.vercel.app";
+  // Hardcoded — Coral's NEXT_PUBLIC_APP_URL env var on Vercel is set to
+  // app.careerinfocus.co.il, which has no DNS records yet (waiting on
+  // Dolev at NS1). Reading the env var sent CardCom a SuccessRedirectUrl
+  // pointing at a non-resolving domain, so customers got
+  // DNS_PROBE_FINISHED_NXDOMAIN immediately after entering their card.
+  // The same hardcode pattern is used in src/lib/email.ts. When DNS is
+  // configured we revert to reading the env var.
+  const appUrl = "https://career-landing-tau.vercel.app";
 
   // Determine plan from query param, then from user's stored membershipType
   const planParam = (req.nextUrl.searchParams.get("plan") ?? "").toUpperCase();
