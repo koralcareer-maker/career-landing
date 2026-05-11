@@ -101,6 +101,9 @@ export function mapFieldToCategory(field: string | null | undefined): JobCategor
   if (/ניהול.?פרויקט|project.?manag|pm\b/i.test(field)) return "ניהול פרויקטים";
   if (/עיצוב|ux|ui|design/i.test(field)) return "עיצוב";
   if (/קמעונאות|רכש|אופנ|retail|fashion|procure/i.test(field)) return "קמעונאות ורכש";
+  if (/dynamics.?365|salesforce|מחלקת.?crm|מנהל.?crm|crm.?(developer|architect|consultant)/i.test(field)) {
+    return "תוכנה";
+  }
   if (/תוכנה|מתכנת|software|develop|frontend|backend|full.?stack/i.test(field)) {
     return "תוכנה";
   }
