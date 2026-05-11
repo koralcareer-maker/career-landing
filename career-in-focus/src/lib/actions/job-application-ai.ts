@@ -161,6 +161,7 @@ ${appBlock}
 
   // ─── Call Gemini (same model the coaching feature uses) ───────────────
   let raw: string;
+  let finishReason: string | undefined;
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
     const res = await fetch(url, {
@@ -169,10 +170,23 @@ ${appBlock}
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: {
-          maxOutputTokens: 1024,
+          // 1024 was getting cut off mid-JSON for longer applications with
+          // a busy journal — bump well above the worst-case payload.
+          maxOutputTokens: 2500,
           temperature: 0.4,
-          // Force the model to stay in JSON mode — we don't want prose around it.
           responseMimeType: "application/json",
+          // responseSchema enforces shape on the model side so we don't
+          // have to repair freeform output. Cheaper + more reliable than
+          // prompt-only JSON contracts.
+          responseSchema: {
+            type: "object",
+            properties: {
+              followupMessage: { type: "string" },
+              cvSuggestions: { type: "array", items: { type: "string" } },
+              nextAction: { type: "string" },
+            },
+            required: ["followupMessage", "cvSuggestions", "nextAction"],
+          },
         },
         safetySettings: [
           { category: "HARM_CATEGORY_HARASSMENT",        threshold: "BLOCK_NONE" },
@@ -183,13 +197,19 @@ ${appBlock}
       }),
     });
     const data = (await res.json()) as {
-      candidates?: Array<{ content: { parts: Array<{ text: string }> } }>;
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> }; finishReason?: string }>;
       error?: { message: string };
+      promptFeedback?: { blockReason?: string };
     };
     if (data.error) {
       console.error("[analyzeApplication] Gemini error:", data.error.message);
       return { status: "error", message: "אירעה שגיאה זמנית. נסי שוב בעוד רגע." };
     }
+    if (data.promptFeedback?.blockReason) {
+      console.error("[analyzeApplication] prompt blocked:", data.promptFeedback.blockReason);
+      return { status: "error", message: "התוכן נחסם על ידי המסנן. נסי שוב." };
+    }
+    finishReason = data.candidates?.[0]?.finishReason;
     raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   } catch (err) {
     console.error("[analyzeApplication] fetch error:", err);
@@ -197,21 +217,41 @@ ${appBlock}
   }
 
   if (!raw) {
+    console.error("[analyzeApplication] empty response. finishReason:", finishReason);
     return { status: "error", message: "לא התקבלה תשובה. נסי שוב." };
   }
 
   // ─── Parse the JSON the model returned ────────────────────────────────
-  // Strip ```json fences if the model added them despite responseMimeType.
-  const cleaned = raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
-  let parsed: { followupMessage?: string; cvSuggestions?: string[]; nextAction?: string };
+  // Even with responseSchema + responseMimeType, the model can still wrap
+  // output in ```json fences, prepend chatter, or truncate when the response
+  // hits a token limit. Try the lenient path before giving up.
+  let parsed: { followupMessage?: string; cvSuggestions?: string[]; nextAction?: string } | null = null;
+
+  // 1) try as-is.
   try {
-    parsed = JSON.parse(cleaned);
-  } catch {
-    console.error("[analyzeApplication] failed to parse JSON. Raw:", raw.slice(0, 300));
-    return {
-      status: "error",
-      message: "התשובה התקבלה במבנה לא צפוי. נסי שוב.",
-    };
+    parsed = JSON.parse(raw);
+  } catch { /* fall through */ }
+
+  // 2) strip fences anywhere, find the first { ... } block, parse that.
+  if (!parsed) {
+    const stripped = raw.replace(/```(?:json)?/gi, "").trim();
+    const firstBrace = stripped.indexOf("{");
+    const lastBrace = stripped.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace > firstBrace) {
+      const slice = stripped.slice(firstBrace, lastBrace + 1);
+      try {
+        parsed = JSON.parse(slice);
+      } catch { /* fall through */ }
+    }
+  }
+
+  if (!parsed) {
+    console.error("[analyzeApplication] failed to parse JSON. finishReason:", finishReason, "raw:", raw.slice(0, 500));
+    const msg =
+      finishReason === "MAX_TOKENS"
+        ? "התשובה הייתה ארוכה מדי. נסי שוב — היא אמורה להתקצר."
+        : "התשובה התקבלה במבנה לא צפוי. נסי שוב.";
+    return { status: "error", message: msg };
   }
 
   return {
