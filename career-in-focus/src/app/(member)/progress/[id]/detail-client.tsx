@@ -513,8 +513,9 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
               type="datetime-local"
               value={app.interviewDate ? new Date(app.interviewDate).toISOString().slice(0, 16) : ""}
               onChange={(e) => updateField("interviewDate", e.target.value || null)}
+              onClick={(e) => { try { (e.currentTarget as HTMLInputElement & { showPicker?: () => void }).showPicker?.(); } catch {} }}
               disabled={pending}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer hover:border-teal/50 transition-colors"
             />
           </div>
           <div className="sm:col-span-2">
@@ -730,7 +731,8 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
                 type="datetime-local"
                 value={reminderDue}
                 onChange={(e) => setReminderDue(e.target.value)}
-                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white"
+                onClick={(e) => { try { (e.currentTarget as HTMLInputElement & { showPicker?: () => void }).showPicker?.(); } catch {} }}
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer hover:border-teal/50 transition-colors"
               />
               <select
                 value={reminderType}

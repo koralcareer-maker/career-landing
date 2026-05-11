@@ -254,7 +254,13 @@ function FormStage({
           </div>
           <div>
             <label className="text-xs font-semibold text-gray-600 block mb-1">תאריך הגשה</label>
-            <Input name="dateApplied" type="date" defaultValue={today} />
+            <Input
+              name="dateApplied"
+              type="date"
+              defaultValue={today}
+              onClick={(e) => { try { (e.currentTarget as HTMLInputElement & { showPicker?: () => void }).showPicker?.(); } catch {} }}
+              className="cursor-pointer"
+            />
           </div>
           <div>
             <label className="text-xs font-semibold text-gray-600 block mb-1">סטטוס</label>
