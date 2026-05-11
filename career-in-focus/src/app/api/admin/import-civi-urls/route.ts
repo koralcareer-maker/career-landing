@@ -71,8 +71,23 @@ ${cleaned}
           contents: [{ role: "user", parts: [{ text: prompt }] }],
           generationConfig: {
             responseMimeType: "application/json",
+            // Lock the shape on Gemini's side so we don't have to repair
+            // freeform output — matches the analyzeApplication fix.
+            responseSchema: {
+              type: "object",
+              properties: {
+                title: { type: "string" },
+                company: { type: "string" },
+                location: { type: "string" },
+                summary: { type: "string" },
+                field: { type: "string" },
+                experienceLevel: { type: "string", nullable: true },
+              },
+              required: ["title", "company", "location", "summary", "field"],
+            },
             temperature: 0.2,
-            maxOutputTokens: 1024,
+            // 1024 was getting truncated mid-JSON for long civi postings.
+            maxOutputTokens: 2048,
           },
         }),
       },
@@ -82,7 +97,23 @@ ${cleaned}
       candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
     };
     const txt = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    return JSON.parse(txt) as ExtractedJob;
+    if (!txt) return null;
+    // Try direct parse first, then fall back to extracting the first { ... }
+    // block if the model wrapped output in fences or chatter despite
+    // responseMimeType.
+    try {
+      return JSON.parse(txt) as ExtractedJob;
+    } catch {
+      const stripped = txt.replace(/```(?:json)?/gi, "").trim();
+      const first = stripped.indexOf("{");
+      const last = stripped.lastIndexOf("}");
+      if (first === -1 || last <= first) return null;
+      try {
+        return JSON.parse(stripped.slice(first, last + 1)) as ExtractedJob;
+      } catch {
+        return null;
+      }
+    }
   } catch {
     return null;
   }
