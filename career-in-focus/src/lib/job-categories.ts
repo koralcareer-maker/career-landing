@@ -24,6 +24,7 @@ export const JOB_CATEGORIES = [
   "בכירים",
   "בנייה ונדל\"ן",
   "דיגיטל",
+  "הייטק",
   "חברת השמה",
   "חוק ומשפט",
   "חינוך והדרכה",
@@ -101,8 +102,11 @@ export function mapFieldToCategory(field: string | null | undefined): JobCategor
   if (/ניהול.?פרויקט|project.?manag|pm\b/i.test(field)) return "ניהול פרויקטים";
   if (/עיצוב|ux|ui|design/i.test(field)) return "עיצוב";
   if (/קמעונאות|רכש|אופנ|retail|fashion|procure/i.test(field)) return "קמעונאות ורכש";
-  if (/dynamics.?365|salesforce|מחלקת.?crm|מנהל.?crm|crm.?(developer|architect|consultant)/i.test(field)) {
-    return "תוכנה";
+  if (/dynamics.?365|salesforce|sap\b|erp\b|מחלקת.?crm|מנהל.?crm|crm.?(developer|architect|consultant)|אינטגרצי|integrat/i.test(field)) {
+    return "הייטק";
+  }
+  if (/הייטק|high.?tech|startup|סטארטאפ/i.test(field)) {
+    return "הייטק";
   }
   if (/תוכנה|מתכנת|software|develop|frontend|backend|full.?stack/i.test(field)) {
     return "תוכנה";
