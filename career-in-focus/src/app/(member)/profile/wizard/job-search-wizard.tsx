@@ -1,20 +1,21 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { ChevronRight, ChevronLeft, Loader2, CheckCircle2, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronRight, ChevronLeft, Loader2, CheckCircle2, Sparkles, Save } from "lucide-react";
 import {
   saveWizardStep1,
   saveWizardStep2,
   saveWizardStep3,
   saveWizardStep4,
   completeWizard,
+  generateCareerPassport,
 } from "@/lib/actions/profile";
 import { StepDirection } from "./step-direction";
 import { StepBackground } from "./step-background";
 import { StepStatus } from "./step-status";
 import { StepAssets } from "./step-assets";
 import { InsightsPanel } from "./insights-panel";
-import { CompletionScreen } from "./completion";
 import { type WizardState, EMPTY_WIZARD_STATE } from "./types";
 import type { Gender } from "@/lib/gender";
 
@@ -36,14 +37,21 @@ const STEPS = [
 const STORAGE_KEY = "cif_wizard_v1";
 
 export function JobSearchWizard({ initial, firstName, gender }: Props) {
+  const router = useRouter();
   const [state, setState] = useState<WizardState>(() => ({
     ...EMPTY_WIZARD_STATE,
     ...initial,
   }));
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [done, setDone] = useState(false);
   const [pending, startTransition] = useTransition();
   const [savedTick, setSavedTick] = useState(false);
+  // After step 4 we run completeWizard + generateCareerPassport — this can
+  // take 15–30s when Gemini is in the loop. Show a fullscreen overlay
+  // ("יוצרים את הדרכון…") so the user knows we're working and doesn't
+  // bounce. On success we hard-redirect into /skills which renders the
+  // generated passport.
+  const [generating, setGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   // localStorage autosave — survives accidental refresh while filling.
   // Only persists fields the user typed (not the AI-loaded resumeUrl).
@@ -118,11 +126,34 @@ export function JobSearchWizard({ initial, firstName, gender }: Props) {
       setTimeout(() => setSavedTick(false), 1500);
       if (step < 4) {
         setStep((s) => (s + 1) as 1 | 2 | 3 | 4);
-      } else {
-        await completeWizard();
-        try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
-        setDone(true);
+        return;
       }
+
+      // Final step: mark the wizard complete, then synchronously generate
+      // the career passport so the redirect lands on a ready /skills page.
+      // The previous flow showed a "well done" screen and *then* asked
+      // /skills to fend for itself — but /skills with no passport row
+      // sends the user back to the wizard, so Coral saw an endless loop.
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch { /* ignore */ }
+      setGenerating(true);
+      setGenerationError(null);
+      const completeRes = await completeWizard();
+      if (completeRes && "error" in completeRes && completeRes.error) {
+        setGenerationError(completeRes.error);
+        setGenerating(false);
+        return;
+      }
+      const passportRes = await generateCareerPassport();
+      if (passportRes && "error" in passportRes && passportRes.error) {
+        setGenerationError(passportRes.error);
+        setGenerating(false);
+        return;
+      }
+      // Hard navigation so the new server-rendered /skills picks up the
+      // freshly inserted CareerPassport row.
+      router.replace("/skills");
     });
   }
 
@@ -130,8 +161,8 @@ export function JobSearchWizard({ initial, firstName, gender }: Props) {
     if (step > 1) setStep((s) => (s - 1) as 1 | 2 | 3 | 4);
   }
 
-  if (done) {
-    return <CompletionScreen firstName={firstName} gender={gender} />;
+  if (generating) {
+    return <GeneratingOverlay firstName={firstName} error={generationError} onRetry={next} />;
   }
 
   // Per-step "can we move forward" gate — keep loose so the user
@@ -229,7 +260,7 @@ export function JobSearchWizard({ initial, firstName, gender }: Props) {
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-teal text-white font-black text-sm shadow-md shadow-teal/30 hover:bg-teal-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 {pending ? <Loader2 size={15} className="animate-spin" /> : null}
-                {step === 4 ? "סיום וסקירת ההמלצות" : "המשך"}
+                {step === 4 ? "ליצירת דרכון הקריירה" : "המשך"}
                 <ChevronLeft size={15} />
               </button>
             </div>
@@ -237,6 +268,64 @@ export function JobSearchWizard({ initial, firstName, gender }: Props) {
         </section>
 
         <InsightsPanel state={state} currentStep={step} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Generating overlay ───────────────────────────────────────────────────────
+//
+// Replaces the old CompletionScreen. The user just finished the wizard and
+// we're calling Gemini to build their career-passport — that's the heaviest
+// AI call in the app (10–30s). A full-screen reassuring state is better
+// than dropping them on a half-rendered /skills page with a "you need to
+// fill the profile first" message.
+
+function GeneratingOverlay({
+  firstName,
+  error,
+  onRetry,
+}: {
+  firstName: string;
+  error: string | null;
+  onRetry: () => void;
+}) {
+  if (error) {
+    return (
+      <div className="max-w-xl mx-auto py-16 text-center" dir="rtl">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-rose-100 rounded-3xl mb-4">
+          <Sparkles size={28} className="text-rose-500" />
+        </div>
+        <h1 className="text-2xl font-black text-navy mb-2">משהו השתבש</h1>
+        <p className="text-gray-500 leading-relaxed mb-6">
+          לא הצלחנו ליצור את דרכון הקריירה עכשיו. הנתונים שלך נשמרו — אפשר לנסות שוב.
+        </p>
+        <p className="text-xs text-gray-400 mb-6 break-words">{error}</p>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="inline-flex items-center gap-2 bg-teal text-white font-black text-sm px-6 py-3 rounded-xl hover:bg-teal-dark transition-colors"
+        >
+          לנסות שוב
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-xl mx-auto py-16 text-center" dir="rtl">
+      <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-teal to-emerald-400 rounded-3xl shadow-xl shadow-teal/30 mb-5">
+        <Sparkles size={36} className="text-white animate-pulse" />
+      </div>
+      <h1 className="text-2xl font-black text-navy mb-2">
+        {firstName ? `${firstName}, ` : ""}יוצרים את דרכון הקריירה שלך
+      </h1>
+      <p className="text-gray-500 leading-relaxed max-w-md mx-auto">
+        ה-AI עובר עכשיו על הפרופיל שלך — חוזקות, פערים, התאמות לתפקידים והמלצות. זה לוקח כ-30 שניות.
+      </p>
+      <div className="flex items-center justify-center gap-2 mt-7 text-teal">
+        <Loader2 size={18} className="animate-spin" />
+        <span className="text-sm font-bold">מעבד נתונים</span>
       </div>
     </div>
   );
