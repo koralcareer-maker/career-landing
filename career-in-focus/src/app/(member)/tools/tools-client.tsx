@@ -89,6 +89,46 @@ function AdminTipModal({
   );
 }
 
+// ─── Featured Tool Cube ───────────────────────────────────────────────────────
+//
+// Vertical cube card for the 5 "headline" tools at the top of the hub
+// (WhatsApp/Facebook groups, recruiter directory, LinkedIn photo, networking
+// prompts). Same idiom as ToolCard below — icon top-right, title, short
+// description, and a CTA row at the bottom. Equal heights via flex-col.
+
+function FeaturedToolCube({
+  href,
+  title,
+  description,
+  icon,
+  iconBg,
+  accent,
+}: {
+  href: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  iconBg: string;
+  accent: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col bg-white rounded-2xl p-5 border border-slate-100 hover:border-teal/40 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+    >
+      <div className={`w-11 h-11 rounded-2xl ${iconBg} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
+        {icon}
+      </div>
+      <h3 className="font-black text-navy text-sm leading-snug mb-1.5">{title}</h3>
+      <p className="text-xs text-slate-500 leading-relaxed mb-4 line-clamp-2">{description}</p>
+      <div className={`mt-auto inline-flex items-center justify-between text-xs font-bold ${accent}`}>
+        <span>כניסה לכלי</span>
+        <ChevronLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
+      </div>
+    </Link>
+  );
+}
+
 // ─── Tool Card ────────────────────────────────────────────────────────────────
 
 function ToolCard({ tool, onTipOpen }: { tool: ToolItem; onTipOpen: (tool: ToolItem) => void }) {
@@ -207,111 +247,65 @@ export function ToolsClient({ tools, whatsappCount = 0, facebookCount = 0 }: { t
         <p className="text-sm text-gray-500">כלים ומשאבים לחברי הקהילה</p>
       </div>
 
-      {/* ─── Featured: WhatsApp Groups ─── */}
+      {/* ─── Featured tools — unified cube grid ─────────────────────────
+       *
+       * Coral asked that *every* tool — including the 5 "headline" tools
+       * (WhatsApp / Facebook groups, recruiters, LinkedIn AI photo,
+       * networking prompts) — reads as the same cube-shaped card the
+       * smaller items below use. The previous layout had each of them as
+       * a full-width gradient banner, which made the page feel like 5
+       * separate sections stacked vertically. One grid, equal-height
+       * cards, same visual rhythm — easier to scan and visually
+       * consistent with the cube cards on the group sub-pages.
+       */}
       <div>
-        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-3">ערוצי איתור משרות</h2>
-        <Link href="/tools/whatsapp-groups" className="block group">
-          <div className="bg-gradient-to-l from-[#075E54] via-[#128C7E] to-[#25D366] rounded-2xl p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:shadow-[#25D366]/20 transition-all duration-200">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-                <MessageCircle size={24} className="text-white" />
-              </div>
-              <div>
-                <p className="text-white font-black text-base">קבוצות וואטספ למשרות</p>
-                <p className="text-white/70 text-sm mt-0.5">{whatsappCount} קבוצות · 60 תחומים · ממויין לפי תעשייה</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
-              כניסה
-              <ChevronLeft size={14} />
-            </div>
-          </div>
-        </Link>
-
-        {/* Facebook Groups */}
-        <Link href="/tools/facebook-groups" className="block group mt-3">
-          <div className="bg-gradient-to-l from-[#0a5dc2] to-[#1877F2] rounded-2xl p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:shadow-[#1877F2]/20 transition-all duration-200">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-              </div>
-              <div>
-                <p className="text-white font-black text-base">קבוצות פייסבוק למשרות</p>
-                <p className="text-white/70 text-sm mt-0.5">{facebookCount} קבוצות · ממויין לפי תחום</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
-              כניסה
-              <ChevronLeft size={14} />
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      {/* ─── Recruiter Directory ─── */}
-      <div>
-        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-3">מגייסים וסוכנויות</h2>
-        <Link href="/recruiters" className="block group">
-          <div className="bg-gradient-to-l from-[#0d3d56] to-[#0e7490] rounded-2xl p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:shadow-teal/20 transition-all duration-200">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-                <UserSearch size={24} className="text-white" />
-              </div>
-              <div>
-                <p className="text-white font-black text-base">ספריית מגייסים</p>
-                <p className="text-white/70 text-sm mt-0.5">מגייסים, חברות השמה והד-האנטרים · פרטי קשר ישירים</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
-              כניסה
-              <ChevronLeft size={14} />
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      {/* ─── LinkedIn AI Photo ─── */}
-      <div>
-        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-3">AI לתמונת פרופיל</h2>
-        <Link href="/tools/linkedin-photo" className="block group">
-          <div className="bg-gradient-to-l from-purple-700 via-purple-600 to-pink-500 rounded-2xl p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-200">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-                <Camera size={24} className="text-white" />
-              </div>
-              <div>
-                <p className="text-white font-black text-base">מחולל תמונת לינקדאין</p>
-                <p className="text-white/70 text-sm mt-0.5">העלה 3 תמונות · AI ייצור תמונת פרופיל מקצועית</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
-              נסה עכשיו
-              <ChevronLeft size={14} />
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      {/* ─── Networking Prompts ─── */}
-      <div>
-        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-3">כלי נטוורקינג</h2>
-        <Link href="/tools/networking-prompts" className="block group">
-          <div className="bg-gradient-to-l from-[#1e3a5f] to-[#2563eb] rounded-2xl p-5 flex items-center justify-between gap-4 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-200">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-                <Users size={24} className="text-white" />
-              </div>
-              <div>
-                <p className="text-white font-black text-base">תבניות נטוורקינג</p>
-                <p className="text-white/70 text-sm mt-0.5">12 תבניות · מגייסים, הפניות ופנייה קרה · וואטסאפ, מייל ולינקדאין</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-xl shrink-0">
-              כניסה
-              <ChevronLeft size={14} />
-            </div>
-          </div>
-        </Link>
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-3">כלים ראשיים</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <FeaturedToolCube
+            href="/tools/whatsapp-groups"
+            title="קבוצות וואטסאפ למשרות"
+            description={`${whatsappCount} קבוצות · ממויינות לפי תעשייה`}
+            icon={<MessageCircle size={20} className="text-[#25D366]" />}
+            iconBg="bg-[#25D366]/10"
+            accent="text-[#128C7E]"
+          />
+          <FeaturedToolCube
+            href="/tools/facebook-groups"
+            title="קבוצות פייסבוק למשרות"
+            description={`${facebookCount} קבוצות · ממויינות לפי תחום`}
+            icon={
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+            }
+            iconBg="bg-[#1877F2]/10"
+            accent="text-blue-600"
+          />
+          <FeaturedToolCube
+            href="/recruiters"
+            title="ספריית מגייסים"
+            description="מגייסים, חברות השמה והד-האנטרים · פרטי קשר ישירים"
+            icon={<UserSearch size={20} className="text-teal" />}
+            iconBg="bg-teal/10"
+            accent="text-teal-dark"
+          />
+          <FeaturedToolCube
+            href="/tools/linkedin-photo"
+            title="מחולל תמונת לינקדאין"
+            description="3 תמונות יומיומיות · AI מייצר תמונת פרופיל מקצועית"
+            icon={<Camera size={20} className="text-purple-600" />}
+            iconBg="bg-purple-100"
+            accent="text-purple-700"
+          />
+          <FeaturedToolCube
+            href="/tools/networking-prompts"
+            title="תבניות נטוורקינג"
+            description="12 תבניות · מגייסים, הפניות ופנייה קרה · וואטסאפ, מייל ולינקדאין"
+            icon={<Users size={20} className="text-blue-700" />}
+            iconBg="bg-blue-100"
+            accent="text-blue-700"
+          />
+        </div>
       </div>
 
       {/* Search + Filters */}
