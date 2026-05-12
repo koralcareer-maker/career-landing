@@ -91,10 +91,10 @@ export function nextChargeDate(from: Date = new Date()): Date {
 
 /** Reasons we offer in the cancellation survey, in display order. */
 export const CANCELLATION_REASONS = [
-  { code: "FOUND_JOB",      label: "מצאתי עבודה 🎉",                         followUp: "מזל טוב! ספר/י לנו איפה — אנחנו אוהבים סיפורי הצלחה" },
+  { code: "FOUND_JOB",      label: "מצאתי עבודה 🎉",                         followUp: "מזל טוב! ספרי לנו איפה — אנחנו אוהבים סיפורי הצלחה" },
   { code: "NO_VALUE",       label: "לא קיבלתי ערך מהמערכת",                  followUp: "מה היה חסר? כל פידבק עוזר לנו להשתפר" },
-  { code: "STOPPED_SEARCH", label: "הפסקתי לחפש עבודה כרגע",                  followUp: "אופציונלי: ספר/י מה השתנה" },
-  { code: "OTHER",          label: "אחר",                                    followUp: "ספר/י לנו, נשמח להבין" },
+  { code: "STOPPED_SEARCH", label: "הפסקתי לחפש עבודה כרגע",                  followUp: "אופציונלי: ספרי מה השתנה" },
+  { code: "OTHER",          label: "אחר",                                    followUp: "ספרי לנו, נשמח להבין" },
 ] as const;
 
 export type CancellationReasonCode = typeof CANCELLATION_REASONS[number]["code"];

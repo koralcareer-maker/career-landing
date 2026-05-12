@@ -54,8 +54,8 @@ export function BillingClient({ data }: { data: BillingData }) {
             <div className="flex-1">
               <p className="font-black text-amber-900 mb-1">המנוי בוטל ✓</p>
               <p className="text-sm text-amber-800 leading-relaxed">
-                לא תחויב/י יותר. הגישה שלך נשארת פעילה עד {fmtDate(data.nextChargeAt)} —
-                אחרי זה החשבון יעבור לסטטוס לא-פעיל. שינית/ה את דעתך?
+                לא תחויבי יותר. הגישה שלך נשארת פעילה עד {fmtDate(data.nextChargeAt)} —
+                אחרי זה החשבון יעבור לסטטוס לא-פעיל. שינית את דעתך?
               </p>
               <button
                 type="button"
@@ -146,16 +146,20 @@ export function BillingClient({ data }: { data: BillingData }) {
           <div className="space-y-2.5 text-sm text-slate-600 leading-relaxed">
             <div className="flex items-start gap-2">
               <Calendar size={14} className="text-teal mt-0.5 shrink-0" />
-              <p>הגישה שלך נשארת מלאה עד תום מחזור החיוב הנוכחי — מה ששילמת עליו.</p>
+              <p>אפשר לבטל בכל עת. הגישה שלך נשארת מלאה עד תום מחזור החיוב הנוכחי — מה ששילמת עליו.</p>
             </div>
             <div className="flex items-start gap-2">
               <CheckCircle2 size={14} className="text-teal mt-0.5 shrink-0" />
-              <p>לא יבוצעו חיובים נוספים. בלי החזרים, בלי הפתעות.</p>
+              <p>אחרי הביטול לא יבוצעו חיובים נוספים. במנוי שנתי — החזר מלא תוך 14 ימים מההצטרפות.</p>
             </div>
             <div className="flex items-start gap-2">
               <Heart size={14} className="text-teal mt-0.5 shrink-0" />
-              <p>שינית/ה דעת? אפשר לחזור למנוי בכל רגע, באותם תנאים שהיו לך.</p>
+              <p>שינית דעת? אפשר לחזור למנוי בכל רגע, באותם תנאים שהיו לך.</p>
             </div>
+            <p className="text-xs text-slate-400 pt-1">
+              למדיניות המלאה ראי{" "}
+              <a href="/terms" className="text-teal hover:underline font-semibold">תנאי השימוש</a>.
+            </p>
           </div>
         </Card>
       </div>
@@ -215,7 +219,7 @@ function CancelModal({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           <div className="p-6 sm:p-8">
-            <h3 className="text-xl font-black text-navy mb-1.5">לפני שתעזב/י…</h3>
+            <h3 className="text-xl font-black text-navy mb-1.5">לפני שתעזבי…</h3>
             <p className="text-sm text-slate-500 mb-5 leading-relaxed">
               הביטול ייקח 10 שניות. הפידבק שלך עוזר לנו להשתפר ולהתאים את החוויה למשתמשים הבאים.
             </p>
