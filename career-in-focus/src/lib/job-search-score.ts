@@ -109,39 +109,50 @@ export function computeScore(input: ScoreInput): ScoreBreakdown {
   const volumeScore = clamp((appsThisWeek / Math.max(1, weeklyGoal)) * 100);
 
   // ─── 2. Diversity — proactive outreach share of submissions ──────────
-  // 30%+ outreach = 100; 0% = 25 (some baseline since job boards aren't useless).
+  // 30%+ outreach = 100; 0% with submissions = ~25 baseline. With zero
+  // submissions, 0 — fresh users shouldn't see fake-positive scores.
   const submittedTotal = submitted.length;
   const outreachShare = submittedTotal > 0 ? outreach.length / submittedTotal : 0;
-  const diversityScore = clamp(25 + (outreachShare / 0.3) * 75);
+  const diversityScore =
+    submittedTotal === 0 ? 0 : clamp(25 + (outreachShare / 0.3) * 75);
 
   // ─── 3. Follow-through — overdue reminders are penalized hard ────────
-  // No overdue + at least one on-track reminder = 100.
-  // Each overdue subtracts 25 points; floor at 0.
-  let followThroughScore = 100;
-  followThroughScore -= overdueReminders * 25;
-  if (overdueReminders === 0 && openRemindersOnTrack === 0 && submittedTotal >= 5) {
-    // Submitting without ever scheduling a follow-up — partial credit
-    followThroughScore = 50;
+  // Zero submissions = 0 (nothing to follow up on yet).
+  // After submissions: 100, minus 25 per overdue reminder.
+  let followThroughScore: number;
+  if (submittedTotal === 0) {
+    followThroughScore = 0;
+  } else {
+    followThroughScore = 100;
+    followThroughScore -= overdueReminders * 25;
+    if (overdueReminders === 0 && openRemindersOnTrack === 0 && submittedTotal >= 5) {
+      // Submitting without ever scheduling a follow-up — partial credit
+      followThroughScore = 50;
+    }
+    followThroughScore = clamp(followThroughScore);
   }
-  followThroughScore = clamp(followThroughScore);
 
   // ─── 4. Conversion — interview rate after submission ─────────────────
-  // 25%+ interview rate = 100; 0% with 5+ submissions = 20; in between linear.
+  // 25%+ interview rate = 100; below 5 submissions = 0 (not enough data
+  // to score, and the old "neutral 60" misled new users into thinking
+  // they were doing well when they hadn't actually done anything).
   let conversionScore: number;
   if (submittedTotal < 5) {
-    // Too few data points to score conversion meaningfully — neutral 60.
-    conversionScore = 60;
+    conversionScore = 0;
   } else {
     const ir = interviews.length / submittedTotal;
     conversionScore = clamp(20 + (ir / 0.25) * 80);
   }
 
   // ─── 5. Activity — days since last status change on any active app ───
-  // 0-3 days = 100; 4-7 = 70; 8-14 = 40; 15+ = 0.
+  // 0 applications = 0. Otherwise based on freshness of the latest
+  // touched application: 0-3 days = 100, etc.
   const activeApps = live.filter((a) => ACTIVE_STATUSES.has(a.status));
   let activityScore: number;
-  if (activeApps.length === 0) {
-    activityScore = submittedTotal === 0 ? 0 : 30;
+  if (submittedTotal === 0) {
+    activityScore = 0;
+  } else if (activeApps.length === 0) {
+    activityScore = 30;
   } else {
     const lastUpdate = Math.min(...activeApps.map((a) => daysAgo(a.updatedAt)));
     if (lastUpdate <= 3) activityScore = 100;
