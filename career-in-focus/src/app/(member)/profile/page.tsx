@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { parseJsonArray } from "@/lib/utils";
+import Link from "next/link";
+import { Pencil } from "lucide-react";
 import { JobSearchWizard } from "./wizard/job-search-wizard";
 import { PassportHero } from "./passport-hero";
 import type { WizardState } from "./wizard/types";
@@ -23,14 +25,20 @@ function parseAdditionalLinks(raw: string | null | undefined): Array<{ label: st
 
 /**
  * Job-search definition wizard — the platform's onboarding spine.
- * Replaces the old single-page mega-form. The wizard collects the
- * data that drives jobs/coach/insights; the existing CareerPassport
- * (AI insights) renders above the wizard so returning users still see
- * their score and recommendations at a glance.
+ *
+ * Once the CareerPassport exists this page is the "passport view" by
+ * default: PassportHero takes the whole screen and the wizard is hidden
+ * behind a "ערכי את הפרופיל" link (?edit=1). First-time users without
+ * a passport land straight on the wizard.
  */
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ edit?: string }>;
+}) {
   const session = await auth();
   const userId = session!.user.id;
+  const params = (await searchParams) ?? {};
 
   const [user, profile, passport, courseCompletions, skillCompletions] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { name: true, photoUpgradeStatus: true } }),
@@ -82,11 +90,13 @@ export default async function ProfilePage() {
   } : {};
 
   const firstName = user?.name?.split(" ")[0] ?? "";
+  // Default view: when a passport already exists, hide the wizard so the
+  // user lands on their actual passport. They opt in to editing via
+  // ?edit=1 (linked from the "ערכי את הפרופיל" CTA below the passport).
+  const showWizard = !passport || params.edit === "1";
 
   return (
-    <div className="space-y-8">
-      {/* Career Passport — the AI insights snapshot, kept above the wizard
-          so returning users see what their data already produced. */}
+    <div className="space-y-6">
       {passport && (
         <PassportHero
           passport={{
@@ -111,7 +121,21 @@ export default async function ProfilePage() {
         />
       )}
 
-      <JobSearchWizard initial={initial} firstName={firstName} gender={session!.user.gender ?? null} />
+      {showWizard ? (
+        <JobSearchWizard initial={initial} firstName={firstName} gender={session!.user.gender ?? null} />
+      ) : (
+        // Passport-only view: give a discoverable way to edit the wizard
+        // without leaving /profile.
+        <div className="flex justify-center">
+          <Link
+            href="/profile?edit=1"
+            className="inline-flex items-center gap-2 text-sm font-bold text-navy bg-white border border-slate-200 hover:border-teal/60 hover:text-teal px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+          >
+            <Pencil size={14} />
+            ערכי את הפרופיל
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

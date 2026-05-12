@@ -156,9 +156,11 @@ export function JobSearchWizard({ initial, firstName, gender }: Props) {
           setGenerating(false);
           return;
         }
-        // Hard navigation so the new server-rendered /skills picks up the
-        // freshly inserted CareerPassport row.
-        router.replace("/skills");
+        // Hard navigation to /profile, which by default now renders the
+        // PassportHero (the actual "Career Passport" view). /skills is the
+        // separate "ניתוח פערי מיומנויות" page — useful but not the artefact
+        // the user just earned by finishing the wizard.
+        router.replace("/profile");
       } catch (e) {
         console.error("[wizard finish] unexpected error:", e);
         setGenerationError(e instanceof Error ? e.message : "תקלת רשת — נסי שוב בעוד רגע");
