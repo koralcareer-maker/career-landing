@@ -1,15 +1,21 @@
 "use client";
 
-import { useEffect, useState, useLayoutEffect, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { X, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 
-// ─── Generic onboarding tour component ────────────────────────────────────
-// Spotlights one element at a time, shows a tooltip with explanation, and
-// remembers completion in localStorage so a member only sees it once.
-
-const PADDING = 12;          // visual padding around the spotlit element
-const TIP_WIDTH = 320;       // tooltip card width in px
+// ─── Generic onboarding tour ──────────────────────────────────────────────
+// Bottom-sheet design: the explanation card is always anchored to the bottom
+// center of the viewport, so the next/skip buttons are always reachable
+// regardless of where the target element actually lives on the page. The
+// previous "tooltip next to target" approach kept rendering off-screen for
+// real users — calling `getBoundingClientRect` while body scroll is locked,
+// or before the layout settled, would put the card hundreds of pixels above
+// the target and you couldn't reach "המשך".
+//
+// The targeted element still gets a visual cue: we scroll it into the
+// upper third of the viewport and draw a pulsing teal ring around it via
+// a fixed overlay (no backdrop cutout — keeps the layout simple).
 
 export interface TourStep {
   /** matches the `data-tour-id` attribute on the element to highlight */
@@ -29,6 +35,9 @@ interface Props {
   /** called when the user closes the tour for any reason */
   onClose?: () => void;
 }
+
+// Visual padding for the spotlight ring around the target.
+const RING_PADDING = 8;
 
 export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props) {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,8 +60,8 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
     }
   }, [forceOpen, storageKey]);
 
-  // ─── Compute the bounding rect of the current target element ─────────
-  const computeRect = useCallback(() => {
+  // ─── Scroll target into view + track its rect for the spotlight ring ──
+  const updateTarget = useCallback(() => {
     if (!isOpen) return;
     const step = steps[stepIdx];
     if (!step?.targetId) {
@@ -67,8 +76,7 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
     setRect(el.getBoundingClientRect());
   }, [isOpen, stepIdx, steps]);
 
-  // Scroll the target into view, then measure
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!isOpen) return;
     const step = steps[stepIdx];
     if (!step?.targetId) {
@@ -77,37 +85,41 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
     }
     const el = document.querySelector<HTMLElement>(`[data-tour-id="${step.targetId}"]`);
     if (!el) { setRect(null); return; }
-    el.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
-    // Wait for the smooth scroll to settle before measuring
-    const t = window.setTimeout(computeRect, 450);
-    return () => window.clearTimeout(t);
-  }, [isOpen, stepIdx, steps, computeRect]);
 
-  // Keep the spotlight in sync with viewport changes
+    // Scroll the target so it sits in the upper third of the viewport,
+    // leaving plenty of room below for the explanation sheet. Using
+    // window.scrollTo (not element.scrollIntoView) because the element's
+    // scroll container may have been locked elsewhere.
+    const r = el.getBoundingClientRect();
+    const desiredTopInViewport = Math.round(window.innerHeight * 0.18);
+    const scrollDelta = r.top - desiredTopInViewport;
+    if (Math.abs(scrollDelta) > 20) {
+      window.scrollBy({ top: scrollDelta, behavior: "smooth" });
+    }
+
+    // Measure once the scroll has settled.
+    const tick = window.setTimeout(updateTarget, 450);
+    return () => window.clearTimeout(tick);
+  }, [isOpen, stepIdx, steps, updateTarget]);
+
+  // Keep the ring in sync with scroll / resize while the tour is open.
   useEffect(() => {
     if (!isOpen) return;
-    window.addEventListener("resize", computeRect);
-    window.addEventListener("scroll", computeRect, true);
+    const handler = () => updateTarget();
+    window.addEventListener("resize", handler);
+    window.addEventListener("scroll", handler, true);
     return () => {
-      window.removeEventListener("resize", computeRect);
-      window.removeEventListener("scroll", computeRect, true);
+      window.removeEventListener("resize", handler);
+      window.removeEventListener("scroll", handler, true);
     };
-  }, [isOpen, computeRect]);
+  }, [isOpen, updateTarget]);
 
-  // Lock body scroll while the tour is open
-  useEffect(() => {
-    if (!isOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [isOpen]);
-
-  // Keyboard nav: Esc to skip, ←/→ to navigate
+  // Keyboard nav: Esc to skip, ←/→ to navigate (RTL — right is "back")
   useEffect(() => {
     if (!isOpen) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") close(false);
-      else if (e.key === "ArrowRight") prev();          // RTL — right is "back"
+      else if (e.key === "ArrowRight") prev();
       else if (e.key === "ArrowLeft") next();
     }
     window.addEventListener("keydown", onKey);
@@ -116,10 +128,9 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
   }, [isOpen, stepIdx]);
 
   function close(completed: boolean) {
-    // Always persist the flag — once a member has seen the tour (whether they
-    // finished it, skipped it, or hit Esc), don't pester them again on every
-    // dashboard load. The `completed` value is kept on the flag for telemetry
-    // (so we can later distinguish "finished" from "dismissed early").
+    // Persist a flag so the tour doesn't pester the member every load.
+    // "1" = finished all steps, "skipped" = closed early. Either way,
+    // we don't reopen automatically.
     try {
       window.localStorage.setItem(storageKey, completed ? "1" : "skipped");
     } catch { /* ignore */ }
@@ -140,115 +151,47 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
   const step = steps[stepIdx];
   if (!step) return null;
 
-  const hasTarget = !!rect;
-  const spotX = rect ? rect.left - PADDING : 0;
-  const spotY = rect ? rect.top - PADDING : 0;
-  const spotW = rect ? rect.width + PADDING * 2 : 0;
-  const spotH = rect ? rect.height + PADDING * 2 : 0;
-
-  // Tooltip position — try below the target, fall back above. The card uses
-  // either `top` (when placed below the target) or `bottom` (when placed
-  // above), so a short card always hugs the target instead of pinning to
-  // the viewport corner. tipMaxH bounds how tall the card can grow so it
-  // never extends past the viewport (combined with overflow-y: auto on the
-  // card, every step's buttons remain reachable).
-  const TIP_HEIGHT_ESTIMATE = 400;
-  let tipX = 16;
-  let tipTop: number | undefined;
-  let tipBottom: number | undefined;
-  let tipMaxH = 0;
-  if (rect && typeof window !== "undefined") {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const widthOnScreen = Math.min(TIP_WIDTH, vw - 32);
-    tipX = rect.left + rect.width / 2 - widthOnScreen / 2;
-    tipX = Math.max(16, Math.min(vw - widthOnScreen - 16, tipX));
-
-    const spaceBelow = vh - rect.bottom - 32;  // 16px gap + 16px bottom padding
-    const spaceAbove = rect.top - 32;          // same on top
-
-    if (spaceBelow >= spaceAbove || spaceBelow >= TIP_HEIGHT_ESTIMATE) {
-      // Anchor the card's TOP just below the target — grows downward.
-      tipTop = rect.bottom + 16;
-      tipMaxH = Math.max(160, spaceBelow);
-    } else {
-      // Anchor the card's BOTTOM just above the target — grows upward.
-      // (Previously this used `top: rect.top - tipMaxH - 16`, which pinned
-      // a short card to ≈16px from the viewport top regardless of how tall
-      // the actual content was, leaving a big visual gap from the target.)
-      tipBottom = vh - rect.top + 16;
-      tipMaxH = Math.max(160, spaceAbove);
-    }
-  } else if (typeof window !== "undefined") {
-    // Centered when no target — pin top, let it grow to almost full viewport.
-    const vh = window.innerHeight;
-    const widthOnScreen = Math.min(TIP_WIDTH, window.innerWidth - 32);
-    tipX = (window.innerWidth - widthOnScreen) / 2;
-    tipMaxH = vh - 32;
-    tipTop = Math.max(16, vh / 2 - Math.min(TIP_HEIGHT_ESTIMATE, tipMaxH) / 2);
-  }
-
   const isFirstStep = stepIdx === 0;
   const isLastStep = stepIdx === steps.length - 1;
+  const hasTarget = !!rect;
 
   return (
-    <div className="fixed inset-0 z-[9999]" dir="rtl" role="dialog" aria-modal="true">
-      {/* ─── Backdrop — SVG mask cuts a hole around the target ─── */}
-      {hasTarget ? (
-        <svg
-          className="absolute inset-0 w-full h-full"
-          onClick={() => close(false)}
-          aria-hidden
-        >
-          <defs>
-            <mask id={`tour-mask-${storageKey}`}>
-              <rect width="100%" height="100%" fill="white" />
-              <rect
-                x={spotX} y={spotY} width={spotW} height={spotH} rx={16}
-                fill="black"
-              />
-            </mask>
-          </defs>
-          <rect
-            width="100%" height="100%"
-            fill="rgba(28,28,46,0.7)"
-            mask={`url(#tour-mask-${storageKey})`}
-          />
-        </svg>
-      ) : (
+    <div
+      className="fixed inset-0 z-[9999] pointer-events-none"
+      dir="rtl"
+      role="dialog"
+      aria-modal="true"
+      aria-label="סיור הכרות"
+    >
+      {/* ─── Soft dim — clickable to close. Lets you still read the page. ── */}
+      <button
+        type="button"
+        onClick={() => close(false)}
+        aria-label="סגור סיור"
+        className="absolute inset-0 bg-navy/30 backdrop-blur-[1px] pointer-events-auto"
+      />
+
+      {/* ─── Spotlight ring around target (no backdrop cutout — simpler). ── */}
+      {hasTarget && rect && (
         <div
-          className="absolute inset-0 bg-navy/70 cursor-pointer"
-          onClick={() => close(false)}
-          aria-label="סגור סיור"
+          aria-hidden
+          className="absolute pointer-events-none rounded-2xl ring-4 ring-teal shadow-[0_0_60px_15px_rgba(62,207,207,0.6)] animate-pulse transition-all duration-300"
+          style={{
+            left: rect.left - RING_PADDING,
+            top: rect.top - RING_PADDING,
+            width: rect.width + RING_PADDING * 2,
+            height: rect.height + RING_PADDING * 2,
+          }}
         />
       )}
 
-      {/* ─── Spotlight pulse ring ─── */}
-      {hasTarget && (
-        <div
-          aria-hidden
-          className="absolute pointer-events-none rounded-2xl ring-4 ring-teal shadow-[0_0_60px_10px_rgba(62,207,207,0.5)] animate-pulse"
-          style={{ left: spotX, top: spotY, width: spotW, height: spotH }}
-        />
-      )}
-
-      {/* ─── Tooltip card ─── */}
-      {/* maxHeight is computed at the same time as tipY so the card never
-          overflows the viewport — combined with overflow-y: auto, every
-          step's buttons are always reachable. */}
+      {/* ─── Bottom sheet — always at the viewport bottom, always reachable. ── */}
       <div
-        className="absolute bg-white rounded-2xl shadow-2xl border border-teal/30 animate-fade-in-up"
-        style={{
-          left: tipX,
-          ...(tipTop !== undefined ? { top: tipTop } : {}),
-          ...(tipBottom !== undefined ? { bottom: tipBottom } : {}),
-          width: `min(${TIP_WIDTH}px, calc(100vw - 32px))`,
-          maxHeight: tipMaxH > 0 ? `${tipMaxH}px` : "calc(100vh - 32px)",
-          overflowY: "auto",
-        }}
+        className="absolute left-1/2 -translate-x-1/2 bottom-4 sm:bottom-6 w-[min(420px,calc(100vw-24px))] bg-white rounded-2xl shadow-2xl border border-teal/30 pointer-events-auto animate-fade-in-up"
+        style={{ maxHeight: "calc(100vh - 32px)", overflowY: "auto" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-l from-teal-pale via-white to-teal-pale border-b border-teal/15">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-l from-teal-pale via-white to-teal-pale border-b border-teal/15 rounded-t-2xl">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-teal-dark">
             <Sparkles size={11} />
             צעד {stepIdx + 1} / {steps.length}
@@ -293,8 +236,8 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
           ))}
         </div>
 
-        {/* Nav buttons */}
-        <div className="flex items-center justify-between px-3 py-2 bg-navy/[0.02] border-t border-navy/5">
+        {/* Nav buttons — sticky so they NEVER get cut off */}
+        <div className="flex items-center justify-between px-3 py-2 bg-navy/[0.02] border-t border-navy/5 sticky bottom-0 rounded-b-2xl">
           <button
             type="button"
             onClick={prev}
