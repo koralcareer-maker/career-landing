@@ -169,6 +169,7 @@ model User {
   jobApplications JobApplication[]
   jobApplicationJournalEntries JobApplicationJournalEntry[]
   jobApplicationReminders JobApplicationReminder[]
+  eventRegistrations EventRegistration[]
   courseCompletions UserCourseCompletion[]
   skillCompletions  UserSkillCompletion[]
   posts         Post[]
@@ -630,6 +631,21 @@ model Event {
   valueBullets String?  // JSON array of 3-5 short bullets
   host         String?  // שם המנחה
   hostRole     String?  // תפקיד המנחה — "מגייסת טכנולוגית בכירה"
+
+  registrations EventRegistration[]
+}
+
+model EventRegistration {
+  id           String    @id @default(cuid())
+  eventId      String
+  event        Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  registeredAt DateTime  @default(now())
+  cancelledAt  DateTime?
+
+  @@unique([eventId, userId])
+  @@index([userId])
 }
 
 // ─── Community ────────────────────────────────────────────────────────────────
