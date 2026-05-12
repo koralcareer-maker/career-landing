@@ -1,27 +1,67 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { CheckCircle2, Compass, MessageCircle, Target, ArrowLeft, Sparkles } from "lucide-react";
 
 /**
  * Final wizard screen. Shown after step 4 saves successfully.
- * Three primary actions get the user moving immediately — finding
- * jobs, opening the AI coach, or starting application tracking.
+ *
+ * The CTA that matters most is the Career Passport (/skills): without
+ * it the AI's match scores stay generic. We make that the hero action
+ * and also auto-navigate after a few seconds so users who scroll past
+ * the screen still land on the right next step. Members who want to
+ * skip to Jobs/Coach/Tracker have visible alternates below.
  */
 export function CompletionScreen({ firstName }: { firstName: string }) {
+  const router = useRouter();
+
+  // After 6s, push the user into the Career Passport — long enough to
+  // read the screen, short enough that nobody gets stranded on a
+  // success page wondering "what now?".
+  useEffect(() => {
+    const t = window.setTimeout(() => router.push("/skills"), 6000);
+    return () => window.clearTimeout(t);
+  }, [router]);
+
   return (
     <div className="max-w-2xl mx-auto py-10">
-      <div className="text-center mb-10">
+      <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-teal to-emerald-400 rounded-3xl shadow-xl shadow-teal/30 mb-5">
           <CheckCircle2 size={40} className="text-white" />
         </div>
         <h1 className="text-3xl font-black text-navy mb-2">המערכת שלך מוכנה</h1>
         <p className="text-gray-500 text-base leading-relaxed max-w-lg mx-auto">
-          {firstName ? `${firstName}, ` : ""}אספנו את כל הנתונים — עכשיו האלגוריתם יודע מה את מחפשת ויכול להתחיל לעבוד עבורך.
+          {firstName ? `${firstName}, ` : ""}אספנו את כל הנתונים — עכשיו השלב המרכזי הוא <strong className="text-navy">דרכון הקריירה</strong>, שייצור את ציוני ההתאמה לפרופיל שלך.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+      {/* PRIMARY: Career Passport — this is the next mandatory step. */}
+      <Link
+        href="/skills"
+        className="group block bg-gradient-to-br from-teal/15 via-white to-cream border-2 border-teal/30 rounded-3xl p-6 sm:p-7 mb-6 shadow-lg shadow-teal/10 hover:shadow-xl hover:shadow-teal/20 transition-all hover:-translate-y-0.5"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal to-teal-dark flex items-center justify-center shrink-0 shadow-md">
+            <Sparkles size={26} className="text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[11px] font-bold text-teal-dark mb-1 tracking-wide">השלב הבא · אוטומטי בעוד 6 שניות</p>
+            <h2 className="text-xl font-black text-navy mb-1">לדרכון הקריירה ←</h2>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              ניתוח חכם של הפרופיל שלך — ציון התאמה, חוזקות בולטות, פערים ותפקידים מומלצים.
+            </p>
+          </div>
+          <ArrowLeft size={22} className="text-teal shrink-0 transition-transform group-hover:-translate-x-1" />
+        </div>
+      </Link>
+
+      <div className="text-center mb-3">
+        <span className="text-xs text-gray-400 font-bold tracking-wide">או דלגי לאחת מהפעולות</span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <ActionCard
           href="/jobs"
           icon={Compass}
@@ -37,33 +77,12 @@ export function CompletionScreen({ firstName }: { firstName: string }) {
           accent="navy"
         />
         <ActionCard
-          href="/jobs/tracker"
+          href="/progress"
           icon={Target}
           title="מעקב מועמדויות"
           description="לעקוב אחרי כל משרה ששלחת"
           accent="purple"
         />
-      </div>
-
-      <div className="bg-gradient-to-br from-teal/10 to-cream rounded-2xl p-5 border border-teal/20">
-        <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white shrink-0 flex items-center justify-center">
-            <Sparkles size={16} className="text-teal" />
-          </div>
-          <div className="flex-1">
-            <p className="font-black text-navy text-sm mb-1">השלב הבא: דרכון קריירה</p>
-            <p className="text-xs text-gray-500 leading-relaxed mb-3">
-              הניתוח החכם של הפרופיל שלך — כולל ציון התאמה, חוזקות בולטות, פערי מיומנויות ותפקידים מומלצים. נוצר אוטומטית כשהדאטה מוכן.
-            </p>
-            <Link
-              href="/profile?tab=passport"
-              className="inline-flex items-center gap-1 text-sm font-bold text-teal hover:text-teal-dark transition-colors"
-            >
-              לדרכון הקריירה
-              <ArrowLeft size={14} />
-            </Link>
-          </div>
-        </div>
       </div>
     </div>
   );
