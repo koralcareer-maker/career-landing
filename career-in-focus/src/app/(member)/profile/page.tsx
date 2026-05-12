@@ -7,6 +7,12 @@ import { JobSearchWizard } from "./wizard/job-search-wizard";
 import { PassportHero } from "./passport-hero";
 import type { WizardState } from "./wizard/types";
 
+// Force fresh render per request — this page reads session cookies and the
+// per-user Profile/Passport rows; any caching would risk showing a wizard
+// to a returning user who already has a passport ("double-screen" bug
+// Coral keeps hitting after login).
+export const dynamic = "force-dynamic";
+
 function parseAdditionalLinks(raw: string | null | undefined): Array<{ label: string; url: string }> {
   if (!raw) return [];
   try {
@@ -90,10 +96,15 @@ export default async function ProfilePage({
   } : {};
 
   const firstName = user?.name?.split(" ")[0] ?? "";
-  // Default view: when a passport already exists, hide the wizard so the
-  // user lands on their actual passport. They opt in to editing via
-  // ?edit=1 (linked from the "ערכי את הפרופיל" CTA below the passport).
-  const showWizard = !passport || params.edit === "1";
+  // Default view: when the user has either finished the wizard OR already
+  // has a passport, hide the wizard so the page reads as "your career
+  // passport". Two flags because they can drift — a user can hit the
+  // "finish" button (sets questionnaireCompleted) but the passport
+  // generation can fail, and vice-versa during regeneration.
+  // The wizard only renders on first-time users (neither flag set) or when
+  // explicitly invited via the "ערכי את הפרופיל" CTA (?edit=1).
+  const hasFinishedSetup = !!passport || !!profile?.questionnaireCompleted;
+  const showWizard = !hasFinishedSetup || params.edit === "1";
 
   return (
     <div className="space-y-6">
