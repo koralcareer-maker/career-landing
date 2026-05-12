@@ -350,14 +350,14 @@ export default async function DashboardPage() {
             {
               label: "משרות מתאימות לי",
               value: matchingJobsCount,
-              sub: matchingJobsCount > 0 ? "התאמה ≥ 70%" : "השלימי פרופיל לקבלת התאמות",
+              sub: matchingJobsCount > 0 ? "התאמה ≥ 70%" : t("השלימי פרופיל לקבלת התאמות", "השלם פרופיל לקבלת התאמות"),
               icon: <Briefcase size={20} />,
               href: "/jobs",
             },
             {
               label: "קורסים רלוונטיים",
               value: relevantCoursesCount,
-              sub: relevantCoursesCount > 0 ? "מותאמים לפערים שלך" : "השלימי דרכון לקבלת המלצות",
+              sub: relevantCoursesCount > 0 ? "מותאמים לפערים שלך" : t("השלימי דרכון לקבלת המלצות", "השלם דרכון לקבלת המלצות"),
               icon: <BookOpen size={20} />,
               href: "/courses",
             },
@@ -366,7 +366,7 @@ export default async function DashboardPage() {
               value: `${displayedScore.value}%`,
               sub: displayedScore.isPassport
                 ? "מתוך דרכון הקריירה שלך"
-                : displayedScore.value >= 70 ? "כמעט מוכנה" : "השלימי פרופיל",
+                : displayedScore.value >= 70 ? t("כמעט מוכנה", "כמעט מוכן") : t("השלימי פרופיל", "השלם פרופיל"),
               icon: <Target size={20} />,
               href: "/profile",
             },
@@ -458,13 +458,16 @@ export default async function DashboardPage() {
                   עוד אין משרות בהתאמה גבוהה
                 </p>
                 <p className="text-xs text-navy/60 leading-relaxed mb-4 max-w-xs mx-auto">
-                  השלימי את הפרופיל ואת דרכון הקריירה כדי שנתאים לך משרות לפי תפקיד היעד והחוזקות שלך.
+                  {t(
+                    "השלימי את הפרופיל ואת דרכון הקריירה כדי שנוכל להתאים לך משרות לפי תפקיד היעד והחוזקות שלך.",
+                    "השלם את הפרופיל ואת דרכון הקריירה כדי שנוכל להתאים לך משרות לפי תפקיד היעד והחוזקות שלך.",
+                  )}
                 </p>
                 <Link
                   href="/profile"
                   className="inline-flex items-center gap-1.5 bg-teal text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-teal-dark transition-colors shadow-sm shadow-teal/30"
                 >
-                  השלימי פרופיל
+                  {t("השלימי פרופיל", "השלם פרופיל")}
                   <ChevronLeft size={12} />
                 </Link>
               </div>
@@ -613,7 +616,7 @@ export default async function DashboardPage() {
               </h2>
               <p className="text-white/70 text-sm leading-relaxed mb-5 max-w-md">
                 חברי וחברות הקהילה שלנו כבר מצאו את העבודה הבאה שלהם. {t("שתפי", "שתף")} איתנו
-                את ההצלחה {t("שלך ועזרי", "שלך ועזור")} לאחרים לראות שזה אפשרי גם להם.
+                את ההצלחה {t("שלך ועזרי", "שלך ועזור")} לחברות וחברים אחרים לראות שזה אפשרי גם להם.
               </p>
               <div className="flex flex-wrap gap-2">
                 <Link

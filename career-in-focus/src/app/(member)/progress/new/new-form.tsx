@@ -39,10 +39,14 @@ interface Prefill {
 function UrlStage({
   onPrefill,
   onSkip,
+  gender = null,
 }: {
   onPrefill: (data: Prefill, autoFilledFields: Set<keyof Prefill>) => void;
   onSkip: () => void;
+  gender?: string | null;
 }) {
+  const isM = gender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +65,7 @@ function UrlStage({
       });
       const data = (await res.json()) as Prefill & { ok?: boolean; error?: string; reason?: string };
       if (!res.ok || !data.ok) {
-        setError(data.error || "לא הצלחתי לקרוא את הלינק. נסי קישור אחר או הכניסי ידנית.");
+        setError(data.error || t("לא הצלחתי לקרוא את הלינק. נסי קישור אחר או הכניסי ידנית.", "לא הצלחתי לקרוא את הלינק. נסה קישור אחר או הכנס ידנית."));
         setLoading(false);
         return;
       }
@@ -71,7 +75,7 @@ function UrlStage({
       });
       onPrefill(data, filled);
     } catch {
-      setError("שגיאת רשת. נסי שוב, או הכניסי ידנית.");
+      setError(t("שגיאת רשת. נסי שוב, או הכניסי ידנית.", "שגיאת רשת. נסה שוב, או הכנס ידנית."));
       setLoading(false);
     }
   }
@@ -137,7 +141,7 @@ function UrlStage({
               ) : (
                 <>
                   <Sparkles size={20} />
-                  מלאי לי את הפרטים
+                  {t("מלאי לי את הפרטים", "מלא לי את הפרטים")}
                 </>
               )}
             </button>
@@ -199,11 +203,15 @@ function FormStage({
   prefill,
   autoFilled,
   onBack,
+  gender = null,
 }: {
   prefill: Prefill;
   autoFilled: Set<keyof Prefill>;
   onBack: () => void;
+  gender?: string | null;
 }) {
+  const isM = gender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
   const [state, formAction, pending] = useActionState(addJobApplication, null);
   const router = useRouter();
 
@@ -275,7 +283,7 @@ function FormStage({
           </div>
           <div>
             <label className="text-xs font-semibold text-gray-600 block mb-1">איש קשר</label>
-            <Input name="contactName" placeholder="שם המראיין/ת או מגייס/ת" />
+            <Input name="contactName" placeholder={t("שם המראיינת או המגייסת", "שם המראיין או המגייס")} />
           </div>
           <div className="sm:col-span-2">
             <label className="text-xs font-semibold text-gray-600 mb-1 flex items-center gap-1.5">
@@ -329,7 +337,7 @@ function FormStage({
             ) : (
               <>
                 <CheckCircle2 size={16} />
-                הוסיפי מועמדות
+                {t("הוסיפי מועמדות", "הוסף מועמדות")}
               </>
             )}
           </Button>
@@ -343,7 +351,7 @@ function FormStage({
 /* Top-level — manages stage state.                                            */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
-export function NewApplicationForm() {
+export function NewApplicationForm({ gender = null }: { gender?: string | null }) {
   const [stage, setStage] = useState<"url" | "form">("url");
   const [prefill, setPrefill] = useState<Prefill>({});
   const [autoFilled, setAutoFilled] = useState<Set<keyof Prefill>>(new Set());
@@ -362,6 +370,7 @@ export function NewApplicationForm() {
 
       {stage === "url" ? (
         <UrlStage
+          gender={gender}
           onPrefill={(data, filled) => {
             setPrefill(data);
             setAutoFilled(filled);
@@ -377,6 +386,7 @@ export function NewApplicationForm() {
         <FormStage
           prefill={prefill}
           autoFilled={autoFilled}
+          gender={gender}
           onBack={() => setStage("url")}
         />
       )}

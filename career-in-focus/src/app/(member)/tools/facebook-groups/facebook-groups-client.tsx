@@ -129,7 +129,7 @@ export function FacebookGroupsClient({ groups, byCategory }: Props) {
                   <h2 className="text-sm font-bold text-navy">{cat}</h2>
                   <span className="text-xs text-slate-400">({byCategory[cat].length})</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {byCategory[cat].map(g => <GroupCard key={g.id} group={g} />)}
                 </div>
               </div>
@@ -154,26 +154,29 @@ export function FacebookGroupsClient({ groups, byCategory }: Props) {
   );
 }
 
+// Cube-style card — same layout idiom as the main /tools hub and the
+// WhatsApp groups page, so the three listings read as one product.
 function GroupCard({ group, showCategory }: { group: Group; showCategory?: boolean }) {
   return (
     <a
       href={group.externalUrl ?? "#"}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100 hover:border-blue-300 hover:shadow-sm transition-all group"
+      className="group flex flex-col bg-white rounded-2xl p-5 border border-slate-100 hover:border-blue-300 hover:shadow-lg hover:-translate-y-0.5 transition-all"
     >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors" style={{ background: "#1877F215" }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
+      <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-3 transition-colors" style={{ background: "#1877F215" }}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#1877F2">
           <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
         </svg>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-navy truncate">{group.title}</p>
-        {showCategory && group.category && (
-          <p className="text-xs text-slate-400 mt-0.5">{group.category}</p>
-        )}
+      <h3 className="font-black text-navy text-sm leading-snug mb-1.5 line-clamp-2">{group.title}</h3>
+      {showCategory && group.category && (
+        <span className="inline-flex w-fit bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full px-2 py-0.5 mb-4">{group.category}</span>
+      )}
+      <div className="mt-auto inline-flex items-center justify-between text-xs font-bold text-blue-600">
+        <span>הצטרפות לקבוצה</span>
+        <ExternalLink size={12} className="group-hover:-translate-x-0.5 transition-transform" />
       </div>
-      <ExternalLink size={13} className="text-slate-300 group-hover:text-blue-400 transition-colors shrink-0" />
     </a>
   );
 }

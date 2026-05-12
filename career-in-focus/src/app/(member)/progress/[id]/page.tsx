@@ -55,6 +55,7 @@ export default async function ApplicationDetailPage({
           completedAt: r.completedAt?.toISOString() ?? null,
         }))}
         prep={prep}
+        gender={session.user.gender ?? null}
       />
     </div>
   );

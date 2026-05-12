@@ -12,11 +12,14 @@ import type { CvFeedbackResult } from "@/lib/cv-feedback-types";
 interface Props {
   initial: { fileName: string; result: CvFeedbackResult; createdAt: string } | null;
   targetRole: string | null;
+  gender?: string | null;
 }
 
 type Phase = "idle" | "uploading" | "analyzing" | "done" | "error";
 
-export function CvFeedbackClient({ initial, targetRole }: Props) {
+export function CvFeedbackClient({ initial, targetRole, gender = null }: Props) {
+  const isM = gender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
   const fileRef = useRef<HTMLInputElement>(null);
   const [phase, setPhase] = useState<Phase>(initial ? "done" : "idle");
   const [result, setResult] = useState<CvFeedbackResult | null>(initial?.result ?? null);
@@ -28,7 +31,7 @@ export function CvFeedbackClient({ initial, targetRole }: Props) {
     if (!file) return;
 
     if (file.size > 6 * 1024 * 1024) {
-      setError("הקובץ גדול מדי (מקסימום 6MB). נסי PDF דחוס יותר.");
+      setError(t("הקובץ גדול מדי (מקסימום 6MB). נסי PDF דחוס יותר.", "הקובץ גדול מדי (מקסימום 6MB). נסה PDF דחוס יותר."));
       setPhase("error");
       e.target.value = "";
       return;
@@ -71,7 +74,7 @@ export function CvFeedbackClient({ initial, targetRole }: Props) {
       setFileName(data.fileName);
       setPhase("done");
     } catch {
-      setError("שגיאת רשת — נסי שוב.");
+      setError(t("שגיאת רשת — נסי שוב.", "שגיאת רשת — נסה שוב."));
       setPhase("error");
     } finally {
       e.target.value = "";
@@ -108,7 +111,7 @@ export function CvFeedbackClient({ initial, targetRole }: Props) {
       />
 
       {phase === "idle" && (
-        <UploadZone onClick={() => fileRef.current?.click()} />
+        <UploadZone onClick={() => fileRef.current?.click()} gender={gender} />
       )}
 
       {(phase === "uploading" || phase === "analyzing") && (
@@ -138,7 +141,9 @@ export function CvFeedbackClient({ initial, targetRole }: Props) {
 
 // ─── Upload zone (idle) ──────────────────────────────────────────────────────
 
-function UploadZone({ onClick }: { onClick: () => void }) {
+function UploadZone({ onClick, gender = null }: { onClick: () => void; gender?: string | null }) {
+  const isM = gender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
   return (
     <button
       type="button"
@@ -149,7 +154,7 @@ function UploadZone({ onClick }: { onClick: () => void }) {
         <Upload size={24} className="text-teal" />
       </div>
       <div className="text-center">
-        <p className="font-black text-navy text-base">לחצי להעלאת קורות חיים</p>
+        <p className="font-black text-navy text-base">{t("לחצי להעלאת קורות חיים", "לחץ להעלאת קורות חיים")}</p>
         <p className="text-xs text-gray-400 mt-1">PDF או Word · מקסימום 6MB</p>
       </div>
     </button>

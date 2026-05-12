@@ -145,7 +145,7 @@ export function WhatsAppGroupsClient({ groups, byIndustry }: Props) {
                   <h2 className="text-sm font-bold text-navy">{ind}</h2>
                   <span className="text-xs text-slate-400">({byIndustry[ind].length})</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {byIndustry[ind].map((g) => (
                     <GroupCard key={g.id} group={g} />
                   ))}
@@ -157,12 +157,12 @@ export function WhatsAppGroupsClient({ groups, byIndustry }: Props) {
 
         {/* Flat list when searching or filtered */}
         {!displayedByIndustry && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredGroups.map((g) => (
               <GroupCard key={g.id} group={g} showIndustry />
             ))}
             {filteredGroups.length === 0 && (
-              <div className="col-span-2 text-center py-12 text-slate-400">
+              <div className="col-span-full text-center py-12 text-slate-400">
                 <MessageCircle size={40} className="mx-auto mb-3 opacity-30" />
                 <p>לא נמצאו קבוצות מתאימות</p>
               </div>
@@ -174,38 +174,35 @@ export function WhatsAppGroupsClient({ groups, byIndustry }: Props) {
   );
 }
 
+// Cube-style card so the WhatsApp/Facebook listings match the look of the
+// main /tools grid. Each card is a stand-alone square panel with icon + title
+// + meta + CTA — same visual rhythm as the cube cards on the tools hub.
 function GroupCard({ group, showIndustry }: { group: Group; showIndustry?: boolean }) {
+  const location = group.notes || "כל הארץ";
   return (
     <a
       href={group.externalUrl ?? "#"}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 border border-slate-100 hover:border-[#25D366] hover:shadow-sm transition-all group"
+      className="group flex flex-col bg-white rounded-2xl p-5 border border-slate-100 hover:border-[#25D366]/50 hover:shadow-lg hover:-translate-y-0.5 transition-all"
     >
-      <div className="w-9 h-9 bg-[#25D366]/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-[#25D366]/20 transition-colors">
-        <MessageCircle size={16} className="text-[#25D366]" />
+      <div className="w-11 h-11 rounded-2xl bg-[#25D366]/10 flex items-center justify-center mb-3 group-hover:bg-[#25D366]/15 transition-colors">
+        <MessageCircle size={20} className="text-[#25D366]" />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-navy truncate">{group.title}</p>
-        <div className="flex items-center gap-2 mt-0.5">
-          {showIndustry && group.category && (
-            <span className="text-xs text-slate-400">{group.category}</span>
-          )}
-          {group.notes && group.notes !== "כל הארץ" && (
-            <span className="flex items-center gap-0.5 text-xs text-slate-400">
-              <MapPin size={10} />
-              {group.notes}
-            </span>
-          )}
-          {(!group.notes || group.notes === "כל הארץ") && (
-            <span className="flex items-center gap-0.5 text-xs text-slate-400">
-              <MapPin size={10} />
-              כל הארץ
-            </span>
-          )}
-        </div>
+      <h3 className="font-black text-navy text-sm leading-snug mb-1.5 line-clamp-2">{group.title}</h3>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500 mb-4">
+        {showIndustry && group.category && (
+          <span className="bg-slate-100 text-slate-600 font-bold rounded-full px-2 py-0.5">{group.category}</span>
+        )}
+        <span className="inline-flex items-center gap-0.5">
+          <MapPin size={10} />
+          {location}
+        </span>
       </div>
-      <ArrowRight size={14} className="text-slate-300 group-hover:text-[#25D366] transition-colors shrink-0 rotate-180" />
+      <div className="mt-auto inline-flex items-center justify-between text-xs font-bold text-[#128C7E]">
+        <span>הצטרפות לקבוצה</span>
+        <ArrowRight size={12} className="rotate-180 group-hover:-translate-x-0.5 transition-transform" />
+      </div>
     </a>
   );
 }

@@ -53,7 +53,7 @@ export default async function LinkedInPhotoPage({
 
   return (
     <div className="p-4 sm:p-6">
-      <LinkedInPhotoClient userId={session.user.id} initialHistory={initialHistory} />
+      <LinkedInPhotoClient userId={session.user.id} initialHistory={initialHistory} userGender={session.user.gender ?? null} />
     </div>
   );
 }

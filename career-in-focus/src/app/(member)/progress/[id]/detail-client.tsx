@@ -74,6 +74,8 @@ interface Props {
   journal: JournalEntryDTO[];
   reminders: ReminderDTO[];
   prep: PrepBlock | null;
+  /** Drives gender-aware copy across this client. */
+  gender?: string | null;
 }
 
 // ─── Status / tag labels ─────────────────────────────────────────────────────
@@ -155,7 +157,9 @@ function daysSince(iso: string | null): number | null {
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export function ApplicationDetailClient({ application, journal: initialJournal, reminders: initialReminders, prep }: Props) {
+export function ApplicationDetailClient({ application, journal: initialJournal, reminders: initialReminders, prep, gender = null }: Props) {
+  const isM = gender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
   const router = useRouter();
   const searchParams = useSearchParams();
   const isWelcome = searchParams.get("welcome") === "1";
@@ -383,7 +387,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
             {/* Action 1: Research the company via AI coach */}
             <a
               href={`/coaching?prompt=${encodeURIComponent(
-                `מה כדאי לי לדעת על החברה "${app.company}" לפני שאני מתראיינת לתפקיד "${app.role}"? תני לי 5 נקודות עיקריות: מודל עסקי, חדשות מהחודש האחרון, תרבות ארגונית, אנשים בתפקידים דומים בלינקדאין, ו-2-3 שאלות חכמות שאני יכולה לשאול בראיון.`
+                `מה כדאי לדעת על החברה "${app.company}" לפני ראיון לתפקיד "${app.role}"? פרט 5 נקודות עיקריות: מודל עסקי, חדשות מהחודש האחרון, תרבות ארגונית, אנשים בתפקידים דומים בלינקדאין, ו-2-3 שאלות חכמות שכדאי לשאול בראיון.`
               )}`}
               className="group flex flex-col gap-2 p-4 rounded-2xl bg-white border border-slate-100 hover:border-teal/40 hover:shadow-sm transition-all"
             >
@@ -440,7 +444,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
               </p>
               {!followupSet && (
                 <span className="text-teal text-xs font-bold mt-auto group-hover:translate-x-[-3px] transition-transform">
-                  הוסיפי ←
+                  {t("הוסיפי ←", "הוסף ←")}
                 </span>
               )}
             </button>
@@ -542,7 +546,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
               }`}
             >
               <ArrowUpCircle size={14} className="ml-1" />
-              {app.priority === 3 ? "סמני כלא דחוף" : "סמני כעדיפות גבוהה"}
+              {app.priority === 3 ? t("סמני כלא דחוף", "סמן כלא דחוף") : t("סמני כעדיפות גבוהה", "סמן כעדיפות גבוהה")}
             </Button>
             <Button
               type="button"
@@ -586,7 +590,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
             className="inline-flex items-center gap-2 bg-gradient-to-l from-purple-600 to-pink-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl hover:shadow-md hover:shadow-purple-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {aiPending ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
-            {aiPending ? "מנתחת..." : "לניתוח המועמדות"}
+            {aiPending ? t("מנתחת…", "מנתח…") : "לניתוח המועמדות"}
           </button>
         )}
 
@@ -631,7 +635,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
                     className="inline-flex items-center gap-1 text-xs font-bold text-teal hover:underline"
                   >
                     <CopyIcon size={12} />
-                    {copied ? "הועתק ✓" : "העתיקי"}
+                    {copied ? "הועתק ✓" : t("העתיקי", "העתק")}
                   </button>
                 </div>
                 <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">
@@ -665,7 +669,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
               className="text-xs text-slate-500 hover:text-teal font-semibold inline-flex items-center gap-1 disabled:opacity-50"
             >
               {aiPending ? <Loader2 size={12} className="animate-spin" /> : <WandSparkles size={12} />}
-              ייצרי מחדש
+              {t("ייצרי מחדש", "ייצר מחדש")}
             </button>
           </div>
         )}
@@ -678,7 +682,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
             <Sparkles size={16} className="text-teal" />
             {prep.title}
           </h2>
-          <p className="text-xs text-gray-500 mb-4">צ&apos;קליסט מותאם לשלב הנוכחי. סמני כל פעולה כשסיימת.</p>
+          <p className="text-xs text-gray-500 mb-4">צ&apos;קליסט מותאם לשלב הנוכחי. {t("סמני כל פעולה כשסיימת.", "סמן כל פעולה כשסיימת.")}</p>
           <div className="space-y-2">
             {prep.steps.map((step) => (
               <PrepStepItem key={step.id} step={step} appId={app.id} />
@@ -751,7 +755,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
               disabled={pending || !reminderTitle || !reminderDue}
               className="w-full h-9 bg-teal hover:bg-teal/90 text-white rounded-xl border-0 text-sm font-bold disabled:opacity-50"
             >
-              <Plus size={14} className="ml-1" /> הוסיפי תזכורת
+              <Plus size={14} className="ml-1" /> {t("הוסיפי תזכורת", "הוסף תזכורת")}
             </Button>
           </form>
 
@@ -836,7 +840,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
                 disabled={pending || !journalText.trim()}
                 className="flex-1 h-9 bg-teal hover:bg-teal/90 text-white rounded-xl border-0 text-sm font-bold disabled:opacity-50"
               >
-                <Plus size={14} className="ml-1" /> הוסיפי רשומה
+                <Plus size={14} className="ml-1" /> {t("הוסיפי רשומה", "הוסף רשומה")}
               </Button>
             </div>
           </form>

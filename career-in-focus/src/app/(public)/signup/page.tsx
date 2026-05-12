@@ -12,7 +12,7 @@ import { useState, Suspense } from "react";
 
 const PLAN_LABELS: Record<string, { name: string; price: string; color: string; bg: string; iconWrap: string; icon: React.ReactNode }> = {
   member: {
-    name: "חבר/ה",
+    name: "חברה",
     price: "₪19/חודש",
     // Logo-true palette: solid neutral cream + black target-style
     // icon tile + teal silhouette inside (the icon star). Replaces
@@ -69,7 +69,7 @@ function SignupForm() {
             <span className="font-black text-navy text-lg group-hover:text-teal transition-colors">קריירה בפוקוס</span>
           </Link>
           <Link href="/login" className="text-sm font-semibold text-navy/60 hover:text-teal transition-colors">
-            כבר רשום/ה?
+            כבר רשומה?
           </Link>
         </div>
 
@@ -273,7 +273,7 @@ function SignupForm() {
 
             <div className="mt-5 pt-5 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-500">
-                כבר חבר/ה?{" "}
+                כבר חברה?{" "}
                 <Link href="/login" className="text-teal font-bold hover:underline">כניסה</Link>
               </p>
             </div>

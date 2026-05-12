@@ -60,5 +60,5 @@ export default async function CvFeedbackPage() {
     select: { targetRole: true },
   });
 
-  return <CvFeedbackClient initial={initial} targetRole={profile?.targetRole ?? null} />;
+  return <CvFeedbackClient initial={initial} targetRole={profile?.targetRole ?? null} gender={session.user.gender ?? null} />;
 }

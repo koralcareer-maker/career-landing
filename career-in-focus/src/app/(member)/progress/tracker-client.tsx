@@ -314,7 +314,7 @@ export function TrackerClient({
               })}
             </div>
           ) : (
-            <p className="text-sm text-gray-400 italic">אין תזכורות פתוחות. הוסיפי תזכורות ממסך משרה.</p>
+            <p className="text-sm text-gray-400 italic">אין תזכורות פתוחות. {t("הוסיפי תזכורות ממסך המשרה.", "הוסף תזכורות ממסך המשרה.")}</p>
           )}
         </Card>
       </div>
@@ -356,7 +356,7 @@ export function TrackerClient({
             href="/progress/new"
             className="inline-flex items-center justify-center gap-1.5 bg-teal hover:bg-teal/90 text-white font-bold px-4 py-2 rounded-xl text-sm shrink-0"
           >
-            <Plus size={14} /> הוסיפי משרה
+            <Plus size={14} /> {t("הוסיפי משרה", "הוסף משרה")}
           </Link>
         </div>
       </Card>
@@ -390,14 +390,14 @@ export function TrackerClient({
             <p className="text-sm text-gray-500 mb-4">
               {applications.length === 0
                 ? t("התחילי לעקוב אחרי כל מועמדות שאת מגישה — חברה, תפקיד, סטטוס.", "התחל לעקוב אחרי כל מועמדות שאתה מגיש — חברה, תפקיד, סטטוס.")
-                : "נסי חיפוש אחר או שני את הסינון."}
+                : t("ניתן לנסות חיפוש אחר או לעדכן את הסינון.", "ניתן לנסות חיפוש אחר או לעדכן את הסינון.")}
             </p>
             {applications.length === 0 && (
               <Link
                 href="/progress/new"
                 className="inline-flex items-center gap-2 bg-teal text-white font-bold px-5 py-2.5 rounded-xl"
               >
-                <Plus size={14} /> הוסיפי משרה ראשונה
+                <Plus size={14} /> {t("הוסיפי משרה ראשונה", "הוסף משרה ראשונה")}
               </Link>
             )}
           </Card>

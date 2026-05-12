@@ -5,7 +5,9 @@ import { submitNetworkRequest } from "@/lib/actions/network";
 import { Button } from "@/components/ui/button";
 import { Send, CheckCircle } from "lucide-react";
 
-export function NetworkRequestForm() {
+export function NetworkRequestForm({ gender = null }: { gender?: string | null }) {
+  const isM = gender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
   const [state, action, isPending] = useActionState(
     async (_: unknown, formData: FormData) => submitNetworkRequest(formData),
     null
@@ -53,7 +55,7 @@ export function NetworkRequestForm() {
 
         <Button type="submit" loading={isPending} className="w-full">
           <Send size={15} />
-          שלחי בקשה לקורל
+          {t("שלחי בקשה לקורל", "שלח בקשה לקורל")}
         </Button>
       </div>
     </form>

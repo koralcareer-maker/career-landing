@@ -108,7 +108,10 @@ interface ChipMultiSelectProps {
 }
 
 /** Dropdown multi-select with chips. */
-export function ChipMultiSelect({ options, selected, onChange, placeholder = "בחרי..." }: ChipMultiSelectProps) {
+// Default placeholder kept gender-neutral ("בחירה") so this generic building
+// block doesn't need a gender prop. Pages can override per-instance if they
+// want a verb-form.
+export function ChipMultiSelect({ options, selected, onChange, placeholder = "בחירה…" }: ChipMultiSelectProps) {
   const [open, setOpen] = useState(false);
 
   function toggle(opt: string) {
@@ -172,7 +175,7 @@ interface TagInputProps {
 }
 
 /** Comma- or Enter-separated tag input — used for skills/strengths. */
-export function TagInput({ value, onChange, placeholder = "הקלידי וגעי Enter" }: TagInputProps) {
+export function TagInput({ value, onChange, placeholder = "הוספת תגית — Enter לסיום" }: TagInputProps) {
   const [draft, setDraft] = useState("");
 
   function commit() {

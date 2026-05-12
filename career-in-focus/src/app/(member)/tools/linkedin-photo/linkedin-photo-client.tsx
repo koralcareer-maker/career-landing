@@ -82,9 +82,14 @@ const STYLES = [
 interface Props {
   userId: string;
   initialHistory: HistoryJob[];
+  /** Drives gendered copy on this client. Named `userGender` to avoid
+   *  collision with the existing `gender` photo-subject state below. */
+  userGender?: string | null;
 }
 
-export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
+export function LinkedInPhotoClient({ userId, initialHistory, userGender = null }: Props) {
+  const isM = userGender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const [gender, setGender] = useState<"woman" | "man">("woman");
   const [style, setStyle] = useState<"formal" | "casual" | "creative">("formal");
@@ -203,17 +208,17 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
           body: JSON.stringify({ sourceUrls, gender, style, jobId }),
         });
       } catch {
-        setError("שגיאת רשת — בדקי חיבור אינטרנט ונסי שנית");
+        setError(t("שגיאת רשת — בדקי חיבור אינטרנט ונסי שנית", "שגיאת רשת — בדוק חיבור אינטרנט ונסה שנית"));
         return;
       }
 
       const data = (await res.json().catch(() => null)) as GenerateResponse | null;
       if (!res.ok || !data) {
-        setError(data?.error ?? `שגיאת שרת (${res.status}) — נסי שוב בעוד דקה`);
+        setError(data?.error ?? `שגיאת שרת (${res.status}) — ${t("נסי שוב בעוד דקה", "נסה שוב בעוד דקה")}`);
         return;
       }
       if (!data.images || data.images.length === 0) {
-        setError(data.error ?? "לא נוצרו תמונות הפעם — נסי שוב");
+        setError(data.error ?? t("לא נוצרו תמונות הפעם — נסי שוב", "לא נוצרו תמונות הפעם — נסה שוב"));
         return;
       }
 
@@ -245,7 +250,7 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
       a.click();
       a.remove();
     } catch {
-      setError("ההורדה נכשלה — נסי לחיצה ימנית → שמירה כתמונה");
+      setError(t("ההורדה נכשלה — נסי לחיצה ימנית → שמירה כתמונה", "ההורדה נכשלה — נסה לחיצה ימנית → שמירה כתמונה"));
     }
   }
 
@@ -410,7 +415,7 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
         ) : (
           <span className="flex items-center gap-2">
             <Sparkles size={16} />
-            {photos.length === 3 ? "יצרי תמונת לינקדאין" : `העלי ${3 - photos.length} תמונות נוספות`}
+            {photos.length === 3 ? t("יצרי תמונת לינקדאין", "צור תמונת לינקדאין") : t(`העלי ${3 - photos.length} תמונות נוספות`, `העלה ${3 - photos.length} תמונות נוספות`)}
           </span>
         )}
       </Button>
@@ -432,7 +437,7 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
       {results.length > 0 && (
         <div className="space-y-3">
           <h2 className="font-bold text-navy text-lg">התוצאות שלך ✨</h2>
-          <p className="text-sm text-gray-500">לחצי על &quot;הורד&quot; כדי לשמור את התמונה המועדפת עלייך</p>
+          <p className="text-sm text-gray-500">{t("בחרי את התמונה המועדפת והורידי אותה לשמירה", "בחר את התמונה המועדפת והורד אותה לשמירה")}</p>
           <div className="grid grid-cols-2 gap-4">
             {results.map((url, idx) => (
               <div
@@ -464,7 +469,7 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
             className="w-full mt-2 py-2.5 rounded-xl border border-gray-200 text-gray-500 hover:border-teal/40 hover:text-teal text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <RefreshCw size={14} />
-            ייצרי גרסאות חדשות
+            {t("ייצרי גרסאות חדשות", "ייצר גרסאות חדשות")}
           </button>
         </div>
       )}

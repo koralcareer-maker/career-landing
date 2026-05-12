@@ -89,7 +89,7 @@ export default async function NetworkPage() {
           </div>
 
           {/* Form */}
-          <NetworkRequestForm />
+          <NetworkRequestForm gender={session?.user?.gender ?? null} />
 
           {/* My requests */}
           {requests.length > 0 && (
