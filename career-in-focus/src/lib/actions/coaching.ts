@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 // Hardcoded — NEXTAUTH_URL on Vercel points at the unconfigured
 // app.careerinfocus.co.il domain. Any links sent in coach emails
 // (weekly digest, action items) would be dead. Reverts when DNS is live.
-const APP_URL = "https://career-landing-tau.vercel.app";
+const APP_URL = "https://app.careerinfocus.co.il";
 
 export type Message = { role: "user" | "assistant"; content: string };
 

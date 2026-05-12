@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 // Hardcoded — same reasoning as the reminders cron: the Vercel env var
 // pointed at a domain whose DNS wasn't configured, breaking every link.
-const APP_URL = "https://career-landing-tau.vercel.app";
+const APP_URL = "https://app.careerinfocus.co.il";
 
 // Score below this threshold means we don't bother emailing the member.
 // Per Coral: anything 60%+ is worth surfacing in an alert.

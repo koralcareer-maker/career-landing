@@ -6,7 +6,7 @@ import { getReadinessScore } from "@/lib/utils";
 
 // Hardcoded — see lib/email.ts for context. The Vercel env var pointed to
 // a domain whose DNS wasn't configured, breaking every email link.
-const APP_URL = "https://career-landing-tau.vercel.app";
+const APP_URL = "https://app.careerinfocus.co.il";
 
 // Called by Vercel Cron — secured by CRON_SECRET
 export async function GET(req: NextRequest) {

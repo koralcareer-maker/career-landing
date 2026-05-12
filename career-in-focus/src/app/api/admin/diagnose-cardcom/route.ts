@@ -57,7 +57,7 @@ export async function POST() {
   // examine CardCom's response to surface the actual code + description.
   // Hardcoded host because the NEXT_PUBLIC_APP_URL env var still points
   // at app.careerinfocus.co.il (no DNS).
-  const appUrl = "https://career-landing-tau.vercel.app";
+  const appUrl = "https://app.careerinfocus.co.il";
   const body = {
     TerminalNumber: Number(terminal),
     ApiName: apiName,

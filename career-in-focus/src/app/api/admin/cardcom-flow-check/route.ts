@@ -50,7 +50,7 @@ export async function POST() {
 
   // Hardcoded — same reason as src/app/api/payment/cardcom/redirect/route.ts:
   // the env var still points at app.careerinfocus.co.il (no DNS).
-  const appUrl = "https://career-landing-tau.vercel.app";
+  const appUrl = "https://app.careerinfocus.co.il";
 
   // ─── Step 1: Credentials + LowProfile/Create ───────────────────────────
   let lpUrl: string | null = null;

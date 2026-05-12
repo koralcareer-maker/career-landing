@@ -169,7 +169,7 @@ export function AddUserForm({
               <button
                 type="button"
                 onClick={() => copyToClipboard(
-                  `שלום ${state.name ?? ""}!\nנוצר לך חשבון בקריירה בפוקוס:\n\nאימייל: ${state.email}\nסיסמה: ${state.password}\n\nכניסה: https://career-landing-tau.vercel.app/login`,
+                  `שלום ${state.name ?? ""}!\nנוצר לך חשבון בקריירה בפוקוס:\n\nאימייל: ${state.email}\nסיסמה: ${state.password}\n\nכניסה: https://app.careerinfocus.co.il/login`,
                   "all"
                 )}
                 className="flex items-center gap-1.5 text-xs font-bold bg-teal text-white px-3 py-1.5 rounded-lg hover:bg-teal-dark transition-colors"

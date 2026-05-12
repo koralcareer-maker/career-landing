@@ -49,7 +49,7 @@ export async function submitPremiumLead(data: PremiumLeadFormData) {
       // Hardcoded — NEXTAUTH_URL on Vercel points at the unconfigured
       // app.careerinfocus.co.il domain; emails generated from it have
       // dead links. Reverts when DNS is live.
-      appUrl: "https://career-landing-tau.vercel.app",
+      appUrl: "https://app.careerinfocus.co.il",
     }).catch(() => {});
 
     revalidatePath("/koral-connections");

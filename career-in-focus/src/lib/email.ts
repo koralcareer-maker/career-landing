@@ -2,12 +2,13 @@
  * Email sending utilities — powered by Resend
  */
 
-// Hardcoded — the NEXT_PUBLIC_APP_URL env var in Vercel was set to a
-// custom domain (app.careerinfocus.co.il) that doesn't resolve in DNS yet,
-// which broke every link in welcome emails. Hardcoding to the working
-// Vercel URL until the custom domain's DNS is configured. When that
-// happens, switch this to the new domain (or restore the env var read).
-const APP_URL = "https://career-landing-tau.vercel.app";
+// app.careerinfocus.co.il is now live (DNS pointed at Vercel + the domain
+// re-attached to the career-landing project), so all login/welcome links
+// in emails go to the branded URL. Falls back to the env var if anyone
+// changes it, then to the Vercel preview URL as last resort.
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "https://app.careerinfocus.co.il";
 const FROM    = process.env.EMAIL_FROM ?? "קורל מקריירה בפוקוס <noreply@careerinfocus.co.il>";
 
 // ─── Resend helper ────────────────────────────────────────────────────────────

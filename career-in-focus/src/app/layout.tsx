@@ -6,7 +6,7 @@ import "./globals.css";
 // absolute URL — without this, the og:image header points at a path
 // like "/logo.png" and the preview falls back to the Vercel triangle.
 export const metadata: Metadata = {
-  metadataBase: new URL("https://career-landing-tau.vercel.app"),
+  metadataBase: new URL("https://app.careerinfocus.co.il"),
   title: "קריירה בפוקוס | קהילת מחפשי עבודה בישראל",
   description: "הקהילה המקצועית למחפשי עבודה בישראל. תכנים, כלים, ניתוח קריירה, משרות ואירועים.",
   openGraph: {

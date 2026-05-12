@@ -96,7 +96,7 @@ export function ResendCredentialsButton({ userId, userName, userEmail, action }:
                   <button
                     type="button"
                     onClick={() => copyToClipboard(
-                      `שלום ${result.name ?? ""}!\nאיפסנו לך את הסיסמה לקריירה בפוקוס:\n\nאימייל: ${result.email}\nסיסמה: ${result.password}\n\nכניסה: https://career-landing-tau.vercel.app/login`,
+                      `שלום ${result.name ?? ""}!\nאיפסנו לך את הסיסמה לקריירה בפוקוס:\n\nאימייל: ${result.email}\nסיסמה: ${result.password}\n\nכניסה: https://app.careerinfocus.co.il/login`,
                       "all"
                     )}
                     className="flex items-center gap-1.5 text-xs font-bold bg-teal text-white px-3 py-2 rounded-lg hover:bg-teal-dark transition-colors flex-1 justify-center"

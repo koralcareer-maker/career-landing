@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 // Hardcoded — NEXTAUTH_URL on Vercel still points at the unconfigured
 // app.careerinfocus.co.il domain, so any URL we build from it breaks
 // email links. Same pattern as src/lib/email.ts and the CardCom routes.
-const APP_URL = "https://career-landing-tau.vercel.app";
+const APP_URL = "https://app.careerinfocus.co.il";
 
 export async function submitNetworkRequest(formData: FormData) {
   const session = await auth();

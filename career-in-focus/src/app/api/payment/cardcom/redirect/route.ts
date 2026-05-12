@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   // DNS_PROBE_FINISHED_NXDOMAIN immediately after entering their card.
   // The same hardcode pattern is used in src/lib/email.ts. When DNS is
   // configured we revert to reading the env var.
-  const appUrl = "https://career-landing-tau.vercel.app";
+  const appUrl = "https://app.careerinfocus.co.il";
 
   // Determine plan from query param, then from user's stored membershipType
   const planParam = (req.nextUrl.searchParams.get("plan") ?? "").toUpperCase();
