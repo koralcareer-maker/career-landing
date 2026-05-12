@@ -139,21 +139,31 @@ export function JobSearchWizard({ initial, firstName, gender }: Props) {
       } catch { /* ignore */ }
       setGenerating(true);
       setGenerationError(null);
-      const completeRes = await completeWizard();
-      if (completeRes && "error" in completeRes && completeRes.error) {
-        setGenerationError(completeRes.error);
+
+      // Both server actions catch their own throws now, but wrap the calls
+      // anyway so a true network failure renders the retry UI on the page
+      // instead of falling through to the global error boundary.
+      try {
+        const completeRes = await completeWizard();
+        if (completeRes && "error" in completeRes && completeRes.error) {
+          setGenerationError(completeRes.error);
+          setGenerating(false);
+          return;
+        }
+        const passportRes = await generateCareerPassport();
+        if (passportRes && "error" in passportRes && passportRes.error) {
+          setGenerationError(passportRes.error);
+          setGenerating(false);
+          return;
+        }
+        // Hard navigation so the new server-rendered /skills picks up the
+        // freshly inserted CareerPassport row.
+        router.replace("/skills");
+      } catch (e) {
+        console.error("[wizard finish] unexpected error:", e);
+        setGenerationError(e instanceof Error ? e.message : "תקלת רשת — נסי שוב בעוד רגע");
         setGenerating(false);
-        return;
       }
-      const passportRes = await generateCareerPassport();
-      if (passportRes && "error" in passportRes && passportRes.error) {
-        setGenerationError(passportRes.error);
-        setGenerating(false);
-        return;
-      }
-      // Hard navigation so the new server-rendered /skills picks up the
-      // freshly inserted CareerPassport row.
-      router.replace("/skills");
     });
   }
 

@@ -438,58 +438,73 @@ export async function completeWizard() {
 // ─── Career Passport — Claude AI ─────────────────────────────────────────────
 
 export async function generateCareerPassport() {
-  const session = await auth();
-  if (!session?.user) return { error: "נדרשת כניסה" };
+  try {
+    const session = await auth();
+    if (!session?.user) return { error: "נדרשת כניסה" };
 
-  const userId = session.user.id;
-  const profile = await prisma.profile.findUnique({ where: { userId } });
-  if (!profile) return { error: "יש למלא פרופיל תחילה" };
+    const userId = session.user.id;
+    const profile = await prisma.profile.findUnique({ where: { userId } });
+    if (!profile) return { error: "יש למלא פרופיל תחילה" };
 
-  // Fetch completions so the passport reflects courses/skills the user
-  // has marked as done since their last passport generation.
-  const [courseCompletions, skillCompletions] = await Promise.all([
-    prisma.userCourseCompletion.findMany({
+    // Fetch completions so the passport reflects courses/skills the user
+    // has marked as done since their last passport generation.
+    const [courseCompletions, skillCompletions] = await Promise.all([
+      prisma.userCourseCompletion.findMany({
+        where: { userId },
+        include: { course: { select: { title: true, category: true } } },
+      }).catch(() => []),
+      prisma.userSkillCompletion.findMany({
+        where: { userId },
+        select: { skillName: true },
+      }).catch(() => []),
+    ]);
+
+    const completedCourseTitles = courseCompletions.map((c) => c.course?.title).filter(Boolean) as string[];
+    const completedSkillNames = skillCompletions.map((s) => s.skillName);
+
+    // The Gemini path can throw on quota / malformed-JSON / network — fall
+    // back to the mock so the user always lands on a real passport rather
+    // than the global error boundary.
+    let result: CareerPassportResult;
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        result = await generateWithGemini(profile, completedCourseTitles, completedSkillNames);
+      } catch (e) {
+        console.error("[generateCareerPassport] Gemini failed, using mock:", e);
+        result = generateMock(profile);
+      }
+    } else {
+      result = generateMock(profile);
+    }
+
+    const passportData = {
+      jobMatchScore: result.jobMatchScore,
+      summary: result.summary,
+      strengths: JSON.stringify(result.strengths),
+      skillGaps: JSON.stringify(result.skillGaps),
+      recommendations: JSON.stringify(result.recommendations),
+      likelyFitRoles: JSON.stringify(result.likelyFitRoles),
+      recommendedIndustries: JSON.stringify(result.recommendedIndustries),
+      nextBestActions: JSON.stringify(result.nextBestActions),
+    };
+
+    await prisma.careerPassport.upsert({
       where: { userId },
-      include: { course: { select: { title: true, category: true } } },
-    }).catch(() => []),
-    prisma.userSkillCompletion.findMany({
-      where: { userId },
-      select: { skillName: true },
-    }).catch(() => []),
-  ]);
+      create: { userId, ...passportData },
+      update: passportData,
+    });
 
-  const completedCourseTitles = courseCompletions.map((c) => c.course?.title).filter(Boolean) as string[];
-  const completedSkillNames = skillCompletions.map((s) => s.skillName);
-
-  let result: CareerPassportResult;
-
-  if (process.env.GEMINI_API_KEY) {
-    result = await generateWithGemini(profile, completedCourseTitles, completedSkillNames);
-  } else {
-    result = generateMock(profile);
+    revalidatePath("/profile");
+    revalidatePath("/skills");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) {
+    // Any throw — Prisma, JSON.parse on a malformed profile field, anything
+    // — gets converted to a structured error response so the client renders
+    // its own retry UI instead of falling through to the global error page.
+    console.error("[generateCareerPassport] unexpected failure:", e);
+    return { error: e instanceof Error ? e.message : "שגיאה לא צפויה בעת יצירת הדרכון" };
   }
-
-  const passportData = {
-    jobMatchScore: result.jobMatchScore,
-    summary: result.summary,
-    strengths: JSON.stringify(result.strengths),
-    skillGaps: JSON.stringify(result.skillGaps),
-    recommendations: JSON.stringify(result.recommendations),
-    likelyFitRoles: JSON.stringify(result.likelyFitRoles),
-    recommendedIndustries: JSON.stringify(result.recommendedIndustries),
-    nextBestActions: JSON.stringify(result.nextBestActions),
-  };
-
-  await prisma.careerPassport.upsert({
-    where: { userId },
-    create: { userId, ...passportData },
-    update: passportData,
-  });
-
-  revalidatePath("/profile");
-  revalidatePath("/skills");
-  revalidatePath("/dashboard");
-  return { success: true };
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -538,6 +553,19 @@ async function generateWithGemini(
   completedCourseTitles: string[] = [],
   completedSkillNames: string[] = []
 ): Promise<CareerPassportResult> {
+  // Some of the legacy questionnaire columns hold either a JSON-encoded
+  // array OR a single plain string from an earlier schema. JSON.parse on
+  // a plain string throws — fmtArray normalises both shapes into a comma
+  // joined display string so we never blow up on the prompt assembly.
+  const fmtArray = (raw: string | null | undefined): string | null => {
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean).join(", ") || null;
+    } catch { /* fall through — treat as plain string */ }
+    return raw;
+  };
+
   const profileSummary = [
     profile.targetRole && `תפקיד יעד: ${profile.targetRole}`,
     profile.currentRole && `תפקיד נוכחי: ${profile.currentRole}`,
@@ -545,8 +573,8 @@ async function generateWithGemini(
     profile.desiredField && `תחום רצוי: ${profile.desiredField}`,
     profile.careerTransitionGoal && `מטרת מעבר: ${profile.careerTransitionGoal}`,
     profile.mainChallenge && `האתגר העיקרי: ${profile.mainChallenge}`,
-    profile.strengths && `חוזקות שצוינו: ${JSON.parse(profile.strengths).join(", ")}`,
-    profile.missingSkills && `מיומנויות חסרות שצוינו: ${JSON.parse(profile.missingSkills).join(", ")}`,
+    fmtArray(profile.strengths) && `חוזקות שצוינו: ${fmtArray(profile.strengths)}`,
+    fmtArray(profile.missingSkills) && `מיומנויות חסרות שצוינו: ${fmtArray(profile.missingSkills)}`,
     profile.preferredCompanyType && `סוג חברה מועדף: ${profile.preferredCompanyType}`,
     profile.q_workStyle && `סגנון עבודה: ${profile.q_workStyle}`,
     profile.q_teamOrSolo && `עבודה בצוות / עצמאית: ${profile.q_teamOrSolo}`,
@@ -554,8 +582,8 @@ async function generateWithGemini(
     profile.q_biggestFear && `הפחד הכי גדול: ${profile.q_biggestFear}`,
     profile.q_shortTermGoal && `מטרה קצרת טווח: ${profile.q_shortTermGoal}`,
     profile.q_longTermGoal && `מטרה ארוכת טווח: ${profile.q_longTermGoal}`,
-    profile.q_valuesAtWork && `ערכים בעבודה: ${JSON.parse(profile.q_valuesAtWork).join(", ")}`,
-    profile.q_industryInterests && `תחומי עניין: ${JSON.parse(profile.q_industryInterests).join(", ")}`,
+    fmtArray(profile.q_valuesAtWork) && `ערכים בעבודה: ${fmtArray(profile.q_valuesAtWork)}`,
+    fmtArray(profile.q_industryInterests) && `תחומי עניין: ${fmtArray(profile.q_industryInterests)}`,
     completedCourseTitles.length > 0 && `קורסים שהשלימה במערכת: ${completedCourseTitles.join(", ")}`,
     completedSkillNames.length > 0 && `מיומנויות שרכשה במערכת: ${completedSkillNames.join(", ")}`,
   ].filter(Boolean).join("\n");
@@ -601,6 +629,9 @@ ${profileSummary}
   const data = await res.json() as { candidates?: Array<{ content: { parts: Array<{ text: string }> } }> };
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   const clean = text.replace(/```json\n?|\n?```/g, "").trim();
+  // Gemini occasionally wraps the JSON in stray text or returns a near-miss
+  // shape. Throwing here surfaces an unhelpful error to the user — the
+  // caller already catches and falls back to the mock generator on throw.
   const parsed = JSON.parse(clean) as CareerPassportResult;
 
   parsed.jobMatchScore = Math.max(0, Math.min(100, parsed.jobMatchScore || 50));
