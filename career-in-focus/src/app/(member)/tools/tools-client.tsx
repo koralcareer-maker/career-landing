@@ -91,40 +91,34 @@ function AdminTipModal({
 
 // ─── Featured Tool Cube ───────────────────────────────────────────────────────
 //
-// Vertical cube card for the 5 "headline" tools at the top of the hub
-// (WhatsApp/Facebook groups, recruiter directory, LinkedIn photo, networking
-// prompts). Same idiom as ToolCard below — icon top-right, title, short
-// description, and a CTA row at the bottom. Equal heights via flex-col.
+// Vertical cube card for the 5 "headline" tools. Each cube is tinted with its
+// brand colour (WhatsApp green / Facebook blue / etc.) so the row reads at a
+// glance — no CTA button at the bottom; the entire cube is the link, which
+// Coral asked for explicitly ("לא צריך כפתור כניסה לכלי — שילחצו על הקוביה").
 
 function FeaturedToolCube({
   href,
   title,
   description,
   icon,
-  iconBg,
-  accent,
+  tint, // tailwind classes: { card: "bg-X/10 border-X/30", iconBg: "bg-X/15", hover: "hover:border-X" }
 }: {
   href: string;
   title: string;
   description: string;
   icon: React.ReactNode;
-  iconBg: string;
-  accent: string;
+  tint: { card: string; iconBg: string; hover: string };
 }) {
   return (
     <Link
       href={href}
-      className="group flex flex-col bg-white rounded-2xl p-5 border border-slate-100 hover:border-teal/40 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+      className={`group flex flex-col rounded-2xl p-5 border-2 transition-all hover:shadow-lg hover:-translate-y-0.5 ${tint.card} ${tint.hover}`}
     >
-      <div className={`w-11 h-11 rounded-2xl ${iconBg} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
+      <div className={`w-12 h-12 rounded-2xl ${tint.iconBg} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
         {icon}
       </div>
-      <h3 className="font-black text-navy text-sm leading-snug mb-1.5">{title}</h3>
-      <p className="text-xs text-slate-500 leading-relaxed mb-4 line-clamp-2">{description}</p>
-      <div className={`mt-auto inline-flex items-center justify-between text-xs font-bold ${accent}`}>
-        <span>כניסה לכלי</span>
-        <ChevronLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
-      </div>
+      <h3 className="font-black text-navy text-base leading-snug mb-1.5">{title}</h3>
+      <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">{description}</p>
     </Link>
   );
 }
@@ -265,45 +259,60 @@ export function ToolsClient({ tools, whatsappCount = 0, facebookCount = 0 }: { t
             href="/tools/whatsapp-groups"
             title="קבוצות וואטסאפ למשרות"
             description={`${whatsappCount} קבוצות · ממויינות לפי תעשייה`}
-            icon={<MessageCircle size={20} className="text-[#25D366]" />}
-            iconBg="bg-[#25D366]/10"
-            accent="text-[#128C7E]"
+            icon={<MessageCircle size={22} className="text-[#128C7E]" />}
+            tint={{
+              card: "bg-[#dcfce7] border-[#86efac]",
+              iconBg: "bg-white",
+              hover: "hover:border-[#22c55e]",
+            }}
           />
           <FeaturedToolCube
             href="/tools/facebook-groups"
             title="קבוצות פייסבוק למשרות"
             description={`${facebookCount} קבוצות · ממויינות לפי תחום`}
             icon={
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#1877F2">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
             }
-            iconBg="bg-[#1877F2]/10"
-            accent="text-blue-600"
+            tint={{
+              card: "bg-[#dbeafe] border-[#93c5fd]",
+              iconBg: "bg-white",
+              hover: "hover:border-[#1877F2]",
+            }}
           />
           <FeaturedToolCube
             href="/recruiters"
             title="ספריית מגייסים"
             description="מגייסים, חברות השמה והד-האנטרים · פרטי קשר ישירים"
-            icon={<UserSearch size={20} className="text-teal" />}
-            iconBg="bg-teal/10"
-            accent="text-teal-dark"
+            icon={<UserSearch size={22} className="text-teal-dark" />}
+            tint={{
+              card: "bg-teal-pale border-teal/30",
+              iconBg: "bg-white",
+              hover: "hover:border-teal",
+            }}
           />
           <FeaturedToolCube
             href="/tools/linkedin-photo"
             title="מחולל תמונת לינקדאין"
             description="3 תמונות יומיומיות · AI מייצר תמונת פרופיל מקצועית"
-            icon={<Camera size={20} className="text-purple-600" />}
-            iconBg="bg-purple-100"
-            accent="text-purple-700"
+            icon={<Camera size={22} className="text-purple-700" />}
+            tint={{
+              card: "bg-purple-100 border-purple-300",
+              iconBg: "bg-white",
+              hover: "hover:border-purple-500",
+            }}
           />
           <FeaturedToolCube
             href="/tools/networking-prompts"
             title="תבניות נטוורקינג"
             description="12 תבניות · מגייסים, הפניות ופנייה קרה · וואטסאפ, מייל ולינקדאין"
-            icon={<Users size={20} className="text-blue-700" />}
-            iconBg="bg-blue-100"
-            accent="text-blue-700"
+            icon={<Users size={22} className="text-amber-700" />}
+            tint={{
+              card: "bg-amber-100 border-amber-300",
+              iconBg: "bg-white",
+              hover: "hover:border-amber-500",
+            }}
           />
         </div>
       </div>
