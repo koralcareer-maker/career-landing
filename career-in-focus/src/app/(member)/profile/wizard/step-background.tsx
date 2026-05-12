@@ -4,19 +4,22 @@ import type { WizardState } from "./types";
 import { Field, TagInput } from "./form-bits";
 import { Briefcase, Award, Calendar, Upload } from "lucide-react";
 import { CvUploader } from "./cv-uploader";
+import { createGenderT, type Gender } from "@/lib/gender";
 
 interface Props {
   state: WizardState;
   setState: (patch: Partial<WizardState>) => void;
+  gender: Gender;
 }
 
-export function StepBackground({ state, setState }: Props) {
+export function StepBackground({ state, setState, gender }: Props) {
+  const t = createGenderT(gender);
   return (
     <div className="space-y-7">
       <header>
         <h2 className="text-2xl font-black text-navy mb-1.5 flex items-center gap-2">
           <Briefcase size={20} className="text-teal" />
-          ספרי לנו על הרקע שלך
+          {t("ספרי לנו על הרקע שלך", "ספר לנו על הרקע שלך")}
         </h2>
         <p className="text-sm text-gray-500 leading-relaxed">
           המערכת תנתח את הנתונים כדי לשפר את ההתאמה שלך למשרות.

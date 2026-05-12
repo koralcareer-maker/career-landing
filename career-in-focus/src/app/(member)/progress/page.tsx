@@ -132,6 +132,7 @@ export default async function ProgressPage() {
         scoreBreakdown={scoreBreakdown}
         actionPlan={actionPlan}
         weeklyGoal={weeklyGoal}
+        gender={session.user.gender ?? null}
       />
     </div>
   );

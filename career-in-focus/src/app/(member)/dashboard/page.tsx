@@ -17,17 +17,17 @@ import {
   TrendingUp, Sparkles, GraduationCap
 } from "lucide-react";
 import { DashboardTourWithQueryTrigger } from "@/components/onboarding/dashboard-tour";
+import { createGenderT } from "@/lib/gender";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user.id;
   const firstName = session!.user.name?.split(" ")[0] ?? "חבר";
   // Gender drives the user-addressed copy across the dashboard (greeting,
-  // celebration card, etc.). Default to feminine because the brand audience
-  // is mostly women — but male members get male copy when their gender is
-  // stored on the User row (set at signup or via admin tools).
-  const isM = session!.user.gender === "m";
-  const t = (f: string, m: string) => (isM ? m : f);
+  // celebration card, CTA buttons). Default to feminine because the brand
+  // audience is mostly women — male members get male copy when gender = "m"
+  // on the User row (set at signup or via admin tools).
+  const t = createGenderT(session!.user.gender);
 
   // Pull a wider set so the matcher has enough material to filter from.
   const [profile, passport, allJobs, upcomingEvents, posts, allCourses] = await Promise.all([
@@ -207,7 +207,7 @@ export default async function DashboardPage() {
                   className="inline-flex items-center gap-2 bg-white hover:bg-white/90 border border-navy/15 hover:border-teal/40 text-navy font-bold px-5 py-2.5 rounded-xl text-sm transition-all duration-150 shadow-sm"
                 >
                   <Sparkles size={15} className="text-teal-dark" />
-                  התחילי עם מאמן AI
+                  {t("התחילי עם מאמנת AI", "התחל עם מאמן AI")}
                 </Link>
               </div>
             </div>
@@ -373,7 +373,7 @@ export default async function DashboardPage() {
             {
               label: "ראיונות ומועמדויות",
               value: activeApps,
-              sub: activeApps > 0 ? "בתהליך פעיל" : "התחילי להגיש מועמדות",
+              sub: activeApps > 0 ? "בתהליך פעיל" : t("התחילי להגיש מועמדות", "התחל להגיש מועמדות"),
               icon: <Users size={20} />,
               href: "/jobs",
             },

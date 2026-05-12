@@ -3,13 +3,18 @@
 import { Globe, Plus, X, Briefcase, Network } from "lucide-react";
 import type { WizardState } from "./types";
 import { Field } from "./form-bits";
+import type { Gender } from "@/lib/gender";
 
 interface Props {
   state: WizardState;
   setState: (patch: Partial<WizardState>) => void;
+  // Reserved for future gendered copy on this step. Accepted now so the
+  // wizard can pass gender through uniformly to every step component.
+  gender: Gender;
 }
 
 export function StepAssets({ state, setState }: Props) {
+  // gender intentionally unused right now — see Props comment.
   function updateLink(idx: number, key: "label" | "url", value: string) {
     setState({
       additionalLinks: state.additionalLinks.map((l, i) =>

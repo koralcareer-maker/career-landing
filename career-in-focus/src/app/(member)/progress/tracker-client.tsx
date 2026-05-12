@@ -58,6 +58,8 @@ interface Props {
   scoreBreakdown: ScoreBreakdown;
   actionPlan: ActionTask[];
   weeklyGoal: number;
+  /** Drives gendered copy across the tracker. Null = feminine default. */
+  gender?: string | null;
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -135,7 +137,10 @@ export function TrackerClient({
   scoreBreakdown,
   actionPlan,
   weeklyGoal,
+  gender = null,
 }: Props) {
+  const isM = gender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
   const [filter, setFilter] = useState<"all" | "active" | "archived">("active");
   const [search, setSearch] = useState("");
 
@@ -269,7 +274,7 @@ export function TrackerClient({
               })}
             </div>
           ) : (
-            <p className="text-sm text-gray-400 italic">אין ראיונות קרובים. כדאי להגדיר תאריך כשמתאמת.</p>
+            <p className="text-sm text-gray-400 italic">אין ראיונות קרובים. {t("כדאי להגדיר תאריך כשמתאמת.", "כדאי להגדיר תאריך כשמתאם.")}</p>
           )}
         </Card>
 
@@ -384,7 +389,7 @@ export function TrackerClient({
             </h3>
             <p className="text-sm text-gray-500 mb-4">
               {applications.length === 0
-                ? "התחילי לעקוב אחרי כל מועמדות שאת מגישה — חברה, תפקיד, סטטוס."
+                ? t("התחילי לעקוב אחרי כל מועמדות שאת מגישה — חברה, תפקיד, סטטוס.", "התחל לעקוב אחרי כל מועמדות שאתה מגיש — חברה, תפקיד, סטטוס.")
                 : "נסי חיפוש אחר או שני את הסינון."}
             </p>
             {applications.length === 0 && (

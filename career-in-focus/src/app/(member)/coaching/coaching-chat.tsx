@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { sendCoachingMessage, clearCoachingChat, type Message } from "@/lib/actions/coaching";
+import { createGenderT, type Gender } from "@/lib/gender";
 import {
   Send, Trash2, Sparkles, Loader2,
   Briefcase, Building2, MessageSquare, FileText,
@@ -212,7 +213,8 @@ function MessageContent({ content }: { content: string }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function CoachingChat({ initialMessages }: { initialMessages: Message[] }) {
+export function CoachingChat({ initialMessages, gender }: { initialMessages: Message[]; gender: Gender }) {
+  const t = createGenderT(gender);
   const [messages, setMessages] = useState<LocalMessage[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isPending, setIsPending] = useState(false);
@@ -309,9 +311,9 @@ export function CoachingChat({ initialMessages }: { initialMessages: Message[] }
               <Sparkles size={24} className="text-teal" />
             </div>
             <div>
-              <p className="font-black text-navy">שלום! אני המאמן האישי שלך</p>
+              <p className="font-black text-navy">{t("שלום! אני מאמנת ה-AI האישית שלך", "שלום! אני מאמן ה-AI האישי שלך")}</p>
               <p className="text-xs text-gray-400 max-w-sm mt-1 leading-relaxed">
-                אני מנתח/ת אותך לפי הנתונים שלך — כמות הגשות, שיעור תגובה, מקורות, רצף פעילות — ונותן/ת לך הוראות קונקרטיות לפעולה.
+                {t("אני מנתחת אותך", "אני מנתח אותך")} לפי הנתונים שלך — כמות הגשות, שיעור תגובה, מקורות, רצף פעילות — {t("ונותנת לך", "ונותן לך")} הוראות קונקרטיות לפעולה.
               </p>
             </div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mt-2">פעולות מהירות</p>

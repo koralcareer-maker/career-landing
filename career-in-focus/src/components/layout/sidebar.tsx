@@ -37,13 +37,15 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 interface SidebarProps {
-  user: { name?: string | null; email?: string; role?: string; image?: string | null };
+  user: { name?: string | null; email?: string; role?: string; image?: string | null; gender?: string | null };
   unreadCount?: number;
 }
 
 export function Sidebar({ user, unreadCount = 0 }: SidebarProps) {
   const pathname = usePathname();
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+  const isM = user.gender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
 
   return (
     <aside data-tour-id="tour-sidebar" className="fixed right-0 top-0 h-screen w-60 bg-white flex flex-col z-40 border-l border-slate-100 shadow-xl">
@@ -123,10 +125,10 @@ export function Sidebar({ user, unreadCount = 0 }: SidebarProps) {
         <div className="mt-5 rounded-2xl bg-gradient-to-br from-teal/10 to-teal/5 border border-teal/20 p-4">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Sparkles size={13} className="text-teal" />
-            <p className="text-xs font-bold text-teal">שדרג את החוויה שלך</p>
+            <p className="text-xs font-bold text-teal">{t("שדרגי את החוויה שלך", "שדרג את החוויה שלך")}</p>
           </div>
           <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-            הצטרף לחברות פרימיום וקבל גישה למעטפת מלאה של כלים, קורסים והזדמנויות.
+            {t("הצטרפי לחברות פרימיום וקבלי גישה למעטפת מלאה של כלים, קורסים והזדמנויות.", "הצטרף לחברות פרימיום וקבל גישה למעטפת מלאה של כלים, קורסים והזדמנויות.")}
           </p>
           <Link
             href="/koral-connections"

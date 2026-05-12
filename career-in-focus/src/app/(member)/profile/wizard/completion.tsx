@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { CheckCircle2, Compass, MessageCircle, Target, ArrowLeft, Sparkles } from "lucide-react";
+import { createGenderT, type Gender } from "@/lib/gender";
 
 /**
  * Final wizard screen. Shown after step 4 saves successfully.
@@ -14,8 +15,9 @@ import { CheckCircle2, Compass, MessageCircle, Target, ArrowLeft, Sparkles } fro
  * the screen still land on the right next step. Members who want to
  * skip to Jobs/Coach/Tracker have visible alternates below.
  */
-export function CompletionScreen({ firstName }: { firstName: string }) {
+export function CompletionScreen({ firstName, gender }: { firstName: string; gender: Gender }) {
   const router = useRouter();
+  const t = createGenderT(gender);
 
   // After 6s, push the user into the Career Passport — long enough to
   // read the screen, short enough that nobody gets stranded on a

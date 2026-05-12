@@ -28,6 +28,7 @@ export default async function MemberLayout({ children }: { children: React.React
     email: session.user.email,
     role: session.user.role,
     image: session.user.image,
+    gender: session.user.gender,
   };
 
   const isImpersonating = !!session.user.impersonatedByAdminId;

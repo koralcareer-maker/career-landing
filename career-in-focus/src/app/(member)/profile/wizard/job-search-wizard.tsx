@@ -16,11 +16,14 @@ import { StepAssets } from "./step-assets";
 import { InsightsPanel } from "./insights-panel";
 import { CompletionScreen } from "./completion";
 import { type WizardState, EMPTY_WIZARD_STATE } from "./types";
+import type { Gender } from "@/lib/gender";
 
 interface Props {
   /** Pre-filled state from the existing Profile row (if any). */
   initial: Partial<WizardState>;
   firstName: string;
+  /** Drives gendered copy across every wizard step. */
+  gender: Gender;
 }
 
 const STEPS = [
@@ -32,7 +35,7 @@ const STEPS = [
 
 const STORAGE_KEY = "cif_wizard_v1";
 
-export function JobSearchWizard({ initial, firstName }: Props) {
+export function JobSearchWizard({ initial, firstName, gender }: Props) {
   const [state, setState] = useState<WizardState>(() => ({
     ...EMPTY_WIZARD_STATE,
     ...initial,
@@ -128,7 +131,7 @@ export function JobSearchWizard({ initial, firstName }: Props) {
   }
 
   if (done) {
-    return <CompletionScreen firstName={firstName} />;
+    return <CompletionScreen firstName={firstName} gender={gender} />;
   }
 
   // Per-step "can we move forward" gate — keep loose so the user
@@ -194,10 +197,10 @@ export function JobSearchWizard({ initial, firstName }: Props) {
       {/* ── Body: form (left, ~2/3) + insights (right, ~1/3) ───── */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
         <section className="bg-white border border-gray-100 rounded-2xl p-6 sm:p-8 shadow-sm">
-          {step === 1 && <StepDirection state={state} setState={patch} />}
-          {step === 2 && <StepBackground state={state} setState={patch} />}
-          {step === 3 && <StepStatus state={state} setState={patch} />}
-          {step === 4 && <StepAssets state={state} setState={patch} />}
+          {step === 1 && <StepDirection state={state} setState={patch} gender={gender} />}
+          {step === 2 && <StepBackground state={state} setState={patch} gender={gender} />}
+          {step === 3 && <StepStatus state={state} setState={patch} gender={gender} />}
+          {step === 4 && <StepAssets state={state} setState={patch} gender={gender} />}
           {/* StepBackground takes only state+setState now; CV uploader is internal */}
 
           {/* Footer: nav buttons */}

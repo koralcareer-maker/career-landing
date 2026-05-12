@@ -3,19 +3,22 @@
 import type { WizardState } from "./types";
 import { Field, OptionTiles } from "./form-bits";
 import { Activity, Calendar, MessageSquare, Send } from "lucide-react";
+import { createGenderT, type Gender } from "@/lib/gender";
 
 interface Props {
   state: WizardState;
   setState: (patch: Partial<WizardState>) => void;
+  gender: Gender;
 }
 
-export function StepStatus({ state, setState }: Props) {
+export function StepStatus({ state, setState, gender }: Props) {
+  const t = createGenderT(gender);
   return (
     <div className="space-y-7">
       <header>
         <h2 className="text-2xl font-black text-navy mb-1.5 flex items-center gap-2">
           <Activity size={20} className="text-teal" />
-          איפה את עומדת היום?
+          {t("איפה את עומדת היום?", "איפה אתה עומד היום?")}
         </h2>
         <p className="text-sm text-gray-500 leading-relaxed">
           זה יעזור לנו להבין איך לשפר את האפקטיביות שלך.
@@ -25,8 +28,8 @@ export function StepStatus({ state, setState }: Props) {
       <Field label="מצב חיפוש פעיל">
         <OptionTiles
           options={[
-            { value: "yes",     label: "כן, מחפשת באופן פעיל" },
-            { value: "passive", label: "פתוחה להזדמנויות" },
+            { value: "yes",     label: t("כן, מחפשת באופן פעיל", "כן, מחפש באופן פעיל") },
+            { value: "passive", label: t("פתוחה להזדמנויות", "פתוח להזדמנויות") },
             { value: "no",      label: "לא בחיפוש כרגע" },
           ]}
           value={state.jsActively}
@@ -35,7 +38,7 @@ export function StepStatus({ state, setState }: Props) {
       </Field>
 
       <Field
-        label="כמה שבועות את כבר בחיפוש?"
+        label={t("כמה שבועות את כבר בחיפוש?", "כמה שבועות אתה כבר בחיפוש?")}
         hint="הערכה גסה. 0 = רק התחלתי"
         icon={Calendar}
       >
@@ -72,7 +75,7 @@ export function StepStatus({ state, setState }: Props) {
         />
       </Field>
 
-      <Field label="שולחת קורות חיים?" icon={Send}>
+      <Field label={t("שולחת קורות חיים?", "שולח קורות חיים?")} icon={Send}>
         <OptionTiles
           options={[
             { value: "yes", label: "כן, באופן קבוע" },

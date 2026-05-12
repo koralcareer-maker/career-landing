@@ -2,11 +2,13 @@ import { auth } from "@/auth";
 import { getCoachingSession } from "@/lib/actions/coaching";
 import { CoachingChat } from "./coaching-chat";
 import { Sparkles } from "lucide-react";
+import { createGenderT } from "@/lib/gender";
 
 export default async function CoachingPage() {
   const session = await auth();
   const { messages, lastAnalysis } = await getCoachingSession();
   const firstName = session!.user.name?.split(" ")[0] ?? "חבר";
+  const t = createGenderT(session!.user.gender);
 
   return (
     <div className="max-w-3xl space-y-5">
@@ -19,7 +21,7 @@ export default async function CoachingPage() {
             <Sparkles size={22} className="text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white">מאמנת AI האישית שלך</h1>
+            <h1 className="text-xl font-black text-white">{t("מאמנת AI האישית שלך", "מאמן AI האישי שלך")}</h1>
             <p className="text-white/50 text-sm mt-0.5">
               שלום {firstName} — אני כאן לנתח את המצב שלך ולעזור לך להתקדם
             </p>
@@ -36,7 +38,7 @@ export default async function CoachingPage() {
       )}
 
       {/* Chat */}
-      <CoachingChat initialMessages={messages} />
+      <CoachingChat initialMessages={messages} gender={session!.user.gender ?? null} />
     </div>
   );
 }

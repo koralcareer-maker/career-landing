@@ -4,19 +4,22 @@ import type { WizardState } from "./types";
 import { REGIONS, WORK_TYPE_OPTIONS, INDUSTRIES } from "./types";
 import { Compass, Building2, MapPin, Home } from "lucide-react";
 import { Field, ChipMultiSelect, MultiTiles } from "./form-bits";
+import { createGenderT, type Gender } from "@/lib/gender";
 
 interface Props {
   state: WizardState;
   setState: (patch: Partial<WizardState>) => void;
+  gender: Gender;
 }
 
-export function StepDirection({ state, setState }: Props) {
+export function StepDirection({ state, setState, gender }: Props) {
+  const t = createGenderT(gender);
   return (
     <div className="space-y-7">
       <header>
         <h2 className="text-2xl font-black text-navy mb-1.5 flex items-center gap-2">
           <Compass size={20} className="text-teal" />
-          לאן את רוצה להתקדם?
+          {t("לאן את רוצה להתקדם?", "לאן אתה רוצה להתקדם?")}
         </h2>
         <p className="text-sm text-gray-500 leading-relaxed">
           נשתמש בזה כדי למצוא לך משרות ולהכווין אותך בצורה מדויקת יותר.
@@ -25,7 +28,7 @@ export function StepDirection({ state, setState }: Props) {
 
       <Field
         label="תפקיד היעד"
-        hint="התפקיד הבא שאת מכוונת אליו — אפשר להיות ספציפי או כללי"
+        hint={t("התפקיד הבא שאת מכוונת אליו — אפשר להיות ספציפי או כללי", "התפקיד הבא שאתה מכוון אליו — אפשר להיות ספציפי או כללי")}
       >
         <input
           type="text"
@@ -39,7 +42,7 @@ export function StepDirection({ state, setState }: Props) {
 
       <Field
         label="תעשיות שמעניינות אותך"
-        hint="בחרי 2-4 תעשיות — נשלב אותן בהמלצות. לא צריך 'הכל'"
+        hint={t("בחרי 2-4 תעשיות — נשלב אותן בהמלצות. לא צריך 'הכל'", "בחר 2-4 תעשיות — נשלב אותן בהמלצות. לא צריך 'הכל'")}
         icon={Building2}
       >
         <ChipMultiSelect

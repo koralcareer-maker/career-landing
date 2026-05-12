@@ -111,7 +111,7 @@ export default async function ProfilePage() {
         />
       )}
 
-      <JobSearchWizard initial={initial} firstName={firstName} />
+      <JobSearchWizard initial={initial} firstName={firstName} gender={session!.user.gender ?? null} />
     </div>
   );
 }
