@@ -241,83 +241,10 @@ export function ToolsClient({ tools, whatsappCount = 0, facebookCount = 0 }: { t
         <p className="text-sm text-gray-500">כלים ומשאבים לחברי הקהילה</p>
       </div>
 
-      {/* ─── Featured tools — unified cube grid ─────────────────────────
-       *
-       * Coral asked that *every* tool — including the 5 "headline" tools
-       * (WhatsApp / Facebook groups, recruiters, LinkedIn AI photo,
-       * networking prompts) — reads as the same cube-shaped card the
-       * smaller items below use. The previous layout had each of them as
-       * a full-width gradient banner, which made the page feel like 5
-       * separate sections stacked vertically. One grid, equal-height
-       * cards, same visual rhythm — easier to scan and visually
-       * consistent with the cube cards on the group sub-pages.
-       */}
-      <div>
-        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-3">כלים ראשיים</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <FeaturedToolCube
-            href="/tools/whatsapp-groups"
-            title="קבוצות וואטסאפ למשרות"
-            description={`${whatsappCount} קבוצות · ממויינות לפי תעשייה`}
-            icon={<MessageCircle size={22} className="text-[#128C7E]" />}
-            tint={{
-              card: "bg-[#dcfce7] border-[#86efac]",
-              iconBg: "bg-white",
-              hover: "hover:border-[#22c55e]",
-            }}
-          />
-          <FeaturedToolCube
-            href="/tools/facebook-groups"
-            title="קבוצות פייסבוק למשרות"
-            description={`${facebookCount} קבוצות · ממויינות לפי תחום`}
-            icon={
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="#1877F2">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-              </svg>
-            }
-            tint={{
-              card: "bg-[#dbeafe] border-[#93c5fd]",
-              iconBg: "bg-white",
-              hover: "hover:border-[#1877F2]",
-            }}
-          />
-          <FeaturedToolCube
-            href="/recruiters"
-            title="ספריית מגייסים"
-            description="מגייסים, חברות השמה והד-האנטרים · פרטי קשר ישירים"
-            icon={<UserSearch size={22} className="text-teal-dark" />}
-            tint={{
-              card: "bg-teal-pale border-teal/30",
-              iconBg: "bg-white",
-              hover: "hover:border-teal",
-            }}
-          />
-          <FeaturedToolCube
-            href="/tools/linkedin-photo"
-            title="מחולל תמונת לינקדאין"
-            description="3 תמונות יומיומיות · AI מייצר תמונת פרופיל מקצועית"
-            icon={<Camera size={22} className="text-purple-700" />}
-            tint={{
-              card: "bg-purple-100 border-purple-300",
-              iconBg: "bg-white",
-              hover: "hover:border-purple-500",
-            }}
-          />
-          <FeaturedToolCube
-            href="/tools/networking-prompts"
-            title="תבניות נטוורקינג"
-            description="12 תבניות · מגייסים, הפניות ופנייה קרה · וואטסאפ, מייל ולינקדאין"
-            icon={<Users size={22} className="text-amber-700" />}
-            tint={{
-              card: "bg-amber-100 border-amber-300",
-              iconBg: "bg-white",
-              hover: "hover:border-amber-500",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Search + Filters */}
+      {/* Search + Filters — placed above the cubes per Coral's request.
+       *  The whole tools page is one continuous cube grid below, so the
+       *  search/filter affects the regular tool cards. The 5 headline
+       *  tools above are navigation, always visible. */}
       <div className="space-y-3">
         <div className="relative">
           <Search
@@ -367,16 +294,85 @@ export function ToolsClient({ tools, whatsappCount = 0, facebookCount = 0 }: { t
         )}
       </div>
 
-      {/* Grid */}
-      {filtered.length === 0 ? (
-        <EmptyState hasFilters={hasFilters} />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} onTipOpen={setTipModalTool} />
-          ))}
-        </div>
-      )}
+      {/* One continuous grid — featured cubes followed by regular tools.
+       *  No section divider between them; Coral asked for "אין הפרדה בין
+       *  הכלים". When the user types a search or picks a category, the
+       *  filtering only narrows the regular tool cards (the 5 featured
+       *  tools are navigation entry-points and stay put). */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {/* — Featured cubes, only shown when no search/filter — */}
+        {!hasFilters && (
+          <>
+            <FeaturedToolCube
+              href="/tools/whatsapp-groups"
+              title="קבוצות וואטסאפ למשרות"
+              description={`${whatsappCount} קבוצות · ממויינות לפי תעשייה`}
+              icon={<MessageCircle size={22} className="text-[#128C7E]" />}
+              tint={{
+                card: "bg-[#dcfce7] border-[#86efac]",
+                iconBg: "bg-white",
+                hover: "hover:border-[#22c55e]",
+              }}
+            />
+            <FeaturedToolCube
+              href="/tools/facebook-groups"
+              title="קבוצות פייסבוק למשרות"
+              description={`${facebookCount} קבוצות · ממויינות לפי תחום`}
+              icon={
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#1877F2">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+              }
+              tint={{
+                card: "bg-[#dbeafe] border-[#93c5fd]",
+                iconBg: "bg-white",
+                hover: "hover:border-[#1877F2]",
+              }}
+            />
+            <FeaturedToolCube
+              href="/recruiters"
+              title="ספריית מגייסים"
+              description="מגייסים, חברות השמה והד-האנטרים · פרטי קשר ישירים"
+              icon={<UserSearch size={22} className="text-teal-dark" />}
+              tint={{
+                card: "bg-teal-pale border-teal/30",
+                iconBg: "bg-white",
+                hover: "hover:border-teal",
+              }}
+            />
+            <FeaturedToolCube
+              href="/tools/linkedin-photo"
+              title="מחולל תמונת לינקדאין"
+              description="3 תמונות יומיומיות · AI מייצר תמונת פרופיל מקצועית"
+              icon={<Camera size={22} className="text-purple-700" />}
+              tint={{
+                card: "bg-purple-100 border-purple-300",
+                iconBg: "bg-white",
+                hover: "hover:border-purple-500",
+              }}
+            />
+            <FeaturedToolCube
+              href="/tools/networking-prompts"
+              title="תבניות נטוורקינג"
+              description="12 תבניות · מגייסים, הפניות ופנייה קרה · וואטסאפ, מייל ולינקדאין"
+              icon={<Users size={22} className="text-amber-700" />}
+              tint={{
+                card: "bg-amber-100 border-amber-300",
+                iconBg: "bg-white",
+                hover: "hover:border-amber-500",
+              }}
+            />
+          </>
+        )}
+
+        {/* — Regular tools from the DB — */}
+        {filtered.map((tool) => (
+          <ToolCard key={tool.id} tool={tool} onTipOpen={setTipModalTool} />
+        ))}
+
+        {/* — Empty state spans the row — */}
+        {filtered.length === 0 && hasFilters && <EmptyState hasFilters={hasFilters} />}
+      </div>
 
       {/* Admin Tip Modal */}
       {tipModalTool && tipModalTool.adminTip && (tipModalTool.externalUrl || tipModalTool.fileUrl) && (
