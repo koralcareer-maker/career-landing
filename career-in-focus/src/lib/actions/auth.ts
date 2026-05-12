@@ -141,8 +141,14 @@ export async function requestPasswordReset(
   };
 }
 
+// Signature matches the form usage: the page does
+//   resetPassword.bind(null, token)
+// which binds `token` as the first arg, leaving (prevState, formData) for
+// useActionState. Both `prevState` and `formData` are unused while the
+// feature is stubbed.
 export async function resetPassword(
-  prevState: unknown,
+  _token: string,
+  _prevState: unknown,
   _formData: FormData,
 ) {
   return {
