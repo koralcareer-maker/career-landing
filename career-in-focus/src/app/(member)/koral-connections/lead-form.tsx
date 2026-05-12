@@ -4,7 +4,9 @@ import { useState } from "react";
 import { submitPremiumLead } from "@/lib/actions/premium-lead";
 import { Loader2, Send, CheckCircle2 } from "lucide-react";
 
-export function LeadForm() {
+export function LeadForm({ gender = null }: { gender?: string | null }) {
+  const isM = gender === "m";
+  const t = (f: string, m: string) => (isM ? m : f);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +74,7 @@ export function LeadForm() {
       </div>
 
       <div>
-        <label className={labelClass}>ספר/י בקצרה מה את/ה מחפש/ת</label>
+        <label className={labelClass}>{t("ספרי בקצרה מה את מחפשת", "ספר בקצרה מה אתה מחפש")}</label>
         <textarea
           name="description"
           rows={3}
@@ -101,9 +103,9 @@ export function LeadForm() {
         className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-teal to-[#2ab8b8] hover:from-[#2ab8b8] hover:to-teal text-white font-bold py-4 rounded-2xl text-base shadow-lg shadow-teal/25 transition-all duration-200 disabled:opacity-60"
       >
         {loading ? (
-          <><Loader2 size={18} className="animate-spin" /> שולח/ת...</>
+          <><Loader2 size={18} className="animate-spin" /> {t("שולחת…", "שולח…")}</>
         ) : (
-          <><Send size={16} /> שלח/י לקורל</>
+          <><Send size={16} /> {t("שלחי לקורל", "שלח לקורל")}</>
         )}
       </button>
 

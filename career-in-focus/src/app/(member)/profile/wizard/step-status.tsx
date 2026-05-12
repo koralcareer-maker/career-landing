@@ -29,7 +29,7 @@ export function StepStatus({ state, setState, gender }: Props) {
         <OptionTiles
           options={[
             { value: "yes",     label: t("כן, מחפשת באופן פעיל", "כן, מחפש באופן פעיל") },
-            { value: "passive", label: t("פתוחה להזדמנויות", "פתוח להזדמנויות") },
+            { value: "passive", label: t("פתוחה להזדמנויות חדשות", "פתוח להזדמנויות חדשות") },
             { value: "no",      label: "לא בחיפוש כרגע" },
           ]}
           value={state.jsActively}

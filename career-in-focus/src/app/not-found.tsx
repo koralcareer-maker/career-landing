@@ -22,8 +22,7 @@ export default function NotFound() {
         <div className="text-6xl font-black text-teal mb-2">404</div>
         <h1 className="text-xl font-black text-navy mb-2">הדף לא נמצא</h1>
         <p className="text-sm text-gray-500 leading-relaxed mb-6">
-          הקישור שניסית לפתוח לא קיים או שהוא הוסר.
-          אולי תמצאי מה שחיפשת באחד מהמקומות האלה:
+          הקישור שביקשת לפתוח לא קיים או שהוסר. אפשר להמשיך מאחד המסכים הבאים:
         </p>
 
         <div className="space-y-2 mb-6 text-right">
@@ -52,7 +51,7 @@ export default function NotFound() {
             className="flex items-center justify-between p-3 bg-gray-50 hover:bg-teal/5 rounded-xl group transition-colors"
           >
             <span className="flex items-center gap-2 text-sm font-semibold text-navy">
-              💬 המאמן האישי שלך
+              💬 מאמנת AI האישית שלך
             </span>
             <ChevronLeft size={14} className="text-gray-400 group-hover:text-teal" />
           </Link>

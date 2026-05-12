@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { BookOpen, User, Briefcase, Wrench, CalendarDays, MessageSquare, Brain, Star, ChevronLeft, CheckCircle2, Sparkles, Camera } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { auth } from "@/auth";
+import { createGenderT } from "@/lib/gender";
 
 export const metadata = { title: "מדריך למשתמש | קריירה בפוקוס" };
 
@@ -89,11 +91,13 @@ const TIPS = [
   "עדכן את הטראקר אחרי כל שליחה — זה עוזר לך לראות תמונה אמיתית",
   "שלח לפחות 3 בקשות ביום — כמות + איכות = תוצאות",
   "קרא לפחות עדכון אחד בשבוע — הם מכילים תוכן ערכי ועדכוני שוק",
-  "השתמש בתבניות נטוורקינג — פנייה ישירה למגייסת עובדת",
+  "השתמש בתבניות הנטוורקינג — פנייה ישירה לאנשי קשר עובדת היטב",
   "בדוק את דף המגייסים — יש שם פרטי קשר ישירים לעשרות חברות",
 ];
 
-export default function GuidePage() {
+export default async function GuidePage() {
+  const session = await auth();
+  const t = createGenderT(session?.user?.gender);
   return (
     <div className="space-y-8 max-w-2xl" dir="rtl">
       {/* Header */}
@@ -138,7 +142,7 @@ export default function GuidePage() {
           </div>
         </div>
         <span className="text-teal-dark text-sm font-bold flex items-center gap-1">
-          התחילי סיור
+          {t("התחילי סיור", "התחל סיור")}
           <ChevronLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
         </span>
       </Link>

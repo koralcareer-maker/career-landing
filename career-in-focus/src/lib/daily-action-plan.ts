@@ -102,7 +102,7 @@ export function buildActionPlan(input: ActionPlanInput): ActionTask[] {
       why:
         overdueReminders.length === 1
           ? `התזכורת ׳${first.title}׳ עברה את התאריך. שתי שורות מספיקות.`
-          : "תזכורות שעברו תאריך מאבדות מומנטום מול המגייס/ת. כדאי לסגור עכשיו.",
+          : "תזכורות שעברו תאריך מאבדות מומנטום מול הגורם המגייס. כדאי לסגור עכשיו.",
       cta: {
         href: `/progress/${first.application.id}`,
         label: "לפתיחת המועמדות",
@@ -182,7 +182,7 @@ export function buildActionPlan(input: ActionPlanInput): ActionTask[] {
       priority: 5,
       intent: "behind",
       title: `החזירי לחיים את ${stalled.company} (שקטה ${days} ימים)`,
-      why: "מועמדות שקטה יותר מ-10 ימים מאבדת מומנטום. אפשר לשלוח שורה למגייס/ת או לעדכן סטטוס ל׳סגורה׳ אם זה לא מתקדם.",
+      why: "מועמדות שקטה יותר מ-10 ימים מאבדת מומנטום. אפשר לשלוח שורה לגורם המגייס או לעדכן סטטוס ל׳סגורה׳ אם זה לא מתקדם.",
       cta: {
         href: `/progress/${stalled.id}`,
         label: "לפתיחת הכרטיסייה",

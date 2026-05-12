@@ -34,11 +34,11 @@ export default function GlobalError({
         </div>
 
         <h1 className="text-2xl font-black text-navy mb-2">
-          משהו השתבש 😔
+          תקלה זמנית במערכת
         </h1>
         <p className="text-sm text-gray-500 leading-relaxed mb-6">
-          קרתה תקלה לא צפויה. ניסי לרענן — לרוב זה פותר את זה.
-          אם זה ממשיך, כתבי לקורל בוואטסאפ.
+          קרתה תקלה לא צפויה. רענון הדף לרוב פותר את זה.
+          אם הבעיה ממשיכה — אפשר לפנות לקורל בוואטסאפ.
         </p>
 
         {error.digest && (
@@ -55,7 +55,7 @@ export default function GlobalError({
             className="w-full bg-teal hover:bg-teal-dark text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"
           >
             <RefreshCw size={16} />
-            לרענן ולנסות שוב
+            לרענון הדף
           </button>
 
           <Link

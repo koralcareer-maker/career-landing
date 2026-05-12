@@ -377,7 +377,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
               <h2 className="text-xl font-black text-navy">בשעה טובה — הוגשה ✨</h2>
               <p className="text-sm text-slate-600 mt-1 leading-relaxed">
                 <span className="font-bold">{app.role}</span> ב-<span className="font-bold">{app.company}</span> נמצאת עכשיו במעקב.
-                בואי נבנה מומנטום — הנה 3 פעולות שלוקחות פחות מדקה ועושות את ההבדל:
+                לחיזוק ההתקדמות — 3 פעולות שלוקחות פחות מדקה ועושות את ההבדל:
               </p>
             </div>
           </div>
@@ -439,7 +439,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
               </p>
               <p className="text-xs text-slate-500 leading-relaxed">
                 {followupSet
-                  ? "כל הכבוד — בעוד שבוע אזכיר לך לחזור אל המגייס/ת אם אין תגובה."
+                  ? "כל הכבוד — בעוד שבוע אזכיר לך לחזור אל הגורם המגייס אם אין תגובה."
                   : "אם אין תגובה תוך שבוע, מומלץ לשלוח follow-up קצר. אני אזכיר לך."}
               </p>
               {!followupSet && (

@@ -34,7 +34,7 @@ export function StepDirection({ state, setState, gender }: Props) {
           type="text"
           value={state.targetRole}
           onChange={(e) => setState({ targetRole: e.target.value })}
-          placeholder='לדוגמה: "מנהל/ת מוצר", "אנליסט/ית BI"'
+          placeholder='לדוגמה: מנהלת מוצר, אנליסטית BI, מנהל פרויקטים'
           className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-navy text-sm focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
           dir="rtl"
         />

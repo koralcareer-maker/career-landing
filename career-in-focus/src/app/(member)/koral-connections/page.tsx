@@ -4,8 +4,12 @@ import {
   FileText, Link, Briefcase, DollarSign, Calendar, Zap,
   Shield, Star, MessageCircle, UserCheck, Globe, Award, Send
 } from "lucide-react";
+import { auth } from "@/auth";
+import { createGenderT } from "@/lib/gender";
 
-export default function KoralConnectionsPage() {
+export default async function KoralConnectionsPage() {
+  const session = await auth();
+  const t = createGenderT(session?.user?.gender);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-[#f0fafa] to-[#e8f6f6] pb-20">
 
@@ -43,7 +47,7 @@ export default function KoralConnectionsPage() {
               href="#lead-form"
               className="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold rounded-2xl text-base transition-all duration-200"
             >
-              קבע/י שיחת התאמה
+              {t("קבעי שיחת התאמה", "קבע שיחת התאמה")}
             </a>
           </div>
         </div>
@@ -129,7 +133,7 @@ export default function KoralConnectionsPage() {
       {/* ─── What you GET ─── */}
       <section className="max-w-4xl mx-auto px-6 py-16">
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-black text-navy mb-2">מה תקבל/י</h2>
+          <h2 className="text-2xl font-black text-navy mb-2">מה כלול במסלול VIP</h2>
           <p className="text-slate-500">תמיכה אישית ותוצאות מדידות</p>
         </div>
 
@@ -229,7 +233,7 @@ export default function KoralConnectionsPage() {
               href="#lead-form"
               className="inline-block px-10 py-4 bg-teal hover:bg-teal/90 text-white font-bold rounded-2xl text-base shadow-lg shadow-teal/30 transition-all duration-200 hover:-translate-y-0.5"
             >
-              הגש/י מועמדות למסלול
+              {t("הגישי מועמדות למסלול", "הגש מועמדות למסלול")}
             </a>
           </div>
         </div>
@@ -242,12 +246,12 @@ export default function KoralConnectionsPage() {
             <div className="w-14 h-14 bg-teal/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Send size={24} className="text-teal" />
             </div>
-            <h2 className="text-2xl font-black text-navy mb-2">שלח/י לקורל</h2>
+            <h2 className="text-2xl font-black text-navy mb-2">{t("שלחי לקורל", "שלח לקורל")}</h2>
             <p className="text-slate-500 text-sm">
-              מלא/י את הפרטים ונחזור אליך בהקדם לשיחת התאמה חינמית
+              {t("מלאי את הפרטים ונחזור אלייך בהקדם לשיחת התאמה חינמית", "מלא את הפרטים ונחזור אליך בהקדם לשיחת התאמה חינמית")}
             </p>
           </div>
-          <LeadForm />
+          <LeadForm gender={session?.user?.gender ?? null} />
         </div>
       </section>
     </div>

@@ -182,7 +182,7 @@ function WorkshopCard({ ev }: { ev: EventItem }) {
         {/* Value bullets — the heart of the card */}
         {ev.valueBullets.length > 0 && (
           <div className="space-y-1.5 mb-4 flex-1">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wide mb-1.5">מה תקבל/י בסדנה</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wide mb-1.5">מה כלול בסדנה</p>
             {ev.valueBullets.map((b, i) => (
               <div key={i} className="flex items-start gap-2 text-sm text-slate-700 leading-relaxed">
                 <CheckCircle2 size={14} className="text-teal mt-0.5 shrink-0" />

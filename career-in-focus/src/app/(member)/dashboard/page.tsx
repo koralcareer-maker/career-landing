@@ -611,7 +611,7 @@ export default async function DashboardPage() {
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-black mb-3 leading-tight">
                 כבר התקבלת לעבודה?<br/>
                 <span className="bg-gradient-to-l from-teal to-[#7FE7E7] bg-clip-text text-transparent">
-                  {t("בואי", "בוא")} נחגוג איתך 🎉
+                  מצאת עבודה? נחגוג איתך 🎉
                 </span>
               </h2>
               <p className="text-white/70 text-sm leading-relaxed mb-5 max-w-md">

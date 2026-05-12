@@ -336,7 +336,7 @@ export async function notifyAdminOfCvRequest({
 <body style="font-family:-apple-system,sans-serif;direction:rtl;background:#f6f7fb;padding:20px;">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,.06);">
     <h2 style="margin:0 0 12px 0;color:#1C1C2E;font-size:20px;">📋 בקשה חדשה לכתיבת קורות חיים</h2>
-    <p style="margin:0 0 18px 0;color:#666;font-size:14px;">לקוח/ה שדרגו ל-VIP וביקשו ממך להכין קורות חיים.</p>
+    <p style="margin:0 0 18px 0;color:#666;font-size:14px;">בקשה חדשה ממשתמש/ת VIP להכנת קורות חיים.</p>
     <table style="width:100%;border-collapse:collapse;font-size:14px;">
       <tr><td style="padding:6px 0;color:#888;">שם:</td><td style="padding:6px 0;font-weight:600;">${userName}</td></tr>
       <tr><td style="padding:6px 0;color:#888;">אימייל:</td><td style="padding:6px 0;direction:ltr;">${userEmail}</td></tr>
