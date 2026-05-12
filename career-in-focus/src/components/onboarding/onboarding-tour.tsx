@@ -146,14 +146,16 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
   const spotW = rect ? rect.width + PADDING * 2 : 0;
   const spotH = rect ? rect.height + PADDING * 2 : 0;
 
-  // Tooltip position — try below the target, fall back above. tipMaxH bounds
-  // how tall the card can become at this position so it never extends past
-  // the viewport (combined with overflow-y: auto on the card, the user can
-  // always reach every button — the previous bug was a >100vh card pinned
-  // near the bottom of the viewport with no way to scroll it).
+  // Tooltip position — try below the target, fall back above. The card uses
+  // either `top` (when placed below the target) or `bottom` (when placed
+  // above), so a short card always hugs the target instead of pinning to
+  // the viewport corner. tipMaxH bounds how tall the card can grow so it
+  // never extends past the viewport (combined with overflow-y: auto on the
+  // card, every step's buttons remain reachable).
   const TIP_HEIGHT_ESTIMATE = 400;
   let tipX = 16;
-  let tipY = 16;
+  let tipTop: number | undefined;
+  let tipBottom: number | undefined;
   let tipMaxH = 0;
   if (rect && typeof window !== "undefined") {
     const vw = window.innerWidth;
@@ -165,14 +167,17 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
     const spaceBelow = vh - rect.bottom - 32;  // 16px gap + 16px bottom padding
     const spaceAbove = rect.top - 32;          // same on top
 
-    // Prefer whichever side has more room — and use that side's full
-    // available space as the card's max-height.
     if (spaceBelow >= spaceAbove || spaceBelow >= TIP_HEIGHT_ESTIMATE) {
-      tipY = rect.bottom + 16;
+      // Anchor the card's TOP just below the target — grows downward.
+      tipTop = rect.bottom + 16;
       tipMaxH = Math.max(160, spaceBelow);
     } else {
+      // Anchor the card's BOTTOM just above the target — grows upward.
+      // (Previously this used `top: rect.top - tipMaxH - 16`, which pinned
+      // a short card to ≈16px from the viewport top regardless of how tall
+      // the actual content was, leaving a big visual gap from the target.)
+      tipBottom = vh - rect.top + 16;
       tipMaxH = Math.max(160, spaceAbove);
-      tipY = Math.max(16, rect.top - tipMaxH - 16);
     }
   } else if (typeof window !== "undefined") {
     // Centered when no target — pin top, let it grow to almost full viewport.
@@ -180,7 +185,7 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
     const widthOnScreen = Math.min(TIP_WIDTH, window.innerWidth - 32);
     tipX = (window.innerWidth - widthOnScreen) / 2;
     tipMaxH = vh - 32;
-    tipY = Math.max(16, vh / 2 - Math.min(TIP_HEIGHT_ESTIMATE, tipMaxH) / 2);
+    tipTop = Math.max(16, vh / 2 - Math.min(TIP_HEIGHT_ESTIMATE, tipMaxH) / 2);
   }
 
   const isFirstStep = stepIdx === 0;
@@ -235,7 +240,8 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
         className="absolute bg-white rounded-2xl shadow-2xl border border-teal/30 animate-fade-in-up"
         style={{
           left: tipX,
-          top: tipY,
+          ...(tipTop !== undefined ? { top: tipTop } : {}),
+          ...(tipBottom !== undefined ? { bottom: tipBottom } : {}),
           width: `min(${TIP_WIDTH}px, calc(100vw - 32px))`,
           maxHeight: tipMaxH > 0 ? `${tipMaxH}px` : "calc(100vh - 32px)",
           overflowY: "auto",
