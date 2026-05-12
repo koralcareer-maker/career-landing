@@ -185,9 +185,19 @@ export function OnboardingTour({ storageKey, steps, forceOpen, onClose }: Props)
         />
       )}
 
-      {/* ─── Bottom sheet — always at the viewport bottom, always reachable. ── */}
+      {/* ─── Explanation card.
+           - With a target: sits in the centre of the LOWER half of the
+             viewport (top ~62%, translated up by half its own height).
+             Since `updateTarget` scrolls the spotlit element into the
+             upper ~18% of the viewport, the ring and the card always
+             read as one composition with clear separation between them.
+           - Without a target (intro / outro steps): vertically
+             centered like a regular modal.
+           ─────────────────────────────────────────────────────────── */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 bottom-4 sm:bottom-6 w-[min(420px,calc(100vw-24px))] bg-white rounded-2xl shadow-2xl border border-teal/30 pointer-events-auto animate-fade-in-up"
+        className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 ${
+          hasTarget ? "top-[62%]" : "top-1/2"
+        } w-[min(420px,calc(100vw-24px))] bg-white rounded-2xl shadow-2xl border border-teal/30 pointer-events-auto animate-fade-in-up`}
         style={{ maxHeight: "calc(100vh - 32px)", overflowY: "auto" }}
       >
         {/* Header */}
