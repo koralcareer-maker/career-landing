@@ -290,7 +290,8 @@ model Profile {
   q_networkingLevel    String?
   q_salaryPriority     String?
   q_locationFlexible   Boolean?
-  q_remotePreference   String?
+  q_remotePreference   String?  // JSON array (legacy rows may still hold a single string)
+  q_regions            String?  // JSON array of preferred regions (multi-select)
   q_industryInterests  String?  // JSON array
   q_roleModels         String?
   q_valuesAtWork       String?  // JSON array

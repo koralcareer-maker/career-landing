@@ -161,7 +161,7 @@ async function buildUserContext(userId: string): Promise<{
 שכר רצוי: ${profile?.preferredSalaryMin ?? "—"} עד ${profile?.preferredSalaryMax ?? "—"}
 סוג חברה מועדף: ${profile?.preferredCompanyType ?? "לא הוגדר"}
 גמישות גיאוגרפית: ${profile?.q_locationFlexible === true ? "כן" : profile?.q_locationFlexible === false ? "לא" : "לא ידוע"}
-העדפת רימוט: ${profile?.q_remotePreference ?? "לא הוגדרה"}
+העדפת רימוט: ${fmtField(profile?.q_remotePreference)}
 
 === שאלון 16 שאלות (תובנות עומק) ===
 סגנון עבודה: ${profile?.q_workStyle ?? "—"}

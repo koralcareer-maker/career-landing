@@ -26,8 +26,10 @@ function buildInsights(s: WizardState, currentStep: number): Insight[] {
     if (s.targetRole && /coordinator|מתאמ/i.test(s.targetRole) === false && /operations|תפעול/i.test(s.targetRole)) {
       out.push({ tone: "tip", text: "אולי כדאי לשלב גם תפקידי Operations Coordinator — תיאורי משרות בארץ נוטים להשתמש בכינוי זה" });
     }
-    if (s.workType === "remote") {
-      out.push({ tone: "tip", text: "משרות 100% מהבית בישראל = ~12% מהשוק. שקול 'היברידי' כדי לפתוח עוד 35% משרות" });
+    // Only nudge when the user has picked "מהבית" *exclusively* — once
+    // they've added "היברידי" as well, the warning becomes wrong.
+    if (s.workType.length === 1 && s.workType[0] === "remote") {
+      out.push({ tone: "tip", text: "משרות 100% מהבית בישראל = ~12% מהשוק. כדאי להוסיף גם 'היברידי' ולפתוח עוד 35% משרות" });
     }
   }
 

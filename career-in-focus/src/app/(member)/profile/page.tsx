@@ -43,15 +43,23 @@ export default async function ProfilePage() {
   // Hydrate wizard from the existing Profile row (if present). Safe
   // when columns are missing (legacy DB) — pulls undefined and the
   // wizard shows blanks.
+  // region + workType are stored as JSON-stringified arrays. Legacy rows
+  // may still have a single string in q_remotePreference (e.g. "remote") —
+  // wrap those into a one-element array so the wizard hydrates cleanly.
+  const region = parseJsonArray(profile?.q_regions ?? null);
+  const rawWork = profile?.q_remotePreference ?? null;
+  let workType: string[] = [];
+  if (rawWork) {
+    const fromJson = parseJsonArray(rawWork);
+    workType = fromJson.length > 0 ? fromJson : [rawWork];
+  }
+
   const initial: Partial<WizardState> = profile ? {
     targetRole: profile.targetRole ?? "",
     industries: parseJsonArray(profile.q_industryInterests),
     desiredField: profile.desiredField ?? "",
-    region: "", // not yet on Profile
-    workType:
-      profile.q_remotePreference === "remote" || profile.q_remotePreference === "hybrid" || profile.q_remotePreference === "office"
-        ? (profile.q_remotePreference as WizardState["workType"])
-        : "",
+    region,
+    workType,
     currentRole: profile.currentRole ?? "",
     yearsExperience: profile.yearsExperience ?? null,
     strengths: parseJsonArray(profile.strengths),

@@ -62,6 +62,44 @@ export function OptionTiles({ options, value, onChange }: OptionTileProps) {
   );
 }
 
+interface MultiTilesProps {
+  options: Array<{ value: string; label: string }>;
+  value: string[];
+  onChange: (v: string[]) => void;
+}
+
+/** Pill-style multi-select. Same UX as OptionTiles but each click toggles
+ *  the value in/out of an array. Used for region + work format, which
+ *  used to be single-select but the data model is genuinely multi-valued
+ *  ("מרכז + שפלה", "היברידי + מהבית" are common). */
+export function MultiTiles({ options, value, onChange }: MultiTilesProps) {
+  function toggle(v: string) {
+    onChange(value.includes(v) ? value.filter((x) => x !== v) : [...value, v]);
+  }
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
+        const active = value.includes(opt.value);
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => toggle(opt.value)}
+            className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${
+              active
+                ? "border-teal bg-teal text-white shadow-sm"
+                : "border-gray-200 text-gray-600 bg-white hover:border-teal/50 hover:text-teal"
+            }`}
+          >
+            {active && "✓ "}
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 interface ChipMultiSelectProps {
   options: string[];
   selected: string[];

@@ -10,8 +10,11 @@ export interface WizardState {
   targetRole: string;
   industries: string[];
   desiredField: string;        // primary industry (drives backwards-compat fields)
-  region: string;
-  workType: "remote" | "hybrid" | "office" | "";
+  // Region and workType are multi-select — many job seekers are happy
+  // with several adjacent regions (מרכז + שפלה) or several formats
+  // (היברידי + מהבית). Stored as JSON-stringified arrays in the DB.
+  region: string[];
+  workType: string[];          // each element ∈ "remote" | "hybrid" | "office"
 
   // Step 2 — background
   currentRole: string;
@@ -35,8 +38,8 @@ export const EMPTY_WIZARD_STATE: WizardState = {
   targetRole: "",
   industries: [],
   desiredField: "",
-  region: "",
-  workType: "",
+  region: [],
+  workType: [],
 
   currentRole: "",
   yearsExperience: null,

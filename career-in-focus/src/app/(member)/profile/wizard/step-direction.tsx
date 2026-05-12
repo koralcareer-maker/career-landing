@@ -3,7 +3,7 @@
 import type { WizardState } from "./types";
 import { REGIONS, WORK_TYPE_OPTIONS, INDUSTRIES } from "./types";
 import { Compass, Building2, MapPin, Home } from "lucide-react";
-import { Field, ChipMultiSelect, OptionTiles } from "./form-bits";
+import { Field, ChipMultiSelect, MultiTiles } from "./form-bits";
 
 interface Props {
   state: WizardState;
@@ -57,11 +57,11 @@ export function StepDirection({ state, setState }: Props) {
       </Field>
 
       <Field
-        label="אזור עבודה"
-        hint="לאיזה אזור גיאוגרפי לכוון את החיפוש"
+        label="אזורי עבודה"
+        hint="אפשר לבחור יותר מאחד — למשל מרכז + שפלה"
         icon={MapPin}
       >
-        <OptionTiles
+        <MultiTiles
           options={REGIONS.map((r) => ({ value: r, label: r }))}
           value={state.region}
           onChange={(region) => setState({ region })}
@@ -70,13 +70,13 @@ export function StepDirection({ state, setState }: Props) {
 
       <Field
         label="פורמט עבודה"
-        hint="איך הכי נוח לך — נסנן לפי זה את לוח המשרות"
+        hint="אפשר לבחור יותר מאחד — למשל היברידי + מהבית"
         icon={Home}
       >
-        <OptionTiles
+        <MultiTiles
           options={WORK_TYPE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
           value={state.workType}
-          onChange={(v) => setState({ workType: v as WizardState["workType"] })}
+          onChange={(workType) => setState({ workType })}
         />
       </Field>
     </div>

@@ -293,8 +293,8 @@ export interface WizardStep1 {
   targetRole: string;
   industries: string[];          // multi-select
   desiredField: string;          // primary industry (legacy field)
-  region: string;                // צפון/חיפה/מרכז/שפלה/ירושלים/דרום/אילת
-  workType: string;              // "remote" | "hybrid" | "office"
+  region: string[];              // multi-select: צפון/חיפה/מרכז/שפלה/ירושלים/דרום/אילת
+  workType: string[];            // multi-select: "remote" | "hybrid" | "office"
 }
 export interface WizardStep2 {
   currentRole: string;
@@ -318,6 +318,13 @@ export async function saveWizardStep1(data: WizardStep1) {
   if (!session?.user) return { error: "נדרשת כניסה" };
   const userId = session.user.id;
 
+  // Region + workType are now multi-select. Both store as JSON-stringified
+  // arrays — q_remotePreference reuses its existing column (legacy single
+  // values still round-trip cleanly through fmtField/parseJsonArray on the
+  // read side), q_regions is a new column.
+  const regionJson = data.region.length ? stringifyArray(data.region) : null;
+  const workTypeJson = data.workType.length ? stringifyArray(data.workType) : null;
+
   await prisma.profile.upsert({
     where: { userId },
     create: {
@@ -325,18 +332,17 @@ export async function saveWizardStep1(data: WizardStep1) {
       targetRole: data.targetRole || null,
       desiredField: data.desiredField || null,
       q_industryInterests: data.industries.length ? stringifyArray(data.industries) : null,
-      q_remotePreference: data.workType || null,
+      q_remotePreference: workTypeJson,
+      q_regions: regionJson,
     },
     update: {
       targetRole: data.targetRole || null,
       desiredField: data.desiredField || null,
       q_industryInterests: data.industries.length ? stringifyArray(data.industries) : null,
-      q_remotePreference: data.workType || null,
+      q_remotePreference: workTypeJson,
+      q_regions: regionJson,
     },
   });
-  // region lives on User-side data (we already classify jobs into
-  // regions; region isn't stored on Profile yet — leave for now,
-  // surface it back to the wizard via the dropdown choice).
 
   revalidatePath("/profile");
   return { success: true };
