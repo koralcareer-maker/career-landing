@@ -5,7 +5,7 @@ import { CheckCircle, Award, Clock, Users, Star, ChevronLeft, Heart, Target, Lig
 const CREDENTIALS = [
   { icon: Award,  text: "תואר שני (M.A.) בייעוץ קריירה ותעסוקה" },
   { icon: Clock,  text: "10+ שנות ניסיון בגיוס ומשאבי אנוש" },
-  { icon: Users,  text: "800+ בוגרים שמצאו עבודה" },
+  { icon: Users,  text: "500+ בוגרים שמצאו עבודה" },
   { icon: Star,   text: "מומחית לשוק העבודה הנסתר" },
 ];
 
