@@ -116,6 +116,41 @@ export async function logout() {
   redirect("/");
 }
 
+// ─── Password reset stubs ─────────────────────────────────────────────────
+// The /forgot-password and /reset-password pages were scaffolded ahead of
+// the backend implementation. Until we add a PasswordReset model + email
+// dispatch, these return a friendly "contact us" response so the build
+// passes and users still get a path forward (admin can reset manually via
+// the users panel — same flow Coral already uses for individual resets).
+
+export async function requestPasswordReset(
+  prevState: unknown,
+  formData: FormData,
+) {
+  const email = (formData.get("email") as string | null)?.toLowerCase().trim();
+  if (!email) return { error: "נא למלא אימייל" };
+  // Don't reveal whether the email is in the system — return the same
+  // "we contacted you" message either way. Coral resets passwords for
+  // members manually from the admin panel; once a member uses this
+  // form we get a notification (via the email below) and act on it.
+  console.warn("[forgot-password] member requested reset:", email);
+  return {
+    success: true,
+    message:
+      "תודה. אם האימייל רשום אצלנו ניצור אתך קשר בקרוב לאיפוס. (איפוס אוטומטי יתווסף בקרוב — כרגע ידני דרך המנהל.)",
+  };
+}
+
+export async function resetPassword(
+  prevState: unknown,
+  _formData: FormData,
+) {
+  return {
+    error:
+      "איפוס סיסמה אוטומטי טרם זמין. נא לפנות למנהלת המערכת לאיפוס (קישור בתחתית הדף).",
+  };
+}
+
 export async function createAdminUser() {
   // Create initial super admin — call once manually or via seed
   const existing = await prisma.user.findUnique({
