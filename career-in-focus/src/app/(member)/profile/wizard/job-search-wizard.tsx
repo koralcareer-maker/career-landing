@@ -308,9 +308,9 @@ function GeneratingOverlay({
         <div className="inline-flex items-center justify-center w-16 h-16 bg-rose-100 rounded-3xl mb-4">
           <Sparkles size={28} className="text-rose-500" />
         </div>
-        <h1 className="text-2xl font-black text-navy mb-2">משהו השתבש</h1>
+        <h1 className="text-2xl font-black text-navy mb-2">בעיה זמנית ביצירת הדרכון</h1>
         <p className="text-gray-500 leading-relaxed mb-6">
-          לא הצלחנו ליצור את דרכון הקריירה עכשיו. הנתונים שלך נשמרו — אפשר לנסות שוב.
+          המידע שמילאת נשמר במלואו. כדאי לנסות שוב — לרוב התקלה זמנית.
         </p>
         <p className="text-xs text-gray-400 mb-6 break-words">{error}</p>
         <button
@@ -330,14 +330,14 @@ function GeneratingOverlay({
         <Sparkles size={36} className="text-white animate-pulse" />
       </div>
       <h1 className="text-2xl font-black text-navy mb-2">
-        {firstName ? `${firstName}, ` : ""}יוצרים את דרכון הקריירה שלך
+        {firstName ? `${firstName}, ` : ""}בונים את דרכון הקריירה שלך
       </h1>
       <p className="text-gray-500 leading-relaxed max-w-md mx-auto">
-        ה-AI עובר עכשיו על הפרופיל שלך — חוזקות, פערים, התאמות לתפקידים והמלצות. זה לוקח כ-30 שניות.
+        ניתוח מקצועי של הפרופיל — חוזקות, פערים, תפקידים מתאימים וצעדים מומלצים. ההכנה לוקחת כ-30 שניות.
       </p>
       <div className="flex items-center justify-center gap-2 mt-7 text-teal">
         <Loader2 size={18} className="animate-spin" />
-        <span className="text-sm font-bold">מעבד נתונים</span>
+        <span className="text-sm font-bold">מעבדים את הנתונים</span>
       </div>
     </div>
   );

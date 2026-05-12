@@ -588,30 +588,42 @@ async function generateWithGemini(
     completedSkillNames.length > 0 && `מיומנויות שרכשה במערכת: ${completedSkillNames.join(", ")}`,
   ].filter(Boolean).join("\n");
 
-  const prompt = `אתה יועץ קריירה מקצועי בישראל. על בסיס המידע הבא על מחפש עבודה, צור דרכון קריירה מפורט ומותאם אישית.
+  const prompt = `אתה יועץ קריירה בכיר בישראל עם 15 שנות ניסיון בגיוס בכיר. אתה מקפיד מאוד על דירוג מציאותי — לא מנפח, לא מפחית בצדק. דייק את הניתוח על בסיס הנתונים, ולא על "נכונות פוליטית".
 
-פרטי המועמד:
+פרטי המועמד/ת:
 ${profileSummary}
 
-הוראות חשובות לגבי מיומנויות וקורסים שהשלימה:
-- אם רשומים "קורסים שהשלימה במערכת" או "מיומנויות שרכשה במערכת" — אסור לרשום אותם בעצמם כפערים. הם כבר חוזקות.
-- אם הקורסים/מיומנויות מצליחים לסגור פער קודם — הסר אותו או שדרג אותו.
-- ה-jobMatchScore צריך לעלות בכל פעם שהמשתמשת מסיימת קורס או רוכשת מיומנות חדשה.
-- הכלל את הקורסים/מיומנויות שרכשה כחוזקות חדשות.
+=== כללי דירוג ל-jobMatchScore (חובה לפעול לפיהם) ===
+זהו ציון מוכנות לחיפוש עבודה ולא ציון "כמה אני מקצועית". הציון משקף אם המועמד/ת מוכן/ה היום למקסם הזדמנויות בשוק.
 
-החזר JSON בלבד (ללא markdown, ללא הסברים) בפורמט הבא:
+90–100 — מוכנ/ה מלא: ניסיון רלוונטי גבוה, אפס פערים מהותיים לתפקיד היעד, מבנה פרופיל ברור, נכסים דיגיטליים מסודרים. ציון זה נדיר.
+75–89  — מוכנ/ה לרוב המשרות: נסיון רלוונטי, אולי פער 1 קטן, פרופיל מסודר. רוב המועמדים החזקים נופלים כאן.
+60–74  — בבנייה: בסיס טוב אך 2-3 פערים מקצועיים שמשפיעים על שיעור התגובה של מגייסים.
+45–59  — תחילת הדרך: או מעט ניסיון, או מספר פערים מהותיים, או פרופיל לא ממוקד.
+25–44  — נדרשת השקעה משמעותית לפני חיפוש פעיל.
+
+חוקים נוקשים:
+- כל פער מקצועי משמעותי שמופיע ברשימה מוריד 5-8 נקודות. 5 פערים = הציון לא יכול לעבור 70.
+- מועמד/ת בלי ניסיון רלוונטי כלל לתפקיד היעד = הציון לא יכול לעבור 65.
+- שאלון לא מלא = הציון לא יכול לעבור 60.
+- אם השלמת קורס/מיומנות שסוגר/ת פער ספציפי שהוגדר — הסר/י את הפער ועלה/י את הציון ב-3-5 נקודות.
+- כל הקורסים/מיומנויות שרשומים כ"השלימה במערכת" הם חוזקות, אסור לרשום אותם כפערים.
+- אם לא בטוח/ה — תור/י לכיוון הפחות. עדיף ציון מציאותי שהמשתמש/ת תוכל לראות עלייה ממשית, מאשר ציון מנופח שלא משאיר טווח לשיפור.
+
+=== פורמט תשובה ===
+החזר JSON בלבד, ללא markdown, ללא הסברים, ללא טקסט מסביב. הפורמט:
 {
-  "jobMatchScore": <מספר 0-100 המייצג מוכנות לחיפוש עבודה>,
-  "summary": "<פסקה קצרה 2-3 משפטים בעברית המסכמת את פרופיל המועמד והפוטנציאל שלו>",
-  "strengths": ["<חוזק 1>", "<חוזק 2>", "<חוזק 3>", "<חוזק 4>"],
-  "skillGaps": ["<פער 1>", "<פער 2>", "<פער 3>"],
-  "recommendations": ["<המלצה 1>", "<המלצה 2>", "<המלצה 3>", "<המלצה 4>"],
-  "likelyFitRoles": ["<תפקיד 1>", "<תפקיד 2>", "<תפקיד 3>", "<תפקיד 4>"],
-  "recommendedIndustries": ["<תעשייה 1>", "<תעשייה 2>", "<תעשייה 3>"],
-  "nextBestActions": ["<פעולה 1>", "<פעולה 2>", "<פעולה 3>", "<פעולה 4>"]
+  "jobMatchScore": <מספר שלם 25-95 לפי הרוברק למעלה>,
+  "summary": "<פסקה 2-3 משפטים — תיאור ענייני של איפה המועמד/ת עומד/ת היום ומה הפוטנציאל. בלי קלישאות, בלי כוכבים, רק עובדות.>",
+  "strengths": ["<3-5 חוזקות קונקרטיות שמקדמות בתחום המקצועי הספציפי. לא 'אדם נהדר' — דברים שניתן להוכיח בקורות חיים.>"],
+  "skillGaps": ["<2-4 פערים ממוקדים. ספציפיים לתפקיד היעד שצוין. לא 'ניסיון' — נסיון במה בדיוק.>"],
+  "recommendations": ["<3-5 צעדים מעשיים שיש לבצע ב-30 הימים הקרובים. כל אחד מתחיל בפועל מעשי.>"],
+  "likelyFitRoles": ["<3-5 תפקידים בישראל שמתאימים לפרופיל הנוכחי, כולל וריאציות junior/senior של תפקיד היעד>"],
+  "recommendedIndustries": ["<3-4 תעשיות שמתאימות בישראל, לפי שילוב הניסיון והשאיפות>"],
+  "nextBestActions": ["<3-4 פעולות מיידיות לשבוע הזה. ספציפי וכמותי — 'הגישי ל-X משרות', 'פנייה ל-Y אנשים', וכו'>"]
 }
 
-כל התשובות חייבות להיות בעברית. היה ספציפי ומעשי. התאם לשוק העבודה הישראלי.`;
+הכל בעברית. בלי קלישאות שיווקיות. כתוב/י כמו יועצ/ת מקצועי/ת אמיתי/ת לחבר/ה.`;
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
@@ -634,7 +646,11 @@ ${profileSummary}
   // caller already catches and falls back to the mock generator on throw.
   const parsed = JSON.parse(clean) as CareerPassportResult;
 
-  parsed.jobMatchScore = Math.max(0, Math.min(100, parsed.jobMatchScore || 50));
+  // Hard-cap the score at 92 even when Gemini returns 95/100. The number 100
+  // is misleading — there's always room for polish — and over-inflated
+  // scores were exactly Coral's complaint (Alex Manker at 95% despite real
+  // skill gaps). The mock generator uses the same ceiling.
+  parsed.jobMatchScore = Math.max(15, Math.min(92, Math.round(parsed.jobMatchScore || 50)));
   return parsed;
 }
 
@@ -649,26 +665,74 @@ function generateMock(profile: {
   questionnaireCompleted?: boolean;
 }): CareerPassportResult {
   const targetRole = profile.targetRole ?? "תפקיד יעד";
-  const experience = profile.yearsExperience ?? 3;
+  const experience = profile.yearsExperience ?? 0;
+
+  // Parse helpers — tolerate both legacy single-string and JSON-array
+  // storage formats so the mock never throws.
+  const parseSafe = (raw: string | null | undefined): string[] => {
+    if (!raw) return [];
+    try {
+      const p = JSON.parse(raw);
+      return Array.isArray(p) ? p.filter(Boolean) : [raw];
+    } catch {
+      return [raw];
+    }
+  };
+  const strengthsArr = parseSafe(profile.strengths);
+  const gapsArr = parseSafe(profile.missingSkills);
+
+  // ── Match score, properly calibrated ──────────────────────────────────────
+  // The old formula was `45 + (experience * 5) + 20` and ignored skill gaps
+  // entirely, so a senior with 5 gaps still hit 95. That made the score
+  // meaningless. New rubric — additive with explicit caps, and gaps now
+  // *reduce* the score:
+  //   base 35
+  //   + experience           up to +15  (caps at 10 yrs)
+  //   + completed wizard     +15        (the data needed to evaluate exists)
+  //   + target role declared +5         (you know what you're aiming for)
+  //   + desired field        +5
+  //   + strengths            up to +10  (2.5 each, caps at 4 strengths)
+  //   − missing skills       up to −20  (3 each, caps at 7 gaps)
+  // Theoretical max ≈ 85; we never declare anyone "100% match" — there's
+  // always polish left to do, and inflated scores erode trust in the
+  // platform.
+  const yrs = Math.max(0, Math.min(10, experience));
+  const stCount = Math.min(4, strengthsArr.length);
+  const gapPenalty = Math.min(20, gapsArr.length * 3);
+  const rawScore =
+    35 +
+    yrs * 1.5 +
+    (profile.questionnaireCompleted ? 15 : 0) +
+    (profile.targetRole ? 5 : 0) +
+    (profile.desiredField ? 5 : 0) +
+    stCount * 2.5 -
+    gapPenalty;
+  const jobMatchScore = Math.max(15, Math.min(92, Math.round(rawScore)));
 
   return {
-    jobMatchScore: Math.min(95, 45 + (experience * 5) + (profile.questionnaireCompleted ? 20 : 0)),
-    summary: `בהתבסס על הניסיון שלך (${experience} שנים) והיעד שהגדרת (${targetRole}), יש לך בסיס טוב לביצוע מעבר קריירה. ${profile.questionnaireCompleted ? "הדרכון שלך מלא ומאפשר ניתוח מדויק יותר." : "מלא את שאלון הדרכון לניתוח מלא."} הצעדים הקרובים המומלצים מפורטים למטה.`,
-    strengths: profile.strengths ? JSON.parse(profile.strengths) : ["תקשורת בינאישית", "פתרון בעיות יצירתי", "למידה מהירה"],
-    skillGaps: profile.missingSkills ? JSON.parse(profile.missingSkills) : [`ניסיון ב-${targetRole}`, "ניהול פרויקטים", "כלים דיגיטליים רלוונטיים"],
+    jobMatchScore,
+    summary: `בהתבסס על ${experience} שנות הניסיון והיעד "${targetRole}", הפרופיל שלך ${
+      jobMatchScore >= 75
+        ? "במצב טוב לחיפוש פעיל"
+        : jobMatchScore >= 55
+        ? "בבנייה — יש בסיס מוצק וכמה פערים ממוקדים שכדאי לסגור"
+        : "בתחילת הדרך — סגירת הפערים העיקריים תקפיץ את הציון משמעותית"
+    }. ${profile.questionnaireCompleted ? "הדרכון מבוסס על המידע המלא שמילאת." : "השלמת השאלון תאפשר ניתוח מדויק יותר."}`,
+    strengths: strengthsArr.length > 0 ? strengthsArr : ["תקשורת בינאישית", "פתרון בעיות", "למידה מהירה"],
+    skillGaps: gapsArr.length > 0 ? gapsArr : [`ניסיון מעשי ב-${targetRole}`, "כלים דיגיטליים רלוונטיים לתחום"],
     recommendations: [
-      `השלם קורס ב-${targetRole} כדי לסגור פערים טכניים`,
-      "עדכן את פרופיל ה-LinkedIn שלך עם מילות מפתח רלוונטיות",
-      "צור רשת קשרים בתחום היעד — שלח 5 הודעות השבוע",
-      "הכן גרסת קורות חיים ממוקדת לתפקיד היעד",
+      `קורס מקצועי ב-${targetRole} לסגירת פערים טכניים`,
+      "עדכון פרופיל LinkedIn עם מילות מפתח של תפקיד היעד",
+      "פנייה יזומה ל-5 אנשים בתחום בכל שבוע",
+      "התאמת קורות חיים נפרדת לכל תפקיד היעד",
     ],
-    likelyFitRoles: [targetRole, `${targetRole} Junior`, `Specialist ב${profile.desiredField ?? "התחום"}`, "תפקיד מעבר רלוונטי"],
-    recommendedIndustries: [profile.desiredField ?? "הייטק", "פינטק", "חברות startup", "תאגידים גדולים"],
+    likelyFitRoles: [targetRole, `${targetRole} Junior`, `Specialist ב${profile.desiredField ?? "תחום"}`],
+    recommendedIndustries: [profile.desiredField ?? "הייטק", "פינטק", "סטארטאפים", "תאגידים"],
     nextBestActions: [
-      "מלא את פרטי הפרופיל שלך במלואם (100%)",
-      `שלח 10 בקשות לתפקידי ${targetRole} השבוע`,
-      "השתתף באירוע הנטוורקינג הקרוב",
-      "בקש ממישהו ברשת שלך חיבור לחברה שמעניינת אותך",
+      "השלמת 100% מפרטי הפרופיל",
+      `הגשת 10 מועמדויות לתפקידי ${targetRole} השבוע`,
+      "השתתפות באירוע נטוורקינג קרוב",
+      "בקשת חיבור מקצועי ברשת לחברה ספציפית",
     ],
   };
 }

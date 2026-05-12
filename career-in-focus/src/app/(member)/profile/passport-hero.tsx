@@ -77,11 +77,14 @@ export function PassportHero({ passport, user, completions }: Props) {
     year: "numeric",
   });
   const score = passport.jobMatchScore;
+  // Labels describe READINESS, not "how good a person you are". They map to
+  // the same 25–92 calibration the score itself now uses (see generateMock
+  // / Gemini prompt in lib/actions/profile.ts).
   const scoreLabel =
-    score >= 85 ? "מצוין" :
-    score >= 70 ? "מאוד טוב" :
-    score >= 55 ? "טוב, בדרך" :
-    score >= 40 ? "בתחילת הדרך" : "התחלה טובה";
+    score >= 85 ? "מוכנה לחיפוש מלא" :
+    score >= 70 ? "מוכנה לרוב המשרות" :
+    score >= 55 ? "כמעט שם — סגירת פערים בודדים" :
+    score >= 40 ? "בבנייה — יש בסיס" : "בתחילת הדרך";
 
   // Circular progress — SVG sized so it scales nicely
   const ringRadius = 70;
@@ -139,7 +142,7 @@ export function PassportHero({ passport, user, completions }: Props) {
 
               {/* Identity block */}
               <div className="text-center sm:text-right">
-                <p className="text-xs text-white/40 uppercase tracking-widest mb-1">פרופיל קריירה של</p>
+                <p className="text-xs text-white/40 uppercase tracking-widest mb-1">דרכון הקריירה של</p>
                 <h1 className="text-3xl sm:text-4xl font-black mb-2 leading-tight">
                   {user.name}
                 </h1>
@@ -148,7 +151,7 @@ export function PassportHero({ passport, user, completions }: Props) {
                   {user.targetRole && (
                     <span className="inline-flex items-center gap-1.5">
                       <Target size={14} className="text-teal" />
-                      <span className="text-white/60">שואפת ל-</span>
+                      <span className="text-white/60">תפקיד יעד:</span>
                       <span className="font-bold text-teal">{user.targetRole}</span>
                     </span>
                   )}
@@ -314,8 +317,8 @@ export function PassportHero({ passport, user, completions }: Props) {
                 <Target size={16} className="text-amber-600" />
               </div>
               <div>
-                <h2 className="font-black text-navy text-base">מה כדאי ללמוד הבא</h2>
-                <p className="text-xs text-slate-500">סגירת הפערים האלה תעלה את הציון שלך</p>
+                <h2 className="font-black text-navy text-base">פערים מקצועיים לסגירה</h2>
+                <p className="text-xs text-slate-500">סגירת הפערים האלה משפרת את ציון ההתאמה</p>
               </div>
             </div>
             <Link
@@ -351,12 +354,12 @@ export function PassportHero({ passport, user, completions }: Props) {
           {regenerating ? (
             <>
               <RefreshCw size={14} className="animate-spin" />
-              מעדכן את הדרכון...
+              מעדכנת את הדרכון…
             </>
           ) : (
             <>
               <Sparkles size={14} />
-              השתדרגתי? עדכוני דרכון
+              עדכון דרכון הקריירה
             </>
           )}
         </button>
@@ -385,7 +388,7 @@ export function PassportHero({ passport, user, completions }: Props) {
 
         <p className="text-xs text-gray-400 mr-auto hidden md:flex items-center gap-1">
           <Trophy size={11} className="text-amber-500" />
-          השלמת קורס או מיומנות תעדכן את הדרכון אוטומטית
+          השלמת קורסים ומיומנויות תעדכן את הדרכון אוטומטית
         </p>
       </div>
 
@@ -402,7 +405,7 @@ export function PassportHero({ passport, user, completions }: Props) {
           )}
           {passport.nextBestActions.length > 0 && (
             <DeepBlock
-              title="פעולות הבא"
+              title="הצעדים הבאים שלך"
               icon={<Sparkles size={14} className="text-teal" />}
               items={passport.nextBestActions}
               accent="teal"
