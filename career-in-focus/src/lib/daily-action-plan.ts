@@ -57,7 +57,7 @@ export interface ActionTask {
   priority: number;
   /** Color hint for the UI: red = blocked, amber = behind, teal = on-track, emerald = momentum */
   intent: "urgent" | "behind" | "ontrack" | "momentum";
-  /** Short imperative, gender-neutral via slash forms (תיצר/י) */
+  /** Short imperative, written in feminine (Coral's audience). */
   title: string;
   /** One-line context — why this matters today */
   why: string;
@@ -97,15 +97,15 @@ export function buildActionPlan(input: ActionPlanInput): ActionTask[] {
       intent: "urgent",
       title:
         overdueReminders.length === 1
-          ? `שלח/י follow-up ל-${first.application.company}`
-          : `סגור/י ${overdueReminders.length} follow-ups שבאיחור`,
+          ? `שלחי follow-up ל-${first.application.company}`
+          : `סגרי ${overdueReminders.length} follow-ups שבאיחור`,
       why:
         overdueReminders.length === 1
           ? `התזכורת ׳${first.title}׳ עברה את התאריך. שתי שורות מספיקות.`
-          : "תזכורות שעברו תאריך מאבדות מומנטום מול המגייס. עדיף לסגור עכשיו.",
+          : "תזכורות שעברו תאריך מאבדות מומנטום מול המגייס/ת. כדאי לסגור עכשיו.",
       cta: {
         href: `/progress/${first.application.id}`,
-        label: "פתח/י את המועמדות",
+        label: "לפתיחת המועמדות",
       },
     });
   }
@@ -127,8 +127,8 @@ export function buildActionPlan(input: ActionPlanInput): ActionTask[] {
       priority: 2,
       intent: "urgent",
       title: `הכנה לראיון ב-${soonInterview.company} (${when})`,
-      why: "30 דקות תרגול עם המאמן AI לפני ראיון משדרגות משמעותית את הביצוע. כדאי לעבור על שאלות הליבה ועל הסיפור האישי.",
-      cta: { href: "/coaching", label: "התחל/י תרגול" },
+      why: "30 דקות תרגול עם מאמנת ה-AI לפני ראיון משדרגות משמעותית את הביצוע. כדאי לעבור על שאלות הליבה ועל הסיפור האישי.",
+      cta: { href: "/coaching", label: "להתחלת תרגול" },
     });
   }
 
@@ -141,11 +141,11 @@ export function buildActionPlan(input: ActionPlanInput): ActionTask[] {
       id: "daily-apps",
       priority: 3,
       intent: submittedThisWeek === 0 ? "behind" : "ontrack",
-      title: `הגש/י ${today} ${today === 1 ? "מועמדות חדשה" : "מועמדויות חדשות"} היום`,
+      title: `הגישי ${today} ${today === 1 ? "מועמדות חדשה" : "מועמדויות חדשות"} היום`,
       why:
         submittedThisWeek === 0
-          ? `עדיין 0 השבוע. היעד: ${weeklyGoal}. ${today} היום מחזיר/ה אותך לקצב.`
-          : `${submittedThisWeek}/${weeklyGoal} השבוע. ${today} היום ישאיר/ו אותך/אותך בקצב.`,
+          ? `עדיין 0 השבוע. היעד: ${weeklyGoal}. ${today} היום יחזירו אותך לקצב.`
+          : `${submittedThisWeek}/${weeklyGoal} השבוע. ${today} היום ישמרו אותך על הקצב.`,
       cta: { href: "/jobs", label: "לרשימת המשרות" },
     });
   } else if (weeklyGoal > 0) {
@@ -154,7 +154,7 @@ export function buildActionPlan(input: ActionPlanInput): ActionTask[] {
       priority: 3,
       intent: "momentum",
       title: "השלמת את היעד השבועי 🎯",
-      why: `${submittedThisWeek}/${weeklyGoal} השבוע — מעולה. היום אפשר להתמקד בפעולות איכות (פנייה יזומה, חיזוק לינקדאין).`,
+      why: `${submittedThisWeek}/${weeklyGoal} השבוע — מעולה. היום אפשר להתמקד בפעולות איכות: פנייה יזומה, חיזוק לינקדאין.`,
       cta: { href: "/coaching", label: "מה הצעד הבא?" },
     });
   }
@@ -165,8 +165,8 @@ export function buildActionPlan(input: ActionPlanInput): ActionTask[] {
       id: "proactive-outreach",
       priority: 4,
       intent: "behind",
-      title: "שלח/י 1-2 הודעות פנייה יזומה (לא דרך לוחות משרות)",
-      why: "פניות ישירות לאנשים בתפקיד או למגייסים פנימיים נותנות פי 3-5 שיעור תגובה מהגשה ללוח משרות. החזק/ה ביותר השבוע: שני אנשים שמכירים אותך עקיף.",
+      title: "שלחי 1-2 הודעות פנייה יזומה (לא דרך לוחות משרות)",
+      why: "פניות ישירות לאנשים בתפקיד או למגייסים פנימיים נותנות פי 3-5 שיעור תגובה מהגשה ללוח משרות. הכי חזק השבוע: שני אנשים שמכירים אותך בעקיפין.",
       cta: { href: "/networking-prompts", label: "ניסוחים מוכנים" },
     });
   }
@@ -181,11 +181,11 @@ export function buildActionPlan(input: ActionPlanInput): ActionTask[] {
       id: "revive-stalled",
       priority: 5,
       intent: "behind",
-      title: `החזר/י לחיים את ${stalled.company} (שקטה ${days} ימים)`,
-      why: "מועמדות שקטה יותר מ-10 ימים מאבדת מומנטום. אפשר לשלוח שורה למגייס/ת או להעלות לסטטוס ׳סגור/ה׳ אם זה לא מתקדם.",
+      title: `החזירי לחיים את ${stalled.company} (שקטה ${days} ימים)`,
+      why: "מועמדות שקטה יותר מ-10 ימים מאבדת מומנטום. אפשר לשלוח שורה למגייס/ת או לעדכן סטטוס ל׳סגורה׳ אם זה לא מתקדם.",
       cta: {
         href: `/progress/${stalled.id}`,
-        label: "פתח/י את הכרטיסייה",
+        label: "לפתיחת הכרטיסייה",
       },
     });
   }
@@ -196,7 +196,7 @@ export function buildActionPlan(input: ActionPlanInput): ActionTask[] {
       id: "fresh-start",
       priority: 1,
       intent: "behind",
-      title: "מלא/י את דרכון הקריירה (5 דקות)",
+      title: "מלאי את דרכון הקריירה (5 דקות)",
       why: "בלי דרכון מלא, ההתאמות וההמלצות גנריות. זה הבסיס לכל מה שיקרה כאן.",
       cta: { href: "/profile", label: "למילוי הדרכון" },
     });

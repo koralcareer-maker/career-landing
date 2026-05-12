@@ -110,9 +110,9 @@ function ActionCard({
   return (
     <Link
       href={href}
-      className={`block ${a.bg} border border-gray-100 ${a.hover} rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg`}
+      className={`block text-center ${a.bg} border border-gray-100 ${a.hover} rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg`}
     >
-      <div className={`w-11 h-11 rounded-xl ${a.iconBg} flex items-center justify-center mb-3`}>
+      <div className={`w-11 h-11 rounded-xl ${a.iconBg} flex items-center justify-center mb-3 mx-auto`}>
         <Icon size={20} className={a.icon} />
       </div>
       <h3 className="font-black text-navy text-base mb-1">{title}</h3>

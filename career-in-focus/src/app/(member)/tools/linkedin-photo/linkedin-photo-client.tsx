@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { upload } from "@vercel/blob/client";
 import {
   Camera, Upload, X, Sparkles, Download, RefreshCw,
-  User, ChevronLeft, AlertCircle, Clock, Lock, ArrowLeft,
+  User, ChevronLeft, AlertCircle, Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -92,10 +92,10 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
   const [results, setResults] = useState<string[]>([]);
   const [error, setError] = useState("");
   // When the API flags upgradePrompt:true (capacity / quota /
-  // permission paths that customers shouldn't see as failures), we
-  // render an inline upgrade-to-Pro CTA instead of just the red
-  // error banner — same pattern as the coach quota path.
-  const [showUpgrade, setShowUpgrade] = useState(false);
+  // permission paths that customers shouldn't see as failures), the
+  // server may still flag `upgradePrompt: true`. The inline upsell UI
+  // was removed once the tool became PRO+VIP gated at the page level,
+  // so we silently ignore the flag now.
   const [progress, setProgress] = useState("");
   const [history, setHistory] = useState<HistoryJob[]>(initialHistory);
   const [quota, setQuota] = useState<{ used: number; max: number } | null>(null);
@@ -153,7 +153,6 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
     }
     setLoading(true);
     setError("");
-    setShowUpgrade(false);
     setResults([]);
 
     const jobId = Date.now();
@@ -211,12 +210,10 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
       const data = (await res.json().catch(() => null)) as GenerateResponse | null;
       if (!res.ok || !data) {
         setError(data?.error ?? `שגיאת שרת (${res.status}) — נסי שוב בעוד דקה`);
-        setShowUpgrade(data?.upgradePrompt === true);
         return;
       }
       if (!data.images || data.images.length === 0) {
         setError(data.error ?? "לא נוצרו תמונות הפעם — נסי שוב");
-        setShowUpgrade(data.upgradePrompt === true);
         return;
       }
 
@@ -419,74 +416,17 @@ export function LinkedInPhotoClient({ userId, initialHistory }: Props) {
       </Button>
 
       {error && (
-        showUpgrade ? (
-          // Upgrade CTA — replaces the red error banner when the server
-          // tells us this should be framed as an invitation to upgrade
-          // rather than a system failure. Copy approved by Coral on
-          // 2026-05-11: explains WHY a LinkedIn photo is critical
-          // (recruiters' first impression, hidden cost of a bad photo)
-          // before pushing toward the PRO tier.
-          <div className="bg-gradient-to-l from-navy via-[#1a3a4a] to-[#0d2d3a] text-white rounded-3xl p-6 sm:p-7 shadow-xl shadow-navy/20">
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-11 h-11 bg-teal rounded-xl flex items-center justify-center shrink-0">
-                <Lock size={20} className="text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-teal uppercase tracking-wider mb-1">
-                  פיצ&apos;ר במסלול PRO
-                </p>
-                <h3 className="font-black text-base sm:text-lg leading-tight">
-                  תמונת לינקדאין מקצועית
-                </h3>
-              </div>
-            </div>
-
-            {/* Why this matters */}
-            <p className="text-sm text-white/85 leading-relaxed mb-2">
-              תמונת הפרופיל שלך היא אחד הדברים <strong className="text-white">הראשונים שמגייסים רואים</strong> — עוד לפני שקראו מילה אחת עלייך.
-            </p>
-            <p className="text-sm text-white/70 leading-relaxed mb-5">
-              תמונה לא מקצועית, ישנה או לא מותאמת עלולה לפגוע ברושם הראשוני ובסיכוי שיפנו אלייך.
-            </p>
-
-            {/* Benefit list */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 mb-5">
-              <p className="text-[11px] font-black text-teal mb-3">במסלול PRO תקבלי:</p>
-              <ul className="space-y-2 text-sm text-white/90">
-                <li className="flex items-start gap-2">
-                  <span className="text-teal shrink-0">✓</span>
-                  <span>יצירת תמונת LinkedIn מקצועית בעזרת AI</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-teal shrink-0">✓</span>
-                  <span>התאמה לסגנון התפקיד והתחום שלך</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-teal shrink-0">✓</span>
-                  <span>שיפור הנראות והמיתוג המקצועי שלך מול מגייסים</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* CTA */}
-            <Link
-              href="/pricing"
-              className="inline-flex items-center justify-center gap-2 w-full bg-teal hover:bg-teal-dark text-white font-black text-sm px-5 py-3.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-teal/30"
-            >
-              שדרגי למסלול PRO (149₪/חודש)
-              <ArrowLeft size={16} />
-            </Link>
+        // Plain error banner. The PRO upsell card that used to live here was
+        // removed once the tool became PRO+VIP gated at the page level — any
+        // user reaching this client component is already on a paid tier, so
+        // an "upgrade" message would be confusing.
+        <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm flex items-start gap-3">
+          <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
+          <div>
+            <p className="font-bold">משהו לא הסתדר</p>
+            <p className="text-xs text-red-600 mt-0.5">{error}</p>
           </div>
-        ) : (
-          <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm flex items-start gap-3">
-            <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
-            <div>
-              <p className="font-bold">משהו לא הסתדר</p>
-              <p className="text-xs text-red-600 mt-0.5">{error}</p>
-            </div>
-          </div>
-        )
+        </div>
       )}
 
       {results.length > 0 && (

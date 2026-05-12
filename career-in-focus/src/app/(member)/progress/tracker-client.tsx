@@ -407,7 +407,7 @@ export function TrackerClient({
 const BAND_COPY: Record<ScoreBreakdown["band"], { label: string; tagline: string; color: string; ring: string; pill: string }> = {
   excellent: {
     label: "מצוין",
-    tagline: "הקצב והאיכות שלך מעולים. תמשיכ/י לעשות בדיוק את זה.",
+    tagline: "הקצב והאיכות שלך מעולים. תמשיכי בדיוק ככה.",
     color: "from-emerald-500 to-emerald-600",
     ring: "ring-emerald-300",
     pill: "bg-emerald-100 text-emerald-700",
@@ -427,8 +427,8 @@ const BAND_COPY: Record<ScoreBreakdown["band"], { label: string; tagline: string
     pill: "bg-amber-100 text-amber-700",
   },
   stalling: {
-    label: "תקוע/ה",
-    tagline: "הקצב נפל. בלי 1-2 פעולות יומיות עקביות, השוק לא יודע שאת/ה בחיפוש.",
+    label: "תקועה",
+    tagline: "הקצב נפל. בלי 1-2 פעולות יומיות עקביות, השוק לא יודע שאת בחיפוש.",
     color: "from-red-500 to-rose-600",
     ring: "ring-red-300",
     pill: "bg-red-100 text-red-700",

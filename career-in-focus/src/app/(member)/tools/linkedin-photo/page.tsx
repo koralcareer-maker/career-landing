@@ -24,15 +24,18 @@ export default async function LinkedInPhotoPage({
   // without leaving their admin account.
   const isAdmin =
     session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
-  const isPremium = session.user.membershipType === "PREMIUM";
+  // Tool is available on PRO ("PREMIUM" internally) and VIP tiers.
+  const isPaidTier =
+    session.user.membershipType === "PREMIUM" ||
+    session.user.membershipType === "VIP";
   const params = await searchParams;
   const previewGate = isAdmin && params.preview === "gate";
 
-  if (previewGate || (!isAdmin && !isPremium)) {
+  if (previewGate || (!isAdmin && !isPaidTier)) {
     return (
       <PremiumGate
         feature="מחולל תמונת תדמית AI"
-        featureDesc="הופכים 3 תמונות יומיומיות שלך ל-10 תמונות פרופיל מקצועיות באיכות סטודיו — בלי להזיז את הטלפון מהבית."
+        featureDesc="3 תמונות יומיומיות שלך הופכות ל-10 תמונות פרופיל מקצועיות באיכות סטודיו."
         featureIcon={<Camera size={28} className="text-teal" />}
       />
     );

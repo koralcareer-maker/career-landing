@@ -586,7 +586,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
             className="inline-flex items-center gap-2 bg-gradient-to-l from-purple-600 to-pink-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl hover:shadow-md hover:shadow-purple-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {aiPending ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
-            {aiPending ? "מנתח..." : "נתח/י את המועמדות"}
+            {aiPending ? "מנתחת..." : "לניתוח המועמדות"}
           </button>
         )}
 
@@ -631,7 +631,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
                     className="inline-flex items-center gap-1 text-xs font-bold text-teal hover:underline"
                   >
                     <CopyIcon size={12} />
-                    {copied ? "הועתק ✓" : "העתק/י"}
+                    {copied ? "הועתק ✓" : "העתיקי"}
                   </button>
                 </div>
                 <p className="text-sm text-slate-700 whitespace-pre-line leading-relaxed">
@@ -665,7 +665,7 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
               className="text-xs text-slate-500 hover:text-teal font-semibold inline-flex items-center gap-1 disabled:opacity-50"
             >
               {aiPending ? <Loader2 size={12} className="animate-spin" /> : <WandSparkles size={12} />}
-              ייצר/י מחדש
+              ייצרי מחדש
             </button>
           </div>
         )}

@@ -19,9 +19,9 @@ export default async function CoachingPage() {
             <Sparkles size={22} className="text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white">המאמן האישי שלך</h1>
+            <h1 className="text-xl font-black text-white">מאמנת AI האישית שלך</h1>
             <p className="text-white/50 text-sm mt-0.5">
-              שלום {firstName} — אני כאן לנתח את מצבך ולעזור לך להתקדם
+              שלום {firstName} — אני כאן לנתח את המצב שלך ולעזור לך להתקדם
             </p>
           </div>
         </div>

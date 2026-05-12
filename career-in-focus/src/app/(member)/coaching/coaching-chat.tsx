@@ -132,16 +132,54 @@ const TONE_STYLES: Record<typeof QUICK_ACTIONS[number]["tone"], { card: string; 
 
 // ─── Simple markdown renderer ─────────────────────────────────────────────────
 
+// Linkifies a plain text segment — splits on URL boundaries and wraps each
+// URL in an anchor. We do this AFTER bold splitting so that **text** stays
+// intact even when it contains/abuts a URL.
+function linkifySegment(text: string, baseKey: string) {
+  // Match http(s)://… or www.… up to whitespace or closing punctuation.
+  const urlRegex = /(https?:\/\/[^\s<>"')]+|www\.[^\s<>"')]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, i) => {
+    if (urlRegex.test(part)) {
+      // Reset regex state after .test() — global regexes are stateful.
+      urlRegex.lastIndex = 0;
+      const href = part.startsWith("http") ? part : `https://${part}`;
+      // Strip trailing punctuation that's almost certainly not part of the URL.
+      const trailing = part.match(/[.,;:!?)\]]+$/);
+      const cleanHref = trailing ? href.slice(0, href.length - trailing[0].length) : href;
+      const display = trailing ? part.slice(0, part.length - trailing[0].length) : part;
+      return (
+        <span key={`${baseKey}-${i}`}>
+          <a
+            href={cleanHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-teal underline underline-offset-2 hover:text-teal-dark break-all"
+          >
+            {display}
+          </a>
+          {trailing?.[0] ?? ""}
+        </span>
+      );
+    }
+    return <span key={`${baseKey}-${i}`}>{part}</span>;
+  });
+}
+
 function renderLine(line: string, key: number) {
-  // Bold: **text**
+  // Bold: **text** — split first so URLs inside bold are still linkified below.
   const parts = line.split(/(\*\*[^*]+\*\*)/g);
   return (
     <span key={key}>
       {parts.map((part, i) => {
         if (part.startsWith("**") && part.endsWith("**")) {
-          return <strong key={i} className="font-bold">{part.slice(2, -2)}</strong>;
+          return (
+            <strong key={i} className="font-bold">
+              {linkifySegment(part.slice(2, -2), `b-${key}-${i}`)}
+            </strong>
+          );
         }
-        return part;
+        return <span key={i}>{linkifySegment(part, `t-${key}-${i}`)}</span>;
       })}
     </span>
   );
