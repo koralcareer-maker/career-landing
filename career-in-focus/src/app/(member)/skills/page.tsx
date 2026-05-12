@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { parseJsonArray } from "@/lib/utils";
 import { getUserCompletions } from "@/lib/actions/completions";
 import Link from "next/link";
-import { Lock, ExternalLink, BookOpen, PlayCircle, GraduationCap, Target, ChevronLeft } from "lucide-react";
+import { Lock, ExternalLink, BookOpen, PlayCircle, GraduationCap, Target, ChevronLeft, Briefcase, Sparkles } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SkillCompletionButton } from "./skill-completion-button";
@@ -260,6 +260,31 @@ export default async function SkillsPage() {
           </div>
         )}
       </div>
+
+      {/* Primary next-step CTA — after seeing the analysis, the user's
+          natural next move is to see how their newly-rated profile
+          matches actual jobs. Without this banner they had to find
+          their way back to /jobs from the sidebar. */}
+      <Link
+        href="/jobs"
+        className="group block bg-gradient-to-l from-teal to-teal-dark text-white rounded-2xl p-5 sm:p-6 shadow-lg shadow-teal/25 hover:shadow-xl hover:shadow-teal/35 transition-all hover:-translate-y-0.5"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shrink-0">
+            <Briefcase size={22} className="text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[11px] font-bold text-white/80 mb-0.5 tracking-wide flex items-center gap-1">
+              <Sparkles size={11} /> השלב הבא
+            </p>
+            <h2 className="text-base sm:text-lg font-black text-white mb-0.5">בדקי איזה משרות מתאימות לפרופיל שלך</h2>
+            <p className="text-xs text-white/85 leading-relaxed">
+              עכשיו שיש לך דרכון קריירה — לוח המשרות מציג ציון התאמה אישי לכל משרה
+            </p>
+          </div>
+          <ChevronLeft size={22} className="text-white shrink-0 transition-transform group-hover:-translate-x-1" />
+        </div>
+      </Link>
 
       {allCards.length === 0 ? (
         <Card>
