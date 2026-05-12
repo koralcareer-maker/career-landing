@@ -238,7 +238,7 @@ export function ToolsClient({ tools, whatsappCount = 0, facebookCount = 0 }: { t
       {/* Header */}
       <div>
         <h1 className="text-2xl font-black text-navy mb-1">כלים ומשאבים</h1>
-        <p className="text-sm text-gray-500">כלים ומשאבים לחברי הקהילה</p>
+        <p className="text-sm text-gray-500">כלים ומשאבים שיקדמו אותך להשיג את התפקיד הבא שלך</p>
       </div>
 
       {/* Search + Filters — placed above the cubes per Coral's request.
