@@ -28,7 +28,7 @@ export function NetworkRequestForm({ gender = null }: { gender?: string | null }
   return (
     <form action={action} className="bg-white rounded-2xl border border-black/5 shadow-[0_2px_20px_rgba(0,0,0,0.07)] overflow-hidden">
       <div className="px-5 py-4 border-b border-gray-50">
-        <h3 className="font-bold text-navy text-sm">הגישי בקשה</h3>
+        <h3 className="font-bold text-navy text-sm">{t("הגישי בקשה", "הגש בקשה")}</h3>
       </div>
       <div className="p-5 space-y-4">
         {state?.error && (

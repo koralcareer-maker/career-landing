@@ -49,7 +49,7 @@ export default async function NetworkPage() {
           </div>
           <h2 className="text-xl font-black text-navy mb-2">פיצר פרימיום בלבד</h2>
           <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto leading-relaxed">
-            שדרגי לחברות פרימיום כדי שקורל תפעיל את הקשרים שלה ישירות עבורך — ותגיעי לראיונות שלא נגישים דרך אתרי משרות רגילים.
+            במסלול פרימיום קורל מפעילה את הקשרים שלה ישירות עבורך — וזה מוביל לראיונות שלא נגישים דרך אתרי משרות רגילים.
           </p>
           <div className="space-y-2 text-sm text-right max-w-xs mx-auto mb-6">
             {["קורל פונה לרשת הקשרים שלה בשמך", "גישה למשרות שלא מפורסמות", "ליווי אישי בתהליך", "עדיפות באירועים ובוובינרים"].map(f => (
@@ -61,7 +61,7 @@ export default async function NetworkPage() {
           </div>
           <Link href="/pricing"
             className="inline-flex items-center gap-2 bg-teal text-white font-bold px-6 py-3 rounded-2xl hover:bg-teal-dark hover:-translate-y-0.5 hover:shadow-lg transition-all">
-            שדרגי לפרימיום
+            לשדרוג לפרימיום
             <ArrowRight size={16} />
           </Link>
         </div>
@@ -72,10 +72,10 @@ export default async function NetworkPage() {
             <h3 className="font-bold text-navy text-sm mb-4">איך זה עובד?</h3>
             <div className="space-y-3">
               {[
-                { n: "1", t: "מלאי את הטופס", d: "תפקיד מבוקש, חברות מעניינות, הערות" },
-                { n: "2", t: "קורל מקבלת התראה", d: "ותסקור את הפרופיל שלך תוך 48 שעות" },
+                { n: "1", t: "מילוי הטופס", d: "תפקיד מבוקש, חברות מעניינות, הערות" },
+                { n: "2", t: "קורל מקבלת התראה", d: "וסוקרת את הפרופיל תוך 48 שעות" },
                 { n: "3", t: "קורל מפעילה קשרים", d: "פניה ישירה לאנשי רשת, מגייסים, ומנהלים" },
-                { n: "4", t: "את מקבלת עדכון", d: "ומגיעה לראיון — בלי לשלוח קורות חיים לחלל" },
+                { n: "4", t: "מקבלים עדכון", d: "ומגיעים לראיון — בלי לשלוח קורות חיים לחלל" },
               ].map(s => (
                 <div key={s.n} className="flex items-start gap-3">
                   <div className="w-7 h-7 bg-teal rounded-full flex items-center justify-center text-white text-xs font-black shrink-0">{s.n}</div>

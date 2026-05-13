@@ -42,7 +42,7 @@ export function CvFeedbackUpgradeCard() {
         {/* Body */}
         <div className="p-6 sm:p-8">
           <p className="text-sm text-gray-500 leading-relaxed mb-5">
-            במסלול חבר (₪19/חודש במבצע השקה) את יכולה להעלות קורות חיים והמערכת תחלץ ממנו אוטומטית את החוזקות, הפערים והרקע — לטובת דרכון הקריירה ולוח המשרות.
+            במסלול חבר (₪19/חודש במבצע השקה) אפשר להעלות קורות חיים והמערכת תחלץ מהם אוטומטית את החוזקות, הפערים והרקע — לטובת דרכון הקריירה ולוח המשרות.
           </p>
           <p className="text-sm text-navy font-bold mb-3">
             ניתוח העומק עם הציונים, ה-ATS והניסוח המחדש — נפתח במסלול PRO:
@@ -81,7 +81,7 @@ export function CvFeedbackUpgradeCard() {
           <div className="flex-1">
             <p className="text-sm font-black text-navy mb-1">בינתיים — דרכון הקריירה שלך עובד תקין</p>
             <p className="text-xs text-gray-500 leading-relaxed mb-3">
-              אם עוד לא מילאת — היכנסי לדף הפרופיל, העלי קורות חיים ותקבלי אוטומטית ניתוח חוזקות, פערים וכיווני קריירה (כלול בהשקה).
+              עוד לא מילאת? כניסה לדף הפרופיל, העלאת קורות חיים — וניתוח חוזקות, פערים וכיווני קריירה יתקבלו אוטומטית (כלול במסלול ההשקה).
             </p>
             <Link
               href="/profile"

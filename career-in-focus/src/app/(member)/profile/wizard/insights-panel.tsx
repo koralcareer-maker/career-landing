@@ -15,65 +15,70 @@ interface Insight {
  * hadn't considered, a warning about a missing asset, a positive
  * confirmation, and a growth nudge.
  */
+// All insight text is written in gender-neutral infinitive / noun form
+// ("לסמן", "להוסיף", "כדאי", "אפשר") so we don't need a gender prop
+// here — the panel works for any reader. Previously the strings mixed
+// male and female imperatives ("רשום… העלה… שתראה…") which read as
+// broken for anyone whose gender didn't match.
 function buildInsights(s: WizardState, currentStep: number): Insight[] {
   const out: Insight[] = [];
 
   // Step 1 insights
   if (currentStep === 1) {
     if (s.targetRole.length > 2 && s.industries.length === 0) {
-      out.push({ tone: "tip", text: "שווה לסמן לפחות 2 תעשיות — זה יכפיל את כמות המשרות הרלוונטיות שתראה" });
+      out.push({ tone: "tip", text: "כדאי לסמן לפחות 2 תעשיות — זה יכפיל את כמות המשרות הרלוונטיות שיוצגו." });
     }
     if (s.targetRole && /coordinator|מתאמ/i.test(s.targetRole) === false && /operations|תפעול/i.test(s.targetRole)) {
-      out.push({ tone: "tip", text: "אולי כדאי לשלב גם תפקידי Operations Coordinator — תיאורי משרות בארץ נוטים להשתמש בכינוי זה" });
+      out.push({ tone: "tip", text: "כדאי לשלב גם תפקידי Operations Coordinator — תיאורי משרות בארץ נוטים להשתמש בכינוי זה." });
     }
     // Only nudge when the user has picked "מהבית" *exclusively* — once
     // they've added "היברידי" as well, the warning becomes wrong.
     if (s.workType.length === 1 && s.workType[0] === "remote") {
-      out.push({ tone: "tip", text: "משרות 100% מהבית בישראל = ~12% מהשוק. כדאי להוסיף גם 'היברידי' ולפתוח עוד 35% משרות" });
+      out.push({ tone: "tip", text: "משרות 100% מהבית בישראל = ~12% מהשוק. הוספת 'היברידי' פותחת עוד 35% משרות." });
     }
   }
 
   // Step 2 insights
   if (currentStep === 2) {
     if (s.yearsExperience !== null && s.yearsExperience >= 7 && s.strengths.length < 3) {
-      out.push({ tone: "tip", text: "עם 7+ שנות ניסיון, רשום 3-5 חוזקות מקצועיות. זה מה שמייחד אותך מקנדידטים אחרים" });
+      out.push({ tone: "tip", text: "עם 7+ שנות ניסיון, כדאי לרשום 3-5 חוזקות מקצועיות. זה מה שמייחד אותך משאר המועמדים." });
     }
     if (!s.resumeUrl) {
-      out.push({ tone: "warn", text: "ללא קורות חיים בעלייה — המערכת לא תוכל לנתח חוזקות וליצור 'דרכון קריירה'. העלה למעלה" });
+      out.push({ tone: "warn", text: "ללא קורות חיים — המערכת לא תוכל לנתח חוזקות וליצור 'דרכון קריירה'. כדאי להעלות למעלה." });
     }
     if (s.strengths.length >= 5) {
-      out.push({ tone: "good", text: "רשימת חוזקות עשירה. תוכל לשלב את החזקות הבולטות בכותרת ה-LinkedIn" });
+      out.push({ tone: "good", text: "רשימת חוזקות עשירה. אפשר לשלב את החוזקות הבולטות בכותרת ה-LinkedIn." });
     }
   }
 
   // Step 3 insights
   if (currentStep === 3) {
     if (s.jsActively === "yes" && s.jsRecentInterviews !== null && s.jsRecentInterviews === 0 && s.jsSearchWeeks !== null && s.jsSearchWeeks >= 4) {
-      out.push({ tone: "warn", text: "חודש בחיפוש פעיל ללא ראיונות — זה לרוב סימן לכך שצריך לחזק את הפרופיל. דרכון הקריירה יראה איפה הפער" });
+      out.push({ tone: "warn", text: "חודש בחיפוש פעיל ללא ראיונות — לרוב סימן לכך שצריך לחזק את הפרופיל. דרכון הקריירה יראה איפה הפער." });
     }
     if (s.jsActively === "yes" && s.jsIsApplying === false) {
-      out.push({ tone: "tip", text: "פעיל בחיפוש אבל עוד לא שולח קורות חיים? לוח המשרות שלנו פותח לך התחלה — ראיתי 8 משרות חמות שבועה" });
+      out.push({ tone: "tip", text: "בחיפוש פעיל אך טרם הוגשו קורות חיים? לוח המשרות שלנו הוא נקודת התחלה טובה — יש כעת 8 משרות חמות בשבוע." });
     }
     if (s.jsActively === "passive") {
-      out.push({ tone: "growth", text: "במצב 'פתוח להזדמנויות' — הפרו על LinkedIn 'פתוח לעבודה' מגדיל חשיפה למגייסים פי 3" });
+      out.push({ tone: "growth", text: "מצב 'פתוח להזדמנויות' עם הגדרת 'Open To Work' ב-LinkedIn מגדיל חשיפה למגייסים פי 3." });
     }
   }
 
   // Step 4 insights
   if (currentStep === 4) {
     if (!s.linkedinUrl) {
-      out.push({ tone: "warn", text: "חסר LinkedIn — זה מוריד חשיפה למגייסים. 87% מתפקידי ההייטק והניהול בישראל מאוישים דרך לינקדאין" });
+      out.push({ tone: "warn", text: "חסר LinkedIn — מוריד חשיפה למגייסים. 87% מתפקידי ההייטק והניהול בישראל מאוישים דרך לינקדאין." });
     } else if (!s.portfolioUrl && /design|develop|מעצב|מפתח/i.test(s.targetRole)) {
-      out.push({ tone: "tip", text: "תפקידים בעיצוב/פיתוח — תיק עבודות (פורטפוליו) מגדיל סיכויים פי 2.4 לשלב הבא" });
+      out.push({ tone: "tip", text: "בתפקידים של עיצוב/פיתוח — תיק עבודות (פורטפוליו) מגדיל סיכויים פי 2.4 לשלב הבא." });
     }
     if (s.additionalLinks.length > 0) {
-      out.push({ tone: "good", text: "יש לך נכסים מקצועיים נוספים — נשלב אותם אוטומטית בהמלצות הקריירה" });
+      out.push({ tone: "good", text: "יש נכסים מקצועיים נוספים — נשלב אותם אוטומטית בהמלצות הקריירה." });
     }
   }
 
   // Cross-step: high-level
   if (currentStep >= 2 && s.industries.length === 0) {
-    out.push({ tone: "warn", text: "עוד לא בחרת תעשיות — חזור לשלב 1, זה הכי חשוב להתאמת המשרות" });
+    out.push({ tone: "warn", text: "טרם נבחרו תעשיות — כדאי לחזור לשלב 1. זו ההגדרה הכי חשובה להתאמת המשרות." });
   }
 
   return out.slice(0, 4);
@@ -98,13 +103,13 @@ export function InsightsPanel({ state, currentStep }: { state: WizardState; curr
           </div>
           <div>
             <h3 className="font-black text-navy text-sm">תובנות בזמן אמת</h3>
-            <p className="text-xs text-gray-400">משתנות לפי מה שאת ממלאת</p>
+            <p className="text-xs text-gray-400">מתעדכנות בהתאם למה שמילאת</p>
           </div>
         </div>
 
         {insights.length === 0 ? (
           <p className="text-xs text-gray-400 leading-relaxed">
-            התובנות יופיעו כאן ברגע שתתחילי למלא את השלב — מציעות תפקידים, מצביעות על שדות חסרים, ומעלות אופטימיזציות.
+            התובנות יופיעו כאן ברגע שמתחילים למלא את השלב — מציעות תפקידים, מצביעות על שדות חסרים, ומעלות אופטימיזציות.
           </p>
         ) : (
           <ul className="space-y-2.5">

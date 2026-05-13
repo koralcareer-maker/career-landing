@@ -283,7 +283,7 @@ export function AtsBadge({ level, reasons, summary, strengths, skillGaps, cvFeed
                 </p>
               </div>
               <p className="text-xs text-gray-500 italic pt-2">
-                במסלול PRO תקבלי ציון מדויק 0-100, ניתוח לכל מערכת, וניסוח מחדש של החלקים
+                במסלול PRO מקבלים ציון מדויק 0-100, ניתוח לכל מערכת, וניסוח מחדש של החלקים
                 שלא עובדים. במסלול VIP — קורל בעצמה תכין לך CV ממגנט.
               </p>
             </div>

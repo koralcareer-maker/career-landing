@@ -271,7 +271,7 @@ export function LinkedInPhotoClient({ userId, initialHistory, userGender = null 
             <h1 className="text-2xl font-black text-navy">מחולל תמונת תדמית לינקדאין</h1>
           </div>
           <p className="text-gray-500 text-sm mt-1 mr-11">
-            העלי 3 תמונות פנים ברורות — AI ייצור תמונת פרופיל מקצועית
+            {t("העלי 3 תמונות פנים ברורות — AI ייצור תמונת פרופיל מקצועית", "העלה 3 תמונות פנים ברורות — AI ייצור תמונת פרופיל מקצועית")}
           </p>
         </div>
         {quota && (
@@ -285,7 +285,7 @@ export function LinkedInPhotoClient({ userId, initialHistory, userGender = null 
       </div>
 
       <Card className="p-5">
-        <h2 className="font-bold text-navy mb-1">שלב 1 — העלי 3 תמונות</h2>
+        <h2 className="font-bold text-navy mb-1">{t("שלב 1 — העלי 3 תמונות", "שלב 1 — העלה 3 תמונות")}</h2>
         <p className="text-xs text-gray-400 mb-4">
           זוויות שונות = תוצאה מדויקת יותר. JPG / PNG / WEBP עד 8MB.
         </p>
@@ -333,7 +333,7 @@ export function LinkedInPhotoClient({ userId, initialHistory, userGender = null 
                 className="aspect-square rounded-xl border-2 border-dashed border-gray-200 hover:border-teal/50 hover:bg-teal-pale/30 transition-all flex flex-col items-center justify-center gap-2 text-gray-300 hover:text-teal cursor-pointer"
               >
                 <Upload size={22} />
-                <span className="text-xs font-medium">העלי תמונה {idx + 1}</span>
+                <span className="text-xs font-medium">{t(`העלי תמונה ${idx + 1}`, `העלה תמונה ${idx + 1}`)}</span>
               </button>
             );
           })}
@@ -410,7 +410,7 @@ export function LinkedInPhotoClient({ userId, initialHistory, userGender = null 
           </span>
         ) : quotaExhausted ? (
           <span className="flex items-center gap-2">
-            מיצית את המכסה החודשית — מתחדשת בתחילת החודש
+            {t("מיצית את המכסה החודשית — מתחדשת בתחילת החודש", "מיצית את המכסה החודשית — מתחדשת בתחילת החודש")}
           </span>
         ) : (
           <span className="flex items-center gap-2">

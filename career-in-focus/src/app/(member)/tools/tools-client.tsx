@@ -203,7 +203,7 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
       </h3>
       <p className="text-sm text-gray-400 max-w-xs mx-auto">
         {hasFilters
-          ? "נסה לשנות את הסינון או לנקות את החיפוש"
+          ? "כדאי לשנות את הסינון או לנקות את החיפוש"
           : "הכלים יתווספו בקרוב. חזור מאוחר יותר"}
       </p>
     </div>

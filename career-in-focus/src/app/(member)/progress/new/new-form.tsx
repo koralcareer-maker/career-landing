@@ -130,7 +130,7 @@ function UrlStage({
                 <>
                   <Loader2 size={20} className="animate-spin" />
                   <span className="flex items-center gap-2">
-                    קוראת את המשרה
+                    קוראים את המשרה
                     <span className="inline-flex gap-0.5">
                       <span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                       <span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -238,8 +238,8 @@ function FormStage({
             <Sparkles size={16} className="text-teal" />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-navy text-sm">מילאתי בשבילך — תעברי לבדוק</p>
-            <p className="text-xs text-gray-600 mt-1">השדות עם הרקע הירקרק מולאו אוטומטית. כל מה שלא מדויק, את יכולה לערוך לפני שמירה.</p>
+            <p className="font-bold text-navy text-sm">{t("מילאתי בשבילך — תעברי לבדוק", "מילאתי בשבילך — עבור לבדוק")}</p>
+            <p className="text-xs text-gray-600 mt-1">{t("השדות עם הרקע הירקרק מולאו אוטומטית. כל מה שלא מדויק, את יכולה לערוך לפני שמירה.", "השדות עם הרקע הירקרק מולאו אוטומטית. כל מה שלא מדויק, אתה יכול לערוך לפני שמירה.")}</p>
           </div>
         </div>
       )}

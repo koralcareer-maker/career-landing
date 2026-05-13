@@ -113,7 +113,7 @@ export default async function ProfilePage({
         title="פרופיל ודרכון קריירה"
         description={[
           "כאן יושב דרכון הקריירה האישי שלך — סיכום AI של הפרופיל, ציון התאמה לשוק העבודה, חוזקות, פערים מקצועיים, תפקידים מומלצים וצעדי המשך.",
-          "ערכי את הפרופיל בכל עת דרך הכפתור 'ערכי את הפרופיל' — כל עדכון יביא לדרכון מעודכן עם המלצות חדשות.",
+          "אפשר לערוך את הפרופיל בכל עת דרך הכפתור 'עריכת פרופיל' — כל עדכון יביא לדרכון מעודכן עם המלצות חדשות.",
         ]}
       />
 
@@ -152,7 +152,7 @@ export default async function ProfilePage({
             className="inline-flex items-center gap-2 text-sm font-bold text-navy bg-white border border-slate-200 hover:border-teal/60 hover:text-teal px-5 py-2.5 rounded-xl transition-colors shadow-sm"
           >
             <Pencil size={14} />
-            ערכי את הפרופיל
+            עריכת הפרופיל
           </Link>
         </div>
       )}
