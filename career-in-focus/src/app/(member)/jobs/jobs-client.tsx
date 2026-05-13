@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MapPin, Building2, ExternalLink, Flame, Briefcase, ChevronDown, CheckCircle2 } from "lucide-react";
+import { MapPin, Building2, ExternalLink, Flame, Briefcase, ChevronDown, CheckCircle2, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getMatchLabel } from "@/lib/utils";
 import { trackApplicationFromJob } from "@/lib/actions/job-tracking";
+import { dismissJob } from "@/lib/actions/dismiss-job";
 import { JOB_CATEGORIES, mapFieldToCategory } from "@/lib/job-categories";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -92,9 +93,27 @@ function ApplyAndTrackButton({ job }: { job: JobItem }) {
 
 function JobCard({ job }: { job: JobItem }) {
   const match = getMatchLabel(job.matchScore);
+  const [dismissing, startDismiss] = useTransition();
+  const [hidden, setHidden] = useState(false);
+
+  function handleDismiss() {
+    // Optimistic hide so the card disappears instantly; the server
+    // action revalidates /jobs which removes it from the next render
+    // entirely. If the action fails the card reappears.
+    setHidden(true);
+    startDismiss(async () => {
+      const r = await dismissJob(job.id);
+      if (r && "error" in r && r.error) {
+        setHidden(false);
+        console.error(r.error);
+      }
+    });
+  }
+
+  if (hidden) return null;
 
   return (
-    <Card hover className="flex flex-col h-full relative overflow-hidden">
+    <Card hover className="flex flex-col h-full relative overflow-hidden group">
       {/* Hot ribbon */}
       {job.isHot && (
         <div className="absolute top-0 start-0 bg-orange-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-br-xl flex items-center gap-1">
@@ -102,6 +121,19 @@ function JobCard({ job }: { job: JobItem }) {
           חם
         </div>
       )}
+
+      {/* Dismiss (X) — hides this job for the current user only. Hidden
+          until hover on desktop, always visible on touch / mobile. */}
+      <button
+        type="button"
+        onClick={handleDismiss}
+        disabled={dismissing}
+        aria-label="הסתרת המשרה הזו"
+        title="המשרה לא רלוונטית — הסתרה"
+        className="absolute top-2 end-2 z-10 w-7 h-7 rounded-full bg-white/80 hover:bg-red-50 hover:text-red-500 text-gray-400 backdrop-blur flex items-center justify-center shadow-sm border border-slate-100 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100 disabled:opacity-40"
+      >
+        <X size={13} />
+      </button>
 
       <CardContent className="flex flex-col h-full">
         {/* Company logo + name */}

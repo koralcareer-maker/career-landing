@@ -10,19 +10,24 @@ export default async function JobsPage() {
   const session = await auth();
   const userId = session!.user.id;
 
-  const [profile, passport, rawJobs] = await Promise.all([
+  const [profile, passport, rawJobs, dismissed] = await Promise.all([
     prisma.profile.findUnique({ where: { userId } }),
     prisma.careerPassport.findUnique({ where: { userId } }),
     prisma.job.findMany({
       where: { isPublished: true },
       orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
     }),
+    // Per-user dismissals — jobs the member clicked X on. We filter
+    // them out below; nothing changes for other members.
+    prisma.dismissedJob.findMany({ where: { userId }, select: { jobId: true } }),
   ]);
+  const dismissedIds = new Set(dismissed.map((d) => d.jobId));
 
   // Use the same matchJobToUser used on the dashboard so the score and the
   // reasoning are identical across screens. Then sort the listing by score
   // (high → low) so the strongest matches appear first.
   const jobs: JobItem[] = rawJobs
+    .filter((job) => !dismissedIds.has(job.id))
     .map((job) => {
       const match = matchJobToUser(job, profile, passport);
       return {

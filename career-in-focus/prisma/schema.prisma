@@ -547,6 +547,20 @@ model MarketIntelArticle {
   @@index([category])
 }
 
+// Per-user "I don't want to see this job again" marker. Each row is a
+// (user, job) pair: the user clicked the X on a job card and we hide
+// that job from the jobs page going forward — only for them. Other
+// users still see the job as usual. Cascade-deletes when either side
+// disappears.
+model DismissedJob {
+  id          String   @id @default(cuid())
+  userId      String
+  jobId       String
+  dismissedAt DateTime @default(now())
+  @@unique([userId, jobId])
+  @@index([userId])
+}
+
 model Job {
   id          String   @id @default(cuid())
   createdAt   DateTime @default(now())
