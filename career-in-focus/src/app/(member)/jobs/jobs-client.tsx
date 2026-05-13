@@ -147,8 +147,11 @@ function JobCard({ job }: { job: JobItem }) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-navy text-sm leading-snug truncate">{job.title}</h3>
-            <p className="text-xs text-gray-400 truncate">{job.company}</p>
+            {/* Title wraps to up to 2 lines (was truncated to one — Coral
+             *  noted long titles were being cut off and looked broken).
+             *  Company name bumped up so it doesn't feel buried. */}
+            <h3 className="font-bold text-navy text-sm leading-snug line-clamp-2 break-words">{job.title}</h3>
+            <p className="text-sm font-semibold text-navy/70 mt-0.5 break-words">{job.company}</p>
           </div>
           {/* Match score */}
           <div

@@ -52,6 +52,22 @@ export const COMPANIES: CompanyCareer[] = [
   { ats: "greenhouse", id: "nice",         name: "NICE" },
   { ats: "greenhouse", id: "orcasecurity", name: "Orca Security" },
   { ats: "greenhouse", id: "sisense",      name: "Sisense" },
+  // Fintech / payments (Coral asked for "finance jobs in Israel")
+  { ats: "greenhouse", id: "payoneer",     name: "Payoneer" },
+  { ats: "greenhouse", id: "melio",        name: "Melio" },
+  { ats: "greenhouse", id: "forter",       name: "Forter" },
+  { ats: "greenhouse", id: "trustpilot",   name: "Trustpilot" },
+  // AdTech / marketing-heavy (Coral asked for "marketing jobs in Israel")
+  { ats: "greenhouse", id: "taboola",      name: "Taboola" },
+  { ats: "greenhouse", id: "similarweb",   name: "Similarweb" },
+  { ats: "greenhouse", id: "zoominfo",     name: "ZoomInfo" },
+  // Mixed — cyber + admin/ops roles
+  { ats: "greenhouse", id: "axonius",      name: "Axonius" },
+  { ats: "greenhouse", id: "moveworks",    name: "Moveworks" },
+  // Big global with Israel R&D — pulls only Israeli locations via our filter
+  { ats: "greenhouse", id: "stripe",       name: "Stripe" },
+  { ats: "greenhouse", id: "celonis",      name: "Celonis" },
+  { ats: "greenhouse", id: "datadog",      name: "Datadog" },
   // Lever
   { ats: "lever", id: "walkme",            name: "WalkMe" },
 ];
