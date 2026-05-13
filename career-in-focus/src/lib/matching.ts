@@ -102,45 +102,102 @@ export function matchJobToUser(
   // No profile at all — neutral 30%, no reasons.
   if (!profile && !passport) return { score: 30, reasons: [] };
 
-  let score = 30; // baseline
   const reasons: string[] = [];
   const blob = jobBlob(job);
 
-  // 1. Target role match (heaviest signal)
-  const targetTokens = tokenise(profile?.targetRole);
-  if (targetTokens.length > 0 && targetTokens.some((t) => blob.includes(t))) {
-    score += 30;
+  // ── 1. Target-role match is the GATE, not a +30 bonus ────────────
+  //
+  // Old algorithm added +30 when ANY token matched and added nothing
+  // when nothing matched. That let unrelated jobs reach 100% via
+  // industry + fit-roles + strengths firing on tangential overlaps
+  // (Coral was a "סמנכלית משאבי אנוש" target and saw 100% on Backend
+  // Engineer postings — strengths like "ניהול" matched generic
+  // management copy in tech roles).
+  //
+  // New rule:
+  //  - Tokens must be >= 3 chars (Hebrew/English) — drops noise
+  //    like "של" / "in" / "to".
+  //  - Score is **proportional** to how many target tokens match
+  //    the job (intersection-over-union style, capped at 60).
+  //  - If 0 tokens match, the *entire* match maxes at 50 — secondary
+  //    signals (industry, strengths) can lift it from the baseline
+  //    but never make an unrelated job look like a great fit.
+  const targetTokens = tokenise(profile?.targetRole).filter((t) => t.length >= 3);
+  const matchedTargetTokens = targetTokens.filter((t) => blob.includes(t));
+
+  let score = 25; // baseline
+  const targetMatched = matchedTargetTokens.length > 0;
+  let cap = targetMatched ? 100 : 50;
+
+  if (targetTokens.length > 0 && targetMatched) {
+    const ratio = matchedTargetTokens.length / targetTokens.length;
+    const bonus = Math.round(ratio * 50); // up to +50 for a full overlap
+    score += bonus;
     reasons.push(`תואם לתפקיד היעד שלך (${profile?.targetRole})`);
+  } else if (targetTokens.length > 0) {
+    // We have a target role and the job didn't match any of its words.
+    // Hard ceiling — don't let the rest of the signals push above 50.
+    cap = 50;
   }
 
-  // 2. Desired field / industry interests
-  const fieldTokens = tokenise(profile?.desiredField);
-  const industryTokens = parseJsonArray(profile?.q_industryInterests).flatMap(tokenise);
-  const passportIndustryTokens = parseJsonArray(passport?.recommendedIndustries).flatMap(tokenise);
-  const allFieldTokens = [...fieldTokens, ...industryTokens, ...passportIndustryTokens];
-  if (allFieldTokens.length > 0 && allFieldTokens.some((t) => blob.includes(t))) {
-    score += 20;
-    reasons.push("תחום העניין שלך");
+  // ── 2. Desired field / industry interests — tightened ───────────
+  //
+  // Same proportional treatment, lighter weight (+15 max). Industry
+  // tokens like "טכנולוגיה" or "Tech" are deliberately filtered out
+  // because they match nearly every hi-tech posting.
+  const GENERIC_FIELD = new Set([
+    "טכנולוגיה", "tech", "technology", "software", "high-tech", "hitech",
+    "general", "כללי", "אחר",
+  ]);
+  const fieldTokens = [
+    ...tokenise(profile?.desiredField),
+    ...parseJsonArray(profile?.q_industryInterests).flatMap(tokenise),
+    ...parseJsonArray(passport?.recommendedIndustries).flatMap(tokenise),
+  ].filter((t) => t.length >= 3 && !GENERIC_FIELD.has(t));
+  if (fieldTokens.length > 0) {
+    const matched = fieldTokens.filter((t) => blob.includes(t));
+    if (matched.length > 0) {
+      score += Math.min(15, matched.length * 5);
+      reasons.push("תחום העניין שלך");
+    }
   }
 
-  // 3. Likely-fit roles from career passport
-  const fitRoleTokens = parseJsonArray(passport?.likelyFitRoles).flatMap(tokenise);
-  if (fitRoleTokens.length > 0 && fitRoleTokens.some((t) => blob.includes(t))) {
-    score += 15;
-    reasons.push("התאים לקריירה שלך לפי הדרכון");
+  // ── 3. Likely-fit roles from the AI passport ─────────────────────
+  //
+  // Now only fires when the passport explicitly named a role that
+  // overlaps the job title (not the summary or location). This stops
+  // generic "Manager" / "Senior" tokens from matching every senior
+  // role across the board.
+  const fitRoleTokens = parseJsonArray(passport?.likelyFitRoles)
+    .flatMap(tokenise)
+    .filter((t) => t.length >= 4);
+  const titleLower = (job.title ?? "").toLowerCase();
+  if (fitRoleTokens.length > 0) {
+    const matched = fitRoleTokens.filter((t) => titleLower.includes(t));
+    if (matched.length > 0) {
+      score += Math.min(15, matched.length * 5);
+      reasons.push("התאים לקריירה שלך לפי הדרכון");
+    }
   }
 
-  // 4. Strengths overlap (small bonus for evidence)
+  // ── 4. Strengths — small evidence bonus, requires real overlap ──
+  //
+  // Strengths are user-declared (e.g. "ניהול צוות", "Python"). Only
+  // tokens >= 4 chars qualify so short Hebrew connectors don't
+  // accidentally fire.
   const strengthTokens = [
     ...parseJsonArray(profile?.strengths),
     ...parseJsonArray(passport?.strengths),
-  ].flatMap(tokenise);
+  ].flatMap(tokenise).filter((t) => t.length >= 4);
   if (strengthTokens.length > 0 && strengthTokens.some((t) => blob.includes(t))) {
     score += 5;
     reasons.push("מתאים לחוזקות שלך");
   }
 
-  return { score: Math.min(100, score), reasons: reasons.slice(0, 3) };
+  return {
+    score: Math.max(15, Math.min(cap, score)),
+    reasons: reasons.slice(0, 3),
+  };
 }
 
 // ─── Course matching ─────────────────────────────────────────────────────────

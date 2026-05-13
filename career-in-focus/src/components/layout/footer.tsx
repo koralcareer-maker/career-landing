@@ -170,7 +170,7 @@ export async function Footer() {
                   </div>
                   <p className="text-teal text-sm font-bold mb-1">קורל • מאסטרית קריירה ומומחית לעולם התעסוקה החדש</p>
                   <p className="text-white/60 text-xs leading-relaxed max-w-xs mx-auto sm:mx-0">
-                    אני בונה את המקום שאני הייתי רוצה לקבל בתחילת הדרך — קהילה, ליווי וכלים שבאמת עובדים.
+                    יצרתי לכם את המקום שאני הייתי רוצה לקבל בתחילת הקריירה שלי — הכוונה, ליווי, קהילה וכלים מקצועיים שבאמת עובדים.
                   </p>
                 </div>
               </div>

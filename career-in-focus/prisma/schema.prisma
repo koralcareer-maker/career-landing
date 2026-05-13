@@ -561,6 +561,26 @@ model DismissedJob {
   @@index([userId])
 }
 
+// Leads from the marketing site's contact form. Visitors there who
+// fill the "צרי קשר" form (people who AREN'T paying members yet)
+// get captured here so Coral can follow up with them personally.
+// Each new row triggers a notification email to her admin inbox.
+model Lead {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  name        String
+  email       String?
+  phone       String?
+  message     String?
+  /// Where the lead came in from: "marketing-site" | "platform" | "vip-form" | ...
+  source      String?
+  /// Set true after Coral marks it handled.
+  handled     Boolean  @default(false)
+  handledAt   DateTime?
+  notes       String?
+  @@index([handled, createdAt])
+}
+
 model Job {
   id          String   @id @default(cuid())
   createdAt   DateTime @default(now())

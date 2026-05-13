@@ -354,6 +354,48 @@ export async function notifyAdminOfCvRequest({
   });
 }
 
+// ─── Marketing-site lead notification ─────────────────────────────────────────
+// Fired from /api/leads/incoming whenever the marketing site's contact
+// form delivers a new lead. Coral wants the contact details in her
+// inbox immediately so she can follow up before the visitor's interest
+// cools. The lead itself is already persisted in the DB by the time
+// we send the email — this is best-effort, fire-and-forget.
+
+export async function sendLeadNotification({
+  id, name, email, phone, message, source,
+}: {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  message: string | null;
+  source: string;
+}) {
+  const to = process.env.ADMIN_NOTIFY_EMAIL ?? "koralcareer@gmail.com";
+  const html = `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<body style="font-family:-apple-system,sans-serif;direction:rtl;background:#f6f7fb;padding:20px;">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,.06);">
+    <h2 style="margin:0 0 12px 0;color:#1C1C2E;font-size:20px;">💌 פנייה חדשה מהאתר</h2>
+    <p style="margin:0 0 18px 0;color:#666;font-size:14px;">פנייה חדשה ${source ? `מקור: ${source}` : ""}. כדאי לחזור בהקדם.</p>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      <tr><td style="padding:6px 0;color:#888;width:90px;">שם:</td><td style="padding:6px 0;font-weight:600;">${name}</td></tr>
+      ${email ? `<tr><td style="padding:6px 0;color:#888;">אימייל:</td><td style="padding:6px 0;direction:ltr;"><a href="mailto:${email}" style="color:#2BAAAA;">${email}</a></td></tr>` : ""}
+      ${phone ? `<tr><td style="padding:6px 0;color:#888;">טלפון:</td><td style="padding:6px 0;direction:ltr;"><a href="tel:${phone}" style="color:#2BAAAA;">${phone}</a></td></tr>` : ""}
+      ${message ? `<tr><td style="padding:6px 0;color:#888;vertical-align:top;">הודעה:</td><td style="padding:6px 0;white-space:pre-wrap;">${message.replace(/</g, "&lt;")}</td></tr>` : ""}
+    </table>
+    <a href="${APP_URL}/admin/leads" style="display:inline-block;margin-top:20px;background:#3ECFCF;color:#fff;font-weight:700;padding:10px 20px;border-radius:8px;text-decoration:none;">לפאנל הפניות ←</a>
+    <p style="margin:18px 0 0;color:#aaa;font-size:11px;">Lead ID: ${id}</p>
+  </div>
+</body></html>`;
+
+  await sendEmail({
+    to,
+    subject: `💌 פנייה חדשה מהאתר: ${name}`,
+    html,
+  });
+}
+
 // ─── Password Reset Email ─────────────────────────────────────────────────────
 // Sent when a user requests a password reset from /forgot-password.
 // Contains a one-click link with a single-use token (24h expiry).
