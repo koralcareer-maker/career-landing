@@ -19,6 +19,7 @@ import {
 import { DashboardTourWithQueryTrigger } from "@/components/onboarding/dashboard-tour";
 import { createGenderT } from "@/lib/gender";
 import { ScreenExplainer } from "@/components/screen-explainer";
+import { DASHBOARD as DASHBOARD_WALKTHROUGH } from "@/lib/walkthroughs";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -144,6 +145,7 @@ export default async function DashboardPage() {
           "המסך הראשי שמרכז את כל הפעילות שלך — ציון התאמה למשרות, תוכנית הפעולה היומית, מועמדויות פעילות, אירועים קרובים ועדכונים מהקהילה.",
           "מכאן אפשר לקפוץ לכל חלק במערכת — לוח המשרות, דרכון הקריירה, מאמנת ה-AI, ומעקב המועמדויות.",
         ]}
+        walkthrough={DASHBOARD_WALKTHROUGH.videoUrl ? DASHBOARD_WALKTHROUGH : undefined}
       />
 
       {/* ─── Decorative ambient gradient blobs in the background ─── */}
@@ -206,6 +208,7 @@ export default async function DashboardPage() {
               <div className="flex flex-wrap gap-2">
                 <Link
                   href="/jobs"
+                  data-walkthrough-id="dashboard-jobs-cta"
                   className="inline-flex items-center gap-2 bg-teal hover:bg-teal-dark text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow-lg shadow-teal/30 transition-all duration-150 hover:-translate-y-0.5"
                 >
                   <Search size={15} />
@@ -213,6 +216,7 @@ export default async function DashboardPage() {
                 </Link>
                 <Link
                   href="/coaching"
+                  data-walkthrough-id="dashboard-coach-cta"
                   className="inline-flex items-center gap-2 bg-white hover:bg-white/90 border border-navy/15 hover:border-teal/40 text-navy font-bold px-5 py-2.5 rounded-xl text-sm transition-all duration-150 shadow-sm"
                 >
                   <Sparkles size={15} className="text-teal-dark" />

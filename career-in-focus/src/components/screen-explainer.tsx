@@ -3,32 +3,44 @@
 /**
  * ScreenExplainer — a small "?" floating button you drop into the
  * top-right of any page. Clicking it opens a modal that explains what
- * the screen does, with an optional embedded video.
+ * the screen does in text form.
  *
- * Coral asked for per-screen explainer videos so members never feel
- * lost ("חייב סרטון הסבר מה זה כל מסך ומה אפשר למצוא בו"). Until she
- * records and uploads the actual clips, the component renders just
- * the text — it's wired so swapping in a YouTube/Vimeo URL is a
- * one-line change.
+ * If a Coral-talking walkthrough video is provided (via the
+ * `walkthrough` prop), the modal ALSO shows a "סיור עם קורל" CTA that
+ * opens the KoralWalkthrough PIP player — Coral's video plays in a
+ * draggable corner panel and spotlights the relevant page elements as
+ * she advances. This is the pattern Coral asked for: "סרטון הדרכה שלי
+ * מדברת בצד בקטן ומסבירה ועוברת בין כפתור לכפתור".
+ *
+ * Until Coral records and uploads the actual clips, both pieces
+ * render but the walkthrough button is hidden when no video URL is
+ * configured.
  */
 
 import { useState, useEffect } from "react";
-import { HelpCircle, X, PlayCircle } from "lucide-react";
+import { HelpCircle, X, PlayCircle, Sparkles } from "lucide-react";
+import { KoralWalkthrough, type WalkthroughChapter } from "./koral-walkthrough";
 
 interface Props {
   /** Page title used inside the modal header. */
   title: string;
   /** 1-3 short paragraphs describing the screen and what to do on it. */
   description: string | string[];
-  /** Optional YouTube/Vimeo URL — when provided the modal renders an
-   *  embed; when missing it shows just the text. */
+  /** Optional inline-embedded video (YouTube/Vimeo) for the text modal. */
   videoUrl?: string;
+  /** Optional Coral-talking walkthrough config. When present, a
+   *  "סיור עם קורל" button appears that opens the floating PIP. */
+  walkthrough?: {
+    videoUrl: string;
+    chapters: WalkthroughChapter[];
+  };
   /** Anchor side. Defaults to "end" (top-left in RTL = top-end). */
   side?: "start" | "end";
 }
 
-export function ScreenExplainer({ title, description, videoUrl, side = "end" }: Props) {
+export function ScreenExplainer({ title, description, videoUrl, walkthrough, side = "end" }: Props) {
   const [open, setOpen] = useState(false);
+  const [walkthroughOpen, setWalkthroughOpen] = useState(false);
 
   // ESC closes the modal.
   useEffect(() => {
@@ -82,6 +94,21 @@ export function ScreenExplainer({ title, description, videoUrl, side = "end" }: 
                 <h2 className="text-lg font-black text-navy">איך משתמשים: {title}</h2>
               </div>
 
+              {/* Walkthrough CTA — opens the floating PIP player */}
+              {walkthrough && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    setWalkthroughOpen(true);
+                  }}
+                  className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-gradient-to-l from-teal to-teal-dark text-white font-bold text-sm px-5 py-3 rounded-2xl shadow-md shadow-teal/30 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                >
+                  <Sparkles size={16} />
+                  סיור עם קורל ({walkthrough.chapters.length} שלבים)
+                </button>
+              )}
+
               {videoUrl && (
                 <div className="my-4 aspect-video bg-slate-100 rounded-2xl overflow-hidden">
                   <iframe
@@ -94,7 +121,7 @@ export function ScreenExplainer({ title, description, videoUrl, side = "end" }: 
                 </div>
               )}
 
-              <div className="space-y-3 mt-3">
+              <div className="space-y-3 mt-4">
                 {paragraphs.map((p, i) => (
                   <p key={i} className="text-sm text-slate-600 leading-relaxed">
                     {p}
@@ -102,7 +129,7 @@ export function ScreenExplainer({ title, description, videoUrl, side = "end" }: 
                 ))}
               </div>
 
-              {!videoUrl && (
+              {!videoUrl && !walkthrough && (
                 <p className="text-[11px] text-slate-400 mt-5 leading-relaxed">
                   סרטון הסבר קצר יעלה כאן בקרוב.
                 </p>
@@ -110,6 +137,16 @@ export function ScreenExplainer({ title, description, videoUrl, side = "end" }: 
             </div>
           </div>
         </div>
+      )}
+
+      {/* Floating Coral walkthrough — rendered outside the modal so it
+       *  survives even after the user dismisses the explainer dialog. */}
+      {walkthroughOpen && walkthrough && (
+        <KoralWalkthrough
+          videoUrl={walkthrough.videoUrl}
+          chapters={walkthrough.chapters}
+          onClose={() => setWalkthroughOpen(false)}
+        />
       )}
     </>
   );
