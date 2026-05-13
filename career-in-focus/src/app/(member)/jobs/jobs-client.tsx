@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MapPin, Building2, ExternalLink, Flame, Briefcase, ChevronDown, CheckCircle2, X } from "lucide-react";
+import { MapPin, Building2, ExternalLink, Flame, Briefcase, ChevronDown, CheckCircle2, X, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -234,6 +234,10 @@ export function JobsClient({ jobs }: { jobs: JobItem[] }) {
   const [activeField, setActiveField] = useState("הכל");
   const [activeRegion, setActiveRegion] = useState("הכל");
   const [activeLevel, setActiveLevel] = useState("הכל");
+  // Free-text search across the visible job text. Coral asked for an
+  // open keyword search so members can pull up specific titles or
+  // companies that the fixed-category filter doesn't surface.
+  const [search, setSearch] = useState("");
 
   // Categories — fixed taxonomy from Coral (32 entries, sorted
   // alphabetically). We always show ALL of them in the filter, even
@@ -251,16 +255,30 @@ export function JobsClient({ jobs }: { jobs: JobItem[] }) {
   ];
   const levels = ["הכל", ...new Set(jobs.map((j) => j.experienceLevel).filter(Boolean))] as string[];
 
+  // Split the search query on whitespace so "data analyst" matches
+  // a job whose title says "Data" and summary says "Analyst" — same
+  // permissive AND-of-tokens behaviour as a typical job board.
+  const queryTokens = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
+
   const filtered = jobs.filter((j) => {
     if (activeField !== "הכל" && mapFieldToCategory(j.field) !== activeField) return false;
     if (activeRegion === "ללא אזור" && j.region) return false;
     if (activeRegion !== "הכל" && activeRegion !== "ללא אזור" && j.region !== activeRegion) return false;
     if (activeLevel !== "הכל" && j.experienceLevel !== activeLevel) return false;
+    if (queryTokens.length > 0) {
+      const haystack = [j.title, j.company, j.summary, j.field, j.location]
+        .filter(Boolean).join(" ").toLowerCase();
+      if (!queryTokens.every((t) => haystack.includes(t))) return false;
+    }
     return true;
   });
 
   const hotCount = jobs.filter((j) => j.isHot).length;
-  const hasFilters = activeField !== "הכל" || activeRegion !== "הכל" || activeLevel !== "הכל";
+  const hasFilters =
+    activeField !== "הכל" ||
+    activeRegion !== "הכל" ||
+    activeLevel !== "הכל" ||
+    search.trim().length > 0;
 
   return (
     <div className="space-y-6">
@@ -279,6 +297,34 @@ export function JobsClient({ jobs }: { jobs: JobItem[] }) {
 
       {/* Filters */}
       <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
+        {/* Free-text search — sits above the dropdowns so it reads as the
+         *  primary way to find a specific job. The dropdowns narrow
+         *  *within* the search result. */}
+        <div className="relative mb-3">
+          <Search
+            size={16}
+            className="absolute top-1/2 -translate-y-1/2 end-3.5 text-gray-400 pointer-events-none"
+          />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="חיפוש לפי כותרת, חברה או מילת מפתח…"
+            className="w-full pe-10 ps-4 py-2.5 rounded-xl border border-gray-200 bg-white text-navy text-sm placeholder:text-gray-400 focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none transition-colors"
+            dir="rtl"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              aria-label="ניקוי החיפוש"
+              className="absolute top-1/2 -translate-y-1/2 start-3.5 w-5 h-5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center"
+            >
+              <X size={11} />
+            </button>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Field filter */}
           <div>
@@ -348,6 +394,7 @@ export function JobsClient({ jobs }: { jobs: JobItem[] }) {
                 setActiveField("הכל");
                 setActiveRegion("הכל");
                 setActiveLevel("הכל");
+                setSearch("");
               }}
               className="text-sm text-teal hover:underline"
             >
