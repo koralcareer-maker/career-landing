@@ -56,9 +56,18 @@ export const COMPANIES: CompanyCareer[] = [
   { ats: "lever", id: "walkme",            name: "WalkMe" },
 ];
 
-// Lenient — Greenhouse rows often say just "Tel Aviv" with no country.
+// Israel-only filter. Lenient on city names (Greenhouse rows say just
+// "Tel Aviv" without a country) but STRICT on the country code —
+// "Illinois, IL" used to slip through because the regex matched the
+// bare "IL". So we require either "Israel" by word boundary OR a real
+// Israeli city/region name, and never match a standalone "IL".
 const ISRAELI_RE =
-  /israel|תל אביב|tel ?aviv|TLV|herzliya|הרצליה|haifa|חיפה|jerusalem|ירושלים|ramat\s*gan|רמת גן|petah|פתח תקווה|be?e?r\s*sheva|באר שבע|netanya|נתניה|raanana|ra'?anana|רעננה|kfar saba|כפר סבא|hod hasharon|bnei brak|בני ברק|yokneam|יקנעם|ashdod|אשדוד|ashkelon|אשקלון|holon|חולון|rishon|ראשון לציון|rehovot|רחובות|lod|לוד|yehud|יהוד/i;
+  /\bisrael\b|תל אביב|tel ?aviv|\bTLV\b|herzliya|הרצליה|haifa|חיפה|jerusalem|ירושלים|ramat\s*gan|רמת גן|petah|פתח תקווה|be?e?r\s*sheva|באר שבע|netanya|נתניה|raanana|ra'?anana|רעננה|kfar saba|כפר סבא|hod hasharon|הוד השרון|bnei brak|בני ברק|yokneam|יקנעם|ashdod|אשדוד|ashkelon|אשקלון|holon|חולון|rishon|ראשון לציון|rehovot|רחובות|\blod\b|לוד|yehud|יהוד|מרכז הארץ|אריאל|מודיעין|השרון|קריית|, IL$/i;
+
+// Cities that are NOT in Israel but historically slipped through —
+// even when an Israeli city appears too, we drop the row because the
+// position is multi-region and not a clean Israeli posting.
+const FOREIGN_RE = /\b(brazil|são paulo|chicago|new york|london|berlin|munich|paris|singapore|india|bangalore|san francisco|seattle|boston|austin|toronto|sydney|madrid|barcelona|amsterdam|dublin|hong kong|tokyo|mexico|argentina|colombia|bucharest|warsaw|lisbon|prague|kyiv|cairo|dubai)\b/i;
 
 const REGIONS = ["צפון", "חיפה", "מרכז", "שפלה", "ירושלים", "דרום", "אילת"] as const;
 
@@ -121,7 +130,16 @@ async function fetchGreenhouse(id: string, name: string): Promise<RawJob[]> {
     externalUrl: j.absolute_url,
     summary: j.content ? stripHtml(j.content).slice(0, 600) : null,
     source: "Greenhouse",
-  })).filter((j) => j.title && j.externalUrl && j.location && ISRAELI_RE.test(j.location));
+  })).filter(isIsraeliOnly);
+}
+
+/** Accept the row only when the location matches an Israeli signal
+ *  AND no foreign-city signal is present (rules out "Tel Aviv;
+ *  São Paulo" multi-region listings). */
+function isIsraeliOnly(j: { title: string; externalUrl: string; location: string | null }): boolean {
+  if (!j.title || !j.externalUrl || !j.location) return false;
+  if (FOREIGN_RE.test(j.location)) return false;
+  return ISRAELI_RE.test(j.location);
 }
 
 async function fetchLever(id: string, name: string): Promise<RawJob[]> {
@@ -143,7 +161,7 @@ async function fetchLever(id: string, name: string): Promise<RawJob[]> {
     externalUrl: j.hostedUrl,
     summary: j.descriptionPlain?.slice(0, 600) ?? null,
     source: "Lever",
-  })).filter((j) => j.title && j.externalUrl && j.location && ISRAELI_RE.test(j.location));
+  })).filter(isIsraeliOnly);
 }
 
 /**
