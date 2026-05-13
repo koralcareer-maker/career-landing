@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runJobFetch } from "@/lib/job-fetcher";
 import { ALL_CATEGORIES } from "@/lib/job-categories-config";
+import { syncCompanyCareers } from "@/lib/company-careers";
 
 const CRON_SECRET_FALLBACK = "career-in-focus-cron-2026";
 
@@ -26,11 +27,27 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const result = await runJobFetch(ALL_CATEGORIES);
+  // Primary feed: each Israeli company's public ATS board. Free,
+  // legal, reliable — covers most hi-tech roles.
+  const careerResults = await syncCompanyCareers();
+  const careersInserted = careerResults.reduce((s, c) => s + c.inserted, 0);
+
+  // Supplementary feed: Gemini grounded search fills in non-hi-tech
+  // categories (management at non-Greenhouse cos, marketing, sales,
+  // recruiting). Best-effort — if the Gemini quota is exhausted the
+  // career feed already covered the launch baseline.
+  const geminiResult = await runJobFetch(ALL_CATEGORIES);
+
   return NextResponse.json({
     ok: true,
-    totalInserted: result.totalInserted,
-    totalSkipped: result.totalSkipped,
-    perCategory: result.perCategory,
+    companyCareers: {
+      inserted: careersInserted,
+      perCompany: careerResults,
+    },
+    geminiFallback: {
+      totalInserted: geminiResult.totalInserted,
+      totalSkipped: geminiResult.totalSkipped,
+      perCategory: geminiResult.perCategory,
+    },
   });
 }
