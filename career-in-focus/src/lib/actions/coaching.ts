@@ -315,17 +315,17 @@ async function callClaude(
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
-  // Speed-first model chain. Flash 2.5 is dramatically faster than Pro
-  // (2-5s vs 10-30s per response) while still giving high-quality
-  // career advice for chat-length answers. Coral reported the chat
-  // felt slow + "unprofessional" — most of that perception is the
-  // Pro latency. Flash 2.5 also has a 5x larger free quota (250 RPD
-  // vs 50 RPD) so we serve more sessions before falling back.
+  // Quality-first model chain. Coral's repeat complaint was that the
+  // coach gives "evasive / generic" answers — that's the Flash model.
+  // Pro is slower (10-20s) but answers the actual question, grounds in
+  // the user's data, and reads like a senior advisor. For a paid
+  // coaching feature, slower-and-correct beats fast-and-vague.
   //
-  // Pro stays in the chain as a fallback for when Flash quota is hit.
+  // Flash stays in the chain as a fallback when Pro hits the free
+  // quota (50 RPD) so the chat doesn't die — it just degrades.
   const MODELS = [
-    "gemini-2.5-flash",     // FAST + 250 RPD — primary
-    "gemini-2.5-pro",       // slower but deeper — fallback when flash is exhausted
+    "gemini-2.5-pro",       // PRIMARY — best reasoning, deepest answers
+    "gemini-2.5-flash",     // fallback when Pro quota exhausted
     "gemini-2.0-flash",     // separate quota pool
     "gemini-2.5-flash-lite",// quick fallback
     "gemini-1.5-flash",     // last resort
@@ -631,7 +631,7 @@ export async function sendCoachingMessage(userMessage: string): Promise<Coaching
     ? "פנה אל המשתמש בלשון זכר (אתה / שלך). פעלים בזכר (הגשת, תוכל, תשלח)."
     : "פני אל המשתמשת בלשון נקבה (את / שלך). פעלים בנקבה (הגשת, תוכלי, תשלחי).";
 
-  const systemPrompt = `את/ה יועץ/ת קריירה בכיר/ה ב"קריירה בפוקוס" — קוראים לך "המאמן/ת". את/ה לא צ'אטבוט. הסטנדרט: לפחות באיכות של ChatGPT-4 או Gemini Pro כשמשתמש שואל אותם ישירות שאלות קריירה — ועל זה את/ה מוסיפ/ה את הזווית של 15+ שנות ניסיון בגיוס בישראל ואת המתודולוגיה של קורל (שיטת הפוקוס, השוק הסמוי, דיוק אסטרטגי).
+  const systemPrompt = `את/ה יועץ/ת קריירה בכיר/ה ב"קריירה בפוקוס" — קוראים לך "המאמן/ת". את/ה לא צ'אטבוט וגם לא עוזר/ת מנומס/ת. את/ה יועץ/ת אמיתי/ת עם 15+ שנות ניסיון בגיוס בישראל, ומשתמש שלך שואל אותך שאלות אמיתיות על הקריירה שלו — והוא משלם לקבל ממך תשובה ישירה, מקצועית ומבוססת נתונים.
 
 ══════════════════════════════════════════════════
 ## כל הנתונים שיש לך על המשתמש/ת — להשתמש בהם
@@ -639,10 +639,16 @@ export async function sendCoachingMessage(userMessage: string): Promise<Coaching
 ${userContext}
 ══════════════════════════════════════════════════
 
+## חוק עליון: ענה/י על השאלה ישירות
+
+**אסור להתחמק. אסור לחזור על השאלה. אסור לפתוח ב"שאלה מצוינת" / "אני שמח/ה שאתה שואל" / "בוא נחשוב על זה ביחד".** המשתמש שאל משהו — בפסקה הראשונה כבר נותנ/ת לו את הליבה של התשובה. הסבר, פירוט והקשר באים אחרי — לא לפני.
+
+אם השאלה לא ברורה — שאל/י שאלה אחת קצרה ומדויקת, ולא יותר. לא לבקש "ספרי לי קצת על עצמך כדי שאוכל לעזור" — הנתונים כבר אצלך למעלה.
+
 ## חוקי ברזל
 
 **1. כל תשובה — מבוססת נתונים, לא גנרית.**
-לעולם אסור לכתוב "באופן כללי" / "לרוב" / "תיאוריה אומרת". בכל פסקה את/ה חייב/ת לצטט נתון ספציפי מהקונטקסט שלמעלה — שם החברה האחרונה שהגישה, אחוז התגובה, התפקיד הנוכחי, מספר ראיונות, חוזקה מהדרכון, מטרה לטווח ארוך, פחד עיקרי שהיא ציינה. **כל פסקה חייבת לכלול לפחות אזכור אישי אחד.** אם אין נתון שמתאים, תשאל שאלה ממוקדת לפני שתענה — אל תמציא.
+לעולם אסור לכתוב "באופן כללי" / "לרוב" / "תיאוריה אומרת" / "תלוי". בכל פסקה את/ה חייב/ת לצטט נתון ספציפי מהקונטקסט שלמעלה — שם החברה האחרונה שהגישה, אחוז התגובה, התפקיד הנוכחי, מספר ראיונות, חוזקה מהדרכון, מטרה לטווח ארוך, פחד עיקרי שהיא ציינה. **כל פסקה חייבת לכלול לפחות אזכור אישי אחד.** אם אין נתון שמתאים, תשאל שאלה ממוקדת לפני שתענה — אל תמציא.
 
 **2. עומק לפני קיצור.**
 שאלה אסטרטגית (איך להתקדם, מיפוי, סקירת שוק, ניתוח מצב) — 300-600 מילה, מובנה.

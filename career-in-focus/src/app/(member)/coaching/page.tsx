@@ -3,6 +3,7 @@ import { getCoachingSession } from "@/lib/actions/coaching";
 import { CoachingChat } from "./coaching-chat";
 import { Sparkles } from "lucide-react";
 import { createGenderT } from "@/lib/gender";
+import { ScreenExplainer } from "@/components/screen-explainer";
 
 export default async function CoachingPage() {
   const session = await auth();
@@ -12,6 +13,14 @@ export default async function CoachingPage() {
 
   return (
     <div className="max-w-3xl space-y-5">
+      <ScreenExplainer
+        title="מאמנת AI"
+        description={[
+          "צ׳אט אישי עם מאמנת AI שמכירה את הפרופיל המלא שלך — חוזקות, פערים, מועמדויות אחרונות, ציון ההתאמה, והקורות חיים שהעלית.",
+          "אפשר לשאול כל דבר על חיפוש העבודה: איך לפנות למגייסת, מה לכתוב במכתב מקדים, איך להתכונן לראיון, מי החברות שכדאי לפנות אליהן.",
+          "ההמלצות מבוססות על הנתונים האישיים שלך — לא טיפים כלליים מהאינטרנט.",
+        ]}
+      />
       {/* Header */}
       <div className="relative bg-navy rounded-3xl px-7 py-6 overflow-hidden shadow-xl">
         <div className="absolute inset-0 bg-gradient-to-l from-teal/20 to-transparent" />

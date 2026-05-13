@@ -10,6 +10,9 @@ interface Props {
   resumeUrl: string | null;
   /** Patches WizardState — used to store the marker + AI-extracted fields. */
   setState: (patch: Partial<WizardState>) => void;
+  /** Current wizard state, so we can MERGE CV-extracted fields instead of
+   *  overwriting anything the user already typed by hand. */
+  currentState: Pick<WizardState, "currentRole" | "yearsExperience" | "strengths">;
 }
 
 /**
@@ -23,7 +26,7 @@ interface Props {
  * traffic-light rating returned by the server — that's the free-tier
  * appetiser that nudges base members toward PRO for the deeper view.
  */
-export function CvUploader({ resumeUrl, setState }: Props) {
+export function CvUploader({ resumeUrl, setState, currentState }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [phase, setPhase] = useState<"idle" | "uploading" | "analyzing" | "done" | "error">(
     resumeUrl ? "done" : "idle",
@@ -60,11 +63,28 @@ export function CvUploader({ resumeUrl, setState }: Props) {
     } catch (e) {
       console.warn("[cv-uploader] persist failed (will retry on next-step save):", e);
     }
+    // MERGE policy: the CV is supposed to *assist* the user, not erase
+    // what they already typed. If a field is already filled in, leave it
+    // alone — the user's text wins. If it's empty, accept the AI value
+    // so they get the convenience of auto-fill. The user can still edit
+    // afterwards.
+    //
+    // strengths is an array — we union the CV-extracted strengths with
+    // anything the user already added, removing duplicates so the chip
+    // list doesn't show the same skill twice.
+    const haveRole = !!currentState.currentRole && currentState.currentRole.trim().length > 0;
+    const haveYears = typeof currentState.yearsExperience === "number" && currentState.yearsExperience > 0;
+    const existingStrengths = Array.isArray(currentState.strengths) ? currentState.strengths : [];
+    const cvStrengths = Array.isArray(result.strengths) ? result.strengths : [];
+    const mergedStrengths = Array.from(
+      new Set([...existingStrengths, ...cvStrengths].map((s) => s.trim()).filter(Boolean)),
+    );
+
     setState({
       resumeUrl: fileName,
-      currentRole: result.currentRole,
-      yearsExperience: result.yearsExperience,
-      strengths: result.strengths,
+      ...(haveRole ? {} : { currentRole: result.currentRole }),
+      ...(haveYears ? {} : { yearsExperience: result.yearsExperience }),
+      strengths: mergedStrengths,
     });
     if (result.atsLevel) {
       setLastAts({

@@ -22,9 +22,29 @@ export function StepBackground({ state, setState, gender }: Props) {
           {t("ספרי לנו על הרקע שלך", "ספר לנו על הרקע שלך")}
         </h2>
         <p className="text-sm text-gray-500 leading-relaxed">
-          המערכת תנתח את הנתונים כדי לשפר את ההתאמה שלך למשרות.
+          הדרך הכי מהירה: להעלות קורות חיים — המערכת תקרא אותם ותמלא את השדות בעצמה.
+          אחר כך אפשר לערוך כל שדה שצריך תיקון.
         </p>
       </header>
+
+      {/* CV upload first — Coral's note from a member: when the user
+       *  filled the fields by hand and only then uploaded a CV, the CV
+       *  analysis overwrote their text. New order:
+       *    1) Upload CV. Analyser auto-fills the empty fields below.
+       *    2) User reviews and corrects whatever was extracted wrong.
+       *  cv-uploader.tsx now MERGES instead of overwriting, so a member
+       *  who *does* type something before uploading keeps their text. */}
+      <Field label="קורות חיים" hint="המערכת תקרא, תמלא את השדות שלמטה אוטומטית, ותיתן לך ציון התאמה" icon={Upload}>
+        <CvUploader
+          resumeUrl={state.resumeUrl}
+          setState={setState}
+          currentState={{
+            currentRole: state.currentRole,
+            yearsExperience: state.yearsExperience,
+            strengths: state.strengths,
+          }}
+        />
+      </Field>
 
       <Field
         label="תפקיד נוכחי / אחרון"
@@ -69,10 +89,6 @@ export function StepBackground({ state, setState, gender }: Props) {
           onChange={(strengths) => setState({ strengths })}
           placeholder='לדוגמה: "ניהול צוות", "אנליזה", "תקשורת'
         />
-      </Field>
-
-      <Field label="קורות חיים" hint="המערכת תסרוק ותמלא את דרכון הקריירה שלך בהתאם לפרופיל ותתן ציון" icon={Upload}>
-        <CvUploader resumeUrl={state.resumeUrl} setState={setState} />
       </Field>
     </div>
   );

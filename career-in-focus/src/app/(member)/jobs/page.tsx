@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { matchJobToUser } from "@/lib/matching";
 import { JobsClient } from "./jobs-client";
 import type { JobItem } from "./jobs-client";
+import { ScreenExplainer } from "@/components/screen-explainer";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,14 @@ export default async function JobsPage() {
 
   return (
     <div dir="rtl">
+      <ScreenExplainer
+        title="לוח המשרות"
+        description={[
+          "כל המשרות הפעילות במערכת, ממויינות לפי ציון ההתאמה האישי שלך — המשרות שהכי מתאימות לפרופיל למעלה.",
+          "אפשר לסנן לפי אזור, רמת ניסיון או תחום. ה-X על משרה מסתיר אותה ממך לבד; שאר המשתמשים עדיין יראו אותה.",
+          "לחיצה על 'הגשת מועמדות' פותחת את הקישור המקורי ובמקביל מוסיפה את המשרה אוטומטית למעקב שלך.",
+        ]}
+      />
       <JobsClient jobs={jobs} />
     </div>
   );

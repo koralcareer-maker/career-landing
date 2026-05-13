@@ -7,6 +7,7 @@ import { Lock, ExternalLink, BookOpen, PlayCircle, GraduationCap, Target, Chevro
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SkillCompletionButton } from "./skill-completion-button";
+import { ScreenExplainer } from "@/components/screen-explainer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -222,6 +223,15 @@ export default async function SkillsPage() {
 
   return (
     <div dir="rtl" className="space-y-6">
+      <ScreenExplainer
+        title="ניתוח פערי מיומנויות"
+        description={[
+          "מסך זה מראה לך אילו מיומנויות חסרות לתפקיד היעד שהגדרת — מבוסס על דרכון הקריירה והפערים שזיהה ה-AI.",
+          "כל מיומנות מסומנת בעדיפות: גבוהה (הכי חשוב להשלים), בינונית, או נמוכה. לכל מיומנות יש משאבי למידה מומלצים — קורסים, סרטונים ומאמרים.",
+          "סימון 'השלמתי' על מיומנות מעדכן אוטומטית את דרכון הקריירה ומעלה את ציון ההתאמה שלך.",
+        ]}
+      />
+
       {/* Header */}
       <div className="bg-gradient-to-l from-teal/10 to-teal-pale rounded-2xl p-6 border border-teal/20">
         <div className="flex items-start justify-between flex-wrap gap-3">

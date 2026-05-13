@@ -9,6 +9,7 @@ import { generateInsights } from "@/lib/job-search-insights";
 import { computeScore } from "@/lib/job-search-score";
 import { buildActionPlan, DEFAULT_WEEKLY_GOAL } from "@/lib/daily-action-plan";
 import { TrackerClient } from "./tracker-client";
+import { ScreenExplainer } from "@/components/screen-explainer";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "מעקב חיפוש עבודה | קריירה בפוקוס" };
@@ -112,6 +113,14 @@ export default async function ProgressPage() {
 
   return (
     <div className="p-4 sm:p-6">
+      <ScreenExplainer
+        title="מעקב חיפוש עבודה"
+        description={[
+          "מרכז שליטה מלא של חיפוש העבודה: ציון התקדמות, תוכנית פעולה יומית, מועמדויות פעילות, ראיונות קרובים ותזכורות לפולואפים.",
+          "כל מועמדות חדשה שמגיעה מלוח המשרות נכנסת כאן אוטומטית. ניתן להוסיף ידנית מועמדויות שהגשת מחוץ למערכת דרך 'הוסיפי משרה'.",
+          "המאמנת AI משתמשת בנתונים מהמסך הזה כדי לתת לך המלצות מבוססות נתונים.",
+        ]}
+      />
       <TrackerClient
         applications={serialised}
         upcomingReminders={upcomingReminders.map((r) => ({

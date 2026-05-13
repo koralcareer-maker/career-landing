@@ -6,6 +6,7 @@ import { Pencil } from "lucide-react";
 import { JobSearchWizard } from "./wizard/job-search-wizard";
 import { PassportHero } from "./passport-hero";
 import type { WizardState } from "./wizard/types";
+import { ScreenExplainer } from "@/components/screen-explainer";
 
 // Force fresh render per request — this page reads session cookies and the
 // per-user Profile/Passport rows; any caching would risk showing a wizard
@@ -108,6 +109,14 @@ export default async function ProfilePage({
 
   return (
     <div className="space-y-6">
+      <ScreenExplainer
+        title="פרופיל ודרכון קריירה"
+        description={[
+          "כאן יושב דרכון הקריירה האישי שלך — סיכום AI של הפרופיל, ציון התאמה לשוק העבודה, חוזקות, פערים מקצועיים, תפקידים מומלצים וצעדי המשך.",
+          "ערכי את הפרופיל בכל עת דרך הכפתור 'ערכי את הפרופיל' — כל עדכון יביא לדרכון מעודכן עם המלצות חדשות.",
+        ]}
+      />
+
       {passport && (
         <PassportHero
           passport={{

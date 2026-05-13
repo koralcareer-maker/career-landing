@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { DashboardTourWithQueryTrigger } from "@/components/onboarding/dashboard-tour";
 import { createGenderT } from "@/lib/gender";
+import { ScreenExplainer } from "@/components/screen-explainer";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -136,6 +137,14 @@ export default async function DashboardPage() {
       <Suspense fallback={null}>
         <DashboardTourWithQueryTrigger />
       </Suspense>
+
+      <ScreenExplainer
+        title="לוח הבקרה"
+        description={[
+          "המסך הראשי שמרכז את כל הפעילות שלך — ציון התאמה למשרות, תוכנית הפעולה היומית, מועמדויות פעילות, אירועים קרובים ועדכונים מהקהילה.",
+          "מכאן אפשר לקפוץ לכל חלק במערכת — לוח המשרות, דרכון הקריירה, מאמנת ה-AI, ומעקב המועמדויות.",
+        ]}
+      />
 
       {/* ─── Decorative ambient gradient blobs in the background ─── */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
