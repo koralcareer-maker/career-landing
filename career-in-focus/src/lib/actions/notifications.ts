@@ -50,3 +50,27 @@ export async function markRead(notificationId: string) {
     return { error: "שגיאה בעדכון ההתראה" };
   }
 }
+
+// ─── setNotificationsEnabled ──────────────────────────────────────────
+//
+// Master notifications switch. When false:
+//   - Daily job-alerts cron skips this user entirely (no email)
+//   - notifyAllActiveMembers() excludes them from broadcasts
+//     (new update / event / course / tool)
+// Saved on User.notificationsEnabled, which defaults to true.
+
+export async function setNotificationsEnabled(enabled: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "נדרשת כניסה למערכת" };
+  try {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { notificationsEnabled: enabled },
+    });
+    revalidatePath("/notifications");
+    return { success: true };
+  } catch (e) {
+    console.warn("[setNotificationsEnabled]", e);
+    return { error: "שגיאה בשמירת ההעדפות" };
+  }
+}

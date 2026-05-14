@@ -38,7 +38,11 @@ async function notifyAllActiveMembers(notification: {
 }): Promise<void> {
   try {
     const members = await prisma.user.findMany({
-      where: { accessStatus: "ACTIVE" },
+      where: {
+        accessStatus: "ACTIVE",
+        // Skip users who turned notifications off in their settings.
+        notificationsEnabled: true,
+      },
       select: { id: true },
     });
     if (members.length === 0) return;

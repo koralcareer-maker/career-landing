@@ -3,10 +3,10 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
-  Bell, CalendarDays, Briefcase, MessageSquare, Camera, Info, CheckCheck, ChevronLeft,
+  Bell, BellOff, CalendarDays, Briefcase, MessageSquare, Camera, Info, CheckCheck, ChevronLeft, Loader2,
 } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
-import { markRead } from "@/lib/actions/notifications";
+import { markRead, setNotificationsEnabled } from "@/lib/actions/notifications";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -135,14 +135,37 @@ function SectionHeader({ label, count }: { label: string; count: number }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function NotificationsClient({ notifications }: { notifications: NotificationItem[] }) {
+export function NotificationsClient({
+  notifications,
+  notificationsEnabled,
+}: {
+  notifications: NotificationItem[];
+  notificationsEnabled: boolean;
+}) {
   const unread = notifications.filter((n) => !n.isRead);
   const read = notifications.filter((n) => n.isRead);
+
+  // Local optimistic state so the toggle reflects the user's click
+  // immediately, even before the server round-trip finishes.
+  const [enabled, setEnabled] = useState(notificationsEnabled);
+  const [savingPrefs, startSavingPrefs] = useTransition();
+
+  function togglePrefs() {
+    const next = !enabled;
+    setEnabled(next);
+    startSavingPrefs(async () => {
+      const r = await setNotificationsEnabled(next);
+      if ("error" in r && r.error) {
+        // Roll back on failure.
+        setEnabled(!next);
+      }
+    });
+  }
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-black text-navy mb-1">התראות</h1>
           <p className="text-sm text-gray-500">
@@ -157,6 +180,58 @@ export function NotificationsClient({ notifications }: { notifications: Notifica
             <span>סומן כנקרא בכניסה לדף</span>
           </div>
         )}
+      </div>
+
+      {/* Notifications master switch — sits at the top so it's easy to
+          find. Toggles BOTH the in-app broadcasts and the daily
+          job-alert emails. */}
+      <div className={`rounded-2xl border p-4 ${enabled ? "bg-white border-slate-200" : "bg-slate-50 border-slate-300"}`}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <span
+              aria-hidden="true"
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                enabled ? "bg-teal-pale text-teal" : "bg-slate-200 text-slate-500"
+              }`}
+            >
+              {enabled ? <Bell size={18} /> : <BellOff size={18} />}
+            </span>
+            <div className="min-w-0">
+              <p className="font-bold text-navy text-sm">
+                {enabled ? "ההתראות פעילות" : "ההתראות מושבתות"}
+              </p>
+              <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                {enabled
+                  ? "תקבל/י עדכונים על תוכן חדש, אירועים, ומשרות מתאימות (מעל 75% התאמה)."
+                  : "לא תקבל/י עדכונים במערכת ולא מיילים. ניתן להפעיל בכל עת."}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={togglePrefs}
+            disabled={savingPrefs}
+            aria-pressed={enabled}
+            aria-label={enabled ? "כיבוי התראות" : "הפעלת התראות"}
+            className={`relative w-12 h-7 rounded-full transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-teal disabled:opacity-50 ${
+              enabled ? "bg-teal" : "bg-slate-300"
+            }`}
+          >
+            <span
+              aria-hidden="true"
+              className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${
+                enabled ? "translate-x-[-22px]" : "translate-x-[-2px]"
+              }`}
+            />
+            {savingPrefs && (
+              <Loader2
+                size={11}
+                aria-hidden="true"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin text-white"
+              />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Empty state */}

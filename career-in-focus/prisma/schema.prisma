@@ -187,6 +187,14 @@ model User {
   // Default true for active members; can be flipped from settings if we add
   // an unsubscribe page later.
   emailJobAlerts Boolean @default(true)
+
+  // Master toggle the user can flip from /notifications. When false:
+  //   1. The daily job-alerts cron skips them entirely (no email).
+  //   2. notifyAllActiveMembers() in lib/actions/admin.ts excludes them
+  //      from the in-app broadcasts (new update/event/course/tool).
+  // Per-channel granularity (separate email vs in-app) can come later;
+  // first version is a single big "off" switch.
+  notificationsEnabled Boolean @default(true)
 }
 
 // One row per (user, device fingerprint). The fingerprint is the SHA-256

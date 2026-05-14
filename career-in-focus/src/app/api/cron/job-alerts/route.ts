@@ -78,6 +78,9 @@ export async function GET(req: NextRequest) {
     where: {
       accessStatus: "ACTIVE",
       emailJobAlerts: true,
+      // Master switch — the user opted out of all notifications from
+      // their /notifications page. Respect it for emails AND in-app.
+      notificationsEnabled: true,
       OR: [{ profile: { isNot: null } }, { careerPassport: { isNot: null } }],
     },
     select: {
