@@ -62,9 +62,15 @@ export default async function UpdatesPage() {
     ctaUrl:    u.ctaUrl,
   }));
 
+  const isAdmin = session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
+
   return (
     <div className="p-4 sm:p-6">
-      <UpdatesClient articles={serialised} announcements={announcements} />
+      <UpdatesClient
+        articles={serialised}
+        announcements={announcements}
+        isAdmin={isAdmin}
+      />
     </div>
   );
 }
