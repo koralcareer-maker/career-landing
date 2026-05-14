@@ -27,10 +27,6 @@
     {
       "path": "/api/cron/validate-job-links",
       "schedule": "0 21 * * *"
-    },
-    {
-      "path": "/api/cron/fetch-jobs",
-      "schedule": "0 4 */2 * *"
     }
   ]
 }

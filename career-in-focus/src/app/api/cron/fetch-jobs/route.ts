@@ -1,13 +1,18 @@
 /**
- * Every-2-days cron — refreshes the job board with real listings
- * pulled live via Gemini's Google-Search grounding.
+ * Manual / external trigger — refreshes the job board with listings
+ * from public ATS feeds (Greenhouse / Lever / Comeet) followed by a
+ * supplementary Gemini grounded-search pass.
  *
- * The actual scraping logic lives in lib/job-fetcher.ts (so the
- * /admin "run fetch now" button can call exactly the same code path
- * Coral asked for: "להזין את המערכת פעם ביומיים").
- *
- * Scheduled in vercel.json at 06:00 Israel every 2 days.
- * Protected by the same CRON_SECRET as the other cron routes.
+ * Originally this was wired to a Vercel cron, but the project's plan
+ * caps us at 7 cron entries and we already use all 7. Instead:
+ *   - The nightly `/api/cron/validate-job-links` cron also calls
+ *     `syncCompanyCareers()` so the board still refreshes daily for
+ *     free.
+ *   - This endpoint stays available for the admin "run fetch now"
+ *     button (proxied via /api/admin/fetch-jobs) and for any external
+ *     scheduler (cron-job.org, GitHub Actions, etc.) Coral might wire
+ *     up later. Still protected by CRON_SECRET so it can't be hammered
+ *     by anonymous traffic.
  */
 
 import { NextRequest, NextResponse } from "next/server";

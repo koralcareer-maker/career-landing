@@ -1,12 +1,16 @@
 /**
  * Daily cron — verifies every published job's externalUrl is still
- * reachable. Dead links get auto-unpublished so members never click
- * through to a 404 / "מודעה הוסרה" page.
+ * reachable, then pulls in fresh jobs from Israeli companies' public
+ * ATS feeds (Greenhouse / Lever / Comeet) so the board stays alive
+ * without manual maintenance.
  *
  * Coral asked for this explicitly: "אחת ליום בערב לוודא שכל הקישורים
- * פעילים מה שלא להוריד".
+ * פעילים מה שלא להוריד" + "להזין את המערכת פעם ביומיים". Both jobs
+ * live in this single cron route because Vercel's Pro plan caps the
+ * project at 7 cron entries — splitting them into separate crons
+ * blocks every deploy with a silent "Deploying outputs ● Error".
  *
- * Strategy:
+ * Strategy (validation):
  *   - HEAD request first (cheaper). Some boards block HEAD → fall back
  *     to a tiny GET with Range: bytes=0-0 so we don't download a full
  *     HTML page just to learn it exists.
@@ -18,11 +22,18 @@
  *     transient errors shouldn't take down jobs. The next nightly run
  *     will catch persistent ones.
  *
- * Scheduled at 23:00 Israel (vercel.json). Protected by CRON_SECRET.
+ * Strategy (fetch):
+ *   - Always run `syncCompanyCareers()` — it's free (public ATS APIs)
+ *     and idempotent by externalUrl, so daily is safe.
+ *   - The expensive Gemini fetcher is NOT run from cron — it stays on
+ *     the admin manual trigger (`/api/admin/fetch-jobs`).
+ *
+ * Scheduled at 21:00 UTC (vercel.json). Protected by CRON_SECRET.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { syncCompanyCareers } from "@/lib/company-careers";
 
 const CRON_SECRET_FALLBACK = "career-in-focus-cron-2026"; // mirrors other cron routes
 
@@ -78,7 +89,29 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  return NextResponse.json({ ok: true, ...results, unpublishedIds: deadIds });
+  // After validation, pull fresh jobs from public ATS feeds. Idempotent
+  // (skips dupes by externalUrl) so daily runs only add genuinely new
+  // listings. Errors here shouldn't fail the validation summary, so we
+  // catch and report alongside.
+  let careersSummary: { inserted: number; perCompany: Array<{ company: string; inserted: number }> } | null = null;
+  let careersError: string | null = null;
+  try {
+    const careerResults = await syncCompanyCareers();
+    careersSummary = {
+      inserted: careerResults.reduce((s, c) => s + c.inserted, 0),
+      perCompany: careerResults.map((c) => ({ company: c.company, inserted: c.inserted })),
+    };
+  } catch (e) {
+    careersError = e instanceof Error ? e.message : "unknown";
+  }
+
+  return NextResponse.json({
+    ok: true,
+    ...results,
+    unpublishedIds: deadIds,
+    careersSync: careersSummary,
+    careersError,
+  });
 }
 
 /**
