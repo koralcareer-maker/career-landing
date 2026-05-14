@@ -371,7 +371,10 @@ export async function sendLeadNotification({
   message: string | null;
   source: string;
 }) {
-  const to = process.env.ADMIN_NOTIFY_EMAIL ?? "koralcareer@gmail.com";
+  const to =
+    process.env.ADMIN_NOTIFY_EMAIL ??
+    process.env.ADMIN_EMAIL ??
+    "koralcareer@gmail.com";
   const html = `<!DOCTYPE html>
 <html dir="rtl" lang="he">
 <body style="font-family:-apple-system,sans-serif;direction:rtl;background:#f6f7fb;padding:20px;">
@@ -424,7 +427,10 @@ export async function sendPurchaseNotification({
    *  ("New customer" vs "Recurring renewal"). */
   isFirstPurchase: boolean;
 }) {
-  const to = process.env.ADMIN_NOTIFY_EMAIL ?? "koralcareer@gmail.com";
+  const to =
+    process.env.ADMIN_NOTIFY_EMAIL ??
+    process.env.ADMIN_EMAIL ??
+    "koralcareer@gmail.com";
   const planInfo = PURCHASE_PLAN_LABELS[plan] ?? { label: plan, defaultPrice: "" };
   const amountLabel = typeof amountIls === "number" && amountIls > 0
     ? `${amountIls.toLocaleString("he-IL")} ש"ח`

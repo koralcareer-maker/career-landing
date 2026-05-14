@@ -2,6 +2,15 @@ import { Resend } from "resend";
 
 export const FROM = process.env.EMAIL_FROM ?? "קריירה בפוקוס <noreply@careerinfocus.co.il>";
 
+// Single source of truth for the admin notification inbox. Coral asked
+// for everything to flow to koralcareer@gmail.com by default; an env
+// var can override (ADMIN_NOTIFY_EMAIL takes priority, then the legacy
+// ADMIN_EMAIL, then the gmail fallback).
+export const ADMIN_INBOX =
+  process.env.ADMIN_NOTIFY_EMAIL ??
+  process.env.ADMIN_EMAIL ??
+  "koralcareer@gmail.com";
+
 function getResend(): Resend {
   const key = process.env.RESEND_API_KEY;
   if (!key) throw new Error("RESEND_API_KEY is not set — email sending is disabled");
@@ -145,7 +154,7 @@ export async function sendNetworkRequestToAdmin(opts: {
 
   return safeSend({
     from: FROM,
-    to: process.env.ADMIN_EMAIL ?? "koral@careerinfocus.co.il",
+    to: ADMIN_INBOX,
     subject: `בקשת רשת חדשה מ-${opts.userName}`,
     html,
   });
@@ -179,7 +188,7 @@ export async function safeSendPremiumLeadNotification(opts: {
 
   return safeSend({
     from: FROM,
-    to: process.env.ADMIN_EMAIL ?? "koral@careerinfocus.co.il",
+    to: ADMIN_INBOX,
     subject: `ליד פרימיום חדש: ${opts.fullName} — ${opts.targetRole}`,
     html,
   });

@@ -5,7 +5,13 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { sendCvWritingRequestEmail, notifyAdminOfCvRequest } from "@/lib/email";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "koralcareer@gmail.com";
+// Same fallback chain as lib/email.ts: ADMIN_NOTIFY_EMAIL first
+// (Coral's chosen admin inbox), then the legacy ADMIN_EMAIL var, then
+// her personal Gmail. Keeps all admin destinations consistent.
+const ADMIN_EMAIL =
+  process.env.ADMIN_NOTIFY_EMAIL ??
+  process.env.ADMIN_EMAIL ??
+  "koralcareer@gmail.com";
 
 /**
  * Customer-facing: "קורל תכין לי קוח" CTA from the upgrade flow.
