@@ -85,10 +85,10 @@ export default function TermsPage() {
                 <strong>איך מבטלים?</strong> שלח/י הודעת ביטול לאחת מהדרכים הבאות:
               </p>
               <ul className="list-disc pr-5 space-y-1 mt-2">
-                <li>אימייל:&nbsp;
-                  <a href="mailto:cancel@careerinfocus.co.il" className="text-teal hover:underline font-semibold">
-                    cancel@careerinfocus.co.il
-                  </a>
+                <li>טופס פנייה ייעודי:&nbsp;
+                  <Link href="/contact?topic=cancel" className="text-teal hover:underline font-semibold">
+                    /contact?topic=cancel
+                  </Link>
                 </li>
                 <li>טופס ביטול בעמוד &quot;המנוי שלי&quot;</li>
                 <li>פנייה בכתב לקורל שלו, מייסדת קריירה בפוקוס</li>
@@ -165,24 +165,20 @@ export default function TermsPage() {
 
             <section>
               <h2 className="font-bold text-navy text-base mb-2">12. יצירת קשר</h2>
-              <p>לכל שאלה בנוגע לתנאי השימוש:</p>
-              <ul className="list-disc pr-5 space-y-1 mt-2">
-                <li>אימייל כללי:&nbsp;
-                  <a href="mailto:info@careerinfocus.co.il" className="text-teal hover:underline font-semibold">
-                    info@careerinfocus.co.il
-                  </a>
-                </li>
-                <li>ביטולים:&nbsp;
-                  <a href="mailto:cancel@careerinfocus.co.il" className="text-teal hover:underline font-semibold">
-                    cancel@careerinfocus.co.il
-                  </a>
-                </li>
-                <li>פרטיות:&nbsp;
-                  <a href="mailto:privacy@careerinfocus.co.il" className="text-teal hover:underline font-semibold">
-                    privacy@careerinfocus.co.il
-                  </a>
-                </li>
-              </ul>
+              <p>לכל שאלה ופנייה — דרך הטופס המרכזי, שמופיע ב-{" "}
+                <Link href="/contact" className="text-teal hover:underline font-semibold">
+                  /contact
+                </Link>. בטופס ניתן לבחור את הנושא הרלוונטי (פנייה כללית / ביטול /
+                פרטיות / נגישות / תקלה טכנית).
+              </p>
+              <p className="mt-2 text-sm">
+                קישורים מהירים: {" "}
+                <Link href="/contact?topic=cancel" className="text-teal hover:underline">ביטול מנוי</Link>
+                {" · "}
+                <Link href="/contact?topic=privacy" className="text-teal hover:underline">פרטיות ונתונים</Link>
+                {" · "}
+                <Link href="/contact?topic=accessibility" className="text-teal hover:underline">דיווח נגישות</Link>
+              </p>
             </section>
           </div>
 

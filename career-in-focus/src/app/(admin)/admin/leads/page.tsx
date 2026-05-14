@@ -84,7 +84,21 @@ interface LeadRow {
   handledAt: Date | null;
 }
 
+// Map machine-readable `source` codes to Hebrew labels + colours so
+// each card is scannable at a glance. The `support-*` family comes
+// from /contact form; "marketing-site" is the legacy public form.
+// Unknown codes fall through to a neutral slate pill.
+const SOURCE_LABELS: Record<string, { label: string; cls: string }> = {
+  "marketing-site":      { label: "פנייה מהאתר",       cls: "bg-slate-100 text-slate-700" },
+  "support-general":     { label: "פנייה כללית",        cls: "bg-blue-100 text-blue-800" },
+  "support-cancel":      { label: "ביטול מנוי",         cls: "bg-rose-100 text-rose-800" },
+  "support-privacy":     { label: "פרטיות ונתונים",     cls: "bg-purple-100 text-purple-800" },
+  "support-accessibility": { label: "דיווח נגישות",     cls: "bg-amber-100 text-amber-800" },
+  "support-support":     { label: "תקלה טכנית",         cls: "bg-orange-100 text-orange-800" },
+};
+
 function LeadCard({ lead, compact }: { lead: LeadRow; compact?: boolean }) {
+  const sourceMeta = lead.source ? SOURCE_LABELS[lead.source] : null;
   return (
     <div
       className={`bg-white rounded-2xl border shadow-sm transition-all ${
@@ -100,7 +114,15 @@ function LeadCard({ lead, compact }: { lead: LeadRow; compact?: boolean }) {
             <p className="text-xs text-slate-400 inline-flex items-center gap-1 mt-0.5">
               <Clock size={11} />
               {fmt(lead.createdAt)}
-              {lead.source && <span className="bg-slate-100 text-slate-600 rounded-full px-2 py-0.5 mr-1">{lead.source}</span>}
+              {lead.source && (
+                <span
+                  className={`rounded-full px-2 py-0.5 mr-1 font-semibold ${
+                    sourceMeta?.cls ?? "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {sourceMeta?.label ?? lead.source}
+                </span>
+              )}
             </p>
           </div>
           <form action={lead.handled ? unmarkLeadHandled : markLeadHandled}>

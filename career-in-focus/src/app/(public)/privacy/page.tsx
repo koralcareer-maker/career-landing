@@ -111,9 +111,9 @@ export default function PrivacyPage() {
               </ul>
               <p className="mt-2">
                 למרות זאת, אף מערכת אינה חסינה לחלוטין. אם תזהי/ה הפרת אבטחה — אנא דווח/י מיד ל-{" "}
-                <a href="mailto:privacy@careerinfocus.co.il" className="text-teal hover:underline font-semibold">
-                  privacy@careerinfocus.co.il
-                </a>
+                <Link href="/contact?topic=privacy" className="text-teal hover:underline font-semibold">
+                  טופס פנייה בנושאי פרטיות
+                </Link>
                 .
               </p>
             </section>
@@ -130,9 +130,9 @@ export default function PrivacyPage() {
               </ul>
               <p className="mt-2">
                 למימוש זכות כלשהי — שלח/י בקשה ל-{" "}
-                <a href="mailto:privacy@careerinfocus.co.il" className="text-teal hover:underline font-semibold">
-                  privacy@careerinfocus.co.il
-                </a>{" "}
+                <Link href="/contact?topic=privacy" className="text-teal hover:underline font-semibold">
+                  טופס פנייה בנושאי פרטיות
+                </Link>{" "}
                 ונחזור אליך תוך 30 יום (לפי דרישת החוק).
               </p>
             </section>
@@ -168,9 +168,9 @@ export default function PrivacyPage() {
               <p>לכל פנייה בנושאי פרטיות:</p>
               <ul className="list-disc pr-5 space-y-1 mt-2">
                 <li>אימייל:&nbsp;
-                  <a href="mailto:privacy@careerinfocus.co.il" className="text-teal hover:underline font-semibold">
-                    privacy@careerinfocus.co.il
-                  </a>
+                  <Link href="/contact?topic=privacy" className="text-teal hover:underline font-semibold">
+                    טופס פנייה בנושאי פרטיות
+                  </Link>
                 </li>
                 <li>אחראית הפרטיות בארגון: <strong>קורל שלו</strong></li>
               </ul>

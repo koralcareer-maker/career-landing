@@ -101,13 +101,13 @@ export default function AccessibilityPage() {
               </p>
               <ul className="list-disc pr-5 space-y-1 mt-2">
                 <li>
-                  אימייל:&nbsp;
-                  <a
-                    href="mailto:koralcareer@gmail.com?subject=דיווח%20על%20בעיית%20נגישות"
+                  טופס פנייה ייעודי:&nbsp;
+                  <Link
+                    href="/contact?topic=accessibility"
                     className="text-teal hover:underline font-semibold"
                   >
-                    koralcareer@gmail.com
-                  </a>
+                    דיווח נגישות
+                  </Link>
                 </li>
                 <li>נסו לתאר את הדף, את הפעולה שניסיתם לבצע, ואת הקושי שנתקלתם בו</li>
                 <li>נחזור אליכם תוך 5 ימי עסקים</li>
@@ -120,13 +120,13 @@ export default function AccessibilityPage() {
                 <strong>קורל שלו</strong>, מייסדת קריירה בפוקוס, משמשת כרכזת הנגישות של השירות.
               </p>
               <p className="mt-1">
-                כתובת ליצירת קשר:&nbsp;
-                <a
-                  href="mailto:koralcareer@gmail.com"
+                ליצירת קשר עם רכזת הנגישות:&nbsp;
+                <Link
+                  href="/contact?topic=accessibility"
                   className="text-teal hover:underline font-semibold"
                 >
-                  koralcareer@gmail.com
-                </a>
+                  טופס פנייה לרכזת הנגישות
+                </Link>
               </p>
             </section>
 
