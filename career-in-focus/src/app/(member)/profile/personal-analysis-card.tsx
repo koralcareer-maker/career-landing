@@ -67,7 +67,12 @@ export function PersonalAnalysisCard({
         | { ok: true; analysis: PersonalAnalysisResult; generatedAt: string }
         | { error: string; message?: string };
       if (!res.ok || !("ok" in data)) {
-        const msg = "message" in data && data.message ? data.message : "התרחשה שגיאה ביצירת הניתוח";
+        const raw = "message" in data && data.message ? data.message : "";
+        // Friendly Hebrew error for the common-case 429 (quota exhausted).
+        const msg =
+          raw.includes("429") || /quota|rate.?limit/i.test(raw)
+            ? "המכסה היומית של מנוע ה-AI הסתיימה. נסי שוב מחר, או הוסיפי מפתח Anthropic ב-Vercel."
+            : raw || "התרחשה שגיאה ביצירת הניתוח";
         setError(msg);
         return;
       }

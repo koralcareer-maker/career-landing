@@ -28,7 +28,13 @@
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_MODEL = "claude-sonnet-4-5";
-const GEMINI_MODEL = "gemini-2.5-pro";
+// gemini-2.5-pro has a 50 RPD free-tier ceiling that the platform hits
+// almost immediately when users start trying the feature. flash gets
+// 1500 RPD on the same free tier and still produces clean structured
+// Hebrew for our schema. Coral can switch back to Pro when she's on
+// a paid plan, or to Claude by adding ANTHROPIC_API_KEY.
+const GEMINI_MODEL_PRIMARY = "gemini-2.5-flash";
+const GEMINI_MODEL_FALLBACK = "gemini-2.5-pro";
 
 const REQUEST_TIMEOUT_MS = 90_000;
 
@@ -413,7 +419,30 @@ async function callGemini(
   user: string,
   key: string,
 ): Promise<PersonalAnalysisResult> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+  // Try flash first (1500 RPD free tier). If flash is throttled too —
+  // unlikely but possible — fall back to pro on its 50 RPD ceiling.
+  try {
+    return await callGeminiModel(GEMINI_MODEL_PRIMARY, system, user, key);
+  } catch (e) {
+    if (
+      e instanceof PersonalAnalysisError &&
+      e.code === "api-error" &&
+      e.message.includes("429")
+    ) {
+      console.warn("[personal-analysis] Gemini flash quota hit, trying pro:", e.message);
+      return await callGeminiModel(GEMINI_MODEL_FALLBACK, system, user, key);
+    }
+    throw e;
+  }
+}
+
+async function callGeminiModel(
+  model: string,
+  system: string,
+  user: string,
+  key: string,
+): Promise<PersonalAnalysisResult> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
@@ -437,7 +466,7 @@ async function callGemini(
       const body = await res.text().catch(() => "");
       throw new PersonalAnalysisError(
         "api-error",
-        `Gemini ${res.status}: ${body.slice(0, 300)}`,
+        `Gemini ${model} ${res.status}: ${body.slice(0, 300)}`,
       );
     }
     const data = (await res.json()) as {
@@ -449,7 +478,7 @@ async function callGemini(
     const text =
       data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
     if (!text) {
-      throw new PersonalAnalysisError("parse-error", "empty response from Gemini");
+      throw new PersonalAnalysisError("parse-error", `empty response from Gemini ${model}`);
     }
     return parseAnalysis(text);
   } finally {
