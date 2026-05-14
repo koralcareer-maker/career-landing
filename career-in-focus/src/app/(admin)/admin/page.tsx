@@ -70,13 +70,22 @@ export default async function AdminDashboard() {
     recentPurchases,
     recentCancellations,
     recentLeads,
+    compedUsers,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { accessStatus: "ACTIVE" } }),
     prisma.user.count({ where: { accessStatus: "PENDING" } }),
+    // Paying-members breakdown — only count rows where CardCom
+    // actually charged the user at least once (chargeCount > 0).
+    // Coral comped a batch of accounts manually (accessStatus=ACTIVE
+    // without going through CardCom), and those should NOT be counted
+    // in MRR — they're free gifts, not revenue.
     prisma.user.groupBy({
       by: ["membershipType"],
-      where: { accessStatus: "ACTIVE" },
+      where: {
+        accessStatus: "ACTIVE",
+        chargeCount: { gt: 0 },
+      },
       _count: { _all: true },
     }),
     prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
@@ -141,17 +150,29 @@ export default async function AdminDashboard() {
       take: 8,
       select: { id: true, name: true, email: true, phone: true, createdAt: true, source: true, handled: true },
     }),
+    // Free / comped accounts — active members who never paid via
+    // CardCom. Counted so the dashboard can distinguish "total active
+    // members" from "paying customers" (Coral comped a launch batch).
+    prisma.user.count({
+      where: {
+        accessStatus: "ACTIVE",
+        chargeCount: 0,
+      },
+    }),
   ]);
 
   // ── Derived metrics ───────────────────────────────────────────
-  // Convert the groupBy result into a plan→count map.
+  // Convert the groupBy result (PAYING members only) into a plan→count
+  // map. Comped/gifted accounts are excluded — they're tracked in
+  // `compedUsers` separately so revenue numbers stay honest.
   const planCount: Record<string, number> = {};
   for (const row of membersByPlan) {
     planCount[row.membershipType] = row._count._all;
   }
-  // Estimated MRR — sum of (count × price) for the three paid plans.
-  // Doesn't account for legacy/promo pricing; close enough for an
-  // operator-facing number until we wire actual CardCom revenue.
+  const payingMembers = Object.values(planCount).reduce((a, b) => a + b, 0);
+
+  // Estimated MRR — sum of (count × price) for the three paid plans,
+  // counting only members who actually paid through CardCom (chargeCount > 0).
   const mrr =
     (planCount.MEMBER ?? 0) * PLAN_PRICE_ILS.MEMBER +
     (planCount.VIP ?? 0) * PLAN_PRICE_ILS.VIP +
@@ -266,7 +287,9 @@ export default async function AdminDashboard() {
           <KpiCard
             label="חברים פעילים"
             value={activeUsers.toLocaleString("he-IL")}
-            sub={`מתוך ${totalUsers.toLocaleString("he-IL")} רשומים`}
+            sub={compedUsers > 0
+              ? `${payingMembers} משלמים · ${compedUsers} מתנה`
+              : `מתוך ${totalUsers.toLocaleString("he-IL")} רשומים`}
             icon={<Users size={18} />}
             color="emerald"
             href="/admin/users?status=ACTIVE"
@@ -274,7 +297,9 @@ export default async function AdminDashboard() {
           <KpiCard
             label="הכנסה חודשית (MRR)"
             value={`₪${mrr.toLocaleString("he-IL")}`}
-            sub="הערכה לפי מחירון תוכניות"
+            sub={payingMembers === 0
+              ? "אין חברים משלמים עדיין"
+              : `מ-${payingMembers} ${payingMembers === 1 ? "חברה משלמת" : "חברים משלמים"}`}
             icon={<Wallet size={18} />}
             color="teal"
           />
@@ -331,10 +356,11 @@ export default async function AdminDashboard() {
       <section className="bg-white rounded-2xl border border-slate-200 p-5">
         <header className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-base font-black text-navy">פילוח חברים והכנסה</h2>
+            <h2 className="text-base font-black text-navy">פילוח חברים משלמים והכנסה</h2>
             <p className="text-xs text-slate-500">
-              חברים פעילים לפי תוכנית. הסכום הוא הכנסה חודשית משוערת ({/*MRR estimate*/}
-              ₪{mrr.toLocaleString("he-IL")} בסה״כ).
+              {payingMembers === 0
+                ? `אין עדיין חברים משלמים. ${compedUsers > 0 ? `(${compedUsers} חברים פעילים שקיבלו מתנה).` : ""}`
+                : `${payingMembers} חברים משלמים בלבד, לא כולל ${compedUsers} חשבונות מתנה. סה״כ הכנסה חודשית משוערת ₪${mrr.toLocaleString("he-IL")}.`}
             </p>
           </div>
         </header>
@@ -358,6 +384,11 @@ export default async function AdminDashboard() {
             color="amber"
           />
         </div>
+        {compedUsers > 0 && (
+          <p className="mt-3 text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+            ℹ {compedUsers} חברים נוספים זוכים למנוי במתנה (לא משויכים להכנסה).
+          </p>
+        )}
       </section>
 
       {/* ── Activity feed + Adoption side-by-side on wide screens ─ */}
