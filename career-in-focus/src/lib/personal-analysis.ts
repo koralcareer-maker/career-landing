@@ -27,7 +27,8 @@
  */
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-const MODEL = "claude-sonnet-4-5";
+const ANTHROPIC_MODEL = "claude-sonnet-4-5";
+const GEMINI_MODEL = "gemini-2.5-pro";
 
 const REQUEST_TIMEOUT_MS = 90_000;
 
@@ -315,26 +316,61 @@ export class PersonalAnalysisError extends Error {
 }
 
 /**
- * Generate a fresh analysis. Throws PersonalAnalysisError with a code
- * the route handler can use to choose the right HTTP status.
+ * Generate a fresh analysis. Tries Anthropic first when the key is
+ * configured (better long-form Hebrew), falls back to Gemini 2.5 Pro
+ * which we already use elsewhere in production. Throws
+ * PersonalAnalysisError with a code the route handler can use to
+ * choose the right HTTP status.
  */
 export async function generatePersonalAnalysis(
   input: GenerateInput,
 ): Promise<PersonalAnalysisResult> {
-  const key = process.env.ANTHROPIC_API_KEY?.trim();
-  if (!key) {
-    throw new PersonalAnalysisError("no-key", "ANTHROPIC_API_KEY missing");
-  }
   if (!input.birthDate || Number.isNaN(input.birthDate.getTime())) {
     throw new PersonalAnalysisError("bad-input", "birthDate required");
+  }
+
+  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+
+  if (!anthropicKey && !geminiKey) {
+    throw new PersonalAnalysisError(
+      "no-key",
+      "No LLM key configured — set ANTHROPIC_API_KEY or GEMINI_API_KEY in Vercel",
+    );
   }
 
   const system = buildSystemPrompt();
   const user = buildUserPrompt(input);
 
+  // Prefer Anthropic when both are present (higher-quality structured
+  // Hebrew output), but tolerate a transient Anthropic failure by
+  // falling through to Gemini.
+  if (anthropicKey) {
+    try {
+      return await callAnthropic(system, user, anthropicKey);
+    } catch (e) {
+      if (!geminiKey) throw e;
+      // Fall through to Gemini — log to stderr so production debugging is possible.
+      console.warn(
+        "[personal-analysis] Anthropic failed, falling back to Gemini:",
+        e instanceof Error ? e.message : e,
+      );
+    }
+  }
+
+  if (!geminiKey) {
+    throw new PersonalAnalysisError("no-key", "GEMINI_API_KEY missing");
+  }
+  return await callGemini(system, user, geminiKey);
+}
+
+async function callAnthropic(
+  system: string,
+  user: string,
+  key: string,
+): Promise<PersonalAnalysisResult> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
   try {
     const res = await fetch(ANTHROPIC_URL, {
       method: "POST",
@@ -345,7 +381,7 @@ export async function generatePersonalAnalysis(
       },
       signal: controller.signal,
       body: JSON.stringify({
-        model: MODEL,
+        model: ANTHROPIC_MODEL,
         max_tokens: 4096,
         system,
         messages: [{ role: "user", content: user }],
@@ -365,6 +401,55 @@ export async function generatePersonalAnalysis(
       data.content?.map((c) => (c.type === "text" ? c.text ?? "" : "")).join("") ?? "";
     if (!text) {
       throw new PersonalAnalysisError("parse-error", "empty response from Anthropic");
+    }
+    return parseAnalysis(text);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function callGemini(
+  system: string,
+  user: string,
+  key: string,
+): Promise<PersonalAnalysisResult> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        // Gemini's `systemInstruction` carries the persona + schema; the
+        // user contents carry the per-user data.
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ role: "user", parts: [{ text: user }] }],
+        generationConfig: {
+          temperature: 0.7,         // Some variation in style; the JSON shape is hard-pinned by the prompt.
+          maxOutputTokens: 8192,    // Long structured Hebrew can exceed 4k.
+          responseMimeType: "application/json",
+        },
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new PersonalAnalysisError(
+        "api-error",
+        `Gemini ${res.status}: ${body.slice(0, 300)}`,
+      );
+    }
+    const data = (await res.json()) as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    };
+    // Multi-part responses come back as several `parts`. Concatenate them
+    // all — we hit empty `text` on part[0] otherwise when the model
+    // streams.
+    const text =
+      data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+    if (!text) {
+      throw new PersonalAnalysisError("parse-error", "empty response from Gemini");
     }
     return parseAnalysis(text);
   } finally {
