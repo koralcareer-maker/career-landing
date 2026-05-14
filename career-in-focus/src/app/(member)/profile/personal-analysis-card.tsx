@@ -68,11 +68,24 @@ export function PersonalAnalysisCard({
         | { error: string; message?: string };
       if (!res.ok || !("ok" in data)) {
         const raw = "message" in data && data.message ? data.message : "";
-        // Friendly Hebrew error for the common-case 429 (quota exhausted).
-        const msg =
-          raw.includes("429") || /quota|rate.?limit/i.test(raw)
-            ? "המכסה היומית של מנוע ה-AI הסתיימה. נסי שוב מחר, או הוסיפי מפתח Anthropic ב-Vercel."
-            : raw || "התרחשה שגיאה ביצירת הניתוח";
+        // Friendly Hebrew error mapping. Each case looks for a phrase
+        // we emit in personal-analysis.ts and converts to actionable
+        // user copy. Falls back to showing the raw error so an admin
+        // looking at the screen can diagnose without log access.
+        let msg: string;
+        if (/כל מנועי ה-AI/.test(raw)) {
+          msg = "מנועי ה-AI הגיעו למכסה היומית. נסי שוב בעוד מספר שעות, או צרי קשר אם החסימה ממשיכה.";
+        } else if (raw.includes("429") || /quota|rate.?limit/i.test(raw)) {
+          msg = "המכסה היומית של מנוע ה-AI הסתיימה. נסי שוב בעוד מספר שעות.";
+        } else if (/blockReason|SAFETY/i.test(raw)) {
+          msg = "המנוע סיווג את הבקשה כחסומה לבטיחות. נסי לעדכן את הפרופיל ולנסות שוב.";
+        } else if (/MAX_TOKENS|empty/i.test(raw)) {
+          msg = "התשובה הקדומה הייתה ארוכה מדי או חתוכה. נסי שוב — לרוב מסתדר בניסיון שני.";
+        } else if (raw) {
+          msg = raw;
+        } else {
+          msg = "התרחשה שגיאה ביצירת הניתוח. נסי שוב בעוד דקה.";
+        }
         setError(msg);
         return;
       }

@@ -28,13 +28,19 @@
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_MODEL = "claude-sonnet-4-5";
-// gemini-2.5-pro has a 50 RPD free-tier ceiling that the platform hits
-// almost immediately when users start trying the feature. flash gets
-// 1500 RPD on the same free tier and still produces clean structured
-// Hebrew for our schema. Coral can switch back to Pro when she's on
-// a paid plan, or to Claude by adding ANTHROPIC_API_KEY.
-const GEMINI_MODEL_PRIMARY = "gemini-2.5-flash";
-const GEMINI_MODEL_FALLBACK = "gemini-2.5-pro";
+
+// Gemini model cascade — Coral kept hitting quota on the first model
+// (free-tier ceilings: 5 RPD on Pro, ~30 RPD on Flash). We rotate
+// through every Gemini family we have access to, so each user's
+// generation has multiple chances of landing on a model with
+// remaining quota. Order: cheap & fast → premium.
+const GEMINI_MODELS = [
+  "gemini-2.5-flash",        // primary — best balance, decent quota
+  "gemini-2.0-flash",        // separate quota pool, fast
+  "gemini-2.5-flash-lite",   // even cheaper, last fast-tier fallback
+  "gemini-1.5-flash",        // legacy fallback
+  "gemini-2.5-pro",          // premium quality but low quota — last resort
+];
 
 const REQUEST_TIMEOUT_MS = 90_000;
 
@@ -480,21 +486,38 @@ async function callGemini(
   user: string,
   key: string,
 ): Promise<PersonalAnalysisResult> {
-  // Try flash first (1500 RPD free tier). If flash is throttled too —
-  // unlikely but possible — fall back to pro on its 50 RPD ceiling.
-  try {
-    return await callGeminiModel(GEMINI_MODEL_PRIMARY, system, user, key);
-  } catch (e) {
-    if (
-      e instanceof PersonalAnalysisError &&
-      e.code === "api-error" &&
-      e.message.includes("429")
-    ) {
-      console.warn("[personal-analysis] Gemini flash quota hit, trying pro:", e.message);
-      return await callGeminiModel(GEMINI_MODEL_FALLBACK, system, user, key);
+  // Walk the entire model list. For each model, treat 429 (quota) AND
+  // 503 (overload) AND empty-response as "rotate to the next model";
+  // any other failure short-circuits because the same prompt won't
+  // suddenly succeed on a different model. The tried-list is preserved
+  // in the final error message so an admin can see exactly what
+  // happened in production.
+  const tried: string[] = [];
+  let lastError: PersonalAnalysisError | null = null;
+
+  for (const model of GEMINI_MODELS) {
+    tried.push(model);
+    try {
+      return await callGeminiModel(model, system, user, key);
+    } catch (e) {
+      if (!(e instanceof PersonalAnalysisError)) throw e;
+      const isRetryable =
+        (e.code === "api-error" && /429|503|overload|UNAVAILABLE|quota/i.test(e.message)) ||
+        (e.code === "parse-error" && /empty|MAX_TOKENS/i.test(e.message));
+      lastError = e;
+      if (!isRetryable) throw e;
+      console.warn(
+        `[personal-analysis] ${model} failed (${e.code}: ${e.message.slice(0, 100)}); trying next`,
+      );
     }
-    throw e;
   }
+
+  // Exhausted every model — surface the last error with the cascade
+  // info so the route handler can show a useful message.
+  throw new PersonalAnalysisError(
+    "api-error",
+    `כל מנועי ה-AI לא זמינים כרגע (ניסיתי: ${tried.join(", ")}). ${lastError?.message ?? ""}`,
+  );
 }
 
 async function callGeminiModel(
@@ -531,15 +554,28 @@ async function callGeminiModel(
       );
     }
     const data = (await res.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      candidates?: Array<{
+        content?: { parts?: Array<{ text?: string }> };
+        finishReason?: string;
+      }>;
+      promptFeedback?: { blockReason?: string };
     };
     // Multi-part responses come back as several `parts`. Concatenate them
     // all — we hit empty `text` on part[0] otherwise when the model
     // streams.
+    const candidate = data.candidates?.[0];
     const text =
-      data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+      candidate?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
     if (!text) {
-      throw new PersonalAnalysisError("parse-error", `empty response from Gemini ${model}`);
+      // Surface every diagnostic Gemini gives us so we can rotate models
+      // (in callGemini) and so admins reading the error can see WHY.
+      const reasons: string[] = [];
+      if (data.promptFeedback?.blockReason) reasons.push(`blockReason=${data.promptFeedback.blockReason}`);
+      if (candidate?.finishReason) reasons.push(`finishReason=${candidate.finishReason}`);
+      throw new PersonalAnalysisError(
+        "parse-error",
+        `empty response from Gemini ${model}${reasons.length ? ` (${reasons.join(", ")})` : ""}`,
+      );
     }
     return parseAnalysis(text);
   } finally {
