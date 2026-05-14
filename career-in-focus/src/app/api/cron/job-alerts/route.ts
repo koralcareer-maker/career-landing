@@ -10,8 +10,10 @@ export const runtime = "nodejs";
 const APP_URL = "https://app.careerinfocus.co.il";
 
 // Score below this threshold means we don't bother emailing the member.
-// Per Coral: anything 60%+ is worth surfacing in an alert.
-const ALERT_THRESHOLD = 60;
+// Raised from 60 → 75 after Coral saw an 80%-match email going out to a
+// comped member with only a loosely-matching role. 75 cuts out the
+// borderline matches and keeps the email signal high.
+const ALERT_THRESHOLD = 75;
 
 // Cap matches per email so the digest doesn't sprawl. Top 5 is plenty —
 // if we have more, the user can click through to /jobs.
