@@ -16,7 +16,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendWelcomeEmail } from "@/lib/email";
+import { sendWelcomeEmail, sendPurchaseNotification } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,6 +38,12 @@ export async function POST(req: NextRequest) {
     const transactionId= params.get("TransactionID") ?? undefined;
     const token        = params.get("Token") ?? undefined;
     const last4        = params.get("Last4Digits") ?? undefined;
+    // CardCom sends the charged amount in agorot under "Sum" (or
+    // sometimes "SumAmount" depending on the integration mode).
+    // Best-effort parse — falls back to plan defaults in the admin
+    // notification email if missing.
+    const amountAgorotRaw = params.get("Sum") ?? params.get("SumAmount") ?? "";
+    const amountIls = amountAgorotRaw ? Number(amountAgorotRaw) / 100 : undefined;
 
     // ReturnValue format: "userId|PLAN"
     const [userId, planRaw] = returnValue.split("|");
@@ -57,6 +63,17 @@ export async function POST(req: NextRequest) {
       // promo (₪29 for first 2 cycles on Member) a clear timeline.
       const next = new Date();
       next.setDate(next.getDate() + 30);
+
+      // Read the existing chargeCount BEFORE updating so we can tell
+      // whether this is a brand-new customer or a recurring charge.
+      // The admin notification copy differs ("new customer" vs
+      // "recurring renewal") so Coral knows whether to send a personal
+      // welcome.
+      const existing = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { chargeCount: true },
+      });
+      const isFirstPurchase = (existing?.chargeCount ?? 0) === 0;
 
       const user = await prisma.user.update({
         where: { id: userId },
@@ -90,7 +107,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Send welcome email (non-blocking)
+      // Send welcome email to the user (non-blocking)
       sendWelcomeEmail({
         name:           user.name ?? user.email,
         email:          user.email,
@@ -98,7 +115,21 @@ export async function POST(req: NextRequest) {
         gender:         user.gender === "m" ? "m" : "f",
       }).catch(console.error);
 
-      console.log(`CardCom: user ${userId} activated as ${plan}, tx ${transactionId}`);
+      // Notify Coral that a new customer just purchased — separate
+      // copy for "new customer" vs "recurring renewal" so she can
+      // prioritise reaching out to first-timers personally. Also
+      // fire-and-forget; activation is already saved.
+      sendPurchaseNotification({
+        userId,
+        name:            user.name,
+        email:           user.email,
+        plan,
+        transactionId,
+        amountIls,
+        isFirstPurchase,
+      }).catch(console.error);
+
+      console.log(`CardCom: user ${userId} activated as ${plan}, tx ${transactionId}, firstPurchase=${isFirstPurchase}`);
     } else {
       console.warn(`CardCom webhook: payment failed for user ${userId}, code ${responseCode}`);
     }

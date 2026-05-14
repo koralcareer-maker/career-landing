@@ -396,6 +396,72 @@ export async function sendLeadNotification({
   });
 }
 
+// ─── New-Purchase Notification (admin) ──────────────────────────────
+// Coral asked to be pinged every time someone purchases a paid plan
+// so she can welcome them personally and verify the funnel works.
+// Sent to ADMIN_NOTIFY_EMAIL (defaults to koralcareer@gmail.com) right
+// after the CardCom webhook activates the user. Fire-and-forget — the
+// user activation already succeeded by the time this runs.
+
+const PURCHASE_PLAN_LABELS: Record<string, { label: string; defaultPrice: string }> = {
+  MEMBER:  { label: "חבר",  defaultPrice: "49 ש\"ח / חודש" },
+  VIP:     { label: "פרו",  defaultPrice: "149 ש\"ח / חודש" },
+  PREMIUM: { label: "VIP",  defaultPrice: "499 ש\"ח / חודש" },
+};
+
+export async function sendPurchaseNotification({
+  userId, name, email, plan, transactionId, amountIls, isFirstPurchase,
+}: {
+  userId: string;
+  name: string | null;
+  email: string;
+  plan: "MEMBER" | "VIP" | "PREMIUM";
+  transactionId?: string;
+  /** Actual amount charged in ש"ח, if CardCom returned it. Falls back
+   *  to the plan's default price label when missing. */
+  amountIls?: number;
+  /** Was this their FIRST successful charge? Drives the email subject
+   *  ("New customer" vs "Recurring renewal"). */
+  isFirstPurchase: boolean;
+}) {
+  const to = process.env.ADMIN_NOTIFY_EMAIL ?? "koralcareer@gmail.com";
+  const planInfo = PURCHASE_PLAN_LABELS[plan] ?? { label: plan, defaultPrice: "" };
+  const amountLabel = typeof amountIls === "number" && amountIls > 0
+    ? `${amountIls.toLocaleString("he-IL")} ש"ח`
+    : planInfo.defaultPrice;
+  const headline = isFirstPurchase ? "🎉 לקוחה חדשה!" : "💚 חיוב חוזר";
+  const subject = isFirstPurchase
+    ? `🎉 רכישה חדשה: ${name ?? email} — ${planInfo.label}`
+    : `💚 חיוב חוזר: ${name ?? email} — ${planInfo.label}`;
+  const displayName = name ?? email;
+  const txLine = transactionId ? `<tr><td style="padding:6px 0;color:#888;">מספר עסקה:</td><td style="padding:6px 0;direction:ltr;">${transactionId}</td></tr>` : "";
+
+  const html = `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<body style="font-family:-apple-system,sans-serif;direction:rtl;background:#f6f7fb;padding:20px;">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,.06);">
+    <h2 style="margin:0 0 4px 0;color:#1C1C2E;font-size:22px;">${headline}</h2>
+    <p style="margin:0 0 18px 0;color:#666;font-size:14px;">
+      ${isFirstPurchase
+        ? "מישהי הצטרפה לקהילה. כדאי לשלוח הודעת ברוכים-הבאים אישית."
+        : "חיוב חוזר עבר בהצלחה. אין צורך לפעול אלא אם משהו נראה לא נכון."}
+    </p>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      <tr><td style="padding:6px 0;color:#888;width:110px;">שם:</td><td style="padding:6px 0;font-weight:600;">${displayName}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">אימייל:</td><td style="padding:6px 0;direction:ltr;"><a href="mailto:${email}" style="color:#2BAAAA;">${email}</a></td></tr>
+      <tr><td style="padding:6px 0;color:#888;">תוכנית:</td><td style="padding:6px 0;font-weight:600;">${planInfo.label}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">סכום:</td><td style="padding:6px 0;font-weight:600;">${amountLabel}</td></tr>
+      ${txLine}
+      <tr><td style="padding:6px 0;color:#888;">תאריך:</td><td style="padding:6px 0;">${new Date().toLocaleString("he-IL", { dateStyle: "short", timeStyle: "short" })}</td></tr>
+    </table>
+    <a href="${APP_URL}/admin/users/${userId}" style="display:inline-block;margin-top:20px;background:#3ECFCF;color:#fff;font-weight:700;padding:10px 20px;border-radius:8px;text-decoration:none;">פרטי המשתמשת בפאנל ←</a>
+    <p style="margin:18px 0 0;color:#aaa;font-size:11px;">User ID: ${userId}</p>
+  </div>
+</body></html>`;
+
+  await sendEmail({ to, subject, html });
+}
+
 // ─── Password Reset Email ─────────────────────────────────────────────────────
 // Sent when a user requests a password reset from /forgot-password.
 // Contains a one-click link with a single-use token (24h expiry).
