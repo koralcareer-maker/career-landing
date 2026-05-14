@@ -78,6 +78,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // User.gender drives the second-person form across the whole
+  // reading (Coral was unhappy with mixed gender/neutral framing).
+  const rawGender = session.user.gender ?? null;
+  const gender: "f" | "m" | null =
+    rawGender === "f" ? "f" : rawGender === "m" ? "m" : null;
+
   let result;
   try {
     result = await generatePersonalAnalysis({
@@ -86,6 +92,7 @@ export async function POST(req: NextRequest) {
       fullName: profile.fullName,
       currentRole: profile.currentRole,
       targetRole: profile.targetRole,
+      gender,
     });
   } catch (e) {
     if (e instanceof PersonalAnalysisError) {

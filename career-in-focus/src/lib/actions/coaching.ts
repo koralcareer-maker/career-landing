@@ -417,6 +417,27 @@ async function callClaude(
     return status === 429 || /exceeded|quota|rate|429/i.test(d.error?.message ?? "");
   }
 
+  /**
+   * "Retryable" = anything where rotating to the next model is more
+   * likely to help than failing the request:
+   *   - 429 quota / rate-limit (handled by isQuotaError)
+   *   - 503 model overloaded / "high demand" / UNAVAILABLE
+   *   - 500 / 502 / 504 transient backend errors
+   *
+   * The old fallback chain only handled quotas, so when Gemini surfaced
+   * "This model is currently experiencing high demand" (a 503 from
+   * Pro), the coach returned the raw error to the user instead of
+   * rotating to Flash. Coral hit this repeatedly. Treating overload
+   * the same as quota fixes it cleanly.
+   */
+  function isRetryableError(d: GeminiResp, status: number): boolean {
+    if (isQuotaError(d, status)) return true;
+    const msg = d.error?.message ?? "";
+    if (status === 503 || status === 502 || status === 500 || status === 504) return true;
+    if (/overload|UNAVAILABLE|high demand|temporarily|try again later/i.test(msg)) return true;
+    return false;
+  }
+
   // Notify Coral via in-app admin notification when quota hits — best
   // effort, doesn't block the user response. Throttled to once/hour
   // by checking for a recent identical notification first.
@@ -463,30 +484,34 @@ async function callClaude(
       ({ data, status } = await callOnce(model));
 
       // First-try retry within the same model after 4s — handles
-      // momentary RPM throttling.
-      if (isQuotaError(data, status) && i === 0) {
-        console.warn(`[coaching] rate-limit on ${model}, retrying in 4s`);
+      // momentary RPM throttling and Pro's frequent 503 hiccups.
+      if (isRetryableError(data, status) && i === 0) {
+        console.warn(`[coaching] retryable error on ${model}, retrying in 4s (status=${status})`);
         await new Promise((r) => setTimeout(r, 4000));
         ({ data, status } = await callOnce(model));
       }
 
-      // Still quota-blocked? Try the next model in the list.
-      if (isQuotaError(data, status)) {
-        console.warn(`[coaching] ${model} quota exhausted, falling through to next model`);
-        // Fire admin notification on the first quota hit per request.
-        if (i === 0) await notifyAdminOfQuota(model, data.error?.message ?? "");
+      // Still failing with a transient error? Rotate to the next model.
+      if (isRetryableError(data, status)) {
+        console.warn(`[coaching] ${model} failed (status=${status}, msg=${data.error?.message?.slice(0, 80)}), falling through`);
+        // Fire admin notification only on quota — overload errors are
+        // expected weather, no need to flood admin notifs.
+        if (i === 0 && isQuotaError(data, status)) {
+          await notifyAdminOfQuota(model, data.error?.message ?? "");
+        }
         continue;
       }
-      // Got a real response (success OR non-quota error) — stop here.
+      // Got a real response (success OR non-retryable error) — stop here.
       break;
     }
 
     if (data.error) {
       console.error(`[coaching] Gemini API error (${modelUsed}):`, data.error.message);
       const m = data.error.message ?? "";
-      if (isQuotaError(data, status)) {
-        // Customer-facing copy — DO NOT mention quota / billing / API.
-        // The user shouldn't see the operator's infrastructure problems.
+      if (isRetryableError(data, status)) {
+        // Exhausted the entire fallback chain — every model was rate-limited
+        // or overloaded. Customer-facing copy — DO NOT leak the raw API
+        // error. Give the user something useful to do in the meantime.
         return `המאמן עמוס כרגע. בינתיים את יכולה לסקור משרות חדשות ב-/jobs, לעדכן את הפרופיל שלך, או לחזור עוד כמה דקות. אם זה דחוף — תכתבי לקורל ישירות.`;
       }
       if (/safety|blocked|filtered/i.test(m)) {
@@ -644,6 +669,32 @@ ${userContext}
 **אסור להתחמק. אסור לחזור על השאלה. אסור לפתוח ב"שאלה מצוינת" / "אני שמח/ה שאתה שואל" / "בוא נחשוב על זה ביחד".** המשתמש שאל משהו — בפסקה הראשונה כבר נותנ/ת לו את הליבה של התשובה. הסבר, פירוט והקשר באים אחרי — לא לפני.
 
 אם השאלה לא ברורה — שאל/י שאלה אחת קצרה ומדויקת, ולא יותר. לא לבקש "ספרי לי קצת על עצמך כדי שאוכל לעזור" — הנתונים כבר אצלך למעלה.
+
+## חוק תוצרים: לא לכתוב ללא הקשר
+
+כשהמשתמש מבקש **תוצר ספציפי** — מכתב מקדים, מסר פתיחה בלינקדאין, מייל פולואפ, תגובה לראיון, תיאור עצמי לפרופיל — **אסור לכתוב את התוצר עד שיש לך את הנתונים החסרים.** התוצרים האלה הם המוצר של המערכת; מכתב גנרי גרוע מ-לא לכתוב כלום.
+
+לפני שמתחילים לכתוב — שאל/י בשורות קצרות וברורות, רק את מה שחסר באמת:
+
+**מכתב מקדים / מייל בקשה:**
+1. שם החברה
+2. שם התפקיד המדויק
+3. (אופציונלי) דרך הצגה — לוח דרושים? קשר אישי? פנייה יזומה? — זה משנה את הטון
+4. (אופציונלי) שם איש קשר אם יש
+
+**מסר נטוורקינג בלינקדאין:**
+1. שם איש הקשר + התפקיד שלו
+2. למה את/ה פונה אליו ספציפית — היה עובר/ת בחברה? עברתם תכנית משותפת? קראת פוסט?
+3. מה האסק — סקיצת קפה? Refer-al לפתיחה? עצה בלבד?
+
+**מייל פולואפ אחרי ראיון:**
+1. שם המראיין
+2. כמה ימים עברו מהראיון
+3. נקודה אחת בלתי-נשכחת מהראיון (פרויקט שדיברו עליו, אתגר שהזכיר/ה)
+
+אם המידע ההכרחי כבר עולה בשיחה (החברה הוזכרה בהודעה הקודמת, התפקיד מופיע בפרופיל) — אל תשאל/י שוב. תכתוב/י מיד.
+
+**אסור לחלוטין: לכתוב מכתב מקדים גנרי בלי שם חברה, או תוך המצאת שם חברה.** "בחברה היעד" / "לתפקיד שאת מחפשת" = תוצר חסר ערך.
 
 ## חוקי ברזל
 

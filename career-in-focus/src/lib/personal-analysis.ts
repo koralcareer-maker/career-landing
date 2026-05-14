@@ -183,15 +183,56 @@ interface BuildPromptInput {
   fullName: string | null;
   targetRole: string | null;
   currentRole: string | null;
+  /**
+   * "f" = female, "m" = male, null = unknown (defaults to feminine
+   * because the platform's primary audience is women).
+   */
+  gender: "f" | "m" | null;
 }
 
-function buildSystemPrompt(): string {
+function buildSystemPrompt(gender: "f" | "m" | null): string {
   // Keep this stable — it defines the persona, the numerology framework,
   // and the strict JSON schema. We update it when we want to change the
   // shape of *every* reading; per-user variation goes in the user prompt.
+  //
+  // Gender-aware second-person framing: Coral was unhappy that earlier
+  // drafts mixed "המתאמן/ת" / "האדם" with second-person ("יש לך") —
+  // it read inconsistent. The system prompt now mandates direct
+  // second-person address ("את", "אתה", "יש לך", "את מסוגלת" / "אתה
+  // מסוגל") throughout, in the user's gender. When gender is unknown
+  // we default to feminine because the platform's primary audience is
+  // women in career transition.
+  const useFeminine = gender !== "m";
+  const youPronoun = useFeminine ? "את" : "אתה";
+  const verbExample1 = useFeminine ? "את מסוגלת" : "אתה מסוגל";
+  const verbExample2 = useFeminine ? "את בונה" : "אתה בונה";
+  const verbExample3 = useFeminine ? "את נטויה לכך" : "אתה נוטה לכך";
+  const subjectNote = useFeminine
+    ? "המשתמשת היא אישה — כל פועל ותואר חייבים להיות בלשון נקבה."
+    : "המשתמש הוא גבר — כל פועל ותואר חייבים להיות בלשון זכר.";
+
   return `אתה מאמן קריירה בעל ניסיון, המשלב שני כלים: נומרולוגיה קלאסית (חישוב מספרי נפש מתאריך לידה) ופסיכולוגיה תעסוקתית (מודלים של חוזקות, שחיקה, איפיון סביבת עבודה אופטימלית).
 
-המטרה שלך: לתת למתאמן/ת ניתוח אישיותי עמוק, מדויק וברור, שמסתיים בהמלצה קונקרטית ל-8 עד 12 תפקידים שמתאימים בדיוק לפרופיל הזה. הניתוח חייב להרגיש אישי — לא פתגמים גנריים. השפה: עברית, גוף שני, ניטראלי-מגדרית (ללא "את" קבוע, ללא "אתה" קבוע — השתמש בצורות סתמיות "יש לך", "המתאים לך", "מה שאתם בונים"). כשמדובר על אישה, השתמש בלשון נקבה. כשגבר, בלשון זכר.
+המטרה שלך: לתת ניתוח אישיותי עמוק, מדויק וברור, שמסתיים בהמלצה קונקרטית ל-8 עד 12 תפקידים שמתאימים בדיוק לפרופיל הזה. הניתוח חייב להרגיש אישי — לא פתגמים גנריים.
+
+# שפת הכתיבה — חוק קריטי
+
+כתוב את כל הטקסט בגוף שני, ישירות אל הקורא/ת. כאילו אתה יושב/ת מולו/ה ומדבר/ת אישית. ${subjectNote}
+
+דוגמאות נכונות לסגנון שצריך לאמץ:
+- "${youPronoun} ${useFeminine ? "רואה" : "רואה"} את התמונה הגדולה לפני שכולם מבחינים בה."
+- "יש לך יכולת ${useFeminine ? "להחזיק" : "להחזיק"} שני קצוות בו-זמנית."
+- "${verbExample1} ${useFeminine ? "לבנות" : "לבנות"} מערכות שמשפיעות על אלפים."
+- "${verbExample2} מסלולים, לא רק מבצע${useFeminine ? "ת" : ""} משימות."
+- "${verbExample3} לקחת אחריות יתר על הכל."
+- "הכוח שלך לא בביצוע — הוא בהחלטות."
+
+דוגמאות אסורות לחלוטין:
+- "המתאמן/ת" / "האדם" / "האישה הזו" — גוף שלישי אסור.
+- "${useFeminine ? "אתה רואה" : "את רואה"}" / "${useFeminine ? "אתה מסוגל" : "את מסוגלת"}" — שגיאת מגדר אסורה.
+- ניסוחים נייטרליים שמטשטשים את הקריאה (לדוגמה "יש בנפש הזו…") — חייבים לפנות ישירות.
+
+עקביות מוחלטת לאורך כל 10 הסעיפים: כל משפט בגוף שני, באותו מגדר.
 
 # מסגרת נומרולוגית
 
@@ -282,11 +323,18 @@ function buildUserPrompt(input: BuildPromptInput): string {
   const israeliContext = isIsraeli(input.birthPlace);
   const formattedDate = `${input.birthDate.getDate()}.${input.birthDate.getMonth() + 1}.${input.birthDate.getFullYear()}`;
 
-  const nameLine = input.fullName ? `שם: ${input.fullName}` : "(שם לא סופק — דבר/י בלשון כללית)";
-  const currentRoleLine = input.currentRole ? `תפקיד נוכחי: ${input.currentRole}` : "";
-  const targetRoleLine = input.targetRole ? `תפקיד יעד שהמתאמן/ת ציין/ה: ${input.targetRole}` : "";
+  const useFeminine = input.gender !== "m";
+  const genderDeclaration = useFeminine
+    ? "מגדר הקורא/ת: אישה. כתוב את הכל בלשון נקבה."
+    : "מגדר הקורא/ת: גבר. כתוב את הכל בלשון זכר.";
 
-  return `נתוני המתאמן/ת:
+  const nameLine = input.fullName ? `שם הקורא/ת: ${input.fullName}` : "(שם לא סופק)";
+  const currentRoleLine = input.currentRole ? `תפקיד נוכחי: ${input.currentRole}` : "";
+  const targetRoleLine = input.targetRole ? `תפקיד יעד שצוין: ${input.targetRole}` : "";
+
+  return `${genderDeclaration}
+
+נתוני הקורא/ת:
 ${nameLine}
 תאריך לידה: ${formattedDate}
 מקום לידה: ${input.birthPlace ?? "לא צוין"}
@@ -300,6 +348,12 @@ ${targetRoleLine}
 
 ${israeliContext ? "Israeli context — השתמש בטווחי שכר בש\"ח לחודש בלבד ובשמות תפקידים שמופיעים במודעות דרושים בישראל." : "Non-Israeli context — השתמש בטווחים נטרליים (מטבע מקומי או טווח כללי) ובלי להתחייב לשוק עבודה ספציפי."}
 
+הוראת כתיבה (קריטית):
+- כתוב את כל הטקסט בגוף שני, פונה ישירות לקורא/ת.
+- ${useFeminine ? "השתמש ב\"את\", \"יש לך\", \"את מסוגלת\", \"את בונה\", \"החוזקות שלך\"." : "השתמש ב\"אתה\", \"יש לך\", \"אתה מסוגל\", \"אתה בונה\", \"החוזקות שלך\"."}
+- אל תשתמש במילים "המתאמנת", "האדם", "האישה הזו", "מי שנולד/ה ב…" — גוף שלישי אסור.
+- עקביות מוחלטת לאורך כל 10 הסעיפים, גם בסיכום, גם ברשימות.
+
 בנה את הניתוח המלא לפי הסכמה. החזר JSON בלבד.`;
 }
 
@@ -311,6 +365,13 @@ export interface GenerateInput {
   fullName: string | null;
   targetRole: string | null;
   currentRole: string | null;
+  /**
+   * User.gender as stored on the session: "f" / "m" / null. Drives
+   * the gender form (לשון נקבה / לשון זכר) in the entire reading. We
+   * default to feminine when unknown because the platform's primary
+   * audience is women in career transition.
+   */
+  gender: "f" | "m" | null;
 }
 
 export class PersonalAnalysisError extends Error {
@@ -345,7 +406,7 @@ export async function generatePersonalAnalysis(
     );
   }
 
-  const system = buildSystemPrompt();
+  const system = buildSystemPrompt(input.gender);
   const user = buildUserPrompt(input);
 
   // Prefer Anthropic when both are present (higher-quality structured
