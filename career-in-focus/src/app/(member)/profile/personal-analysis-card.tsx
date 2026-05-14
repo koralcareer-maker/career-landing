@@ -93,9 +93,6 @@ export function PersonalAnalysisCard({
             <Sparkles size={22} />
           </span>
           <div>
-            <span className="inline-block text-xs font-bold uppercase tracking-wide text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md mb-1.5">
-              שכבה נוספת מעבר לדרכון
-            </span>
             <h2 className="text-xl sm:text-2xl font-extrabold text-navy">
               ניתוח אישי מעמיק
             </h2>
