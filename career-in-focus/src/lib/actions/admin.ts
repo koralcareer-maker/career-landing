@@ -17,6 +17,46 @@ async function requireAdmin() {
   return session.user;
 }
 
+/**
+ * Send the same in-app notification to every active member.
+ *
+ * Coral wants users notified on any platform change — new content,
+ * new feature, edit to a published announcement. This helper unifies
+ * the broadcast (the bell icon in TopBar reads the Notification
+ * table). Best-effort: a write failure here doesn't bubble back to
+ * the admin who's creating content.
+ *
+ * `type` is the existing Notification.type union: "update", "event",
+ * "course", "tool", "feature", "general".
+ */
+async function notifyAllActiveMembers(notification: {
+  type: string;
+  title: string;
+  message: string;
+  link?: string | null;
+  refId?: string | null;
+}): Promise<void> {
+  try {
+    const members = await prisma.user.findMany({
+      where: { accessStatus: "ACTIVE" },
+      select: { id: true },
+    });
+    if (members.length === 0) return;
+    await prisma.notification.createMany({
+      data: members.map((m) => ({
+        userId:  m.id,
+        type:    notification.type,
+        title:   notification.title,
+        message: notification.message.slice(0, 240),
+        link:    notification.link ?? undefined,
+        refId:   notification.refId ?? undefined,
+      })),
+    });
+  } catch (e) {
+    console.warn("[admin] notifyAllActiveMembers failed:", e);
+  }
+}
+
 // ── Jobs ────────────────────────────────────────────────────────────────────
 
 export async function createJob(formData: FormData) {
@@ -85,21 +125,34 @@ export async function toggleJobPublished(id: string, published: boolean) {
 
 export async function createEvent(formData: FormData) {
   const admin = await requireAdmin();
-  await prisma.event.create({
+  const isPublished = formData.get("isPublished") !== "off";
+  const title = formData.get("title") as string;
+  const description = (formData.get("description") as string) || "";
+  const startAt = new Date(formData.get("startAt") as string);
+  const event = await prisma.event.create({
     data: {
-      title:       formData.get("title") as string,
-      description: formData.get("description") as string || undefined,
+      title,
+      description: description || undefined,
       type:        (formData.get("type") as string || "WEBINAR") as never,
-      startAt:     new Date(formData.get("startAt") as string),
+      startAt,
       endAt:       formData.get("endAt") ? new Date(formData.get("endAt") as string) : undefined,
       location:    formData.get("location") as string || undefined,
       isOnline:    formData.get("isOnline") === "on",
       meetingUrl:  formData.get("meetingUrl") as string || undefined,
       registerUrl: formData.get("registerUrl") as string || undefined,
-      isPublished: formData.get("isPublished") !== "off",
+      isPublished,
       createdById: admin.id,
     },
   });
+  if (isPublished) {
+    await notifyAllActiveMembers({
+      type:    "event",
+      title:   `📅 אירוע חדש: ${title}`,
+      message: `${startAt.toLocaleDateString("he-IL", { day: "numeric", month: "long" })}${description ? ` · ${description}` : ""}`,
+      link:    "/events",
+      refId:   event.id,
+    });
+  }
   revalidatePath("/admin/events");
   revalidatePath("/events");
   revalidatePath("/dashboard");
@@ -108,21 +161,37 @@ export async function createEvent(formData: FormData) {
 
 export async function updateEvent(id: string, formData: FormData) {
   await requireAdmin();
+  const previous = await prisma.event.findUnique({
+    where: { id }, select: { isPublished: true },
+  });
+  const willBePublished = formData.get("isPublished") !== "off";
+  const title = formData.get("title") as string;
+  const description = (formData.get("description") as string) || "";
+  const startAt = new Date(formData.get("startAt") as string);
   await prisma.event.update({
     where: { id },
     data: {
-      title:       formData.get("title") as string,
-      description: formData.get("description") as string || undefined,
+      title,
+      description: description || undefined,
       type:        (formData.get("type") as string || "WEBINAR") as never,
-      startAt:     new Date(formData.get("startAt") as string),
+      startAt,
       endAt:       formData.get("endAt") ? new Date(formData.get("endAt") as string) : undefined,
       location:    formData.get("location") as string || undefined,
       isOnline:    formData.get("isOnline") === "on",
       meetingUrl:  formData.get("meetingUrl") as string || undefined,
       registerUrl: formData.get("registerUrl") as string || undefined,
-      isPublished: formData.get("isPublished") !== "off",
+      isPublished: willBePublished,
     },
   });
+  if (willBePublished && !previous?.isPublished) {
+    await notifyAllActiveMembers({
+      type:    "event",
+      title:   `📅 אירוע חדש: ${title}`,
+      message: `${startAt.toLocaleDateString("he-IL", { day: "numeric", month: "long" })}${description ? ` · ${description}` : ""}`,
+      link:    "/events",
+      refId:   id,
+    });
+  }
   revalidatePath("/admin/events");
   revalidatePath("/events");
   revalidatePath("/dashboard");
@@ -140,29 +209,30 @@ export async function deleteEvent(id: string) {
 
 export async function createUpdate(formData: FormData) {
   const admin = await requireAdmin();
-  await prisma.update.create({
+  const isPublished = formData.get("isPublished") !== "off";
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
+  const update = await prisma.update.create({
     data: {
-      title:       formData.get("title") as string,
-      content:     formData.get("content") as string,
+      title,
+      content,
       category:    formData.get("category") as string || "general",
       isPinned:    formData.get("isPinned") === "on",
-      isPublished: formData.get("isPublished") !== "off",
+      isPublished,
       ctaText:     formData.get("ctaText") as string || undefined,
       ctaUrl:      formData.get("ctaUrl") as string || undefined,
       createdById: admin.id,
     },
   });
-  // Notify all active members
-  const members = await prisma.user.findMany({ where: { accessStatus: "ACTIVE" }, select: { id: true } });
-  await prisma.notification.createMany({
-    data: members.map(m => ({
-      userId:  m.id,
+  if (isPublished) {
+    await notifyAllActiveMembers({
       type:    "update",
-      title:   formData.get("title") as string,
-      message: (formData.get("content") as string).substring(0, 120),
+      title:   `📰 ${title}`,
+      message: content,
       link:    "/updates",
-    })),
-  });
+      refId:   update.id,
+    });
+  }
   revalidatePath("/admin/updates");
   revalidatePath("/updates");
   revalidatePath("/dashboard");
@@ -171,18 +241,36 @@ export async function createUpdate(formData: FormData) {
 
 export async function updateUpdate(id: string, formData: FormData) {
   await requireAdmin();
+  // Read the previous state so we can detect a draft→published flip
+  // and notify members only on that transition (not on cosmetic edits).
+  const previous = await prisma.update.findUnique({
+    where: { id },
+    select: { isPublished: true },
+  });
+  const willBePublished = formData.get("isPublished") !== "off";
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
   await prisma.update.update({
     where: { id },
     data: {
-      title:       formData.get("title") as string,
-      content:     formData.get("content") as string,
+      title,
+      content,
       category:    formData.get("category") as string || "general",
       isPinned:    formData.get("isPinned") === "on",
-      isPublished: formData.get("isPublished") !== "off",
+      isPublished: willBePublished,
       ctaText:     formData.get("ctaText") as string || undefined,
       ctaUrl:      formData.get("ctaUrl") as string || undefined,
     },
   });
+  if (willBePublished && !previous?.isPublished) {
+    await notifyAllActiveMembers({
+      type:    "update",
+      title:   `📰 ${title}`,
+      message: content,
+      link:    "/updates",
+      refId:   id,
+    });
+  }
   revalidatePath("/admin/updates");
   revalidatePath("/updates");
   redirect("/admin/updates");
@@ -198,19 +286,31 @@ export async function deleteUpdate(id: string) {
 
 export async function createCourse(formData: FormData) {
   const admin = await requireAdmin();
-  await prisma.course.create({
+  const isPublished = formData.get("isPublished") !== "off";
+  const title = formData.get("title") as string;
+  const description = (formData.get("description") as string) || "";
+  const course = await prisma.course.create({
     data: {
-      title:      formData.get("title") as string,
-      description:formData.get("description") as string || undefined,
+      title,
+      description: description || undefined,
       category:   formData.get("category") as string || undefined,
       formatType: formData.get("formatType") as string || undefined,
       accessType: (formData.get("accessType") as string || "INCLUDED") as never,
-      isPublished:formData.get("isPublished") !== "off",
+      isPublished,
       ctaText:    formData.get("ctaText") as string || undefined,
       ctaUrl:     formData.get("ctaUrl") as string || undefined,
       createdById:admin.id,
     },
   });
+  if (isPublished) {
+    await notifyAllActiveMembers({
+      type:    "course",
+      title:   `📚 קורס חדש: ${title}`,
+      message: description || "נוסף קורס חדש לספריית התכנים — שווה לבדוק.",
+      link:    "/courses",
+      refId:   course.id,
+    });
+  }
   revalidatePath("/admin/courses");
   revalidatePath("/courses");
   redirect("/admin/courses");
@@ -218,19 +318,34 @@ export async function createCourse(formData: FormData) {
 
 export async function updateCourse(id: string, formData: FormData) {
   await requireAdmin();
+  const previous = await prisma.course.findUnique({
+    where: { id }, select: { isPublished: true },
+  });
+  const willBePublished = formData.get("isPublished") !== "off";
+  const title = formData.get("title") as string;
+  const description = (formData.get("description") as string) || "";
   await prisma.course.update({
     where: { id },
     data: {
-      title:       formData.get("title") as string,
-      description: formData.get("description") as string || undefined,
+      title,
+      description: description || undefined,
       category:    formData.get("category") as string || undefined,
       formatType:  formData.get("formatType") as string || undefined,
       accessType:  (formData.get("accessType") as string || "INCLUDED") as never,
-      isPublished: formData.get("isPublished") !== "off",
+      isPublished: willBePublished,
       ctaText:     formData.get("ctaText") as string || undefined,
       ctaUrl:      formData.get("ctaUrl") as string || undefined,
     },
   });
+  if (willBePublished && !previous?.isPublished) {
+    await notifyAllActiveMembers({
+      type:    "course",
+      title:   `📚 קורס חדש: ${title}`,
+      message: description || "נוסף קורס חדש לספריית התכנים — שווה לבדוק.",
+      link:    "/courses",
+      refId:   id,
+    });
+  }
   revalidatePath("/admin/courses");
   revalidatePath("/courses");
   redirect("/admin/courses");
@@ -247,20 +362,32 @@ export async function deleteCourse(id: string) {
 
 export async function createTool(formData: FormData) {
   const admin = await requireAdmin();
-  await prisma.tool.create({
+  const isPublished = formData.get("isPublished") !== "off";
+  const title = formData.get("title") as string;
+  const description = (formData.get("description") as string) || "";
+  const tool = await prisma.tool.create({
     data: {
-      title:       formData.get("title") as string,
-      description: formData.get("description") as string || undefined,
+      title,
+      description: description || undefined,
       category:    formData.get("category") as string || undefined,
       type:        (formData.get("type") as string || "LINK") as never,
       externalUrl: formData.get("externalUrl") as string || undefined,
       adminTip:    formData.get("adminTip") as string || undefined,
       notes:       formData.get("notes") as string || undefined,
       targetRole:  formData.get("targetRole") as string || undefined,
-      isPublished: formData.get("isPublished") !== "off",
+      isPublished,
       createdById: admin.id,
     },
   });
+  if (isPublished) {
+    await notifyAllActiveMembers({
+      type:    "tool",
+      title:   `🛠️ כלי חדש בערכת הכלים: ${title}`,
+      message: description || "נוסף כלי חדש שיעזור לך בחיפוש העבודה.",
+      link:    "/tools",
+      refId:   tool.id,
+    });
+  }
   revalidatePath("/admin/tools");
   revalidatePath("/tools");
   redirect("/admin/tools");
@@ -268,20 +395,35 @@ export async function createTool(formData: FormData) {
 
 export async function updateTool(id: string, formData: FormData) {
   await requireAdmin();
+  const previous = await prisma.tool.findUnique({
+    where: { id }, select: { isPublished: true },
+  });
+  const willBePublished = formData.get("isPublished") !== "off";
+  const title = formData.get("title") as string;
+  const description = (formData.get("description") as string) || "";
   await prisma.tool.update({
     where: { id },
     data: {
-      title:       formData.get("title") as string,
-      description: formData.get("description") as string || undefined,
+      title,
+      description: description || undefined,
       category:    formData.get("category") as string || undefined,
       type:        (formData.get("type") as string || "LINK") as never,
       externalUrl: formData.get("externalUrl") as string || undefined,
       adminTip:    formData.get("adminTip") as string || undefined,
       notes:       formData.get("notes") as string || undefined,
       targetRole:  formData.get("targetRole") as string || undefined,
-      isPublished: formData.get("isPublished") !== "off",
+      isPublished: willBePublished,
     },
   });
+  if (willBePublished && !previous?.isPublished) {
+    await notifyAllActiveMembers({
+      type:    "tool",
+      title:   `🛠️ כלי חדש: ${title}`,
+      message: description || "נוסף כלי חדש שיעזור לך בחיפוש העבודה.",
+      link:    "/tools",
+      refId:   id,
+    });
+  }
   revalidatePath("/admin/tools");
   revalidatePath("/tools");
   redirect("/admin/tools");
