@@ -242,6 +242,25 @@ function SignupForm() {
                 </div>
               )}
 
+              {/* Explicit consent — required by Israeli Consumer Protection
+                  Law (חוק הגנת הצרכן) for entering a long-term agreement.
+                  Visually muted (small, gray) per Coral's request, but
+                  HTML `required` so the form won't submit unchecked. */}
+              <label className="flex items-start gap-2 text-[12px] text-gray-500 leading-relaxed cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  name="acceptTerms"
+                  required
+                  className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 text-teal focus:ring-1 focus:ring-teal accent-teal cursor-pointer shrink-0"
+                />
+                <span>
+                  קראתי ואני מסכים/ה ל
+                  <Link href="/terms" className="text-teal hover:underline mx-1">תנאי השימוש</Link>
+                  ול
+                  <Link href="/privacy" className="text-teal hover:underline mx-1">מדיניות הפרטיות</Link>
+                </span>
+              </label>
+
               <Button type="submit" className="w-full" size="lg" loading={isPending}>
                 יצירת חשבון
               </Button>
@@ -263,13 +282,6 @@ function SignupForm() {
                 );
               })}
             </div>
-
-            <p className="text-[11px] text-gray-400 mt-5 text-center leading-relaxed">
-              בהרשמה את מסכימה ל
-              <Link href="/terms" className="text-teal hover:underline mx-1">תנאי השימוש</Link>
-              ו
-              <Link href="/privacy" className="text-teal hover:underline mx-1">מדיניות הפרטיות</Link>
-            </p>
 
             <div className="mt-5 pt-5 border-t border-gray-100 text-center">
               <p className="text-sm text-gray-500">
