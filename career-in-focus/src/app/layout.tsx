@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AccessibilityWidget } from "@/components/accessibility/widget";
 
 // metadataBase makes Next.js resolve the relative og:image URL below
 // into an absolute one. WhatsApp / Facebook / Twitter all require an
@@ -38,7 +39,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className="h-full">
-      <body className="min-h-full flex flex-col font-sans antialiased">{children}</body>
+      <body className="min-h-full flex flex-col font-sans antialiased">
+        {/* Skip-to-content link — visually hidden until focused. Required
+            by WCAG so keyboard users can bypass header/nav repeats. */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:right-2 focus:z-[10000] focus:bg-teal focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:font-bold focus:outline-none focus:ring-2 focus:ring-white"
+        >
+          דילוג לתוכן הראשי
+        </a>
+        {children}
+        {/* Floating accessibility widget — visible on every page. */}
+        <AccessibilityWidget />
+      </body>
     </html>
   );
 }

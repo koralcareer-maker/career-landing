@@ -35,6 +35,82 @@ body {
 
 :focus-visible { outline: 2px solid #3ECFCF; outline-offset: 2px; }
 
+/* ──────────────────────────────────────────────────────────────────────
+   Accessibility widget — global overrides
+   The widget in components/accessibility/widget.tsx toggles these
+   classes on <html>. Each one is a low-specificity sweep that affects
+   the whole tree, so users don't have to navigate to a settings page
+   for every adjustment. Designed to satisfy the Israeli Equal Rights
+   Law requirement (תקנות שוויון זכויות לאנשים עם מוגבלות) that an
+   accessibility menu be available on every page.
+   ────────────────────────────────────────────────────────────────── */
+
+/* Font size — bump the html root, all rem-based sizing scales. */
+html.a11y-font-normal  { font-size: 16px; }
+html.a11y-font-large   { font-size: 18px; }
+html.a11y-font-xlarge  { font-size: 22px; }
+
+/* High contrast — flatten gradients + force strong text contrast. */
+html.a11y-high-contrast body                    { background: #ffffff !important; color: #000000 !important; }
+html.a11y-high-contrast *                       { background-image: none !important; }
+html.a11y-high-contrast .text-slate-400,
+html.a11y-high-contrast .text-slate-500,
+html.a11y-high-contrast .text-slate-600         { color: #000000 !important; }
+html.a11y-high-contrast a,
+html.a11y-high-contrast button,
+html.a11y-high-contrast input,
+html.a11y-high-contrast textarea,
+html.a11y-high-contrast select                  { border-color: #000000 !important; }
+html.a11y-high-contrast a                       { color: #0000EE !important; text-decoration: underline !important; }
+html.a11y-high-contrast .bg-cream,
+html.a11y-high-contrast .bg-cream-dark,
+html.a11y-high-contrast .bg-slate-50,
+html.a11y-high-contrast .bg-slate-100,
+html.a11y-high-contrast .bg-white               { background-color: #ffffff !important; }
+
+/* Disable animations — including the staggered fade-ins above. */
+html.a11y-no-motion *,
+html.a11y-no-motion *::before,
+html.a11y-no-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Underline links — even those styled as buttons stay obvious. */
+html.a11y-underline-links a:not(.no-a11y-underline) {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 2px !important;
+}
+
+/* Big focus ring — fat, high-contrast outline that takes priority. */
+html.a11y-focus-highlight a:focus-visible,
+html.a11y-focus-highlight button:focus-visible,
+html.a11y-focus-highlight input:focus-visible,
+html.a11y-focus-highlight select:focus-visible,
+html.a11y-focus-highlight textarea:focus-visible,
+html.a11y-focus-highlight [tabindex]:focus-visible {
+  outline: 4px solid #FF8000 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px rgba(255, 128, 0, 0.25) !important;
+}
+
+/* Big cursor — larger arrow + pointer for low-vision users. */
+html.a11y-big-cursor,
+html.a11y-big-cursor * {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><path d='M2 2 L2 30 L10 22 L14 32 L18 30 L14 20 L24 20 Z' fill='black' stroke='white' stroke-width='2'/></svg>") 2 2, auto !important;
+}
+html.a11y-big-cursor a,
+html.a11y-big-cursor button,
+html.a11y-big-cursor [role="button"],
+html.a11y-big-cursor input[type="checkbox"],
+html.a11y-big-cursor input[type="radio"],
+html.a11y-big-cursor select {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'><path d='M14 2 L14 26 L20 22 L24 30 L28 28 L24 20 L32 20 Z' fill='%233ECFCF' stroke='white' stroke-width='2'/></svg>") 14 2, pointer !important;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }

@@ -45,7 +45,7 @@ export default async function MemberLayout({ children }: { children: React.React
       {/* Main content */}
       <div className="md:mr-64 flex flex-col min-h-screen">
         <TopBar user={user} unreadCount={unreadCount} />
-        <main className="flex-1 px-4 py-6 md:px-8 pb-24 md:pb-8 animate-fade-in">
+        <main id="main-content" tabIndex={-1} className="flex-1 px-4 py-6 md:px-8 pb-24 md:pb-8 animate-fade-in">
           {children}
         </main>
         <Footer />

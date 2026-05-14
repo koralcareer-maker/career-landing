@@ -235,6 +235,7 @@ export async function Footer() {
               <div className="flex items-center gap-5">
                 <Link href="/terms" className="hover:text-teal transition-colors">תנאי שימוש</Link>
                 <Link href="/privacy" className="hover:text-teal transition-colors">מדיניות פרטיות</Link>
+                <Link href="/accessibility" className="hover:text-teal transition-colors">הצהרת נגישות</Link>
                 <Link href="/about" className="hover:text-teal transition-colors">אודות</Link>
               </div>
             </div>
