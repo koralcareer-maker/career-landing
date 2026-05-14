@@ -104,91 +104,109 @@ export function matchJobToUser(
 
   const reasons: string[] = [];
   const blob = jobBlob(job);
+  const titleLower = (job.title ?? "").toLowerCase();
 
-  // ── 1. Target-role match is the GATE, not a +30 bonus ────────────
+  // ── 1. Target-role match — STRICT, title-anchored ─────────────────
   //
-  // Old algorithm added +30 when ANY token matched and added nothing
-  // when nothing matched. That let unrelated jobs reach 100% via
-  // industry + fit-roles + strengths firing on tangential overlaps
-  // (Coral was a "סמנכלית משאבי אנוש" target and saw 100% on Backend
-  // Engineer postings — strengths like "ניהול" matched generic
-  // management copy in tech roles).
+  // Coral kept seeing unrelated jobs at 60-70% after the last pass.
+  // Root cause: matching against the full job blob (title + summary +
+  // description + field + location) is too loose — a target role like
+  // "סמנכלית משאבי אנוש" with tokens ["סמנכלית","משאבי","אנוש"] would
+  // hit "אנוש" inside Hebrew descriptions of unrelated tech jobs that
+  // mention "תקשורת אנושית" or "ניסיון אנושי", earning the partial
+  // bonus.
   //
-  // New rule:
-  //  - Tokens must be >= 3 chars (Hebrew/English) — drops noise
-  //    like "של" / "in" / "to".
-  //  - Score is **proportional** to how many target tokens match
-  //    the job (intersection-over-union style, capped at 60).
-  //  - If 0 tokens match, the *entire* match maxes at 50 — secondary
-  //    signals (industry, strengths) can lift it from the baseline
-  //    but never make an unrelated job look like a great fit.
+  // New rule — three-tier match, anchored on TITLE primarily:
+  //   - 2+ target tokens in the job TITLE → strong match (up to +60)
+  //   - 1+ target token in the title       → medium match (up to +35)
+  //   - 2+ tokens elsewhere in the blob    → weak match (+10)
+  //   - 0 tokens in title and < 2 in blob  → no match, cap at 35
+  //
+  // For 1-token target roles (e.g. "Developer", "QA"), 1 title token
+  // is already a strong signal — we treat it as "2+" to avoid penalising
+  // short titles unfairly.
   const targetTokens = tokenise(profile?.targetRole).filter((t) => t.length >= 3);
-  const matchedTargetTokens = targetTokens.filter((t) => blob.includes(t));
+  const matchedInTitle = targetTokens.filter((t) => titleLower.includes(t));
+  const matchedInBlob = targetTokens.filter((t) => blob.includes(t));
 
-  let score = 25; // baseline
-  const targetMatched = matchedTargetTokens.length > 0;
-  let cap = targetMatched ? 100 : 50;
+  let score = 22; // baseline
+  let cap = 35;   // tightest ceiling — only lifted when we actually match
 
-  if (targetTokens.length > 0 && targetMatched) {
-    const ratio = matchedTargetTokens.length / targetTokens.length;
-    const bonus = Math.round(ratio * 50); // up to +50 for a full overlap
-    score += bonus;
-    reasons.push(`תואם לתפקיד היעד שלך (${profile?.targetRole})`);
-  } else if (targetTokens.length > 0) {
-    // We have a target role and the job didn't match any of its words.
-    // Hard ceiling — don't let the rest of the signals push above 50.
-    cap = 50;
+  if (targetTokens.length > 0) {
+    const titleRatio = matchedInTitle.length / targetTokens.length;
+    const blobRatio = matchedInBlob.length / targetTokens.length;
+    const isShortTarget = targetTokens.length === 1;
+
+    if (matchedInTitle.length >= 2 || (isShortTarget && matchedInTitle.length === 1)) {
+      // Strong title hit.
+      score += Math.round(titleRatio * 60);
+      cap = 96;
+      reasons.push(`תואם לתפקיד היעד שלך (${profile?.targetRole})`);
+    } else if (matchedInTitle.length === 1) {
+      // One-of-many token in title — medium signal.
+      score += Math.round(titleRatio * 35);
+      cap = 75;
+      reasons.push("חופף חלקית לתפקיד היעד שלך");
+    } else if (matchedInBlob.length >= 2) {
+      // No title hit, but multiple tokens elsewhere — weak.
+      score += Math.min(15, Math.round(blobRatio * 25));
+      cap = 55;
+    }
+    // else: keep cap at 35 — clearly unrelated to target role
+  } else {
+    // No target role declared yet — lift the cap so the score is at
+    // least informative based on secondary signals.
+    cap = 70;
   }
 
-  // ── 2. Desired field / industry interests — tightened ───────────
+  // ── 2. Desired field / industry interests — modest signal ───────
   //
-  // Same proportional treatment, lighter weight (+15 max). Industry
-  // tokens like "טכנולוגיה" or "Tech" are deliberately filtered out
-  // because they match nearly every hi-tech posting.
+  // Generic industry tokens like "טכנולוגיה" or "tech" are deliberately
+  // filtered out because they match nearly every hi-tech posting and
+  // would lift every unrelated job's score.
   const GENERIC_FIELD = new Set([
     "טכנולוגיה", "tech", "technology", "software", "high-tech", "hitech",
-    "general", "כללי", "אחר",
+    "general", "כללי", "אחר", "ניהול", "management",
   ]);
   const fieldTokens = [
     ...tokenise(profile?.desiredField),
     ...parseJsonArray(profile?.q_industryInterests).flatMap(tokenise),
     ...parseJsonArray(passport?.recommendedIndustries).flatMap(tokenise),
-  ].filter((t) => t.length >= 3 && !GENERIC_FIELD.has(t));
+  ].filter((t) => t.length >= 4 && !GENERIC_FIELD.has(t));
   if (fieldTokens.length > 0) {
     const matched = fieldTokens.filter((t) => blob.includes(t));
     if (matched.length > 0) {
-      score += Math.min(15, matched.length * 5);
+      score += Math.min(10, matched.length * 4);
       reasons.push("תחום העניין שלך");
     }
   }
 
-  // ── 3. Likely-fit roles from the AI passport ─────────────────────
+  // ── 3. Likely-fit roles from the AI passport — TITLE-only ───────
   //
-  // Now only fires when the passport explicitly named a role that
-  // overlaps the job title (not the summary or location). This stops
-  // generic "Manager" / "Senior" tokens from matching every senior
-  // role across the board.
+  // The passport sometimes suggests broad roles ("Senior Manager")
+  // that match every senior posting. Restricting this signal to the
+  // job's title (not the blob) and to tokens ≥ 5 chars cuts the
+  // noise dramatically.
   const fitRoleTokens = parseJsonArray(passport?.likelyFitRoles)
     .flatMap(tokenise)
-    .filter((t) => t.length >= 4);
-  const titleLower = (job.title ?? "").toLowerCase();
+    .filter((t) => t.length >= 5);
   if (fitRoleTokens.length > 0) {
     const matched = fitRoleTokens.filter((t) => titleLower.includes(t));
     if (matched.length > 0) {
-      score += Math.min(15, matched.length * 5);
+      score += Math.min(10, matched.length * 5);
       reasons.push("התאים לקריירה שלך לפי הדרכון");
     }
   }
 
-  // ── 4. Strengths — small evidence bonus, requires real overlap ──
+  // ── 4. Strengths — small evidence bonus, capped tight ───────────
   //
-  // Strengths are user-declared (e.g. "ניהול צוות", "Python"). Only
-  // tokens >= 4 chars qualify so short Hebrew connectors don't
-  // accidentally fire.
+  // Strengths are user-declared ("ניהול צוות", "Python"). Tokens
+  // ≥ 5 chars only, and the bonus is capped at +5 so a generic
+  // strength like "תקשורת" can't repeatedly inflate every job.
   const strengthTokens = [
     ...parseJsonArray(profile?.strengths),
     ...parseJsonArray(passport?.strengths),
-  ].flatMap(tokenise).filter((t) => t.length >= 4);
+  ].flatMap(tokenise).filter((t) => t.length >= 5);
   if (strengthTokens.length > 0 && strengthTokens.some((t) => blob.includes(t))) {
     score += 5;
     reasons.push("מתאים לחוזקות שלך");
