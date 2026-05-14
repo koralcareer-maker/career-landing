@@ -108,11 +108,11 @@ export default function LandingPage() {
             הקהילה המקצועית למחפשי עבודה בישראל
           </div>
           <h1 className="text-4xl md:text-6xl font-black leading-tight mb-6">
-            מצא את העבודה<br />
-            <span className="text-teal">שתמיד רצית</span>
+            התפקיד הבא שלך<br />
+            <span className="text-teal">קרוב יותר מששיערת</span>
           </h1>
           <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-8 leading-relaxed">
-            פלטפורמת הקהילה לחיפוש עבודה עם תכנים, כלים, ניתוח קריירה AI, מעקב התקדמות, משרות ואירועים — הכל במקום אחד.
+            פלטפורמה מקצועית לחיפוש עבודה: תכנים, כלים, ניתוח קריירה מבוסס AI, מעקב התקדמות, משרות מעודכנות יומית, ואירועים — הכל תחת קורת גג אחת.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/pricing" className="bg-teal text-white font-bold px-8 py-4 rounded-2xl hover:bg-teal-dark transition-all duration-200 hover:-translate-y-0.5 text-base flex items-center gap-2 justify-center">
@@ -120,7 +120,7 @@ export default function LandingPage() {
               <ChevronLeft size={18} />
             </Link>
             <Link href="/login" className="bg-white/10 text-white font-semibold px-8 py-4 rounded-2xl hover:bg-white/20 transition-colors text-base">
-              כבר חבר? כנס
+              כניסה לחברים קיימים
             </Link>
           </div>
           <div className="mt-10 flex justify-center gap-8 text-sm text-white/50">
@@ -151,8 +151,8 @@ export default function LandingPage() {
       {/* Features */}
       <section className="py-20 px-6 max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-black text-navy mb-3">הכל שצריך לחיפוש עבודה מוצלח</h2>
-          <p className="text-gray-500 text-base max-w-xl mx-auto">לא עוד כלי אחד — מערכת שלמה שמלווה אותך מהרגע הראשון עד ההצלחה</p>
+          <h2 className="text-3xl font-black text-navy mb-3">כל מה שצריך לחיפוש עבודה מקצועי</h2>
+          <p className="text-gray-500 text-base max-w-xl mx-auto">לא רק עוד כלי — מערכת שלמה שמלווה אותך מהצעד הראשון ועד החתימה על החוזה</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {FEATURES.map((f, i) => {

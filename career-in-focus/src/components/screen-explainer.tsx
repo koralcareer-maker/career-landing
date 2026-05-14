@@ -68,30 +68,42 @@ export function ScreenExplainer({ title, description, videoUrl, walkthrough, sid
       </button>
 
       {open && (
+        // items-start + pt-20 anchors the modal near the top of the viewport,
+        // close to the "?" button that opened it. Was centered vertically
+        // before, which on long pages pushed the dialog far below the user's
+        // eye-line at the moment of click.
         <div
-          className="fixed inset-0 bg-navy/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-navy/50 backdrop-blur-sm z-[60] flex items-start justify-center p-4 pt-20 sm:pt-24 overflow-y-auto"
           dir="rtl"
           onClick={() => setOpen(false)}
         >
           <div
-            className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="screen-explainer-title"
+            className="bg-white rounded-3xl shadow-2xl w-full max-w-lg relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="סגירה"
-              className="absolute top-3 start-3 w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-navy flex items-center justify-center transition-colors"
+              aria-label="סגירת חלון ההסבר"
+              className="absolute top-3 start-3 w-8 h-8 rounded-full hover:bg-slate-100 text-slate-500 hover:text-navy flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-teal"
             >
-              <X size={16} />
+              <X size={16} aria-hidden="true" />
             </button>
 
             <div className="p-6 sm:p-7">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-9 h-9 bg-teal/10 rounded-xl flex items-center justify-center">
-                  <PlayCircle size={18} className="text-teal" />
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-9 h-9 bg-teal/10 rounded-xl flex items-center justify-center shrink-0">
+                  <PlayCircle size={18} className="text-teal" aria-hidden="true" />
                 </div>
-                <h2 className="text-lg font-black text-navy">איך משתמשים: {title}</h2>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-teal">סקירת המסך</p>
+                  <h2 id="screen-explainer-title" className="text-lg font-black text-navy leading-tight">
+                    {title}
+                  </h2>
+                </div>
               </div>
 
               {/* Walkthrough CTA — opens the floating PIP player */}
@@ -102,10 +114,10 @@ export function ScreenExplainer({ title, description, videoUrl, walkthrough, sid
                     setOpen(false);
                     setWalkthroughOpen(true);
                   }}
-                  className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-gradient-to-l from-teal to-teal-dark text-white font-bold text-sm px-5 py-3 rounded-2xl shadow-md shadow-teal/30 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                  className="mt-2 w-full inline-flex items-center justify-center gap-2 bg-gradient-to-l from-teal to-teal-dark text-white font-bold text-sm px-5 py-3 rounded-2xl shadow-md shadow-teal/30 hover:shadow-lg hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-4 focus:ring-teal/40"
                 >
-                  <Sparkles size={16} />
-                  סיור עם קורל ({walkthrough.chapters.length} שלבים)
+                  <Sparkles size={16} aria-hidden="true" />
+                  הדרכה אישית מקורל ({walkthrough.chapters.length} שלבים)
                 </button>
               )}
 
@@ -123,17 +135,11 @@ export function ScreenExplainer({ title, description, videoUrl, walkthrough, sid
 
               <div className="space-y-3 mt-4">
                 {paragraphs.map((p, i) => (
-                  <p key={i} className="text-sm text-slate-600 leading-relaxed">
+                  <p key={i} className="text-sm text-slate-700 leading-relaxed">
                     {p}
                   </p>
                 ))}
               </div>
-
-              {!videoUrl && !walkthrough && (
-                <p className="text-[11px] text-slate-400 mt-5 leading-relaxed">
-                  סרטון הסבר קצר יעלה כאן בקרוב.
-                </p>
-              )}
             </div>
           </div>
         </div>
