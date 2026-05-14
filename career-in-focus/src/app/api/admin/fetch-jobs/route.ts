@@ -14,7 +14,11 @@ import { ALL_CATEGORIES, MANAGEMENT, TECH, PROFESSIONAL } from "@/lib/job-catego
 import { syncCompanyCareers } from "@/lib/company-careers";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 600;
+// 300s is the highest Vercel allows on our plan — going higher (e.g.
+// 600) made the deploy step error out silently after a successful
+// build. The Gemini fetcher self-limits each query, so 5 min is
+// enough for a full pass.
+export const maxDuration = 300;
 
 export async function POST(req: Request) {
   const session = await auth();

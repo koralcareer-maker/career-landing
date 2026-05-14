@@ -23,7 +23,10 @@ import { syncCompanyCareers } from "@/lib/company-careers";
 const CRON_SECRET_FALLBACK = "career-in-focus-cron-2026";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 600; // up to 10 min — Gemini queries are slow
+// 300s is the highest our Vercel plan allows. 600 was silently failing
+// the deploy step. The fetcher is best-effort — if a run hits the
+// timeout, the next manual trigger picks up where it left off.
+export const maxDuration = 300;
 
 export async function GET(req: NextRequest) {
   const secret = process.env.CRON_SECRET ?? CRON_SECRET_FALLBACK;
