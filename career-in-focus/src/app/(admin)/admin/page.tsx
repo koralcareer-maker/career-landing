@@ -285,10 +285,10 @@ export default async function AdminDashboard() {
         <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">מדדים מרכזיים</h2>
         <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
           <KpiCard
-            label="חברים פעילים"
-            value={activeUsers.toLocaleString("he-IL")}
+            label="חברים משלמים"
+            value={payingMembers.toLocaleString("he-IL")}
             sub={compedUsers > 0
-              ? `${payingMembers} משלמים · ${compedUsers} מתנה`
+              ? `+ ${compedUsers} חשבונות מתנה (לא נספרים)`
               : `מתוך ${totalUsers.toLocaleString("he-IL")} רשומים`}
             icon={<Users size={18} />}
             color="emerald"
