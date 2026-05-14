@@ -139,17 +139,6 @@ export default async function ProfilePage({
         ]}
       />
 
-      {/* Personal Analysis sits ABOVE the passport hero so first-time
-          users see it immediately on the profile page. Once filled, it
-          collapses to a summary panel and the user can expand for the
-          full 10-section reading. */}
-      <PersonalAnalysisCard
-        initialAnalysis={personalAnalysis}
-        initialAnalysedAt={rawAnalysisAt ? new Date(rawAnalysisAt).toISOString() : null}
-        initialBirthDate={rawBirthDate ? new Date(rawBirthDate).toISOString() : null}
-        initialBirthPlace={rawBirthPlace}
-      />
-
       {passport && (
         <PassportHero
           passport={{
@@ -171,6 +160,22 @@ export default async function ProfilePage({
             yearsExperience: profile?.yearsExperience ?? null,
           }}
           completions={{ courses: courseCompletions, skills: skillCompletions }}
+        />
+      )}
+
+      {/* Personal Analysis — appears AFTER the Career Passport is
+          ready. It's a deeper, optional layer that complements the
+          passport: birthdate + birthplace → numerology + career
+          psychology reading + role recommendations that feed back
+          into the passport's likelyFitRoles. We hide it for users
+          who haven't generated a passport yet so the flow stays
+          linear: questionnaire → passport → personal analysis. */}
+      {passport && (
+        <PersonalAnalysisCard
+          initialAnalysis={personalAnalysis}
+          initialAnalysedAt={rawAnalysisAt ? new Date(rawAnalysisAt).toISOString() : null}
+          initialBirthDate={rawBirthDate ? new Date(rawBirthDate).toISOString() : null}
+          initialBirthPlace={rawBirthPlace}
         />
       )}
 
