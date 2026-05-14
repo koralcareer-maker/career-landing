@@ -311,6 +311,19 @@ model Profile {
   // ── Professional assets (step 4) ─────────────────────────────────
   portfolioUrl     String?
   additionalLinks  String?  // JSON array of { label, url }
+
+  // ── Personal Analysis (numerology + career psychology) ───────────
+  // Optional opt-in. When both fields are filled, the user can
+  // generate a deep personality + career analysis at
+  // /api/profile/personal-analysis (POST). Result is cached in
+  // `personalAnalysis` (JSON blob — see lib/personal-analysis.ts for
+  // the shape) so subsequent dashboard / passport views can read it
+  // without re-billing the LLM. `personalAnalysisAt` records when
+  // the analysis was last generated so the UI can show "מעודכן ב-…".
+  birthDate            DateTime?
+  birthPlace           String?
+  personalAnalysis     String?  // JSON — see PersonalAnalysisResult in lib/personal-analysis.ts
+  personalAnalysisAt   DateTime?
 }
 
 model CareerPassport {

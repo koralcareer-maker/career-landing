@@ -5,7 +5,9 @@ import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { JobSearchWizard } from "./wizard/job-search-wizard";
 import { PassportHero } from "./passport-hero";
+import { PersonalAnalysisCard } from "./personal-analysis-card";
 import type { WizardState } from "./wizard/types";
+import type { PersonalAnalysisResult } from "@/lib/personal-analysis";
 import { ScreenExplainer } from "@/components/screen-explainer";
 
 // Force fresh render per request — this page reads session cookies and the
@@ -107,6 +109,26 @@ export default async function ProfilePage({
   const hasFinishedSetup = !!passport || !!profile?.questionnaireCompleted;
   const showWizard = !hasFinishedSetup || params.edit === "1";
 
+  // Personal Analysis (numerology + career psychology). Stored as a
+  // JSON blob on Profile so reading it back is free; null when the
+  // user hasn't generated one yet.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawAnalysis = (profile as any)?.personalAnalysis ?? null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawAnalysisAt = (profile as any)?.personalAnalysisAt ?? null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawBirthDate = (profile as any)?.birthDate ?? null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawBirthPlace = (profile as any)?.birthPlace ?? null;
+  let personalAnalysis: PersonalAnalysisResult | null = null;
+  if (rawAnalysis) {
+    try {
+      personalAnalysis = JSON.parse(rawAnalysis) as PersonalAnalysisResult;
+    } catch {
+      personalAnalysis = null;
+    }
+  }
+
   return (
     <div className="space-y-6">
       <ScreenExplainer
@@ -115,6 +137,17 @@ export default async function ProfilePage({
           "כאן יושב דרכון הקריירה האישי שלך — סיכום AI של הפרופיל, ציון התאמה לשוק העבודה, חוזקות, פערים מקצועיים, תפקידים מומלצים וצעדי המשך.",
           "אפשר לערוך את הפרופיל בכל עת דרך הכפתור 'עריכת פרופיל' — כל עדכון יביא לדרכון מעודכן עם המלצות חדשות.",
         ]}
+      />
+
+      {/* Personal Analysis sits ABOVE the passport hero so first-time
+          users see it immediately on the profile page. Once filled, it
+          collapses to a summary panel and the user can expand for the
+          full 10-section reading. */}
+      <PersonalAnalysisCard
+        initialAnalysis={personalAnalysis}
+        initialAnalysedAt={rawAnalysisAt ? new Date(rawAnalysisAt).toISOString() : null}
+        initialBirthDate={rawBirthDate ? new Date(rawBirthDate).toISOString() : null}
+        initialBirthPlace={rawBirthPlace}
       />
 
       {passport && (
