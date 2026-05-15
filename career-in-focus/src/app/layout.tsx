@@ -2,33 +2,91 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AccessibilityWidget } from "@/components/accessibility/widget";
 
-// metadataBase makes Next.js resolve the relative og:image URL below
-// into an absolute one. WhatsApp / Facebook / Twitter all require an
-// absolute URL — without this, the og:image header points at a path
-// like "/logo.png" and the preview falls back to the Vercel triangle.
+// metadataBase makes Next.js resolve relative og:image URLs into
+// absolute ones. WhatsApp / Facebook / Twitter / LinkedIn all require
+// an absolute URL — without this the preview falls back to the Vercel
+// triangle.
+//
+// This file's title/description/keywords seed every page on the site.
+// Per-page metadata overrides specific fields where relevant (e.g.,
+// the pricing page sets its own title via its export const metadata).
 export const metadata: Metadata = {
   metadataBase: new URL("https://app.careerinfocus.co.il"),
-  title: "קריירה בפוקוס | קהילת מחפשי עבודה בישראל",
-  description: "הקהילה המקצועית למחפשי עבודה בישראל. תכנים, כלים, ניתוח קריירה, משרות ואירועים.",
+  title: {
+    default: "קריירה בפוקוס | קהילה למחפשי עבודה בישראל — תכנים, כלים ומאמן AI",
+    // %s gets replaced by page-specific titles, e.g. "פרופיל | קריירה בפוקוס"
+    template: "%s | קריירה בפוקוס",
+  },
+  description:
+    "פלטפורמה מקצועית למחפשי עבודה בישראל: דרכון קריירה מבוסס AI, ניתוח אישי מעמיק, מאמן AI אישי, אלפי משרות מעודכנות, ספריית מגייסים, וקהילה מקצועית. הצטרפו לקהילה.",
+  keywords: [
+    "חיפוש עבודה",
+    "קריירה",
+    "ניתוח קריירה",
+    "מאמן קריירה",
+    "מאמן AI",
+    "כלים לחיפוש עבודה",
+    "משרות בישראל",
+    "תפקידים בכירים",
+    "ניהול קריירה",
+    "קהילת מחפשי עבודה",
+    "דרכון קריירה",
+    "ייעוץ קריירה ישראל",
+  ],
+  authors: [{ name: "קורל שלו" }],
+  creator: "קורל שלו",
+  publisher: "קריירה בפוקוס",
+  applicationName: "קריירה בפוקוס",
+  // Canonical so Google doesn't index both apex + www separately.
+  alternates: {
+    canonical: "https://app.careerinfocus.co.il",
+    languages: { he: "https://app.careerinfocus.co.il" },
+  },
+  // Tell crawlers to index everything that isn't disallowed by robots.ts.
+  // Specific authenticated routes set their own noindex in their pages.
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
-    title: "קריירה בפוקוס",
-    description: "הקהילה המקצועית למחפשי עבודה בישראל",
+    title: "קריירה בפוקוס — כל מה שצריך לחיפוש עבודה",
+    description:
+      "פלטפורמה מקצועית למחפשי עבודה בישראל: דרכון קריירה AI, מאמן AI אישי, אלפי משרות מעודכנות, וקהילה מקצועית.",
     locale: "he_IL",
     type: "website",
+    siteName: "קריירה בפוקוס",
+    url: "https://app.careerinfocus.co.il",
     images: [
       {
         url: "/logo.png",
         width: 1254,
         height: 1254,
-        alt: "קריירה בפוקוס",
+        alt: "קריירה בפוקוס — פלטפורמה למחפשי עבודה בישראל",
       },
     ],
   },
   twitter: {
-    card: "summary",
-    title: "קריירה בפוקוס",
-    description: "הקהילה המקצועית למחפשי עבודה בישראל",
+    card: "summary_large_image",
+    title: "קריירה בפוקוס — כל מה שצריך לחיפוש עבודה",
+    description:
+      "פלטפורמה מקצועית למחפשי עבודה בישראל: דרכון AI, מאמן AI אישי, אלפי משרות, קהילה.",
     images: ["/logo.png"],
+  },
+  // Add the Search Console verification code here once Coral creates a
+  // property + grabs the meta value. Empty for now — env var override.
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
+  },
+  // Israeli geo-targeting hint for Bing / Yandex / DuckDuckGo.
+  other: {
+    "geo.region": "IL",
+    "geo.placename": "Israel",
   },
 };
 

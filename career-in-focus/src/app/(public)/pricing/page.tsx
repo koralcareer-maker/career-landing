@@ -1,7 +1,19 @@
 import Link from "next/link";
 import { CheckCircle, ChevronLeft, Crown, Zap, Star } from "lucide-react";
 
-export const metadata = { title: "מחירים | קריירה בפוקוס" };
+export const metadata = {
+  title: "מחירים — שלוש תוכניות חברות מ-19 ש\"ח לחודש",
+  description:
+    "שלוש תוכניות חברות בקריירה בפוקוס — מ-19 ש\"ח לחודש במבצע השקה. דרכון קריירה מבוסס AI, מאמן AI אישי, אלפי משרות מתאימות, וקהילה מקצועית. ביטול בכל עת.",
+  alternates: { canonical: "https://app.careerinfocus.co.il/pricing" },
+  openGraph: {
+    title: "מחירים — קריירה בפוקוס",
+    description:
+      "תוכניות חברות מ-19 ש\"ח לחודש. דרכון קריירה AI, מאמן אישי, משרות מותאמות. ביטול בכל עת.",
+    url: "https://app.careerinfocus.co.il/pricing",
+    type: "website",
+  },
+};
 
 // Pricing copy is owned by Coral. Three tiers; all-of-previous-tier is
 // implicit in the first feature line ("הכל מחבילת חבר" / "הכל מחבילת

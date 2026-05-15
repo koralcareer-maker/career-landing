@@ -2,6 +2,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle, Award, Clock, Users, Star, ChevronLeft, Heart, Target, Lightbulb } from "lucide-react";
 
+export const metadata = {
+  title: "אודות קורל שלו | קריירה בפוקוס",
+  description:
+    "קורל שלו — מייסדת קריירה בפוקוס, מאמנת קריירה עם תואר שני בייעוץ קריירה ו-10+ שנות ניסיון בגיוס ומשאבי אנוש. ליוותה 500+ אנשים למציאת עבודה.",
+  alternates: { canonical: "https://app.careerinfocus.co.il/about" },
+  openGraph: {
+    title: "אודות קורל שלו — מייסדת קריירה בפוקוס",
+    description:
+      "מאמנת קריירה עם תואר שני בייעוץ קריירה ו-10+ שנות ניסיון בגיוס ומשאבי אנוש. ליוותה 500+ אנשים למציאת עבודה.",
+    url: "https://app.careerinfocus.co.il/about",
+    type: "profile",
+  },
+};
+
 const CREDENTIALS = [
   { icon: Award,  text: "תואר שני (M.A.) בייעוץ קריירה ותעסוקה" },
   { icon: Clock,  text: "10+ שנות ניסיון בגיוס ומשאבי אנוש" },
