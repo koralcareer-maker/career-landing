@@ -28,6 +28,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      // Lead magnet — high priority for SEO since it's the page we
+      // want to rank for "בדיקת התאמה לעבודה" searches.
+      url: `${base}/cv-match`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.95,
+    },
+    {
       url: `${base}/login`,
       lastModified: now,
       changeFrequency: "yearly",
