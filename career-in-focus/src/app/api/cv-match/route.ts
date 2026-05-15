@@ -114,9 +114,9 @@ export async function POST(req: NextRequest) {
       { status: 400, headers: CORS_HEADERS },
     );
   }
-  if (!jobText || jobText.length < 30) {
+  if (!jobText || jobText.length < 3) {
     return NextResponse.json(
-      { error: "job-too-short", message: "תיאור המשרה קצר מדי. הדביקי את כל תיאור התפקיד." },
+      { error: "job-too-short", message: "תפקיד היעד קצר מדי. הזיני שם תפקיד או הדביקי תיאור משרה." },
       { status: 400, headers: CORS_HEADERS },
     );
   }

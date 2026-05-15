@@ -65,8 +65,8 @@ export function CvMatchClient() {
       setError("יש להעלות קובץ קו\"ח");
       return;
     }
-    if (jobText.trim().length < 30) {
-      setError("הדביקי את כל תיאור המשרה (לפחות 30 תווים)");
+    if (jobText.trim().length < 3) {
+      setError("הזיני שם תפקיד יעד (לפחות 3 תווים)");
       return;
     }
 
@@ -249,23 +249,26 @@ export function CvMatchClient() {
               )}
             </div>
 
-            {/* Step 2: Job description */}
+            {/* Step 2: Target role (short) OR full job description */}
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-teal text-white text-sm font-bold">
                   2
                 </span>
-                <h2 className="text-lg font-black text-navy">תיאור המשרה</h2>
+                <h2 className="text-lg font-black text-navy">תפקיד היעד</h2>
               </div>
+              {/* textarea (not input) so users can paste a full job ad
+                  if they want — but the default 2-row height suggests
+                  short input by default. Analyser accepts both. */}
               <textarea
                 value={jobText}
                 onChange={(e) => setJobText(e.target.value)}
-                placeholder="העתיקי את התיאור המלא של המשרה — שם החברה, התפקיד, דרישות, תיאור היום-יום..."
-                rows={6}
-                className="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:border-teal focus:ring-2 focus:ring-teal/20 outline-none text-sm resize-y"
+                placeholder='לדוגמה: "מנהל פרויקטים בכיר", "Senior Product Manager", "מנהלת חשבונות"... או הדביקי תיאור משרה מלא לדיוק גבוה יותר.'
+                rows={2}
+                className="w-full px-4 py-3 rounded-2xl border border-slate-300 focus:border-teal focus:ring-2 focus:ring-teal/20 outline-none text-sm resize-y min-h-[60px]"
               />
               <p className="text-xs text-slate-500 mt-1.5">
-                💡 ככל שתיאור המשרה מלא יותר — הניתוח מדויק יותר
+                💡 שם התפקיד מספיק לניתוח. תיאור משרה מלא ייתן ניתוח מדויק יותר.
               </p>
             </div>
 

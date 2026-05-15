@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle, ChevronLeft, Crown, Zap, Star, Users, TrendingUp, Sparkles, ArrowLeft } from "lucide-react";
+import { CheckCircle, ChevronLeft, Crown, Zap, Star, Users, TrendingUp, ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 // Force a fresh count on every visit so the social-proof number is
@@ -166,19 +166,14 @@ export default async function PricingPage() {
 
           <div className="relative grid sm:grid-cols-[1fr_auto] gap-5 items-center">
             <div>
-              <span className="inline-flex items-center gap-1.5 bg-teal/20 border border-teal/30 text-teal-pale text-xs font-bold px-3 py-1.5 rounded-full mb-3">
-                <Sparkles size={12} aria-hidden="true" />
-                כלי AI חינמי · ללא הרשמה
-              </span>
               <h2 className="text-2xl sm:text-3xl font-black leading-tight mb-2">
-                לפני שאתה משלמ/ת —{" "}
                 <span className="bg-gradient-to-l from-teal-pale to-teal bg-clip-text text-transparent">
                   בדקו את ההתאמה שלכם בחינם
                 </span>
               </h2>
               <p className="text-white/80 text-sm sm:text-base leading-relaxed max-w-xl">
-                העלי קו&quot;ח + הדביקי תיאור משרה → תוך 15 שניות מקבלים ציון התאמה
-                אמיתי, חוזקות, פערים ופעולות. בלי לתת מייל, בלי לקבל ספאם.
+                העלו קורות חיים ושם תפקיד יעד — תקבלו ניתוח מקצועי וציון התאמה
+                שיכוון אתכם לקידום חיפוש העבודה.
               </p>
             </div>
             <div className="inline-flex items-center gap-2 bg-white text-navy font-black px-5 py-3 rounded-2xl shadow-lg group-hover:bg-cream transition-colors whitespace-nowrap shrink-0">
