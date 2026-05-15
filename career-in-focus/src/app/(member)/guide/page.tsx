@@ -124,10 +124,10 @@ export default async function GuidePage() {
 
       {/* Welcome Banner */}
       <div className="bg-gradient-to-l from-navy to-[#1a3a5c] rounded-2xl p-6 text-white">
-        <p className="font-black text-lg mb-1">ברוך הבא לקריירה בפוקוס! 🎉</p>
+        <p className="font-black text-lg mb-1">ברוכים הבאים לקריירה בפוקוס! 🎉</p>
         <p className="text-white/70 text-sm leading-relaxed">
-          הפלטפורמה מכילה הכל שצריך כדי לחפש עבודה בצורה חכמה, מסודרת ופחות לבד.
-          עקוב אחרי הצעדים כאן ותצא לדרך הנכונה.
+          הפלטפורמה מכילה את כל מה שצריך כדי למצוא את העבודה הבאה שלך — בצורה חכמה,
+          מסודרת ופחות לבד. הצעדים בעמוד הזה מובילים אתכם משלב לשלב.
         </p>
       </div>
 

@@ -157,7 +157,7 @@ export default function AboutPage() {
             <Image src="/koral.jpg" alt="קורל שלו" fill className="object-cover object-top" />
           </div>
           <h2 className="text-3xl font-black text-white mb-3">בואו נתחיל ביחד</h2>
-          <p className="text-white/70 mb-8">הצטרפו לקהילה וקבלו גישה לכל הכלים, התכנים, והליווי שצריכים כדי למצוא עבודה חכם יותר ומהר יותר.</p>
+          <p className="text-white/70 mb-8">הצטרפו לקהילה וקבלו גישה לכל מה שצריך כדי למצוא את העבודה הבאה שלכם — תכנים, כלים, ניתוח קריירה מבוסס AI, אלפי משרות, וליווי מקצועי.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/pricing" className="bg-teal text-white font-bold px-8 py-4 rounded-2xl hover:bg-teal-dark hover:-translate-y-0.5 transition-all shadow-md text-base inline-flex items-center gap-2 justify-center">
               הצטרפות לקהילה
