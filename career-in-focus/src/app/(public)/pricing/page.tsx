@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle, ChevronLeft, Crown, Zap, Star, Users, TrendingUp } from "lucide-react";
+import { CheckCircle, ChevronLeft, Crown, Zap, Star, Users, TrendingUp, Sparkles, ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
 // Force a fresh count on every visit so the social-proof number is
@@ -150,7 +150,44 @@ export default async function PricingPage() {
         <Link href="/login" className="text-sm font-medium text-navy/70 hover:text-navy transition-colors">כניסה</Link>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-6 py-16">
+      <div className="max-w-5xl mx-auto px-6 py-12">
+        {/* ────────────────────────────────────────────────────────
+            CV-Match teaser — top of page, BEFORE pricing.
+            Coral asked to surface the lead magnet prominently so
+            visitors get value-first before they see the price tag.
+            ──────────────────────────────────────────────────────── */}
+        <Link
+          href="/cv-match"
+          className="group relative block bg-gradient-to-l from-navy via-[#1a3a4a] to-[#0d2d3a] text-white rounded-3xl p-6 sm:p-8 shadow-xl mb-10 overflow-hidden hover:shadow-2xl transition-shadow"
+        >
+          {/* Decorative orbs */}
+          <div aria-hidden="true" className="absolute -top-20 -right-16 w-64 h-64 bg-teal/20 rounded-full blur-3xl" />
+          <div aria-hidden="true" className="absolute -bottom-20 -left-16 w-64 h-64 bg-purple-500/15 rounded-full blur-3xl" />
+
+          <div className="relative grid sm:grid-cols-[1fr_auto] gap-5 items-center">
+            <div>
+              <span className="inline-flex items-center gap-1.5 bg-teal/20 border border-teal/30 text-teal-pale text-xs font-bold px-3 py-1.5 rounded-full mb-3">
+                <Sparkles size={12} aria-hidden="true" />
+                כלי AI חינמי · ללא הרשמה
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black leading-tight mb-2">
+                לפני שאתה משלמ/ת —{" "}
+                <span className="bg-gradient-to-l from-teal-pale to-teal bg-clip-text text-transparent">
+                  בדקו את ההתאמה שלכם בחינם
+                </span>
+              </h2>
+              <p className="text-white/80 text-sm sm:text-base leading-relaxed max-w-xl">
+                העלי קו&quot;ח + הדביקי תיאור משרה → תוך 15 שניות מקבלים ציון התאמה
+                אמיתי, חוזקות, פערים ופעולות. בלי לתת מייל, בלי לקבל ספאם.
+              </p>
+            </div>
+            <div className="inline-flex items-center gap-2 bg-white text-navy font-black px-5 py-3 rounded-2xl shadow-lg group-hover:bg-cream transition-colors whitespace-nowrap shrink-0">
+              התחילו בדיקה
+              <ArrowLeft size={16} aria-hidden="true" />
+            </div>
+          </div>
+        </Link>
+
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-teal/10 text-teal text-xs font-bold px-4 py-2 rounded-full mb-4">
