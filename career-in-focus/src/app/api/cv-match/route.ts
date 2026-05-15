@@ -22,6 +22,76 @@ import { NextRequest, NextResponse } from "next/server";
 import { extractCvText } from "@/lib/cv-extract";
 import { analyzeCvMatch, CvMatchError } from "@/lib/cv-match-analyzer";
 
+// Gemini vision OCR — used when native PDF/DOCX extraction returns
+// too little text. Mirrors the approach in /api/profile/analyze-cv:
+// hand Gemini Flash the raw bytes as inline_data and ask it to OCR
+// everything it sees, no commentary.
+const VISION_EXTRACTION_PROMPT =
+  `קרא את הטקסט המלא בקובץ קורות החיים המצורף וצא אותו בלבד. אם הקובץ הוא PDF סרוק או תמונה, חלץ טקסט באמצעות OCR. אל תוסיף הקדמות או הסברים — רק את הטקסט המלא, מסודר לפי הסדר שמופיע בקובץ.`;
+
+const VISION_MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash",
+];
+
+async function geminiVisionExtract(buf: Buffer, mime: string): Promise<string> {
+  const key = process.env.GEMINI_API_KEY?.trim();
+  if (!key) throw new Error("GEMINI_API_KEY missing");
+
+  const body = JSON.stringify({
+    contents: [
+      {
+        role: "user",
+        parts: [
+          { inline_data: { mime_type: mime, data: buf.toString("base64") } },
+          { text: VISION_EXTRACTION_PROMPT },
+        ],
+      },
+    ],
+    generationConfig: { maxOutputTokens: 4096, temperature: 0.2 },
+  });
+
+  // Try the model cascade — if Flash is rate-limited (very common on free
+  // tier), bump to 2.0-Flash then 1.5-Flash. CV upload must NEVER fail
+  // because of model quota.
+  let lastErr: string = "";
+  for (const model of VISION_MODELS) {
+    try {
+      const r = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          signal: AbortSignal.timeout(45_000),
+        },
+      );
+      if (!r.ok) {
+        lastErr = `${model}: HTTP ${r.status}`;
+        if (r.status === 429 || r.status === 503) continue;
+        const errBody = await r.text().catch(() => "");
+        lastErr = `${model}: ${r.status} ${errBody.slice(0, 200)}`;
+        continue;
+      }
+      const data = (await r.json()) as {
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+        error?: { message?: string };
+      };
+      if (data.error?.message) {
+        lastErr = `${model}: ${data.error.message}`;
+        continue;
+      }
+      const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+      if (text.trim().length > 0) return text;
+      lastErr = `${model}: empty response`;
+    } catch (e) {
+      lastErr = `${model}: ${e instanceof Error ? e.message : "fetch error"}`;
+    }
+  }
+  throw new Error(`Vision extraction failed across all models. Last: ${lastErr}`);
+}
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -85,7 +155,12 @@ export async function POST(req: NextRequest) {
           const ab = await (file as File).arrayBuffer();
           const buf = Buffer.from(ab);
           const fileName = (file as File).name ?? "cv.pdf";
-          const extraction = await extractCvText(buf, fileName);
+          // Pass the Gemini vision callback so the extractor can OCR
+          // scanned PDFs / image-only PDFs / DOCs etc. Without this
+          // callback the lib silently returns empty text on every PDF.
+          const extraction = await extractCvText(buf, fileName, {
+            aiVisionExtract: geminiVisionExtract,
+          });
           cvText = extraction.text;
           if (!cvText) {
             return NextResponse.json(
