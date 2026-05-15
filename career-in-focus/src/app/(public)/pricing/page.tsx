@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { CheckCircle, ChevronLeft, Crown, Zap, Star } from "lucide-react";
+import { CheckCircle, ChevronLeft, Crown, Zap, Star, Users, TrendingUp } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+
+// Force a fresh count on every visit so the social-proof number is
+// honest — caching would let the page lie when activity stops.
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "מחירים — שלוש תוכניות חברות מ-19 ש\"ח לחודש",
@@ -122,7 +127,18 @@ const FAQ = [
   { q: "מה זה VIP?", a: "ליווי אישי וצמוד לאורך כל תהליך החיפוש. כולל פגישת ייעוץ אישית עם קורל, שיפור קורות חיים, סימולציות ראיונות, וגישה להזדמנויות 'מתחת לרדאר' — הכל בנוסף לכל מה שיש ב-PRO." },
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  // Live social-proof numbers. Members + jobs scaled — when starting
+  // out, the raw active-user count is too small to be persuasive, so
+  // we surface the more meaningful "newcomers this week" + total jobs.
+  const day = 24 * 60 * 60 * 1000;
+  const sevenDaysAgo = new Date(Date.now() - 7 * day);
+  const [activeMembers, joinedThisWeek, activeJobs] = await Promise.all([
+    prisma.user.count({ where: { accessStatus: "ACTIVE" } }),
+    prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+    prisma.job.count({ where: { isPublished: true } }),
+  ]);
+
   return (
     <div className="min-h-screen bg-slate-50" dir="rtl">
       {/* Nav */}
@@ -136,7 +152,7 @@ export default function PricingPage() {
 
       <div className="max-w-5xl mx-auto px-6 py-16">
         {/* Header */}
-        <div className="text-center mb-14">
+        <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-teal/10 text-teal text-xs font-bold px-4 py-2 rounded-full mb-4">
             🎯 הצטרף לקהילה
           </div>
@@ -144,6 +160,39 @@ export default function PricingPage() {
           <p className="text-gray-500 text-lg max-w-xl mx-auto">
             כל המסלולים כוללים גישה מלאה לכלים, המשרות, הקורסים והקהילה
           </p>
+        </div>
+
+        {/* Live social-proof strip — three real-time numbers from the DB.
+            Sits above the plans so the visitor sees momentum before they
+            decide. Numbers refresh on every page view. */}
+        <div className="grid grid-cols-3 gap-3 sm:gap-6 max-w-2xl mx-auto mb-12">
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-teal/10 text-teal mb-1.5">
+              <Users size={18} aria-hidden="true" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-navy">
+              {activeMembers.toLocaleString("he-IL")}
+            </div>
+            <div className="text-[11px] sm:text-xs text-slate-500 mt-0.5">חברים פעילים</div>
+          </div>
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-purple-100 text-purple-700 mb-1.5">
+              <TrendingUp size={18} aria-hidden="true" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-navy">
+              +{joinedThisWeek.toLocaleString("he-IL")}
+            </div>
+            <div className="text-[11px] sm:text-xs text-slate-500 mt-0.5">הצטרפו השבוע</div>
+          </div>
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-amber-100 text-amber-700 mb-1.5">
+              <Star size={18} aria-hidden="true" />
+            </div>
+            <div className="text-2xl sm:text-3xl font-black text-navy">
+              {activeJobs.toLocaleString("he-IL")}
+            </div>
+            <div className="text-[11px] sm:text-xs text-slate-500 mt-0.5">משרות פעילות</div>
+          </div>
         </div>
 
         {/* Plans */}

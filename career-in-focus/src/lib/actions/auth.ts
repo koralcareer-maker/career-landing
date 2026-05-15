@@ -43,6 +43,30 @@ export async function signup(prevState: unknown, formData: FormData) {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
+  // Referral handling — if the user arrived via a `ref` link, the signup
+  // page tucks the code into a hidden form field. We look up the referrer
+  // and pin the new user to them. The reward (free month) gets credited
+  // in the CardCom webhook after the new user pays, not here — we don't
+  // want to gift months to fake signups that never convert.
+  const referralCodeRaw = ((formData.get("ref") as string) ?? "").trim().toUpperCase();
+  let referredById: string | undefined;
+  if (referralCodeRaw && referralCodeRaw.length >= 6 && referralCodeRaw.length <= 12) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const referrer = await (prisma.user as any).findUnique({
+      where: { referralCode: referralCodeRaw },
+      select: { id: true },
+    });
+    if (referrer) referredById = referrer.id;
+  }
+
+  // Generate a unique referral code for the new user — they can start
+  // sharing it the moment they're in. Collisions on the 8-char code are
+  // astronomically rare but we retry once defensively.
+  function makeCode() {
+    return Math.random().toString(36).slice(2, 10).toUpperCase();
+  }
+  let referralCode = makeCode();
+
   await prisma.user.create({
     data: {
       name,
@@ -52,7 +76,20 @@ export async function signup(prevState: unknown, formData: FormData) {
       role: "MEMBER",
       accessStatus: "PENDING",
       membershipType: plan, // store chosen plan — activated after payment
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...({ referralCode, referredById } as any),
     },
+  }).catch(async () => {
+    // Almost certainly the referralCode unique-collision — regenerate once.
+    referralCode = makeCode();
+    await prisma.user.create({
+      data: {
+        name, email, passwordHash, gender,
+        role: "MEMBER", accessStatus: "PENDING", membershipType: plan,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...({ referralCode, referredById } as any),
+      },
+    });
   });
 
   // Auto sign in. Same trick as login: redirect:false on signIn + Next.js

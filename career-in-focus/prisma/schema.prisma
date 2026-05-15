@@ -195,6 +195,18 @@ model User {
   // Per-channel granularity (separate email vs in-app) can come later;
   // first version is a single big "off" switch.
   notificationsEnabled Boolean @default(true)
+
+  // ── Referral program ─────────────────────────────────────────────
+  // Each user gets a unique referral code at signup. When someone
+  // else signs up with ?ref=<code>, we record the referrer here.
+  // Both parties get rewards (set in CardCom flow or admin tools):
+  //   - new user: 19 ש"ח first month (existing launch promo)
+  //   - referrer: one free month added to nextChargeAt
+  // referralCount is a denormalised tally for the dashboard so we
+  // don't need to JOIN every render.
+  referralCode    String?   @unique
+  referredById    String?
+  referralCount   Int       @default(0)
 }
 
 // One row per (user, device fingerprint). The fingerprint is the SHA-256

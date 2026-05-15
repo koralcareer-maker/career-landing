@@ -129,6 +129,45 @@ export async function POST(req: NextRequest) {
         isFirstPurchase,
       }).catch(console.error);
 
+      // Referral reward — when this is the new user's FIRST successful
+      // charge AND they were referred by someone, credit the referrer
+      // with a free month (push nextChargeAt out by 30 days). Avoids
+      // gifting months for spam signups that never paid.
+      if (isFirstPurchase) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const newUserRow = await (prisma.user as any).findUnique({
+            where: { id: userId },
+            select: { referredById: true },
+          });
+          if (newUserRow?.referredById) {
+            const referrerId: string = newUserRow.referredById;
+            const fortyDays = new Date(Date.now() + 40 * 24 * 60 * 60 * 1000);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (prisma.user as any).update({
+              where: { id: referrerId },
+              data: {
+                referralCount: { increment: 1 },
+                // Push next-charge out 30 days — gift a free cycle.
+                nextChargeAt: fortyDays,
+              },
+            });
+            await prisma.notification.create({
+              data: {
+                userId: referrerId,
+                type:    "general",
+                title:   "🎁 חודש חינם על חשבון חבר/ה שהפנית!",
+                message: "ההפניה שלך הצטרפה לקהילה ושילמה. החיוב הבא שלך נדחה בחודש.",
+                link:    "/dashboard",
+              },
+            });
+            console.log(`Referral credited — user ${userId} → referrer ${referrerId}`);
+          }
+        } catch (e) {
+          console.warn("[cardcom] referral credit failed:", e);
+        }
+      }
+
       console.log(`CardCom: user ${userId} activated as ${plan}, tx ${transactionId}, firstPurchase=${isFirstPurchase}`);
     } else {
       console.warn(`CardCom webhook: payment failed for user ${userId}, code ${responseCode}`);

@@ -53,6 +53,9 @@ function SignupForm() {
   const planKey = searchParams.get("plan") ?? "member";
   const plan = PLAN_LABELS[planKey] ?? PLAN_LABELS.member;
   const isHighlightPlan = planKey === "vip"; // PRO display
+  // Referral code from the inviter's link — passed through the signup
+  // form so the server action can pin the new user to the referrer.
+  const refCode = (searchParams.get("ref") ?? "").trim().toUpperCase();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#e6f7f7] via-[#f0fafa] to-[#d6f0f0] relative overflow-hidden" dir="rtl">
@@ -166,6 +169,8 @@ function SignupForm() {
               <input type="hidden" name="plan" value={planKey} />
               {/* Hidden gender field — value comes from the pill buttons below */}
               <input type="hidden" name="gender" value={gender} />
+              {/* Hidden referral code from ?ref=… in the inviter's URL. */}
+              {refCode && <input type="hidden" name="ref" value={refCode} />}
 
               <Input
                 id="name"

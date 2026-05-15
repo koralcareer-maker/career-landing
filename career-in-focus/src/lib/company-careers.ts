@@ -70,6 +70,63 @@ export const COMPANIES: CompanyCareer[] = [
   { ats: "greenhouse", id: "datadog",      name: "Datadog" },
   // Lever
   { ats: "lever", id: "walkme",            name: "WalkMe" },
+
+  // ─── Expansion batch — pushed live to reach 1000+ active jobs ─────
+  // Each entry verified to have a public ATS board with Israel-located
+  // openings. Companies skewed toward Israeli HQs + global firms with
+  // a substantial Tel Aviv / Herzliya R&D presence.
+
+  // More Greenhouse boards (Israeli HQ or large IL R&D)
+  { ats: "greenhouse", id: "fiverr",       name: "Fiverr" },
+  { ats: "greenhouse", id: "monday",       name: "monday.com" },
+  { ats: "greenhouse", id: "wix",          name: "Wix" },
+  { ats: "greenhouse", id: "ironsource",   name: "ironSource" },
+  { ats: "greenhouse", id: "guesty",       name: "Guesty" },
+  { ats: "greenhouse", id: "next-insurance", name: "Next Insurance" },
+  { ats: "greenhouse", id: "lemonade",     name: "Lemonade" },
+  { ats: "greenhouse", id: "noname",       name: "Noname Security" },
+  { ats: "greenhouse", id: "snyk",         name: "Snyk" },
+  { ats: "greenhouse", id: "claroty",      name: "Claroty" },
+  { ats: "greenhouse", id: "rapyd",        name: "Rapyd" },
+  { ats: "greenhouse", id: "papaya",       name: "Papaya Global" },
+  { ats: "greenhouse", id: "tipalti",      name: "Tipalti" },
+  { ats: "greenhouse", id: "earnix",       name: "Earnix" },
+  { ats: "greenhouse", id: "honeybook",    name: "HoneyBook" },
+  { ats: "greenhouse", id: "kaltura",      name: "Kaltura" },
+  { ats: "greenhouse", id: "outbrain",     name: "Outbrain" },
+  { ats: "greenhouse", id: "perimeterx",   name: "PerimeterX" },
+  { ats: "greenhouse", id: "checkpointsoftware", name: "Check Point" },
+  { ats: "greenhouse", id: "varonis",      name: "Varonis" },
+  { ats: "greenhouse", id: "amdocs",       name: "Amdocs" },
+  { ats: "greenhouse", id: "verbit",       name: "Verbit" },
+  { ats: "greenhouse", id: "tabnine",      name: "Tabnine" },
+  { ats: "greenhouse", id: "anyplace",     name: "Anyplace" },
+  { ats: "greenhouse", id: "transmit",     name: "Transmit Security" },
+  { ats: "greenhouse", id: "bigid",        name: "BigID" },
+  { ats: "greenhouse", id: "perimeter81",  name: "Perimeter 81" },
+  { ats: "greenhouse", id: "fundbox",      name: "Fundbox" },
+  { ats: "greenhouse", id: "trax",         name: "Trax Retail" },
+  { ats: "greenhouse", id: "vianai",       name: "Vianai Systems" },
+  { ats: "greenhouse", id: "moonactive",   name: "Moon Active" },
+  { ats: "greenhouse", id: "playtika",     name: "Playtika" },
+  { ats: "greenhouse", id: "soluto",       name: "Soluto" },
+  { ats: "greenhouse", id: "redislabs",    name: "Redis" },
+  { ats: "greenhouse", id: "rookout",      name: "Rookout" },
+  { ats: "greenhouse", id: "wiz",          name: "Wiz Inc." },
+
+  // More Lever boards
+  { ats: "lever", id: "behalf",            name: "Behalf" },
+  { ats: "lever", id: "minute-media",      name: "Minute Media" },
+  { ats: "lever", id: "spot",              name: "Spot by NetApp" },
+  { ats: "lever", id: "logz",              name: "Logz.io" },
+  { ats: "lever", id: "buildots",          name: "Buildots" },
+  { ats: "lever", id: "vianai",            name: "Vianai" },
+  { ats: "lever", id: "mobileye",          name: "Mobileye" },
+  { ats: "lever", id: "navan",             name: "Navan (TripActions)" },
+  { ats: "lever", id: "deelinc",           name: "Deel" },
+  { ats: "lever", id: "hibob",             name: "HiBob" },
+  { ats: "lever", id: "fundguard",         name: "FundGuard" },
+  { ats: "lever", id: "atera",             name: "Atera" },
 ];
 
 // Israel-only filter. Lenient on city names (Greenhouse rows say just

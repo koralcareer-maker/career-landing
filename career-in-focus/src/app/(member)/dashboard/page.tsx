@@ -19,6 +19,7 @@ import {
 import { DashboardTourWithQueryTrigger } from "@/components/onboarding/dashboard-tour";
 import { createGenderT } from "@/lib/gender";
 import { ScreenExplainer } from "@/components/screen-explainer";
+import { ReferralCard } from "@/components/referral-card";
 import { DASHBOARD as DASHBOARD_WALKTHROUGH } from "@/lib/walkthroughs";
 
 export default async function DashboardPage() {
@@ -32,7 +33,7 @@ export default async function DashboardPage() {
   const t = createGenderT(session!.user.gender);
 
   // Pull a wider set so the matcher has enough material to filter from.
-  const [profile, passport, allJobs, upcomingEvents, posts, allCourses] = await Promise.all([
+  const [profile, passport, allJobs, upcomingEvents, posts, allCourses, currentUser] = await Promise.all([
     prisma.profile.findUnique({ where: { userId } }),
     prisma.careerPassport.findUnique({ where: { userId } }),
     prisma.job.findMany({ where: { isPublished: true }, take: 60, orderBy: { createdAt: "desc" } }),
@@ -52,7 +53,19 @@ export default async function DashboardPage() {
       include: { author: { select: { name: true, image: true } } }
     }),
     prisma.course.findMany({ where: { isPublished: true }, take: 60, orderBy: { createdAt: "desc" } }),
+    // Pull the user's referral fields. They're optional on the type
+    // until Prisma regenerates client-side, so we cast.
+    prisma.user.findUnique({
+      where: { id: userId },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      select: { referralCode: true, referralCount: true } as any,
+    }),
   ]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const referralCode = (currentUser as any)?.referralCode ?? null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const referralCount = (currentUser as any)?.referralCount ?? 0;
 
   const readinessScore = profile ? getReadinessScore(profile) : 0;
   const displayedScore = getDisplayedMatchScore(passport, readinessScore);
@@ -251,6 +264,9 @@ export default async function DashboardPage() {
 
           </div>
         </div>
+
+        {/* ─── Referral card — sits high so members see + share it early ─── */}
+        <ReferralCard referralCode={referralCode} referralCount={referralCount} />
 
         {/* ─── Job-search-OS widgets (only if user has activity) ─── */}
         {(upcomingInterviews.length > 0 || dueReminders.length > 0) && (
