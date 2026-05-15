@@ -4,11 +4,13 @@ import Link from "next/link";
 import { logout } from "@/lib/actions/auth";
 import {
   LayoutDashboard, Users, BookOpen, Wrench, Briefcase,
-  CalendarDays, MessageSquare, Star, LogOut, ChevronLeft, Settings, Mail, UserSearch
+  CalendarDays, MessageSquare, Star, LogOut, ChevronLeft, Settings, Mail, UserSearch,
+  Megaphone,
 } from "lucide-react";
 
 const ADMIN_NAV = [
   { href: "/admin",              label: "סקירה כללית",  icon: LayoutDashboard, exact: true },
+  { href: "/admin/launch-kit",   label: "ערכת השקה",    icon: Megaphone },
   { href: "/admin/users",        label: "משתמשים",      icon: Users },
   { href: "/admin/broadcast",    label: "תפוצת מייל",   icon: Mail },
   { href: "/admin/courses",      label: "קורסים",       icon: BookOpen },
