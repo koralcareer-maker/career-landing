@@ -14,7 +14,7 @@ export const metadata = {
   openGraph: {
     title: "מחירים — קריירה בפוקוס",
     description:
-      "תוכניות חברות מ-19 ש\"ח לחודש. דרכון קריירה AI, מאמן אישי, משרות מותאמות. ביטול בכל עת.",
+      "תוכניות חברות מ-19 ש\"ח לחודש. דרכון קריירה, מאמן אישי, משרות מותאמות. ביטול בכל עת.",
     url: "https://app.careerinfocus.co.il/pricing",
     type: "website",
   },
