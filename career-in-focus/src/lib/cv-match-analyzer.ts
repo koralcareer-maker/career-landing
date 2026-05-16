@@ -122,10 +122,10 @@ const SYSTEM_PROMPT = `אתה יועץ קריירה בכיר ב"קריירה ב�
 
 function buildUserPrompt(cvText: string, jobText: string): string {
   return `--- קורות חיים ---
-${cvText.trim().slice(0, 8000)}
+${cvText.trim().slice(0, 5000)}
 
 --- תפקיד היעד ---
-${jobText.trim().slice(0, 4000)}
+${jobText.trim().slice(0, 2000)}
 
 נתח את ההתאמה. אם הקלט קצר (שם תפקיד בלבד) — השתמש בידע שוק העבודה הישראלי כדי להסיק את הדרישות הסטנדרטיות לתפקיד וצור ניתוח על בסיסן. החזר JSON תקני בלבד, ללא markdown fences, ללא הקדמה.`;
 }
@@ -236,12 +236,15 @@ async function callGeminiModel(
         contents: [{ role: "user", parts: [{ text: user }] }],
         generationConfig: {
           temperature: 0.6,
-          // 8192 keeps long Hebrew structured responses from being
-          // truncated mid-array (the cause of Coral's "Expected ','
-          // or ']'" parse error). Gemini's hidden 'thinking' tokens
-          // count against this cap, so the buffer matters.
-          maxOutputTokens: 8192,
+          // 4096 is enough for the bounded JSON schema (3 strengths +
+          // 3 gaps + scalars). thinkingBudget=0 disables Gemini's
+          // hidden reasoning tokens — they're what was making this
+          // feel slow (10-15s extra). Quality is still strong for
+          // a structured task like this.
+          maxOutputTokens: 4096,
           responseMimeType: "application/json",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...({ thinkingConfig: { thinkingBudget: 0 } } as any),
         },
       }),
     });

@@ -404,7 +404,9 @@ function ResultView({
         </div>
       </section>
 
-      {/* ─── Gaps ───────────────────────── */}
+      {/* ─── Gaps — titles only (no detail). Curiosity gap pushes the
+              visitor to upgrade for the full plan. Each card carries
+              a Lock badge to reinforce "there's more behind". ─── */}
       <section>
         <h2 className="text-lg font-black text-navy mb-3 flex items-center gap-2">
           <AlertTriangle size={18} className="text-amber-600" aria-hidden="true" />
@@ -419,24 +421,24 @@ function ResultView({
                 ? { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-900", icon: "text-amber-600", label: "חשוב" }
                 : { bg: "bg-slate-50", border: "border-slate-200", text: "text-slate-900", icon: "text-slate-600", label: "כדאי" };
             return (
-              <div key={i} className={`${sev.bg} ${sev.border} border rounded-2xl p-4`}>
-                <div className="flex items-start gap-2 mb-1.5">
+              <div key={i} className={`${sev.bg} ${sev.border} border rounded-2xl p-4 relative`}>
+                <Lock size={12} className={`absolute top-3 start-3 ${sev.icon} opacity-50`} aria-hidden="true" />
+                <div className="flex items-start gap-2">
                   <AlertTriangle size={18} className={`${sev.icon} shrink-0 mt-0.5`} aria-hidden="true" />
                   <div className="flex-1 min-w-0">
                     <p className={`font-black text-sm leading-snug ${sev.text}`}>{g.title}</p>
-                    <span className={`inline-block text-[10px] font-bold uppercase tracking-wider mt-0.5 ${sev.icon}`}>
+                    <span className={`inline-block text-[10px] font-bold uppercase tracking-wider mt-1 ${sev.icon}`}>
                       {sev.label}
                     </span>
                   </div>
                 </div>
-                <p className={`text-xs leading-relaxed mt-2 pr-7 ${sev.text} opacity-80`}>{g.why}</p>
-                <p className={`text-xs leading-relaxed mt-2 pr-7 font-semibold ${sev.text}`}>
-                  💡 {g.action}
-                </p>
               </div>
             );
           })}
         </div>
+        <p className="text-xs text-slate-500 text-center mt-3">
+          💡 ההסבר המלא והפעולות לסגירת כל פער מחכים בתוך המערכת
+        </p>
       </section>
 
       {/* ─── Top lever ───────────────────────── */}
@@ -456,66 +458,46 @@ function ResultView({
         </div>
       </section>
 
-      {/* ─── Locked premium teaser + CTA ─────── */}
+      {/* ─── Locked premium teaser + CTA ───────
+              Curiosity over detail: tell them THAT the system has the
+              answers, not WHAT exactly. Five icon pills hint at depth
+              without spelling it out. The full feature list lives at
+              /pricing — the teaser pushes them there. */}
       <section className="bg-white rounded-3xl border-2 border-teal/30 shadow-xl overflow-hidden">
-        <div className="bg-gradient-to-l from-navy via-[#1a3a4a] to-[#0d2d3a] text-white p-6 sm:p-8">
-          <p className="text-xs font-bold uppercase tracking-wider text-teal mb-2 flex items-center gap-1.5">
+        <div className="bg-gradient-to-l from-navy via-[#1a3a4a] to-[#0d2d3a] text-white p-6 sm:p-10 text-center">
+          <span className="inline-flex items-center gap-1.5 bg-teal/15 border border-teal/30 text-teal-pale text-xs font-bold px-3 py-1.5 rounded-full mb-4">
             <Lock size={12} aria-hidden="true" />
-            הצעד הבא ב-קריירה בפוקוס
-          </p>
-          <h2 className="text-2xl sm:text-3xl font-black leading-tight mb-3">
-            {result.nextStepFraming}
+            המסלול שלך לסגירת הפערים
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-black leading-tight mb-3 max-w-2xl mx-auto">
+            הדרך המקצועית לפתור את כל מה שראית למעלה — מחכה לך בפנים.
           </h2>
-          <p className="text-white/75 text-sm sm:text-base leading-relaxed max-w-2xl">
-            המערכת המלאה לוקחת אותך מהניתוח הזה לתוכנית פעולה ממוקדת,
-            ומחברת אותך למשרות שאינך מוצא/ת בלוחות הדרושים.
+          <p className="text-white/80 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            ניתוח עומק אישי, תוכנית פעולה ממוקדת, ליווי AI 24/7,
+            ומאגר משרות שלא תמצאי בלוחות הדרושים.
           </p>
-        </div>
 
-        <div className="p-6 sm:p-8 space-y-3">
-          {[
-            {
-              icon: Compass,
-              title: "דרכון קריירה מלא",
-              desc: "ניתוח עומק AI של ה-CV שלך מול שוק העבודה — חוזקות נסתרות, מסלולים אופטימליים, ופוטנציאל שכר אמיתי.",
-            },
-            {
-              icon: Briefcase,
-              title: "1,000+ משרות עם ציון התאמה אישי",
-              desc: "כל משרה מקבלת ציון התאמה מ-0 עד 100 מותאם לפרופיל שלך. רואים רק את הרלוונטיות.",
-            },
-            {
-              icon: Target,
-              title: "תוכנית פעולה ל-4 שבועות",
-              desc: "מסלול שבועי קונקרטי לסגירת הפערים הספציפיים שזיהינו לעיל. צעד אחרי צעד.",
-            },
-            {
-              icon: Sparkles,
-              title: "מאמן AI אישי 24/7",
-              desc: "שאלה על מכתב מקדים? איך להגיב לדחייה? איך לבקש העלאה? מקבלים תשובה מקצועית תוך שניות.",
-            },
-            {
-              icon: Lightbulb,
-              title: "קהילה של 500+ מחפשי עבודה",
-              desc: "אנשים בדיוק במצב שלך. תמיכה, נטוורקינג, והפניות פנימיות לחברות.",
-            },
-          ].map((feature, i) => {
-            const Icon = feature.icon;
-            return (
-              <div
-                key={i}
-                className="flex items-start gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors"
-              >
-                <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-teal/10 text-teal-dark shrink-0">
-                  <Icon size={17} aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-black text-navy text-sm">{feature.title}</p>
-                  <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{feature.desc}</p>
+          {/* Five intrigue pills — icons + 2-word labels only */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-6 max-w-3xl mx-auto">
+            {[
+              { icon: Compass,   label: "דרכון קריירה" },
+              { icon: Briefcase, label: "משרות אישיות" },
+              { icon: Target,    label: "תוכנית פעולה" },
+              { icon: Sparkles,  label: "מאמן AI" },
+              { icon: Lightbulb, label: "קהילה תומכת" },
+            ].map((p, i) => {
+              const Icon = p.icon;
+              return (
+                <div
+                  key={i}
+                  className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-xl px-2 py-3 text-center"
+                >
+                  <Icon size={18} className="mx-auto mb-1.5 text-teal-pale" aria-hidden="true" />
+                  <p className="text-[11px] sm:text-xs font-bold text-white whitespace-nowrap">{p.label}</p>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* CTA bar */}
