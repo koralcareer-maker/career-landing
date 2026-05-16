@@ -152,11 +152,6 @@ export function CvMatchClient() {
               מתאימים למשרה?
             </span>
           </h1>
-          <p className="text-base sm:text-lg text-slate-700 max-w-2xl mx-auto leading-relaxed">
-            תוך 15 שניות תקבלי <strong className="text-navy">ציון התאמה אמיתי</strong>,
-            את 3 החוזקות הקריטיות, את הפערים שמעכבים אותך, וצעדים קונקרטיים להעלאת
-            הסיכוי לראיון.
-          </p>
           <p className="text-xs text-slate-500 mt-3 max-w-md mx-auto">
             ⚡ ניתוח ע&quot;י AI מקצועי על בסיס 15 שנות ניסיון בגיוס בישראל. ללא הרשמה. ללא מייל.
           </p>
