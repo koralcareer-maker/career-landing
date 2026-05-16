@@ -280,11 +280,13 @@ export function CvMatchClient() {
                       </div>
                       <div className="space-y-1.5 mt-3">
                         {q.options.map((opt, optIdx) => {
-                          // Default scoring: option 0 → 1pt, option 4 → 5pts.
-                          // When q.reversed is true (e.g. "time in
-                          // search"), the first option is the BEST state
-                          // and scores 5, last option scores 1.
-                          const value = q.reversed ? 5 - optIdx : optIdx + 1;
+                          // Value resolution priority:
+                          //   1. q.scoreMap[i] — explicit per-option (used for
+                          //      categorical questions like "where stuck?")
+                          //   2. q.reversed     — first option = best
+                          //   3. default        — option index 0 = 1pt, 4 = 5pts
+                          const value = q.scoreMap?.[optIdx]
+                            ?? (q.reversed ? 5 - optIdx : optIdx + 1);
                           const active = picked === value;
                           return (
                             <button

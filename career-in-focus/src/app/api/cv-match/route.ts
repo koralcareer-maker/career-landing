@@ -22,7 +22,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { extractCvText } from "@/lib/cv-extract";
-import { scoreFromQuestionnaire } from "@/lib/cv-match-analyzer";
+import { scoreFromQuestionnaire, QUESTIONNAIRE } from "@/lib/cv-match-analyzer";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -199,16 +199,17 @@ export async function POST(req: NextRequest) {
       { status: 400, headers: CORS_HEADERS },
     );
   }
-  if (!Array.isArray(answers) || answers.length < 8) {
+  if (!Array.isArray(answers) || answers.length < QUESTIONNAIRE.length) {
     return NextResponse.json(
-      { error: "answers-incomplete", message: "יש לענות על כל 8 השאלות." },
+      { error: "answers-incomplete", message: `יש לענות על כל ${QUESTIONNAIRE.length} השאלות.` },
       { status: 400, headers: CORS_HEADERS },
     );
   }
 
-  // Trainee detection + deterministic scoring.
+  // Trainee detection + deterministic scoring. Pass cvText so the
+  // scorer's CV-quality nudge can read it.
   const trainee = await isExistingTrainee(cvText);
-  const result = scoreFromQuestionnaire(answers, trainee);
+  const result = scoreFromQuestionnaire(answers, trainee, cvText);
 
   // Log a "tool run" pageview so the admin dashboard separates "saw
   // the cv-match page" from "actually completed an analysis".

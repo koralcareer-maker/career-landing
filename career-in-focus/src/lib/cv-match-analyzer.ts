@@ -35,6 +35,14 @@ export interface CvMatchQuestion {
    * first, but shortest = best).
    */
   reversed?: boolean;
+  /**
+   * Explicit score-per-option override. Used when the options aren't
+   * a linear scale — e.g., "where are you stuck?" has 7 categorically
+   * different answers, each tied to a different severity level.
+   * If present, `scoreMap[i]` is the value for option i (overrides
+   * both default and `reversed`). Length must match `options.length`.
+   */
+  scoreMap?: number[];
 }
 
 export const QUESTIONNAIRE: CvMatchQuestion[] = [
@@ -147,6 +155,25 @@ export const QUESTIONNAIRE: CvMatchQuestion[] = [
       "אני מרגיש/ה שאני בכיוון הנכון וזה רק עניין של זמן",
     ],
   },
+  {
+    id: "stuck-stage",
+    title: "איפה את/ה תקוע/ה",
+    prompt: "איפה את/ה מרגיש/ה שהתהליך נתקע?",
+    // 7 categorical options. The first one (no direction) is the most
+    // fundamental gap. "Decision-making" implies high agency + good
+    // signal-flow already, so it gets the high score. Numbers are
+    // tuned so the question carries weight without dominating.
+    options: [
+      "לא יודע/ת לאן לכוון בכלל ומאיפה להתחיל",
+      "לא מוצא/ת משרות",
+      "שולח/ת קו״ח – ואין חזרה",
+      "יש פניות ממגייסים אך לא מדויק לי",
+      "לא עובר/ת ראיונות טלפוניים",
+      "מגיע/ה לראיונות – ולא מתקדם/ת",
+      "קבלת החלטות (להישאר / לעבור / לשנות כיוון)",
+    ],
+    scoreMap: [1, 2, 2, 4, 3, 3, 5],
+  },
 ];
 
 // ─── Result shape ────────────────────────────────────────────────────
@@ -175,16 +202,50 @@ export class CvMatchError extends Error {
 // ─── Scoring + verdict ──────────────────────────────────────────────
 
 /**
- * Compute the readiness score from the questionnaire answers + a flag
- * indicating whether the candidate is recognised as a Coral trainee.
+ * Quick heuristic CV-quality assessment. Looks at length + the
+ * presence of common professional sections. Returns -10..+5 — a
+ * SMALL nudge to the questionnaire score, not a dominant factor.
+ * Coral's pivot is that the questionnaire is the main signal; the
+ * CV bumps it up or down a bit when it's clearly poor or strong.
+ */
+function cvQualityNudge(cvText: string | undefined): number {
+  if (!cvText || cvText.length < 50) return -8;
+  const t = cvText.toLowerCase();
+  let score = 0;
+  // Length: very short → penalty; reasonable → bonus.
+  if (cvText.length < 400) score -= 8;
+  else if (cvText.length > 1500) score += 2;
+  // Has email
+  if (/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/.test(cvText)) score += 1;
+  // Has LinkedIn URL
+  if (/linkedin\.com\/in\//i.test(t)) score += 1;
+  // Has experience-section keyword
+  if (/ניסיון|experience|העסקה|תפקיד/.test(t)) score += 1;
+  // Has education
+  if (/השכלה|education|תואר|degree|תיכון/.test(t)) score += 1;
+  // Has skills
+  if (/מיומנויות|כישורים|skills|כלים/.test(t)) score += 1;
+  // Multiple jobs implied by multiple year tokens
+  const years = (cvText.match(/\b(19|20)\d{2}\b/g) ?? []).length;
+  if (years >= 4) score += 2;
+  // Cap the nudge
+  return Math.max(-10, Math.min(5, score));
+}
+
+/**
+ * Compute the readiness score from the questionnaire answers + the
+ * CV content + a flag indicating whether the candidate is recognised
+ * as a Coral trainee.
  *
- * @param answers - 8 ints, each 1-5 (1 = worst, 5 = best)
+ * @param answers - 1-5 ints per question (or scoreMap-defined values)
  * @param isTrainee - true when the CV's name matches a User in the DB
+ * @param cvText - the extracted CV text (used for the quality nudge)
  * @returns CvMatchResult
  */
 export function scoreFromQuestionnaire(
   answers: number[],
   isTrainee: boolean,
+  cvText?: string,
 ): CvMatchResult {
   // Defensive: clamp every answer to 1-5, default 1 if missing.
   const normalised: number[] = QUESTIONNAIRE.map((_, i) => {
@@ -198,6 +259,12 @@ export function scoreFromQuestionnaire(
   const N = QUESTIONNAIRE.length;
   const sum = normalised.reduce((a, b) => a + b, 0);
   let score = Math.round(((sum - N) / (4 * N)) * 100);
+
+  // CV-quality nudge — pull the score up or down a few points based
+  // on the CV. This is what makes the result feel "smart" rather than
+  // purely questionnaire-driven. Capped at ±10 either direction.
+  const cvNudge = cvQualityNudge(cvText);
+  score = Math.max(0, Math.min(100, score + cvNudge));
 
   // Coral's rule: non-trainees cap at 65 so they almost always land in
   // the "low" template (drives them toward the platform). Trainees in
