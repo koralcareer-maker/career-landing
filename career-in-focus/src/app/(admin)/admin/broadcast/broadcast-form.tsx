@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { sendBroadcast } from "@/lib/actions/broadcast";
-import { Send, Users, Eye, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { Send, Users, Eye, AlertCircle, CheckCircle, Loader2, Sparkles } from "lucide-react";
 
 const AUDIENCE_OPTIONS = [
   { value: "ALL",        label: "כל המשתמשים הפעילים",            color: "bg-navy/10 text-navy" },
@@ -15,6 +15,29 @@ const AUDIENCE_OPTIONS = [
   { value: "OLD_LEADS",  label: "לידים מהאתר הישן (לא משלמים)",    color: "bg-amber-100 text-amber-700" },
 ];
 
+// Pre-approved re-engagement template Coral signed off on (see the
+// chat thread "תכין את ההודעה בפנים"). Auto-loaded when the user
+// selects OLD_LEADS as the audience — so Coral doesn't have to
+// copy-paste. The signature ("בהצלחה, קורל קריירה") is added by the
+// HTML template in lib/actions/broadcast.ts when audience === OLD_LEADS,
+// so we deliberately don't include it in the body here.
+const OLD_LEADS_TEMPLATE = {
+  subject: "{שם}, איך מתקדם חיפוש העבודה?",
+  body: `היי {שם},
+
+**איך מתקדם חיפוש העבודה שלך?**
+
+רציתי לספר לך שהשקתי את **קהילת קריירה בפוקוס** — מערכת שעוזרת לאנשים כמוך להגיע לתוצאות בזמן קצר לתפקיד הבא!
+
+• **משרות פעילות וסמויות** — גם ממאגרים פרטיים שלא נגישים לרוב המחפשים
+• **דרכון קריירה אישי** — ניתוח חכם שמראה לך איפה את/ה עומד/ת ובמה להתמקד
+• **מאמן AI אישי 24/7** — תשובות מקצועיות על ראיונות, קו"ח, משא ומתן
+• **סדנאות וקורסים מקצועיים** — לגישור פערים ולמקסום הפוטנציאל שלך כמועמד/ת
+
+עכשיו במחיר השקה מצחיק לזמן מוגבל — מוזמן/ת לבדוק:
+👉 **app.careerinfocus.co.il**`,
+};
+
 export function BroadcastForm({ userCounts }: {
   userCounts: Record<string, number>;
 }) {
@@ -23,6 +46,26 @@ export function BroadcastForm({ userCounts }: {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  // Track whether the OLD_LEADS template has been auto-loaded so we
+  // don't re-load (and blow away Coral's edits) if she switches audience
+  // away and then back.
+  const [templateLoaded, setTemplateLoaded] = useState(false);
+
+  // Auto-load the pre-approved re-engagement template the first time
+  // Coral picks OLD_LEADS — but only if both fields are still empty,
+  // so we never overwrite work she's already started typing.
+  useEffect(() => {
+    if (
+      audience === "OLD_LEADS" &&
+      !templateLoaded &&
+      subject.trim() === "" &&
+      body.trim() === ""
+    ) {
+      setSubject(OLD_LEADS_TEMPLATE.subject);
+      setBody(OLD_LEADS_TEMPLATE.body);
+      setTemplateLoaded(true);
+    }
+  }, [audience, templateLoaded, subject, body]);
 
   const selectedAudience = AUDIENCE_OPTIONS.find(o => o.value === audience)!;
   const recipientCount = userCounts[audience] ?? 0;
@@ -70,6 +113,35 @@ export function BroadcastForm({ userCounts }: {
               יישלח ל-<strong className="text-navy">{recipientCount}</strong> נמענים
             </span>
           </div>
+
+          {/* OLD_LEADS template hint + reload button. Visible only when
+              that audience is selected — so it's invisible noise for
+              the regular member-broadcast flow. */}
+          {audience === "OLD_LEADS" && (
+            <div className="mt-3 flex items-start justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+              <div className="flex items-start gap-2">
+                <Sparkles size={14} className="text-amber-700 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-amber-900">
+                    תבנית "איך מתקדם חיפוש העבודה?" נטענה אוטומטית
+                  </p>
+                  <p className="text-[11px] text-amber-700 mt-0.5">
+                    אפשר לערוך לפני שליחה · {"{שם}"} יוחלף בשם הפרטי של כל נמען/ת
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSubject(OLD_LEADS_TEMPLATE.subject);
+                  setBody(OLD_LEADS_TEMPLATE.body);
+                }}
+                className="text-xs font-bold text-amber-700 hover:text-amber-900 underline shrink-0"
+              >
+                טען מחדש
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Subject */}
