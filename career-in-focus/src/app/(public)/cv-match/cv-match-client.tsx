@@ -249,7 +249,7 @@ export function CvMatchClient() {
               <div className="flex items-center gap-2 mb-2">
                 <StepNumber n={3} />
                 <h2 className="text-base sm:text-lg font-black text-navy">
-                  8 שאלות על חיפוש העבודה שלך
+                  {QUESTIONNAIRE.length} שאלות על חיפוש העבודה שלך
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 mb-4 leading-relaxed">
@@ -280,8 +280,11 @@ export function CvMatchClient() {
                       </div>
                       <div className="space-y-1.5 mt-3">
                         {q.options.map((opt, optIdx) => {
-                          // 1-indexed score: option 0 → 1, option 4 → 5
-                          const value = optIdx + 1;
+                          // Default scoring: option 0 → 1pt, option 4 → 5pts.
+                          // When q.reversed is true (e.g. "time in
+                          // search"), the first option is the BEST state
+                          // and scores 5, last option scores 1.
+                          const value = q.reversed ? 5 - optIdx : optIdx + 1;
                           const active = picked === value;
                           return (
                             <button

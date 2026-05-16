@@ -26,10 +26,31 @@ export interface CvMatchQuestion {
   id: string;
   title: string;
   prompt: string;
-  options: string[]; // 5 strings, index 0 = worst, index 4 = best
+  options: string[];
+  /**
+   * Normally option index 0 scores 1 (worst) and option index 4 scores
+   * 5 (best). When `reversed: true`, the mapping flips — first option
+   * = best. Used for questions where the natural display order doesn't
+   * match the severity order (e.g. "time in search": shortest reads
+   * first, but shortest = best).
+   */
+  reversed?: boolean;
 }
 
 export const QUESTIONNAIRE: CvMatchQuestion[] = [
+  {
+    id: "duration",
+    title: "ותק בחיפוש",
+    prompt: "כמה זמן את/ה מחפש/ת עבודה באופן אקטיבי?",
+    reversed: true,
+    options: [
+      "פחות מחודש",
+      "1-3 חודשים",
+      "3-6 חודשים",
+      "מעל חצי שנה",
+      "מעל שנה",
+    ],
+  },
   {
     id: "cv-response",
     title: "קורות חיים",
@@ -172,11 +193,11 @@ export function scoreFromQuestionnaire(
     return Math.max(1, Math.min(5, Math.round(a)));
   });
 
-  // Sum = 8..40. Scale to 0-100: (sum - 8) / 32 * 100, then nudge so
-  // a "middle" answer (3 across the board → sum 24) lands around 50.
-  // Raw formula: (sum - 8) / 32 → 0..1. Multiply by 100 for percent.
+  // Sum range = N..5N (N = total question count). Scale to 0-100 so
+  // "middle" answer (3 across the board) maps to 50.
+  const N = QUESTIONNAIRE.length;
   const sum = normalised.reduce((a, b) => a + b, 0);
-  let score = Math.round(((sum - 8) / 32) * 100);
+  let score = Math.round(((sum - N) / (4 * N)) * 100);
 
   // Coral's rule: non-trainees cap at 65 so they almost always land in
   // the "low" template (drives them toward the platform). Trainees in
@@ -185,12 +206,17 @@ export function scoreFromQuestionnaire(
   const PUBLIC_CAP = 65;
   score = Math.min(isTrainee ? TRAINEE_CAP : PUBLIC_CAP, score);
 
-  // Find weakest area for verdict copy.
-  let weakestIdx = 0;
-  for (let i = 1; i < normalised.length; i++) {
-    if (normalised[i] < normalised[weakestIdx]) weakestIdx = i;
+  // Find weakest area for verdict copy. Skip "duration" — that's a
+  // status (how long in search), not a job-search behaviour we can
+  // improve via the platform. We want the verdict to point at an
+  // actionable gap.
+  const SKIP_FOR_WEAKEST = new Set(["duration"]);
+  let weakestIdx = -1;
+  for (let i = 0; i < normalised.length; i++) {
+    if (SKIP_FOR_WEAKEST.has(QUESTIONNAIRE[i].id)) continue;
+    if (weakestIdx === -1 || normalised[i] < normalised[weakestIdx]) weakestIdx = i;
   }
-  const weakestArea = QUESTIONNAIRE[weakestIdx]?.title ?? "חיפוש עבודה";
+  const weakestArea = QUESTIONNAIRE[Math.max(0, weakestIdx)]?.title ?? "חיפוש עבודה";
 
   // Templates trigger on a 70 threshold.
   const template: "high" | "low" = score >= 70 ? "high" : "low";
