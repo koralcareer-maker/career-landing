@@ -21,6 +21,50 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractCvText } from "@/lib/cv-extract";
 import { analyzeCvMatch, CvMatchError } from "@/lib/cv-match-analyzer";
+import { prisma } from "@/lib/prisma";
+
+/**
+ * Lookup the candidate's name in the trainee DB.
+ *
+ * Coral's rule: if she personally wrote the CV (i.e. the candidate is
+ * already a member/trainee in our DB), the result should reflect a
+ * professional-grade CV. So we floor the score at 85 when the name
+ * matches a User record.
+ *
+ * Heuristic name extraction — the candidate's first 1-3 word-tokens
+ * usually appear in the first 200 chars of the CV. We then search for
+ * any User.name that contains BOTH the first AND last token. Hebrew
+ * and Latin alphabets both work because we just use substring match.
+ */
+async function isExistingTrainee(cvText: string): Promise<boolean> {
+  const head = cvText.trim().slice(0, 300).replace(/[\n\r]+/g, " ");
+  // Pull 2-4 word tokens of plausible name shape (Hebrew letters or
+  // capital-Latin), skipping anything that looks like an email/URL.
+  const tokenRegex = /(?:^|\s)([֐-׿A-Z][֐-׿A-Za-z\-']{1,30})/g;
+  const tokens: string[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = tokenRegex.exec(head)) !== null && tokens.length < 6) {
+    if (!/@|http|www/i.test(m[1])) tokens.push(m[1]);
+  }
+  if (tokens.length < 2) return false;
+  const first = tokens[0];
+  const last = tokens[1];
+  try {
+    const row = await prisma.user.findFirst({
+      where: {
+        AND: [
+          { name: { contains: first } },
+          { name: { contains: last } },
+        ],
+      },
+      select: { id: true },
+    });
+    return !!row;
+  } catch (e) {
+    console.warn("[cv-match] trainee lookup failed:", e);
+    return false;
+  }
+}
 
 // Gemini vision OCR — used when native PDF/DOCX extraction returns
 // too little text. Mirrors the approach in /api/profile/analyze-cv:
@@ -198,6 +242,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await analyzeCvMatch(cvText, jobText);
+
+    // Trainee-CV floor: Coral's existing members get a professional-
+    // grade CV by definition (she wrote it), so the score floors at 85.
+    // Best-effort — a lookup failure can't break the response.
+    const fromTrainee = await isExistingTrainee(cvText);
+    if (fromTrainee && result.score < 85) {
+      result.score = 85;
+    }
+
     return NextResponse.json({ ok: true, result }, { headers: CORS_HEADERS });
   } catch (e) {
     if (e instanceof CvMatchError) {
