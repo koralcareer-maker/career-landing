@@ -376,12 +376,20 @@ export async function sendBroadcastTest(prevState: unknown, formData: FormData):
     const personalSubject = `[דוגמה] ` + subject
       .replace(/\{שם\}/g, testFirstName)
       .replace(/\{name\}/gi, testFirstName);
-    await resend.emails.send({
+    // CRITICAL: Resend's SDK does NOT throw on API errors — it returns
+    // { data, error }. We MUST inspect `.error` ourselves, otherwise a
+    // silent quarantine (unverified-domain, invalid from-address, etc.)
+    // looks like success and Coral has no idea why her inbox is empty.
+    const result = await resend.emails.send({
       from:    FROM,
       to:      admin.email,
       subject: personalSubject,
       html,
     });
+    if (result.error) {
+      const e = result.error as { message?: string; name?: string };
+      return { error: `Resend דחה: ${e.name ?? ""} ${e.message ?? "שגיאה לא ידועה"}`.trim() };
+    }
     return { success: true, sentCount: 1 };
   } catch (err) {
     return { error: `שליחת הדוגמה נכשלה: ${String(err instanceof Error ? err.message : err).slice(0, 200)}` };
@@ -433,13 +441,22 @@ export async function sendBroadcast(prevState: unknown, formData: FormData): Pro
             audience,
             recipientFirstName: r.firstName,
           });
-          await resend.emails.send({
+          // Resend's SDK returns { data, error } and does NOT throw on
+          // API errors. Inspect `.error` explicitly so silent quarantines
+          // (unverified domain, malformed from-address, etc.) get counted
+          // as failures instead of slipping into `sent`.
+          const result = await resend.emails.send({
             from:    FROM,
             to:      r.email,
             subject: personalSubject,
             html,
           });
-          sent++;
+          if (result.error) {
+            console.error(`Broadcast: Resend rejected ${r.email}:`, result.error);
+            skipped++;
+          } else {
+            sent++;
+          }
         } catch (err) {
           console.error(`Broadcast: failed to send to ${r.email}`, err);
           skipped++;
