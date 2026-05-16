@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
-import { sendBroadcast } from "@/lib/actions/broadcast";
-import { Send, Users, Eye, AlertCircle, CheckCircle, Loader2, Sparkles } from "lucide-react";
+import { useActionState, useEffect, useState, useTransition } from "react";
+import { sendBroadcast, sendBroadcastTest } from "@/lib/actions/broadcast";
+import { Send, Users, Eye, AlertCircle, CheckCircle, Loader2, Sparkles, Mail } from "lucide-react";
 
 const AUDIENCE_OPTIONS = [
   { value: "ALL",        label: "כל המשתמשים הפעילים",            color: "bg-navy/10 text-navy" },
@@ -50,6 +50,10 @@ export function BroadcastForm({ userCounts }: {
   // don't re-load (and blow away Coral's edits) if she switches audience
   // away and then back.
   const [templateLoaded, setTemplateLoaded] = useState(false);
+  // Test-send state — runs separately from the main form action so it
+  // doesn't trip the BroadcastForm's pending/success/error UI.
+  const [testPending, startTest] = useTransition();
+  const [testResult, setTestResult] = useState<{ ok?: boolean; error?: string } | null>(null);
 
   // Auto-load the pre-approved re-engagement template the first time
   // Coral picks OLD_LEADS — but only if both fields are still empty,
@@ -69,6 +73,21 @@ export function BroadcastForm({ userCounts }: {
 
   const selectedAudience = AUDIENCE_OPTIONS.find(o => o.value === audience)!;
   const recipientCount = userCounts[audience] ?? 0;
+
+  // Fires the sendBroadcastTest server action with the current form
+  // state. Used by the "שלח דוגמה אליי" button so Coral can verify the
+  // designed email in her own inbox before triggering the full send.
+  function runTestSend() {
+    setTestResult(null);
+    const fd = new FormData();
+    fd.set("subject", subject);
+    fd.set("body", body);
+    fd.set("audience", audience);
+    startTest(async () => {
+      const r = await sendBroadcastTest(null, fd);
+      setTestResult({ ok: r.success, error: r.error });
+    });
+  }
 
   // Preview HTML (simplified)
   const previewHtml = body
@@ -230,8 +249,23 @@ export function BroadcastForm({ userCounts }: {
           </div>
         )}
 
-        {/* Submit */}
-        <div className="flex items-center gap-3">
+        {/* Test send result — separate from the main form action's
+            state banner so it doesn't disappear when the form re-renders. */}
+        {testResult?.ok && (
+          <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
+            <CheckCircle size={16} className="shrink-0" />
+            דוגמה נשלחה למייל שלך — בדקי בתיבה לראות את העיצוב המלא לפני שאת שולחת לכולם.
+          </div>
+        )}
+        {testResult?.error && (
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-600">
+            <AlertCircle size={16} className="shrink-0" />
+            {testResult.error}
+          </div>
+        )}
+
+        {/* Submit + test send */}
+        <div className="flex items-center gap-3 flex-wrap">
           <button
             type="submit"
             disabled={pending || !subject.trim() || !body.trim() || recipientCount === 0}
@@ -240,6 +274,18 @@ export function BroadcastForm({ userCounts }: {
             {pending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
             {pending ? "שולח..." : `שלח ל-${recipientCount} נמענים`}
           </button>
+
+          <button
+            type="button"
+            onClick={runTestSend}
+            disabled={testPending || !subject.trim() || !body.trim()}
+            className="inline-flex items-center gap-2 bg-white border-2 border-navy text-navy font-bold px-5 py-2.5 rounded-xl hover:bg-navy/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="שולח עותק אחד אלייך לפני שאת שולחת לכולם"
+          >
+            {testPending ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
+            {testPending ? "שולחת דוגמה..." : "שלח דוגמה אליי"}
+          </button>
+
           {recipientCount === 0 && (
             <p className="text-xs text-gray-400">אין נמענים בקבוצה הנבחרת</p>
           )}
