@@ -170,7 +170,6 @@ function renderOldLeadsContent(body: string): string {
                           box-shadow:0 4px 14px rgba(62,207,207,0.35);letter-spacing:0.2px;">
                   כניסה לפלטפורמה ←
                 </a>
-                <div style="font-size:12px;color:#9ca3af;margin-top:10px;">14 ימי ניסיון בחינם · ללא התחייבות</div>
               </td>
             </tr>
           </table>
