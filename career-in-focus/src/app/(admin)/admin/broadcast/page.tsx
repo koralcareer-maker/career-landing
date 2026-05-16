@@ -6,28 +6,35 @@ import { Mail, Send, Users, Clock } from "lucide-react";
 import { BroadcastForm } from "./broadcast-form";
 
 const AUDIENCE_LABELS: Record<string, string> = {
-  ALL:     "כולם",
-  PAYING:  "משלמים",
-  MEMBER:  "חבר/ה",
-  VIP:     "VIP",
-  PREMIUM: "פרמיום",
+  ALL:        "כולם",
+  PAYING:     "משלמים",
+  MEMBER:     "חבר/ה",
+  VIP:        "VIP",
+  PREMIUM:    "פרמיום",
+  OLD_LEADS:  "לידים מהאתר הישן",
 };
 
 export default async function BroadcastPage() {
-  // Count users per audience group
-  const [all, member, vip, premium] = await Promise.all([
+  // Count users per audience group, plus the historical-lead audience
+  // (people who filled out the old marketing-site forms but never
+  // registered on the platform — re-engagement target).
+  const [all, member, vip, premium, oldLeads] = await Promise.all([
     prisma.user.count({ where: { accessStatus: "ACTIVE" } }),
     prisma.user.count({ where: { accessStatus: "ACTIVE", membershipType: "MEMBER" } }),
     prisma.user.count({ where: { accessStatus: "ACTIVE", membershipType: "VIP" } }),
     prisma.user.count({ where: { accessStatus: "ACTIVE", membershipType: "PREMIUM" } }),
+    prisma.lead.count({
+      where: { source: { startsWith: "marketing-site" }, email: { not: null } },
+    }),
   ]);
 
   const userCounts: Record<string, number> = {
-    ALL:     all,
-    PAYING:  member + vip + premium,
-    MEMBER:  member,
-    VIP:     vip,
-    PREMIUM: premium,
+    ALL:        all,
+    PAYING:     member + vip + premium,
+    MEMBER:     member,
+    VIP:        vip,
+    PREMIUM:    premium,
+    OLD_LEADS:  oldLeads,
   };
 
   // Recent broadcast history

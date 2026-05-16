@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { markLeadHandled, unmarkLeadHandled } from "@/lib/actions/leads";
 import { Mail, Phone, MessageSquare, CheckCircle2, RotateCcw, Clock } from "lucide-react";
+import { ImportOldLeadsButton } from "./import-button";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,8 @@ export default async function LeadsAdminPage() {
       <p className="text-sm text-slate-500 mb-6">
         כל הפניות שמגיעות מטופס "צרי קשר" באתר השיווקי. {open.length} פניות ממתינות, {done.length} טופלו.
       </p>
+
+      <ImportOldLeadsButton />
 
       {open.length === 0 ? (
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center mb-6">
@@ -87,14 +90,21 @@ interface LeadRow {
 // Map machine-readable `source` codes to Hebrew labels + colours so
 // each card is scannable at a glance. The `support-*` family comes
 // from /contact form; "marketing-site" is the legacy public form.
-// Unknown codes fall through to a neutral slate pill.
+// "marketing-site:<sub>" codes are the historical leads imported from
+// Coral's Gmail (see lib/data/old-site-leads.ts). Unknown codes fall
+// through to a neutral slate pill.
 const SOURCE_LABELS: Record<string, { label: string; cls: string }> = {
-  "marketing-site":      { label: "פנייה מהאתר",       cls: "bg-slate-100 text-slate-700" },
-  "support-general":     { label: "פנייה כללית",        cls: "bg-blue-100 text-blue-800" },
-  "support-cancel":      { label: "ביטול מנוי",         cls: "bg-rose-100 text-rose-800" },
-  "support-privacy":     { label: "פרטיות ונתונים",     cls: "bg-purple-100 text-purple-800" },
-  "support-accessibility": { label: "דיווח נגישות",     cls: "bg-amber-100 text-amber-800" },
-  "support-support":     { label: "תקלה טכנית",         cls: "bg-orange-100 text-orange-800" },
+  "marketing-site":                  { label: "פנייה מהאתר",         cls: "bg-slate-100 text-slate-700" },
+  "marketing-site:contact":              { label: "אתר · יצירת קשר",       cls: "bg-amber-100 text-amber-800" },
+  "marketing-site:job-application":      { label: "אתר · מועמדות לתפקיד",   cls: "bg-orange-100 text-orange-800" },
+  "marketing-site:workshop":             { label: "אתר · סדנת קריירה",      cls: "bg-yellow-100 text-yellow-800" },
+  "marketing-site:interviewers-workshop":{ label: "אתר · סדנת מראיינים",    cls: "bg-yellow-100 text-yellow-800" },
+  "marketing-site:ai-pic":               { label: "אתר · תמונת AI",         cls: "bg-pink-100 text-pink-800" },
+  "support-general":                 { label: "פנייה כללית",          cls: "bg-blue-100 text-blue-800" },
+  "support-cancel":                  { label: "ביטול מנוי",           cls: "bg-rose-100 text-rose-800" },
+  "support-privacy":                 { label: "פרטיות ונתונים",       cls: "bg-purple-100 text-purple-800" },
+  "support-accessibility":           { label: "דיווח נגישות",         cls: "bg-amber-100 text-amber-800" },
+  "support-support":                 { label: "תקלה טכנית",           cls: "bg-orange-100 text-orange-800" },
 };
 
 function LeadCard({ lead, compact }: { lead: LeadRow; compact?: boolean }) {

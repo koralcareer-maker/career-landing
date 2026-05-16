@@ -5,11 +5,14 @@ import { sendBroadcast } from "@/lib/actions/broadcast";
 import { Send, Users, Eye, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 
 const AUDIENCE_OPTIONS = [
-  { value: "ALL",     label: "כל המשתמשים הפעילים",   color: "bg-navy/10 text-navy" },
-  { value: "PAYING",  label: "כל המשלמים (לא NONE)",   color: "bg-teal/10 text-teal" },
-  { value: "MEMBER",  label: "חבר/ה — 49₪ בלבד",       color: "bg-teal/10 text-teal-dark" },
-  { value: "VIP",     label: "פרו — 149₪ בלבד",         color: "bg-navy/10 text-navy" },
-  { value: "PREMIUM", label: "VIP — 499₪ בלבד",         color: "bg-purple-100 text-purple-700" },
+  { value: "ALL",        label: "כל המשתמשים הפעילים",            color: "bg-navy/10 text-navy" },
+  { value: "PAYING",     label: "כל המשלמים (לא NONE)",            color: "bg-teal/10 text-teal" },
+  { value: "MEMBER",     label: "חבר/ה — 49₪ בלבד",                color: "bg-teal/10 text-teal-dark" },
+  { value: "VIP",        label: "פרו — 149₪ בלבד",                 color: "bg-navy/10 text-navy" },
+  { value: "PREMIUM",    label: "VIP — 499₪ בלבד",                 color: "bg-purple-100 text-purple-700" },
+  // Re-engagement audience for the historical leads imported from the
+  // old marketing site. Coral's job-search check-in email goes here.
+  { value: "OLD_LEADS",  label: "לידים מהאתר הישן (לא משלמים)",    color: "bg-amber-100 text-amber-700" },
 ];
 
 export function BroadcastForm({ userCounts }: {
@@ -87,7 +90,7 @@ export function BroadcastForm({ userCounts }: {
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-sm font-bold text-navy">תוכן ההודעה *</label>
-            <span className="text-xs text-gray-400">**טקסט** = מודגש · שורה חדשה = פסקה</span>
+            <span className="text-xs text-gray-400">**טקסט** = מודגש · {"{שם}"} = השם הפרטי של הנמען/ת</span>
           </div>
           <textarea
             name="body"
