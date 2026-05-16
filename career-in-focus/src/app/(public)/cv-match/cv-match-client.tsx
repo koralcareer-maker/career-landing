@@ -25,12 +25,27 @@ import type { CvMatchResult } from "@/lib/cv-match-analyzer";
  * first, then the CTA pulls them in.
  */
 
+// Tier labels — the analyzer returns the matchLabel string, we map it
+// to a colour for the header. Now reads as "מוכנות לחיפוש עבודה".
 const TIER_LABELS: Record<string, string> = {
+  "מוכנות גבוהה": "text-emerald-600",
+  "מוכנות חלקית": "text-amber-600",
+  "מוכנות נמוכה": "text-rose-600",
   "התאמה גבוהה": "text-emerald-600",
   "התאמה חלקית": "text-amber-600",
   "התאמה נמוכה": "text-rose-600",
   "לא מתאים": "text-rose-700",
 };
+
+// Job-search behaviour flags — these surface SEARCH gaps (vs CV gaps).
+// Each one absent drops the readiness score and lights up a gap card.
+const BEHAVIOUR_QUESTIONS = [
+  { key: "linkedin",   label: "פעיל/ה ב-LinkedIn (פוסטים, רשת קשרים, הודעות)" },
+  { key: "whatsapp",   label: "חבר/ה בקבוצות WhatsApp רלוונטיות לתחום שלי" },
+  { key: "outreach",   label: "פניתי במישרין למגייסים/חברות בחודש האחרון" },
+  { key: "presence",   label: "פרופיל LinkedIn / פורטפוליו / אתר אישי מעודכן" },
+] as const;
+type BehaviourKey = typeof BEHAVIOUR_QUESTIONS[number]["key"];
 
 export function CvMatchClient() {
   const [cvText, setCvText] = useState("");
@@ -38,6 +53,9 @@ export function CvMatchClient() {
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [jobText, setJobText] = useState("");
   const [inputMode, setInputMode] = useState<"upload" | "paste">("upload");
+  const [behaviour, setBehaviour] = useState<Record<BehaviourKey, boolean>>({
+    linkedin: false, whatsapp: false, outreach: false, presence: false,
+  });
 
   const [result, setResult] = useState<CvMatchResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -79,6 +97,8 @@ export function CvMatchClient() {
         formData.append("cvText", cvText);
       }
       formData.append("jobText", jobText);
+      // Behaviour flags as JSON so the analyzer can read them all at once.
+      formData.append("behaviour", JSON.stringify(behaviour));
 
       const res = await fetch("/api/cv-match", {
         method: "POST",
@@ -147,9 +167,9 @@ export function CvMatchClient() {
             כלי AI חינמי · ללא הרשמה
           </span>
           <h1 className="text-3xl sm:text-5xl font-black text-navy leading-[1.1] mb-5">
-            הקו&quot;ח שלך באמת<br />
+            איפה את באמת עומדת<br />
             <span className="bg-gradient-to-l from-teal-dark to-teal bg-clip-text text-transparent">
-              מתאימים למשרה?
+              בחיפוש העבודה שלך?
             </span>
           </h1>
           <p className="text-xs text-slate-500 mt-3 max-w-md mx-auto">
@@ -265,6 +285,49 @@ export function CvMatchClient() {
               <p className="text-xs text-slate-500 mt-1.5">
                 💡 שם התפקיד מספיק לניתוח. תיאור משרה מלא ייתן ניתוח מדויק יותר.
               </p>
+            </div>
+
+            {/* Step 3: Search behaviour — the new heart of the analysis.
+                Coral wants the score to reflect SEARCH READINESS, not
+                just CV quality. Each "no" surfaces a SEARCH gap card. */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-teal text-white text-sm font-bold">
+                  3
+                </span>
+                <h2 className="text-lg font-black text-navy">איפה את עומדת בחיפוש?</h2>
+              </div>
+              <p className="text-xs text-slate-500 mb-2.5">
+                סמני את מה שמתאר את המצב שלך היום. אין תשובה נכונה — זה מה שיגלה איפה הפערים.
+              </p>
+              <div className="space-y-1.5">
+                {BEHAVIOUR_QUESTIONS.map((q) => {
+                  const active = behaviour[q.key];
+                  return (
+                    <button
+                      key={q.key}
+                      type="button"
+                      onClick={() => setBehaviour((b) => ({ ...b, [q.key]: !b[q.key] }))}
+                      aria-pressed={active}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl border text-sm font-semibold transition-colors text-right ${
+                        active
+                          ? "bg-emerald-50 border-emerald-300 text-emerald-900"
+                          : "bg-white border-slate-300 text-slate-700 hover:border-teal/50"
+                      }`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${
+                          active ? "bg-emerald-500 border-emerald-500" : "border-slate-300"
+                        }`}
+                      >
+                        {active && <CheckCircle2 size={14} className="text-white" aria-hidden="true" />}
+                      </span>
+                      <span className="flex-1 min-w-0">{q.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {error && (
@@ -405,7 +468,7 @@ function ResultView({
       <section>
         <h2 className="text-lg font-black text-navy mb-3 flex items-center gap-2">
           <AlertTriangle size={18} className="text-amber-600" aria-hidden="true" />
-          מה מעכב אותך
+          פערים בחיפוש העבודה שלך
         </h2>
         <div className="grid gap-3 sm:grid-cols-3">
           {result.gaps.map((g, i) => {

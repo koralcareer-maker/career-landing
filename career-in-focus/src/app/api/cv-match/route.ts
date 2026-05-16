@@ -180,6 +180,7 @@ export async function POST(req: NextRequest) {
 
   let cvText = "";
   let jobText = "";
+  let behaviour: { linkedin?: boolean; whatsapp?: boolean; outreach?: boolean; presence?: boolean } = {};
 
   const ct = req.headers.get("content-type") ?? "";
   try {
@@ -187,10 +188,15 @@ export async function POST(req: NextRequest) {
       const body = await req.json();
       cvText = String(body.cvText ?? "").trim();
       jobText = String(body.jobText ?? "").trim();
+      if (body.behaviour && typeof body.behaviour === "object") behaviour = body.behaviour;
     } else if (ct.includes("multipart/form-data")) {
       const form = await req.formData();
       jobText = String(form.get("jobText") ?? "").trim();
       const inlineCv = String(form.get("cvText") ?? "").trim();
+      const behaviourRaw = String(form.get("behaviour") ?? "").trim();
+      if (behaviourRaw) {
+        try { behaviour = JSON.parse(behaviourRaw); } catch { /* keep empty */ }
+      }
       if (inlineCv) {
         cvText = inlineCv;
       } else {
@@ -241,15 +247,17 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await analyzeCvMatch(cvText, jobText);
+    const result = await analyzeCvMatch(cvText, jobText, behaviour);
 
-    // Trainee-CV floor: Coral's existing members get a professional-
-    // grade CV by definition (she wrote it), so the score floors at 85.
-    // Best-effort — a lookup failure can't break the response.
-    const fromTrainee = await isExistingTrainee(cvText);
-    if (fromTrainee && result.score < 85) {
-      result.score = 85;
-    }
+    // Note: the legacy "trainee CV floor at 85" was removed when the
+    // tool pivoted from "CV fit" to "job search readiness". A trainee's
+    // CV is still professional-grade — that surfaces in the strengths
+    // analysis — but their SEARCH behaviours (LinkedIn, channels,
+    // outreach) are independent and dictate the readiness score. We
+    // keep the trainee lookup for one small touch: if recognised, add
+    // a private flag so future logic can use it (e.g. personalised
+    // welcome). Doesn't alter the visible score today.
+    void (await isExistingTrainee(cvText));
 
     // Log a "tool run" pageview so the admin dashboard separates
     // "saw the cv-match page" from "actually completed an analysis".
