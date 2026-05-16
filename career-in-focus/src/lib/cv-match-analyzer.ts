@@ -1,69 +1,146 @@
 /**
- * Free CV-Match analyzer.
+ * CV-Match scorer — questionnaire-driven, deterministic.
  *
- * Coral asked for the strongest possible top-of-funnel hook: a public,
- * no-signup tool where visitors paste a CV + job description and get
- * an honest, professional match analysis.
+ * Coral's spec, rewritten end-to-end:
+ *   1. User uploads CV (still required — proves seriousness, lets us
+ *      detect known trainees).
+ *   2. User answers 8 multiple-choice questions about their job search.
+ *      Each answer is rated 1-5 (worst → best).
+ *   3. The score is computed deterministically from the answers — no
+ *      LLM call. Fast (instant), predictable, controllable.
+ *   4. Two result templates are rendered based on the score band:
+ *        ≥ 70  → "you're on the right track" (high)
+ *        < 70  → "time to do things differently" (low)
+ *   5. Special rule: CVs in Coral's format (i.e., from a known trainee
+ *      in our User DB) keep their natural score. Everyone else is
+ *      capped at 65 so they always land in the "low" template — which
+ *      drives them toward the platform.
  *
- * Goal: deliver enough value to be shareable AND create real urgency
- * about subscribing. The analysis is intentionally direct about gaps —
- * not cruel, but honest — because the "you're close but not there"
- * gap is what motivates payment.
- *
- * Uses the same Gemini cascade pattern as personal-analysis.ts so we
- * keep working when individual models hit quota.
+ * No more Gemini cascade in this file. The route still imports the
+ * trainee-lookup logic for the cap decision.
  */
 
-const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-const ANTHROPIC_MODEL = "claude-sonnet-4-5";
+// ─── Questionnaire definition ───────────────────────────────────────
 
-const GEMINI_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-2.5-flash-lite",
-  "gemini-1.5-flash",
-  "gemini-2.5-pro",
+export interface CvMatchQuestion {
+  id: string;
+  title: string;
+  prompt: string;
+  options: string[]; // 5 strings, index 0 = worst, index 4 = best
+}
+
+export const QUESTIONNAIRE: CvMatchQuestion[] = [
+  {
+    id: "cv-response",
+    title: "קורות חיים",
+    prompt: "כשאת/ה שולח/ת קורות חיים — מה בדרך כלל קורה?",
+    options: [
+      "לא חוזרים אליי בכלל",
+      "חוזרים אליי מעט מאוד",
+      "חוזרים אליי — אבל למשרות לא מדויקות",
+      "אני מגיע/ה לחלק מהראיונות אבל לא מספיק",
+      "חוזרים אליי הרבה באופן יחסית קבוע",
+    ],
+  },
+  {
+    id: "networking",
+    title: "נטוורקינג",
+    prompt: "עד כמה רשת הקשרים שלך באמת עוזרת לך למצוא עבודה?",
+    options: [
+      "אין לי בכלל קשרים שעוזרים לי מקצועית",
+      "אני לא יודע/ת איך ליצור נטוורקינג נכון",
+      "אני מנסה לפנות לאנשים אבל כמעט לא מקבל/ת מענה",
+      "יש לי קצת קשרים — אבל הם לא באמת מייצרים הזדמנויות",
+      "חלק משמעותי מההזדמנויות שלי מגיע מקשרים ונטוורקינג",
+    ],
+  },
+  {
+    id: "discovery",
+    title: "איתור משרות",
+    prompt: "עד כמה את/ה יודע/ת להגיע למשרות איכותיות?",
+    options: [
+      "אני שולח/ת בעיקר דרך לינקדאין ואתרי דרושים כמו כולם",
+      "רוב המשרות שאני רואה מרגישות אותן משרות שחוזרות על עצמן",
+      "אני לא יודע/ת איך מגיעים למשרות \"מתחת לרדאר\"",
+      "אני מצליח/ה להגיע לחלק מהמשרות האיכותיות",
+      "אני יודע/ת להגיע גם להזדמנויות שלא מפורסמות לכולם",
+    ],
+  },
+  {
+    id: "interviews",
+    title: "ראיונות עבודה",
+    prompt: "איך בדרך כלל הולכים לך ראיונות עבודה?",
+    options: [
+      "אני כמעט לא מצליח/ה לעבור ראיונות",
+      "אני נלחץ/ת ולא מצליח/ה להביא את עצמי",
+      "אני מגיע/ה לשלבים ראשונים אבל נופל/ת בהמשך",
+      "אני עובר/ת חלק מהראיונות אבל לא באופן עקבי",
+      "אני בדרך כלל מצליח/ה לבלוט ולהתקדם בתהליכים",
+    ],
+  },
+  {
+    id: "branding",
+    title: "מיתוג מקצועי",
+    prompt: "עד כמה הפרופיל המקצועי שלך מושך הזדמנויות?",
+    options: [
+      "אין לי בכלל מיתוג מקצועי ברור",
+      "אני לא יודע/ת איך להציג את עצמי נכון",
+      "הפרופיל שלי נראה בסיסי כמו של כולם",
+      "יש לי מיתוג יחסית טוב אבל יש מה לשפר",
+      "המיתוג שלי גורם למגייסים לפנות אליי",
+    ],
+  },
+  {
+    id: "focus",
+    title: "מיקוד תעסוקתי",
+    prompt: "עד כמה ברור לך מה הכיוון המקצועי הבא שלך?",
+    options: [
+      "אין לי מושג מה באמת נכון לי",
+      "אני שולח/ת קורות חיים לכמה כיוונים במקביל",
+      "אני יודע/ת בערך מה אני רוצה אבל לא סגור/ה על זה",
+      "יש לי כיוון ברור יחסית",
+      "אני יודע/ת בדיוק מה המטרה המקצועית שלי",
+    ],
+  },
+  {
+    id: "gaps",
+    title: "פערים מקצועיים",
+    prompt: "עד כמה את/ה יודע/ת אילו מיומנויות חסרות לך היום?",
+    options: [
+      "אין לי מושג מה באמת חסר לי",
+      "אני מרגיש/ה שאני מאחור מקצועית",
+      "אני יודע/ת חלק מהפערים אבל לא איך להשלים אותם",
+      "אני עובד/ת על שיפור מקצועי באופן חלקי",
+      "אני יודע/ת בדיוק אילו מיומנויות צריך כדי להתקדם",
+    ],
+  },
+  {
+    id: "market",
+    title: "תחושת שוק",
+    prompt: "איך את/ה מרגיש/ה היום לגבי המצב שלך בשוק העבודה?",
+    options: [
+      "אבוד/ה ומתוסכל/ת",
+      "אני עובד/ת קשה אבל לא מתקדם/ת",
+      "אני מרגיש/ה שאני מפספס/ת משהו בדרך",
+      "אני מתקדם/ת אבל לא בקצב שהייתי רוצה",
+      "אני מרגיש/ה שאני בכיוון הנכון וזה רק עניין של זמן",
+    ],
+  },
 ];
 
-const REQUEST_TIMEOUT_MS = 60_000;
-
-// ─── Result shape ───────────────────────────────────────────────────
-
-export interface CvMatchStrength {
-  /** 2-4 word title (e.g. "ניסיון רלוונטי בניהול מוצר") */
-  title: string;
-  /** 1-sentence proof from the CV that justifies the call-out */
-  proof: string;
-}
-
-export interface CvMatchGap {
-  /** 2-4 word title — phrased as missing capability, not criticism */
-  title: string;
-  /** 1-sentence reason why this matters for THIS job */
-  why: string;
-  /** Concrete action to close the gap (1 sentence) */
-  action: string;
-  /** "high" / "medium" / "low" priority */
-  severity: "high" | "medium" | "low";
-}
+// ─── Result shape ────────────────────────────────────────────────────
 
 export interface CvMatchResult {
-  /** 0-100 overall match. */
+  /** 0-100 readiness score. */
   score: number;
-  /** 1-2 sentence verdict — direct, professional, slightly destabilising */
-  verdict: string;
-  /** Hebrew label (e.g. "התאמה גבוהה / חלקית / נמוכה") */
+  /** Tier label rendered above the ring. */
   matchLabel: string;
-  /** 3 strengths from the CV that align with the job */
-  strengths: CvMatchStrength[];
-  /** 3 gaps that prevent a higher score */
-  gaps: CvMatchGap[];
-  /** Single biggest leverage point — what would move the score most */
-  topLever: string;
-  /** Suggested next step framing — sets up the upgrade CTA */
-  nextStepFraming: string;
-  /** Estimated rank-vs-other-candidates band */
-  candidateRank: string;
+  /** Which UI template to render — "high" or "low". */
+  template: "high" | "low";
+  /** Short 1-2 sentence intriguing line that hints at the biggest gap. */
+  verdict: string;
+  /** Which question was the WEAKEST — used to flavour the verdict copy. */
+  weakestArea: string;
 }
 
 export class CvMatchError extends Error {
@@ -74,323 +151,63 @@ export class CvMatchError extends Error {
   }
 }
 
-// ─── Prompts ────────────────────────────────────────────────────────
-
-const SYSTEM_PROMPT = `אתה יועץ קריירה בכיר ב"קריירה בפוקוס" עם 15+ שנות ניסיון בגיוס בישראל. אתה מנתח **את מצב חיפוש העבודה** של המשתמש/ת — לא רק את ההתאמה של הקורות חיים לתפקיד היעד. הציון שאתה מחזיר הוא "ציון מוכנות לחיפוש עבודה" שמשקלל את התאמת הפרופיל לתפקיד יחד עם איכות החיפוש בפועל (ערוצי גיוס, נטוורקינג, נוכחות מקצועית).
-
-המטרה: לגרום למשתמש/ת להבין שגם אם הקו"ח שלו/ה מצוין/ת, **חיפוש העבודה עצמו לוקה בחסר** — והמערכת היא הדרך הנכונה לסגור את הפערים האלה.
-
-# קלט שאתה מקבל
-1. קורות חיים
-2. תפקיד יעד (שם או תיאור מלא)
-3. דגלי התנהגות בחיפוש העבודה — 4 שאלות כן/לא:
-   - linkedin: פעיל/ה ב-LinkedIn
-   - whatsapp: חבר/ה בקבוצות WhatsApp רלוונטיות
-   - outreach: פניות יזומות למגייסים/חברות בחודש האחרון
-   - presence: פרופיל LinkedIn / פורטפוליו / אתר אישי מעודכן
-
-# נוסחת הציון (0-100)
-- **40 נק'** מקסימום מהתאמת CV-לתפקיד (לרוב יוצא 25-35 אם ה-CV סביר)
-- **15 נק'** על LinkedIn פעיל (כן→15, לא→0)
-- **15 נק'** על WhatsApp בקבוצות (כן→15, לא→0)
-- **15 נק'** על פנייה יזומה למגייסים (כן→15, לא→0)
-- **15 נק'** על נוכחות מקצועית (כן→15, לא→0)
-
-ציון טיפוסי: 40-65. ציון של 70+ דורש "כן" ב-3+ דגלים. ציון 80+ נדיר — רק כשגם ה-CV מתאים מאוד וגם הכל ב-"כן".
-
-**חשוב — מטרת הציון:** לא להחמיא, אלא להוביל למסקנה שהמשתמש/ת חייב/ת מערכת מקצועית כדי להתקדם. ציון נמוך = יותר פערים לסגור = ערך גבוה יותר במערכת.
-
-# מבנה הניתוח
-- **strengths** (3 פריטים): מה המשתמש/ת **כבר עושה נכון**. אם 0 דגלים — עדיין חייב להחזיר 3 חוזקות (למשל מהקורות חיים, מהניסיון, מהשכלה).
-- **gaps** (3 פריטים): **פערים בחיפוש העבודה**, לא בקורות החיים בלבד. דוגמאות:
-  - "חוסר נוכחות ב-LinkedIn" → לתפקיד שלך, 80% מהמגייסים מחפשים שם
-  - "ניתוק מערוצי גיוס פנימיים" → 50% מהמשרות בתחום שלך בקבוצות WhatsApp סגורות
-  - "אין פנייה יזומה למגייסים" → במצב שוק נוכחי, אנשים שפונים מקבלים פי 3 ראיונות
-  - "פרופיל LinkedIn לא מותאם לתפקיד" → מגייסים סורקים מילים ספציפיות
-  - "חיפוש סביל" — רק הגשת מועמדות לפי דרושים, בלי outreach
-  אם דגל מסומן ב-"כן" — אל תזכיר את הפער המתאים שלו, אלא תתמקד בפערים אחרים.
-- **topLever**: הצעד **היחיד** המשמעותי ביותר — לרוב יהיה הפער שיכול לקפוץ הכי מהר ב-15 נקודות.
-- **nextStepFraming**: משפט אסטרטגי שמסביר שיש מערכת שלמה שעוזרת לסגור את הפערים האלה.
-
-# מטרות הניתוח
-1. **כן ומדויק** — ציון אמיתי, לא מחמיא. רוב הקו"ח לא מתאימים ב-90%+ למשרה ספציפית. ציון ממוצע אמיתי הוא 55-75.
-2. **שימושי** — כל פער מנוסח עם פעולה קונקרטית שאפשר ליישם השבוע.
-3. **דוחף לפעולה** — הניסוח של ה-gaps והפסקה "topLever" צריך להבליט פוטנציאל שאינו מנוצל — "אם תסגרי את הפער הזה, את עוברת מ-72% ל-89%". זה יוצר תחושת **חסר** ספציפי, לא ייאוש כללי.
-
-# שיטת הניקוד
-- 30 נקודות: התאמת תפקיד (current/past titles vs target title)
-- 25 נקודות: התאמת שנות ניסיון
-- 20 נקודות: התאמת מיומנויות טכניות / כלים נדרשים
-- 15 נקודות: השכלה רלוונטית
-- 10 נקודות: סקטור / סוג ארגון
-
-מספרים יוצאים מהבטן — אל תכתוב פירוט של ה-30/25/20 ב-output, רק תן score סופי.
-
-# סגנון
-- עברית מקצועית, גוף שני נקבה (אא"כ ברור מהשם שזה גבר).
-- אסור: "אולי", "תיאוריה", "מקובל". כן: "במשרה הספציפית הזו ראיתי...".
-- אסור להמליץ על השלמת אקדמיה אם הקו"ח כבר מציין תואר רלוונטי.
-- כל gap עם action ספציפי השבוע — לא "ללמוד יותר על X" אלא "להוסיף קורס Y ב-Coursera ב-3 ימים".
-
-# פורמט הפלט — JSON בלבד, בלי markdown, בלי טקסט נוסף
-{
-  "score": <0-100>,
-  "matchLabel": "<מוכנות גבוהה / מוכנות חלקית / מוכנות נמוכה>",
-  "verdict": "<משפט-שניים: מי את ומה החסר. ישיר, מקצועי. דוגמה: 'יש לך 5 שנות ניסיון רלוונטי בניהול מוצר, אבל המשרה מבקשת ניסיון ספציפי ב-B2B SaaS שאת לא מציגה בצורה ברורה ב-CV.'>",
-  "strengths": [
-    { "title": "<חוזקה ב-2-4 מילים>", "proof": "<צטוט/אזכור ספציפי מה-CV שמוכיח את החוזקה>" },
-    ...3 בסך הכל
-  ],
-  "gaps": [
-    { "title": "<פער ב-2-4 מילים>", "why": "<למה זה משנה למשרה הספציפית>", "action": "<פעולה קונקרטית השבוע>", "severity": "high" / "medium" / "low" },
-    ...3 בסך הכל
-  ],
-  "topLever": "<משפט שמדגיש את הפער המשמעותי ביותר: 'אם תסגרי את X, הציון שלך עולה ל-Y%'>",
-  "nextStepFraming": "<משפט שמכין את הקרקע לפיצ'ר הבא — בלי 'הירשמי' או 'שלמי'. במקום: 'יש פערים ספציפיים שהקו"ח שלך לא מנצל. הצעד הבא הוא תוכנית פעולה ממוקדת ל-4 שבועות שתסגור אותם.'>",
-  "candidateRank": "<פס דירוג אומדן: 'בעשירון העליון של המועמדים', 'במחצית העליונה', 'במחצית התחתונה', 'נדרשת התאמה משמעותית'>"
-}`;
-
-export interface BehaviourFlags {
-  linkedin?: boolean;
-  whatsapp?: boolean;
-  outreach?: boolean;
-  presence?: boolean;
-}
-
-function buildUserPrompt(cvText: string, jobText: string, behaviour?: BehaviourFlags): string {
-  const b = behaviour ?? {};
-  const lines = [
-    `linkedin: ${b.linkedin ? "כן" : "לא"}`,
-    `whatsapp: ${b.whatsapp ? "כן" : "לא"}`,
-    `outreach: ${b.outreach ? "כן" : "לא"}`,
-    `presence: ${b.presence ? "כן" : "לא"}`,
-  ].join("\n");
-  return `--- קורות חיים ---
-${cvText.trim().slice(0, 5000)}
-
---- תפקיד היעד ---
-${jobText.trim().slice(0, 2000)}
-
---- דגלי התנהגות בחיפוש העבודה ---
-${lines}
-
-חשב את ציון המוכנות לחיפוש עבודה לפי הנוסחה. תן יותר משקל לדגלים שמסומנים "לא" — אלה הפערים שיציפו לקורא/ת חוסר ויובילו לרצון להירשם למערכת. החזר JSON תקני בלבד, ללא markdown fences, ללא הקדמה.`;
-}
-
-// ─── Engine ─────────────────────────────────────────────────────────
-
-export async function analyzeCvMatch(
-  cvText: string,
-  jobText: string,
-  behaviour?: BehaviourFlags,
-): Promise<CvMatchResult> {
-  if (!cvText || cvText.trim().length < 50) {
-    throw new CvMatchError("bad-input", "קורות החיים קצרים מדי לניתוח");
-  }
-  if (!jobText || jobText.trim().length < 3) {
-    throw new CvMatchError("bad-input", "תפקיד היעד קצר מדי לניתוח");
-  }
-
-  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
-  const geminiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!anthropicKey && !geminiKey) {
-    throw new CvMatchError("no-key", "מנוע AI לא מוגדר");
-  }
-
-  const user = buildUserPrompt(cvText, jobText, behaviour);
-
-  // Prefer Anthropic when configured.
-  if (anthropicKey) {
-    try {
-      return await callAnthropic(SYSTEM_PROMPT, user, anthropicKey);
-    } catch (e) {
-      if (!geminiKey) throw e;
-      console.warn("[cv-match] Anthropic failed, trying Gemini:", e instanceof Error ? e.message : e);
-    }
-  }
-  if (!geminiKey) throw new CvMatchError("no-key", "GEMINI_API_KEY missing");
-  return await callGeminiCascade(SYSTEM_PROMPT, user, geminiKey);
-}
-
-async function callAnthropic(system: string, user: string, key: string): Promise<CvMatchResult> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  try {
-    const res = await fetch(ANTHROPIC_URL, {
-      method: "POST",
-      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 2048,
-        system,
-        messages: [{ role: "user", content: user }],
-      }),
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      throw new CvMatchError("api-error", `Anthropic ${res.status}: ${body.slice(0, 200)}`);
-    }
-    const data = (await res.json()) as { content?: Array<{ type: string; text?: string }> };
-    const text = data.content?.map((c) => (c.type === "text" ? c.text ?? "" : "")).join("") ?? "";
-    if (!text) throw new CvMatchError("parse-error", "empty response from Anthropic");
-    return parseResult(text);
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-async function callGeminiCascade(system: string, user: string, key: string): Promise<CvMatchResult> {
-  const tried: string[] = [];
-  let lastError: CvMatchError | null = null;
-
-  for (const model of GEMINI_MODELS) {
-    tried.push(model);
-    try {
-      return await callGeminiModel(model, system, user, key);
-    } catch (e) {
-      if (!(e instanceof CvMatchError)) throw e;
-      lastError = e;
-      // Every parse-error is retryable — the next model gets a fresh
-      // shot at producing valid JSON. API errors are retryable when
-      // they're quota / overload / unavailable. Anything else (bad
-      // input, etc.) bubbles immediately.
-      const retryable =
-        e.code === "parse-error" ||
-        (e.code === "api-error" && /429|503|500|502|504|overload|UNAVAILABLE|quota|rate/i.test(e.message));
-      if (!retryable) throw e;
-      console.warn(`[cv-match] ${model} failed (${e.code}: ${e.message.slice(0, 100)}); trying next`);
-    }
-  }
-  throw new CvMatchError(
-    "api-error",
-    `כל מנועי ה-AI לא זמינים (${tried.join(", ")}). ${lastError?.message ?? ""}`,
-  );
-}
-
-async function callGeminiModel(
-  model: string, system: string, user: string, key: string,
-): Promise<CvMatchResult> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: system }] },
-        contents: [{ role: "user", parts: [{ text: user }] }],
-        generationConfig: {
-          temperature: 0.6,
-          // 4096 is enough for the bounded JSON schema (3 strengths +
-          // 3 gaps + scalars). thinkingBudget=0 disables Gemini's
-          // hidden reasoning tokens — they're what was making this
-          // feel slow (10-15s extra). Quality is still strong for
-          // a structured task like this.
-          maxOutputTokens: 4096,
-          responseMimeType: "application/json",
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ...({ thinkingConfig: { thinkingBudget: 0 } } as any),
-        },
-      }),
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      throw new CvMatchError("api-error", `Gemini ${model} ${res.status}: ${body.slice(0, 200)}`);
-    }
-    const data = (await res.json()) as {
-      candidates?: Array<{
-        content?: { parts?: Array<{ text?: string }> };
-        finishReason?: string;
-      }>;
-      promptFeedback?: { blockReason?: string };
-    };
-    const candidate = data.candidates?.[0];
-    const text = candidate?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
-    if (!text) {
-      const reasons: string[] = [];
-      if (data.promptFeedback?.blockReason) reasons.push(`blockReason=${data.promptFeedback.blockReason}`);
-      if (candidate?.finishReason) reasons.push(`finishReason=${candidate.finishReason}`);
-      throw new CvMatchError(
-        "parse-error",
-        `empty response from Gemini ${model}${reasons.length ? ` (${reasons.join(", ")})` : ""}`,
-      );
-    }
-    return parseResult(text);
-  } finally {
-    clearTimeout(timer);
-  }
-}
+// ─── Scoring + verdict ──────────────────────────────────────────────
 
 /**
- * Repair common LLM JSON mistakes before parsing. Gemini occasionally
- * forgets a comma between array elements (Coral hit this exact case),
- * leaves trailing commas before `]`/`}`, or wraps the whole payload
- * in markdown fences even when `responseMimeType: application/json`
- * is set. We patch all three in-place.
+ * Compute the readiness score from the questionnaire answers + a flag
+ * indicating whether the candidate is recognised as a Coral trainee.
  *
- * Designed to be safe — every regex is anchored on structural chars,
- * never inside string content.
+ * @param answers - 8 ints, each 1-5 (1 = worst, 5 = best)
+ * @param isTrainee - true when the CV's name matches a User in the DB
+ * @returns CvMatchResult
  */
-function repairJson(input: string): string {
-  let s = input;
+export function scoreFromQuestionnaire(
+  answers: number[],
+  isTrainee: boolean,
+): CvMatchResult {
+  // Defensive: clamp every answer to 1-5, default 1 if missing.
+  const normalised: number[] = QUESTIONNAIRE.map((_, i) => {
+    const a = Number(answers[i] ?? 1);
+    if (Number.isNaN(a)) return 1;
+    return Math.max(1, Math.min(5, Math.round(a)));
+  });
 
-  // 1. Missing commas between adjacent objects/arrays/strings in an array.
-  //    e.g. `}\n  {`  →  `},\n  {`
-  s = s.replace(/}(\s*\n\s*){/g, "},$1{");
-  s = s.replace(/](\s*\n\s*)\[/g, "],$1[");
-  s = s.replace(/"(\s*\n\s*)"/g, '",$1"');
-  // Catch the case where there's a number / closing brace before the next entry.
-  s = s.replace(/(["\d}\]])(\s*\n\s*)([{\[])/g, "$1,$2$3");
+  // Sum = 8..40. Scale to 0-100: (sum - 8) / 32 * 100, then nudge so
+  // a "middle" answer (3 across the board → sum 24) lands around 50.
+  // Raw formula: (sum - 8) / 32 → 0..1. Multiply by 100 for percent.
+  const sum = normalised.reduce((a, b) => a + b, 0);
+  let score = Math.round(((sum - 8) / 32) * 100);
 
-  // 2. Trailing commas before close — invalid JSON but common in LLM output.
-  s = s.replace(/,(\s*[}\]])/g, "$1");
+  // Coral's rule: non-trainees cap at 65 so they almost always land in
+  // the "low" template (drives them toward the platform). Trainees in
+  // her format keep the questionnaire-driven score.
+  const TRAINEE_CAP = 100;
+  const PUBLIC_CAP = 65;
+  score = Math.min(isTrainee ? TRAINEE_CAP : PUBLIC_CAP, score);
 
-  // 3. Smart-quote / curly-quote substitution that breaks JSON parsers.
-  s = s.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
-
-  return s;
-}
-
-function parseResult(raw: string): CvMatchResult {
-  let text = raw.trim();
-  if (text.startsWith("```")) {
-    text = text.replace(/^```(?:json)?\n?/i, "").replace(/```$/i, "").trim();
+  // Find weakest area for verdict copy.
+  let weakestIdx = 0;
+  for (let i = 1; i < normalised.length; i++) {
+    if (normalised[i] < normalised[weakestIdx]) weakestIdx = i;
   }
-  const first = text.indexOf("{");
-  const last = text.lastIndexOf("}");
-  if (first === -1 || last === -1 || last < first) {
-    throw new CvMatchError("parse-error", "no JSON object in response");
-  }
-  const slice = text.slice(first, last + 1);
+  const weakestArea = QUESTIONNAIRE[weakestIdx]?.title ?? "חיפוש עבודה";
 
-  // Two-pass parse: try as-is, then attempt repair, then give up.
-  // The cascade in callGemini will rotate to the next model when we
-  // throw — so it's safe to be strict here.
-  const tryParse = (s: string) => JSON.parse(s) as CvMatchResult;
+  // Templates trigger on a 70 threshold.
+  const template: "high" | "low" = score >= 70 ? "high" : "low";
 
-  let parsed: CvMatchResult;
-  try {
-    parsed = tryParse(slice);
-  } catch (firstErr) {
-    try {
-      parsed = tryParse(repairJson(slice));
-    } catch {
-      // Surface the FIRST error — it's usually more informative than
-      // the post-repair one.
-      throw new CvMatchError(
-        "parse-error",
-        `JSON parse failed: ${firstErr instanceof Error ? firstErr.message : "unknown"}`,
-      );
-    }
+  // Match label + 1-2-sentence intriguing verdict.
+  let matchLabel: string;
+  let verdict: string;
+  if (template === "high") {
+    matchLabel = "מוכנות גבוהה";
+    verdict = `יש לך בסיס חזק בכל הציר של חיפוש העבודה. השאלה היחידה היא איך לדייק את ה-${weakestArea.toLowerCase()} שלך כדי לקפוץ לרמה הבאה.`;
+  } else if (score >= 50) {
+    matchLabel = "מוכנות חלקית";
+    verdict = `יש לך כיוון, אבל ה-${weakestArea} שלך תוקעים אותך. רוב מי שמגיע למסך הזה כבר עובד קשה — אבל בלי השיטה הנכונה.`;
+  } else {
+    matchLabel = "מוכנות נמוכה";
+    verdict = `הציון לא משקף את הפוטנציאל שלך — הוא משקף איפה השיטה לוקה. אנשים עם פרופיל דומה לשלך מצליחים בדיוק אחרי שמסדרים את הגישה.`;
   }
 
-  parsed.strengths ??= [];
-  parsed.gaps ??= [];
-  if (typeof parsed.score !== "number" || parsed.score < 0 || parsed.score > 100) {
-    parsed.score = Math.max(0, Math.min(100, Number(parsed.score) || 50));
-  }
-  return parsed;
+  return { score, matchLabel, template, verdict, weakestArea };
 }
