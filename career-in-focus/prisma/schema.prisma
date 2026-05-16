@@ -982,6 +982,19 @@ model PageView {
   path      String   // pathname like "/cv-match", "/pricing", "/cv-match/run"
   referrer  String?  // document.referrer when present, e.g. facebook.com
 
+  // Marketing attribution — pulled from the URL's ?utm_source=…&utm_campaign=…
+  // when the inviter's link carries them. Lets Coral see which channel
+  // drove each visit (Facebook ad, WhatsApp blast, etc.).
+  utmSource   String?
+  utmCampaign String?
+
+  // When the visitor is logged in, we copy their User.id + display name
+  // straight into the row so the admin "Recent Visits" feed can show
+  // who clicked the link without joining tables. Null = anonymous.
+  userId    String?
+  userName  String?
+
   @@index([createdAt])
   @@index([path, createdAt])
+  @@index([utmSource, createdAt])
 }

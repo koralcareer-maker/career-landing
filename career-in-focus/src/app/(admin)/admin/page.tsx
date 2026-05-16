@@ -77,6 +77,8 @@ export default async function AdminDashboard() {
     cvMatchRuns7d,
     topPages7d,
     topReferrers7d,
+    recentVisits,
+    utmBreakdown7d,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { accessStatus: "ACTIVE" } }),
@@ -205,6 +207,38 @@ export default async function AdminDashboard() {
       orderBy: { _count: { referrer: "desc" } },
       take: 5,
     }).catch(() => [] as Array<{ referrer: string | null; _count: { _all: number } }>),
+    // Live feed — last 30 individual visits. Includes path, referrer,
+    // UTM source, and the user's name when logged in.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma as any).pageView.findMany({
+      where: {
+        createdAt: { gte: sevenDaysAgo },
+        // Filter the cv-match/run synthetic entries out of the visitor
+        // feed — they're not "clicks", they're tool completions.
+        NOT: { path: "/cv-match/run" },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+      select: {
+        id: true, createdAt: true, path: true, referrer: true,
+        utmSource: true, utmCampaign: true, userName: true,
+      },
+    }).catch(() => [] as Array<{
+      id: string; createdAt: Date; path: string; referrer: string | null;
+      utmSource: string | null; utmCampaign: string | null; userName: string | null;
+    }>),
+    // UTM source breakdown last 7 days — where the traffic came from.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma as any).pageView.groupBy({
+      by: ["utmSource"],
+      where: {
+        createdAt: { gte: sevenDaysAgo },
+        utmSource: { not: null },
+      },
+      _count: { _all: true },
+      orderBy: { _count: { utmSource: "desc" } },
+      take: 5,
+    }).catch(() => [] as Array<{ utmSource: string | null; _count: { _all: number } }>),
   ]);
 
   // ── Derived metrics ───────────────────────────────────────────
@@ -447,11 +481,11 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
-        {/* Top pages + Top referrers */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        {/* Top pages + Top referrers + UTM */}
+        <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-              עמודים מובילים (7 ימים)
+              עמודים מובילים
             </p>
             {topPages7d.length === 0 ? (
               <p className="text-sm text-slate-500">אין נתונים עדיין.</p>
@@ -468,7 +502,7 @@ export default async function AdminDashboard() {
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-              מקורות תנועה מובילים
+              מקורות תנועה
             </p>
             {topReferrers7d.length === 0 ? (
               <p className="text-sm text-slate-500">אין נתונים עדיין.</p>
@@ -488,6 +522,72 @@ export default async function AdminDashboard() {
               </ul>
             )}
           </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+              קמפיינים (UTM)
+            </p>
+            {utmBreakdown7d.length === 0 ? (
+              <p className="text-sm text-slate-500">
+                אין כניסות מקמפיין מתויג. הוסיפי{" "}
+                <code dir="ltr" className="text-[11px] bg-slate-100 px-1 rounded">?utm_source=…</code>{" "}
+                לקישורים כדי לזהות מקורות.
+              </p>
+            ) : (
+              <ul className="space-y-1.5 text-sm">
+                {utmBreakdown7d.map((row: { utmSource: string | null; _count: { _all: number } }) => (
+                  <li key={row.utmSource ?? ""} className="flex items-center justify-between gap-2">
+                    <span className="truncate text-navy">{row.utmSource ?? "—"}</span>
+                    <span className="font-bold text-slate-700 shrink-0">{row._count._all.toLocaleString("he-IL")}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* Live click feed — last 30 visits, one row each. Coral asked
+            to see every click on the link as it happens. */}
+        <div className="mt-5 pt-5 border-t border-slate-200">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+            כל הכניסות האחרונות (30 אחרונות)
+          </p>
+          {recentVisits.length === 0 ? (
+            <p className="text-sm text-slate-500">אין עדיין כניסות לאתר. השאירי קישור בקבוצה / פוסט / מייל ותוכלי לעקוב כאן.</p>
+          ) : (
+            <div className="max-h-80 overflow-y-auto -mx-2">
+              <table className="w-full text-xs">
+                <thead className="text-slate-500">
+                  <tr>
+                    <th className="text-right px-2 pb-2 font-semibold">מתי</th>
+                    <th className="text-right px-2 pb-2 font-semibold">משתמש/ת</th>
+                    <th className="text-right px-2 pb-2 font-semibold">עמוד</th>
+                    <th className="text-right px-2 pb-2 font-semibold">מקור</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentVisits.map((v: { id: string; createdAt: Date; path: string; referrer: string | null; utmSource: string | null; utmCampaign: string | null; userName: string | null }) => {
+                    let refHost = "—";
+                    if (v.utmSource) refHost = `📢 ${v.utmSource}${v.utmCampaign ? ` / ${v.utmCampaign}` : ""}`;
+                    else if (v.referrer) {
+                      try { refHost = new URL(v.referrer).hostname; } catch { refHost = v.referrer.slice(0, 30); }
+                    } else {
+                      refHost = "ישיר";
+                    }
+                    return (
+                      <tr key={v.id} className="border-t border-slate-100">
+                        <td className="px-2 py-1.5 text-slate-500 whitespace-nowrap">{relative(v.createdAt)}</td>
+                        <td className="px-2 py-1.5 text-navy font-semibold">
+                          {v.userName ?? <span className="text-slate-400">אורח/ת</span>}
+                        </td>
+                        <td className="px-2 py-1.5 text-navy font-mono" dir="ltr">{v.path}</td>
+                        <td className="px-2 py-1.5 text-slate-600" dir="auto">{refHost}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </section>
 
