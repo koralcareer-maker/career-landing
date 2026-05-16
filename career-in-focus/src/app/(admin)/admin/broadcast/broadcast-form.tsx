@@ -53,7 +53,7 @@ export function BroadcastForm({ userCounts }: {
   // Test-send state — runs separately from the main form action so it
   // doesn't trip the BroadcastForm's pending/success/error UI.
   const [testPending, startTest] = useTransition();
-  const [testResult, setTestResult] = useState<{ ok?: boolean; error?: string } | null>(null);
+  const [testResult, setTestResult] = useState<{ ok?: boolean; error?: string; sentTo?: string } | null>(null);
 
   // Auto-load the pre-approved re-engagement template the first time
   // Coral picks OLD_LEADS — but only if both fields are still empty,
@@ -85,7 +85,7 @@ export function BroadcastForm({ userCounts }: {
     fd.set("audience", audience);
     startTest(async () => {
       const r = await sendBroadcastTest(null, fd);
-      setTestResult({ ok: r.success, error: r.error });
+      setTestResult({ ok: r.success, error: r.error, sentTo: r.sentTo });
     });
   }
 
@@ -252,9 +252,14 @@ export function BroadcastForm({ userCounts }: {
         {/* Test send result — separate from the main form action's
             state banner so it doesn't disappear when the form re-renders. */}
         {testResult?.ok && (
-          <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
-            <CheckCircle size={16} className="shrink-0" />
-            דוגמה נשלחה למייל שלך — בדקי בתיבה לראות את העיצוב המלא לפני שאת שולחת לכולם.
+          <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
+            <CheckCircle size={16} className="shrink-0 mt-0.5" />
+            <div>
+              <div>דוגמה נשלחה — בדקי בתיבה את העיצוב המלא לפני שאת שולחת לכולם.</div>
+              {testResult.sentTo && (
+                <div className="text-xs text-blue-600 mt-1 font-mono" dir="ltr">→ {testResult.sentTo}</div>
+              )}
+            </div>
           </div>
         )}
         {testResult?.error && (

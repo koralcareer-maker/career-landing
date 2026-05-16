@@ -296,6 +296,9 @@ export type BroadcastState = {
   sentCount?: number;
   skippedCount?: number;
   previewCount?: number;
+  /** Echo the address(es) the test was actually sent to, so admins
+   *  immediately see WHICH inbox to check. */
+  sentTo?: string;
 };
 
 /**
@@ -380,9 +383,16 @@ export async function sendBroadcastTest(prevState: unknown, formData: FormData):
     // { data, error }. We MUST inspect `.error` ourselves, otherwise a
     // silent quarantine (unverified-domain, invalid from-address, etc.)
     // looks like success and Coral has no idea why her inbox is empty.
+    // Also: send to BOTH the logged-in admin's email AND Coral's known
+    // Gmail. Earlier debugging showed that admin.email can be set to a
+    // different address than the Gmail Coral actually reads, leading to
+    // "test sent successfully" but nothing in her inbox. Hard-coding
+    // the Gmail as a second recipient bypasses the mismatch.
+    const CORAL_GMAIL = "koralcareer@gmail.com";
+    const recipients = Array.from(new Set([admin.email, CORAL_GMAIL]));
     const result = await resend.emails.send({
       from:    FROM,
-      to:      admin.email,
+      to:      recipients,
       subject: personalSubject,
       html,
     });
@@ -390,7 +400,7 @@ export async function sendBroadcastTest(prevState: unknown, formData: FormData):
       const e = result.error as { message?: string; name?: string };
       return { error: `Resend דחה: ${e.name ?? ""} ${e.message ?? "שגיאה לא ידועה"}`.trim() };
     }
-    return { success: true, sentCount: 1 };
+    return { success: true, sentCount: recipients.length, sentTo: recipients.join(", ") };
   } catch (err) {
     return { error: `שליחת הדוגמה נכשלה: ${String(err instanceof Error ? err.message : err).slice(0, 200)}` };
   }
