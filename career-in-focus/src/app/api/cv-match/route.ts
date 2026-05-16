@@ -251,6 +251,13 @@ export async function POST(req: NextRequest) {
       result.score = 85;
     }
 
+    // Log a "tool run" pageview so the admin dashboard separates
+    // "saw the cv-match page" from "actually completed an analysis".
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma as any).pageView.create({
+      data: { path: "/cv-match/run", referrer: null },
+    }).catch(() => {});
+
     return NextResponse.json({ ok: true, result }, { headers: CORS_HEADERS });
   } catch (e) {
     if (e instanceof CvMatchError) {

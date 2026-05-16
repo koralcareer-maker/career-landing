@@ -970,3 +970,18 @@ model CvWritingRequest {
   @@index([userId, createdAt])
   @@index([status, createdAt])
 }
+
+// ─── Page-view analytics ────────────────────────────────────────────
+// Lightweight visit log so Coral can see traffic numbers on the admin
+// dashboard. Every public page-load + every CV-Match submit writes
+// one row here. We deliberately DON'T store IP, user-agent, or any
+// session ID — just the path and referrer. Privacy-friendly + tiny.
+model PageView {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  path      String   // pathname like "/cv-match", "/pricing", "/cv-match/run"
+  referrer  String?  // document.referrer when present, e.g. facebook.com
+
+  @@index([createdAt])
+  @@index([path, createdAt])
+}

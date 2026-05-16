@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AccessibilityWidget } from "@/components/accessibility/widget";
+import { PageViewTracker } from "@/components/page-view-tracker";
 
 // metadataBase makes Next.js resolve relative og:image URLs into
 // absolute ones. WhatsApp / Facebook / Twitter / LinkedIn all require
@@ -109,6 +110,9 @@ export default function RootLayout({
         {children}
         {/* Floating accessibility widget — visible on every page. */}
         <AccessibilityWidget />
+        {/* Logs page-views to /api/track-view so the admin dashboard
+            can show traffic numbers. Zero PII captured. */}
+        <PageViewTracker />
       </body>
     </html>
   );

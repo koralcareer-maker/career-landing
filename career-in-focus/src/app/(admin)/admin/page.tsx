@@ -71,6 +71,12 @@ export default async function AdminDashboard() {
     recentCancellations,
     recentLeads,
     compedUsers,
+    visitsToday,
+    visits7d,
+    visits7dPrev,
+    cvMatchRuns7d,
+    topPages7d,
+    topReferrers7d,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { accessStatus: "ACTIVE" } }),
@@ -159,6 +165,46 @@ export default async function AdminDashboard() {
         chargeCount: 0,
       },
     }),
+    // ── Traffic analytics ────────────────────────────────────────
+    // PageView is a fresh table — cast prisma to any so a stale
+    // generated client during a first-deploy doesn't block the build.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma as any).pageView.count({
+      where: { createdAt: { gte: new Date(now.getTime() - 1 * day) } },
+    }).catch(() => 0),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma as any).pageView.count({
+      where: { createdAt: { gte: sevenDaysAgo } },
+    }).catch(() => 0),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma as any).pageView.count({
+      where: {
+        createdAt: { gte: new Date(now.getTime() - 14 * day), lt: sevenDaysAgo },
+      },
+    }).catch(() => 0),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma as any).pageView.count({
+      where: { path: "/cv-match/run", createdAt: { gte: sevenDaysAgo } },
+    }).catch(() => 0),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma as any).pageView.groupBy({
+      by: ["path"],
+      where: { createdAt: { gte: sevenDaysAgo } },
+      _count: { _all: true },
+      orderBy: { _count: { path: "desc" } },
+      take: 5,
+    }).catch(() => [] as Array<{ path: string; _count: { _all: number } }>),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (prisma as any).pageView.groupBy({
+      by: ["referrer"],
+      where: {
+        createdAt: { gte: sevenDaysAgo },
+        referrer: { not: null },
+      },
+      _count: { _all: true },
+      orderBy: { _count: { referrer: "desc" } },
+      take: 5,
+    }).catch(() => [] as Array<{ referrer: string | null; _count: { _all: number } }>),
   ]);
 
   // ── Derived metrics ───────────────────────────────────────────
@@ -180,6 +226,7 @@ export default async function AdminDashboard() {
 
   const signupTrend = trendPct(newSignups7d, newSignups7dPrev);
   const cancelTrend = trendPct(cancellations30d, cancellations30dPrev);
+  const visitsTrend = trendPct(visits7d, visits7dPrev);
   const avgScore = Math.round(activePassportScoreAgg._avg.jobMatchScore ?? 0);
 
   const adoptionPassport = activeUsers ? Math.round((passportCount / activeUsers) * 100) : 0;
@@ -349,6 +396,98 @@ export default async function AdminDashboard() {
             icon={<TrendingUp size={18} />}
             color="indigo"
           />
+        </div>
+      </section>
+
+      {/* ── Traffic analytics ────────────────────────────────────
+            Public-page visits + cv-match tool runs + top pages +
+            top referrers. Numbers from the lightweight PageView
+            table; updates in real time on each page-view. */}
+      <section className="bg-white rounded-2xl border border-slate-200 p-5">
+        <header className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-base font-black text-navy">תנועה לאתר</h2>
+            <p className="text-xs text-slate-500">
+              צפיות בעמודים בזמן אמת. מתעדכן עם כל כניסה לאתר.
+            </p>
+          </div>
+        </header>
+
+        {/* 4 KPI tiles */}
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 mb-5">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p className="text-xs text-slate-500 font-semibold mb-1">היום</p>
+            <p className="text-2xl font-black text-navy">{visitsToday.toLocaleString("he-IL")}</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">כניסות לאתר</p>
+          </div>
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p className="text-xs text-slate-500 font-semibold mb-1">7 ימים אחרונים</p>
+            <p className="text-2xl font-black text-navy">{visits7d.toLocaleString("he-IL")}</p>
+            <p className={`text-[11px] mt-0.5 ${
+              visitsTrend.tone === "up" ? "text-emerald-700" :
+              visitsTrend.tone === "down" ? "text-rose-700" :
+              "text-slate-500"
+            }`}>
+              {visitsTrend.label}
+            </p>
+          </div>
+          <div className="bg-teal/5 border border-teal/20 rounded-xl p-4">
+            <p className="text-xs text-teal-dark font-semibold mb-1">CV-Match (7 ימים)</p>
+            <p className="text-2xl font-black text-navy">{cvMatchRuns7d.toLocaleString("he-IL")}</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">בדיקות שהושלמו</p>
+          </div>
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+            <p className="text-xs text-purple-700 font-semibold mb-1">המרה לבדיקה</p>
+            <p className="text-2xl font-black text-navy">
+              {visits7d > 0
+                ? `${Math.round((cvMatchRuns7d / visits7d) * 100)}%`
+                : "—"}
+            </p>
+            <p className="text-[11px] text-slate-500 mt-0.5">מ-CV-Match לבדיקה מלאה</p>
+          </div>
+        </div>
+
+        {/* Top pages + Top referrers */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+              עמודים מובילים (7 ימים)
+            </p>
+            {topPages7d.length === 0 ? (
+              <p className="text-sm text-slate-500">אין נתונים עדיין.</p>
+            ) : (
+              <ul className="space-y-1.5 text-sm">
+                {topPages7d.map((row: { path: string; _count: { _all: number } }) => (
+                  <li key={row.path} className="flex items-center justify-between gap-2">
+                    <span className="truncate text-navy font-mono text-xs" dir="ltr">{row.path || "/"}</span>
+                    <span className="font-bold text-slate-700 shrink-0">{row._count._all.toLocaleString("he-IL")}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+              מקורות תנועה מובילים
+            </p>
+            {topReferrers7d.length === 0 ? (
+              <p className="text-sm text-slate-500">אין נתונים עדיין.</p>
+            ) : (
+              <ul className="space-y-1.5 text-sm">
+                {topReferrers7d.map((row: { referrer: string | null; _count: { _all: number } }) => {
+                  const ref = row.referrer ?? "";
+                  let host = ref;
+                  try { host = ref ? new URL(ref).hostname : "(direct)"; } catch { /* keep ref */ }
+                  return (
+                    <li key={ref} className="flex items-center justify-between gap-2">
+                      <span className="truncate text-navy" dir="ltr">{host}</span>
+                      <span className="font-bold text-slate-700 shrink-0">{row._count._all.toLocaleString("he-IL")}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         </div>
       </section>
 
