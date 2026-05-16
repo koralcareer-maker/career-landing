@@ -203,11 +203,15 @@ async function callGeminiCascade(system: string, user: string, key: string): Pro
     } catch (e) {
       if (!(e instanceof CvMatchError)) throw e;
       lastError = e;
+      // Every parse-error is retryable — the next model gets a fresh
+      // shot at producing valid JSON. API errors are retryable when
+      // they're quota / overload / unavailable. Anything else (bad
+      // input, etc.) bubbles immediately.
       const retryable =
-        (e.code === "api-error" && /429|503|overload|UNAVAILABLE|quota/i.test(e.message)) ||
-        (e.code === "parse-error" && /empty|MAX_TOKENS/i.test(e.message));
+        e.code === "parse-error" ||
+        (e.code === "api-error" && /429|503|500|502|504|overload|UNAVAILABLE|quota|rate/i.test(e.message));
       if (!retryable) throw e;
-      console.warn(`[cv-match] ${model} failed (${e.code}); trying next`);
+      console.warn(`[cv-match] ${model} failed (${e.code}: ${e.message.slice(0, 100)}); trying next`);
     }
   }
   throw new CvMatchError(
