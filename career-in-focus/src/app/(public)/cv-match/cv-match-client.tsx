@@ -6,7 +6,16 @@ import {
   Sparkles, Upload, FileText, Loader2, CheckCircle2,
   ArrowLeft, Trophy, XCircle,
 } from "lucide-react";
-import { QUESTIONNAIRE, type CvMatchResult } from "@/lib/cv-match-analyzer";
+import { QUESTIONNAIRE, type CvMatchResult, type CvMatchQuestion } from "@/lib/cv-match-analyzer";
+
+// ─── Helpers ─────────────────────────────────────────────────────────
+
+/** Score for a given option index, honouring scoreMap > reversed > default. */
+function optionValue(q: CvMatchQuestion, optIdx: number): number {
+  if (q.scoreMap) return q.scoreMap[optIdx] ?? 1;
+  if (q.reversed) return 5 - optIdx;
+  return optIdx + 1;
+}
 
 /**
  * CV-Match — questionnaire-driven readiness assessment.
@@ -29,8 +38,10 @@ export function CvMatchClient() {
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [jobText, setJobText] = useState("");
   const [inputMode, setInputMode] = useState<"upload" | "paste">("upload");
-  // 8 answers — undefined means not yet picked. UI requires all 8.
-  const [answers, setAnswers] = useState<(number | undefined)[]>(
+  // Answers store OPTION INDEX (not the score value) so duplicate scores
+  // in a scoreMap don't make two options look selected at once. Multi-
+  // select questions store an array of indices. undefined = not picked.
+  const [answers, setAnswers] = useState<(number | number[] | undefined)[]>(
     () => new Array(QUESTIONNAIRE.length).fill(undefined),
   );
 
@@ -51,12 +62,31 @@ export function CvMatchClient() {
     setError(null);
   }
 
-  function pickAnswer(qIdx: number, value: number) {
+  /**
+   * Pick an option for a question. Stores the INDEX. For multi-select
+   * questions, toggles inclusion in an array. For single-select,
+   * replaces the previous pick.
+   */
+  function pickAnswer(qIdx: number, optIdx: number) {
     setAnswers((arr) => {
       const next = [...arr];
-      next[qIdx] = value;
+      const q = QUESTIONNAIRE[qIdx];
+      if (q.multiSelect) {
+        const current = Array.isArray(next[qIdx]) ? (next[qIdx] as number[]) : [];
+        next[qIdx] = current.includes(optIdx)
+          ? current.filter((i) => i !== optIdx)
+          : [...current, optIdx];
+      } else {
+        next[qIdx] = optIdx;
+      }
       return next;
     });
+  }
+
+  function isOptionSelected(qIdx: number, optIdx: number): boolean {
+    const a = answers[qIdx];
+    if (Array.isArray(a)) return a.includes(optIdx);
+    return a === optIdx;
   }
 
   async function submit() {
@@ -73,14 +103,32 @@ export function CvMatchClient() {
       setError("הזיני שם תפקיד יעד");
       return;
     }
-    const missing = answers.findIndex((a) => a === undefined);
+    // Validate that every question has at least one selection.
+    // For multi-select questions an empty array also counts as missing.
+    const missing = answers.findIndex((a) => {
+      if (a === undefined) return true;
+      if (Array.isArray(a) && a.length === 0) return true;
+      return false;
+    });
     if (missing !== -1) {
       setError(`חסרה תשובה לשאלה ${missing + 1}: ${QUESTIONNAIRE[missing].title}`);
-      // Scroll to the missing question for mobile UX.
       const el = document.getElementById(`q-${missing}`);
       if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
+
+    // Convert option-indices → score values. For multi-select, average
+    // the selected options' values so the question contributes a single
+    // 1-5 number to the questionnaire.
+    const scoredAnswers: number[] = answers.map((a, qIdx) => {
+      const q = QUESTIONNAIRE[qIdx];
+      if (Array.isArray(a)) {
+        if (a.length === 0) return 1;
+        const sum = a.reduce((acc, idx) => acc + optionValue(q, idx), 0);
+        return Math.max(1, Math.min(5, Math.round(sum / a.length)));
+      }
+      return optionValue(q, a as number);
+    });
 
     setLoading(true);
     try {
@@ -88,7 +136,7 @@ export function CvMatchClient() {
       if (inputMode === "upload" && cvFile) formData.append("cv", cvFile);
       else formData.append("cvText", cvText);
       formData.append("jobText", jobText);
-      formData.append("answers", JSON.stringify(answers));
+      formData.append("answers", JSON.stringify(scoredAnswers));
 
       const res = await fetch("/api/cv-match", { method: "POST", body: formData });
       const data = await res.json();
@@ -258,7 +306,6 @@ export function CvMatchClient() {
 
               <div className="space-y-4 sm:space-y-5">
                 {QUESTIONNAIRE.map((q, qIdx) => {
-                  const picked = answers[qIdx];
                   return (
                     <div
                       key={q.id}
@@ -272,6 +319,11 @@ export function CvMatchClient() {
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-teal-dark uppercase tracking-wider mb-0.5">
                             {q.title}
+                            {q.multiSelect && (
+                              <span className="font-normal text-slate-500 mr-1.5">
+                                · אפשר לסמן יותר מאחת
+                              </span>
+                            )}
                           </p>
                           <p className="text-sm sm:text-base font-black text-navy leading-snug">
                             {q.prompt}
@@ -280,19 +332,14 @@ export function CvMatchClient() {
                       </div>
                       <div className="space-y-1.5 mt-3">
                         {q.options.map((opt, optIdx) => {
-                          // Value resolution priority:
-                          //   1. q.scoreMap[i] — explicit per-option (used for
-                          //      categorical questions like "where stuck?")
-                          //   2. q.reversed     — first option = best
-                          //   3. default        — option index 0 = 1pt, 4 = 5pts
-                          const value = q.scoreMap?.[optIdx]
-                            ?? (q.reversed ? 5 - optIdx : optIdx + 1);
-                          const active = picked === value;
+                          // Selection is by option INDEX so duplicate
+                          // scoreMap values don't collide.
+                          const active = isOptionSelected(qIdx, optIdx);
                           return (
                             <button
                               key={optIdx}
                               type="button"
-                              onClick={() => pickAnswer(qIdx, value)}
+                              onClick={() => pickAnswer(qIdx, optIdx)}
                               aria-pressed={active}
                               className={`w-full text-right flex items-start gap-2.5 px-3 py-2.5 rounded-lg sm:rounded-xl border-2 text-xs sm:text-sm font-semibold transition-colors ${
                                 active
@@ -300,13 +347,18 @@ export function CvMatchClient() {
                                   : "bg-white border-slate-200 text-slate-700 hover:border-teal/50 active:bg-slate-50"
                               }`}
                             >
+                              {/* Square indicator for multi-select, circle for single */}
                               <span
                                 aria-hidden="true"
-                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 ${
+                                className={`w-5 h-5 ${q.multiSelect ? "rounded-md" : "rounded-full"} border-2 flex items-center justify-center shrink-0 mt-0.5 ${
                                   active ? "bg-emerald-500 border-emerald-500" : "border-slate-300 bg-white"
                                 }`}
                               >
-                                {active && <span className="block w-2 h-2 bg-white rounded-full" />}
+                                {active && (
+                                  q.multiSelect
+                                    ? <CheckCircle2 size={12} className="text-white" aria-hidden="true" />
+                                    : <span className="block w-2 h-2 bg-white rounded-full" />
+                                )}
                               </span>
                               <span className="flex-1 leading-relaxed">{opt}</span>
                             </button>

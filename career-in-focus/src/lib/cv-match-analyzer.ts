@@ -43,6 +43,13 @@ export interface CvMatchQuestion {
    * both default and `reversed`). Length must match `options.length`.
    */
   scoreMap?: number[];
+  /**
+   * When true, the user can tick multiple options. The contribution
+   * to the score is the average of the selected options' values.
+   * Only used by "stuck-stage" — most readiness signals are mutually
+   * exclusive single choices.
+   */
+  multiSelect?: boolean;
 }
 
 export const QUESTIONNAIRE: CvMatchQuestion[] = [
@@ -161,8 +168,8 @@ export const QUESTIONNAIRE: CvMatchQuestion[] = [
     prompt: "איפה את/ה מרגיש/ה שהתהליך נתקע?",
     // 7 categorical options. The first one (no direction) is the most
     // fundamental gap. "Decision-making" implies high agency + good
-    // signal-flow already, so it gets the high score. Numbers are
-    // tuned so the question carries weight without dominating.
+    // signal-flow already, so it gets the high score. Multi-select
+    // — most people are stuck at more than one stage.
     options: [
       "לא יודע/ת לאן לכוון בכלל ומאיפה להתחיל",
       "לא מוצא/ת משרות",
@@ -173,6 +180,7 @@ export const QUESTIONNAIRE: CvMatchQuestion[] = [
       "קבלת החלטות (להישאר / לעבור / לשנות כיוון)",
     ],
     scoreMap: [1, 2, 2, 4, 3, 3, 5],
+    multiSelect: true,
   },
 ];
 
