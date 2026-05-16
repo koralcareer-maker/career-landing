@@ -11,10 +11,10 @@
  *   4. Two result templates are rendered based on the score band:
  *        ≥ 70  → "you're on the right track" (high)
  *        < 70  → "time to do things differently" (low)
- *   5. Special rule: CVs in Coral's format (i.e., from a known trainee
- *      in our User DB) keep their natural score. Everyone else is
- *      capped at 65 so they always land in the "low" template — which
- *      drives them toward the platform.
+ *   5. Universal cap at 80. Even a perfect questionnaire never breaks
+ *      80 — the missing 20% is deliberately blamed on the CV so the
+ *      verdict has a real hook ("there's more to unlock here"). Coral's
+ *      lead-magnet rule: nobody walks away thinking they're at 100%.
  *
  * No more Gemini cascade in this file. The route still imports the
  * trainee-lookup logic for the cap decision.
@@ -274,12 +274,18 @@ export function scoreFromQuestionnaire(
   const cvNudge = cvQualityNudge(cvText);
   score = Math.max(0, Math.min(100, score + cvNudge));
 
-  // Coral's rule: non-trainees cap at 65 so they almost always land in
-  // the "low" template (drives them toward the platform). Trainees in
-  // her format keep the questionnaire-driven score.
-  const TRAINEE_CAP = 100;
-  const PUBLIC_CAP = 65;
-  score = Math.min(isTrainee ? TRAINEE_CAP : PUBLIC_CAP, score);
+  // Coral's hard rule: NOTHING goes above 80, including known trainees.
+  // The missing 20% is what the platform unlocks (CV optimisation +
+  // method). Without this cap a perfect questionnaire would print 100,
+  // which kills the value proposition. Trainees still get a slightly
+  // higher floor via the natural CV-nudge — their CVs follow Coral's
+  // format and score well — but never break 80.
+  // We keep the `isTrainee` parameter in the signature for forward
+  // compatibility (analytics, future trainee-only logic), but it no
+  // longer drives the cap directly.
+  void isTrainee;
+  const MAX_SCORE = 80;
+  score = Math.min(MAX_SCORE, score);
 
   // Pull the TOP 2 weakest areas (lowest answer values). Skip
   // "duration" (status, not a behaviour) and "stuck-stage" (it
@@ -312,11 +318,12 @@ export function scoreFromQuestionnaire(
   if (template === "high") {
     matchLabel = "מוכנות גבוהה";
     verdict =
-      `רואים פה פרופיל איכותי. אחרי 15 שנה בגיוס — ההבדל בין מי שיקבל/תקבל הצעה בעוד 6 שבועות ` +
-      `לבין מי שייתקע 6 חודשים, הוא ה-${weakest1.toLowerCase()}. ` +
-      (cvFlag === "strong"
-        ? `הקורות חיים שלך מציגים את הסיפור — עכשיו השיטה היא מה שיביא את ההצעה.`
-        : `יחד עם דיוק של הקורות חיים, השילוב הזה הוא מה שמייצר את הראיון הבא.`);
+      `רואים פה פרופיל איכותי — אחת התוצאות החזקות שאני רואה. ` +
+      `אחרי 15 שנה בגיוס אני אומר/ת לך בכנות: מה שמפריד אותך מ-100% זה ` +
+      (cvFlag === "thin"
+        ? `הקורות חיים — הם לא ממצים את הפוטנציאל שלך, ומגייסים מקבלים החלטה תוך 7 שניות. `
+        : `הדיוק של הקורות חיים — הם בסדר, אבל לא ממקסמים את הפוטנציאל שלך, ובשוק הזה זה ההבדל בין ראיון להתעלמות. `) +
+      `יחד עם חידוד של ה-${weakest1.toLowerCase()} — זה מה שיביא את ההצעה.`;
   } else if (score >= 50) {
     matchLabel = "מוכנות חלקית";
     verdict =
