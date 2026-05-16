@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { sendBroadcast, sendBroadcastTest } from "@/lib/actions/broadcast";
+import { OLD_LEADS_BROADCAST_TEMPLATE } from "@/lib/email/broadcast-render";
 import { Send, Users, Eye, AlertCircle, CheckCircle, Loader2, Sparkles, Mail } from "lucide-react";
 
 const AUDIENCE_OPTIONS = [
@@ -15,28 +16,11 @@ const AUDIENCE_OPTIONS = [
   { value: "OLD_LEADS",  label: "לידים מהאתר הישן (לא משלמים)",    color: "bg-amber-100 text-amber-700" },
 ];
 
-// Pre-approved re-engagement template Coral signed off on (see the
-// chat thread "תכין את ההודעה בפנים"). Auto-loaded when the user
-// selects OLD_LEADS as the audience — so Coral doesn't have to
-// copy-paste. The signature ("בהצלחה, קורל קריירה") is added by the
-// HTML template in lib/actions/broadcast.ts when audience === OLD_LEADS,
-// so we deliberately don't include it in the body here.
-const OLD_LEADS_TEMPLATE = {
-  subject: "{שם}, איך מתקדם חיפוש העבודה?",
-  body: `היי {שם},
-
-**איך מתקדם חיפוש העבודה שלך?**
-
-רציתי לספר לך שהשקתי את **קהילת קריירה בפוקוס** — מערכת שעוזרת לאנשים כמוך להגיע לתוצאות בזמן קצר לתפקיד הבא!
-
-• **משרות פעילות וסמויות** — גם ממאגרים פרטיים שלא נגישים לרוב המחפשים
-• **דרכון קריירה אישי** — ניתוח חכם שמראה לך איפה את/ה עומד/ת ובמה להתמקד
-• **מאמן AI אישי 24/7** — תשובות מקצועיות על ראיונות, קו"ח, משא ומתן
-• **סדנאות וקורסים מקצועיים** — לגישור פערים ולמקסום הפוטנציאל שלך כמועמד/ת
-
-עכשיו במחיר השקה מצחיק לזמן מוגבל — מוזמן/ת לבדוק:
-👉 **app.careerinfocus.co.il**`,
-};
+// Local alias so the existing form code reads naturally. The template
+// itself lives in @/lib/email/broadcast-render — same source the
+// scheduled-broadcast cron uses, so the form preview and the cron-fired
+// send produce identical emails.
+const OLD_LEADS_TEMPLATE = OLD_LEADS_BROADCAST_TEMPLATE;
 
 export function BroadcastForm({ userCounts }: {
   userCounts: Record<string, number>;
