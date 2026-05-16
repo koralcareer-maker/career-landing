@@ -273,33 +273,59 @@ export function scoreFromQuestionnaire(
   const PUBLIC_CAP = 65;
   score = Math.min(isTrainee ? TRAINEE_CAP : PUBLIC_CAP, score);
 
-  // Find weakest area for verdict copy. Skip "duration" — that's a
-  // status (how long in search), not a job-search behaviour we can
-  // improve via the platform. We want the verdict to point at an
-  // actionable gap.
-  const SKIP_FOR_WEAKEST = new Set(["duration"]);
-  let weakestIdx = -1;
-  for (let i = 0; i < normalised.length; i++) {
-    if (SKIP_FOR_WEAKEST.has(QUESTIONNAIRE[i].id)) continue;
-    if (weakestIdx === -1 || normalised[i] < normalised[weakestIdx]) weakestIdx = i;
-  }
-  const weakestArea = QUESTIONNAIRE[Math.max(0, weakestIdx)]?.title ?? "חיפוש עבודה";
+  // Pull the TOP 2 weakest areas (lowest answer values). Skip
+  // "duration" (status, not a behaviour) and "stuck-stage" (it
+  // describes the where, not the how). The verdict mentions both
+  // weakest gaps so it reads like a multi-dimensional recruiter
+  // assessment, not a one-line.
+  const SKIP_FOR_WEAKEST = new Set(["duration", "stuck-stage"]);
+  const eligible = normalised
+    .map((value, i) => ({ value, i, id: QUESTIONNAIRE[i].id, title: QUESTIONNAIRE[i].title }))
+    .filter((x) => !SKIP_FOR_WEAKEST.has(x.id))
+    .sort((a, b) => a.value - b.value);
+  const weakest1 = eligible[0]?.title ?? "חיפוש עבודה";
+  const weakest2 = eligible[1]?.title ?? "מיתוג מקצועי";
+  const weakestArea = weakest1; // backwards-compat for callers/UI
+
+  // CV signal: is the CV thin / strong? Drives the recruiter-voice
+  // verdict — a thin CV gets called out specifically.
+  const cvFlag: "thin" | "neutral" | "strong" =
+    cvNudge <= -5 ? "thin" : cvNudge >= 3 ? "strong" : "neutral";
 
   // Templates trigger on a 70 threshold.
   const template: "high" | "low" = score >= 70 ? "high" : "low";
 
-  // Match label + 1-2-sentence intriguing verdict.
+  // Recruiter-voice verdicts. The voice is a senior recruiter with
+  // 15+ years in Israeli hiring — direct, observational, pattern-
+  // recognising. NOT flattery. NOT vague. References multiple
+  // specific axes so the candidate feels seen.
   let matchLabel: string;
   let verdict: string;
   if (template === "high") {
     matchLabel = "מוכנות גבוהה";
-    verdict = `יש לך בסיס חזק בכל הציר של חיפוש העבודה. השאלה היחידה היא איך לדייק את ה-${weakestArea.toLowerCase()} שלך כדי לקפוץ לרמה הבאה.`;
+    verdict =
+      `רואים פה פרופיל איכותי. אחרי 15 שנה בגיוס — ההבדל בין מי שיקבל/תקבל הצעה בעוד 6 שבועות ` +
+      `לבין מי שייתקע 6 חודשים, הוא ה-${weakest1.toLowerCase()}. ` +
+      (cvFlag === "strong"
+        ? `הקורות חיים שלך מציגים את הסיפור — עכשיו השיטה היא מה שיביא את ההצעה.`
+        : `יחד עם דיוק של הקורות חיים, השילוב הזה הוא מה שמייצר את הראיון הבא.`);
   } else if (score >= 50) {
     matchLabel = "מוכנות חלקית";
-    verdict = `יש לך כיוון, אבל ה-${weakestArea} שלך תוקעים אותך. רוב מי שמגיע למסך הזה כבר עובד קשה — אבל בלי השיטה הנכונה.`;
+    verdict =
+      `רואה את המאמץ. הציון משקף שיש לך פוטנציאל, אבל ה-${weakest1} וה-${weakest2} שלך — ` +
+      (cvFlag === "thin"
+        ? `יחד עם הקורות חיים שלא מציגים את הסיפור המלא, `
+        : `יחד עם איך שהפרופיל המקצועי שלך נראה היום, `) +
+      `תוקעים את התהליך לפני שהוא מגיע למגייס/ת. רוב הפרופילים במצב הזה — לא חסרה להם יכולת, חסרה להם שיטה.`;
   } else {
     matchLabel = "מוכנות נמוכה";
-    verdict = `הציון לא משקף את הפוטנציאל שלך — הוא משקף איפה השיטה לוקה. אנשים עם פרופיל דומה לשלך מצליחים בדיוק אחרי שמסדרים את הגישה.`;
+    verdict =
+      `אני רואה את הסיפור הזה כל יום ב-15 שנות גיוס. זה לא חוסר ניסיון. זה לא חוסר מאמץ. ` +
+      `זו בעיה של שיטה: ה-${weakest1} שלך כמעט לא קיים, ה-${weakest2} מורידים את ההזדמנויות שאת/ה רואה ב-40-60%, ` +
+      (cvFlag === "thin"
+        ? `והקורות חיים בקושי ממסגרים את הניסיון שלך. `
+        : `והקורות חיים לא ממסגרים את הסיפור שלך בצורה שתביא פניות. `) +
+      `אנשים בדיוק מהפרופיל הזה — מקבלים תפקיד תוך 6-8 שבועות עם השיטה הנכונה.`;
   }
 
   return { score, matchLabel, template, verdict, weakestArea };
