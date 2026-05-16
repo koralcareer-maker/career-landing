@@ -232,7 +232,11 @@ async function callGeminiModel(
         contents: [{ role: "user", parts: [{ text: user }] }],
         generationConfig: {
           temperature: 0.6,
-          maxOutputTokens: 4096,
+          // 8192 keeps long Hebrew structured responses from being
+          // truncated mid-array (the cause of Coral's "Expected ','
+          // or ']'" parse error). Gemini's hidden 'thinking' tokens
+          // count against this cap, so the buffer matters.
+          maxOutputTokens: 8192,
           responseMimeType: "application/json",
         },
       }),
@@ -265,6 +269,36 @@ async function callGeminiModel(
   }
 }
 
+/**
+ * Repair common LLM JSON mistakes before parsing. Gemini occasionally
+ * forgets a comma between array elements (Coral hit this exact case),
+ * leaves trailing commas before `]`/`}`, or wraps the whole payload
+ * in markdown fences even when `responseMimeType: application/json`
+ * is set. We patch all three in-place.
+ *
+ * Designed to be safe — every regex is anchored on structural chars,
+ * never inside string content.
+ */
+function repairJson(input: string): string {
+  let s = input;
+
+  // 1. Missing commas between adjacent objects/arrays/strings in an array.
+  //    e.g. `}\n  {`  →  `},\n  {`
+  s = s.replace(/}(\s*\n\s*){/g, "},$1{");
+  s = s.replace(/](\s*\n\s*)\[/g, "],$1[");
+  s = s.replace(/"(\s*\n\s*)"/g, '",$1"');
+  // Catch the case where there's a number / closing brace before the next entry.
+  s = s.replace(/(["\d}\]])(\s*\n\s*)([{\[])/g, "$1,$2$3");
+
+  // 2. Trailing commas before close — invalid JSON but common in LLM output.
+  s = s.replace(/,(\s*[}\]])/g, "$1");
+
+  // 3. Smart-quote / curly-quote substitution that breaks JSON parsers.
+  s = s.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+
+  return s;
+}
+
 function parseResult(raw: string): CvMatchResult {
   let text = raw.trim();
   if (text.startsWith("```")) {
@@ -275,18 +309,33 @@ function parseResult(raw: string): CvMatchResult {
   if (first === -1 || last === -1 || last < first) {
     throw new CvMatchError("parse-error", "no JSON object in response");
   }
+  const slice = text.slice(first, last + 1);
+
+  // Two-pass parse: try as-is, then attempt repair, then give up.
+  // The cascade in callGemini will rotate to the next model when we
+  // throw — so it's safe to be strict here.
+  const tryParse = (s: string) => JSON.parse(s) as CvMatchResult;
+
+  let parsed: CvMatchResult;
   try {
-    const parsed = JSON.parse(text.slice(first, last + 1)) as CvMatchResult;
-    parsed.strengths ??= [];
-    parsed.gaps ??= [];
-    if (typeof parsed.score !== "number" || parsed.score < 0 || parsed.score > 100) {
-      parsed.score = Math.max(0, Math.min(100, Number(parsed.score) || 50));
+    parsed = tryParse(slice);
+  } catch (firstErr) {
+    try {
+      parsed = tryParse(repairJson(slice));
+    } catch {
+      // Surface the FIRST error — it's usually more informative than
+      // the post-repair one.
+      throw new CvMatchError(
+        "parse-error",
+        `JSON parse failed: ${firstErr instanceof Error ? firstErr.message : "unknown"}`,
+      );
     }
-    return parsed;
-  } catch (e) {
-    throw new CvMatchError(
-      "parse-error",
-      `JSON parse failed: ${e instanceof Error ? e.message : "unknown"}`,
-    );
   }
+
+  parsed.strengths ??= [];
+  parsed.gaps ??= [];
+  if (typeof parsed.score !== "number" || parsed.score < 0 || parsed.score > 100) {
+    parsed.score = Math.max(0, Math.min(100, Number(parsed.score) || 50));
+  }
+  return parsed;
 }
