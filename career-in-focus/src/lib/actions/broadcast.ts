@@ -156,49 +156,50 @@ export async function sendBroadcast(prevState: unknown, formData: FormData): Pro
   let sent = 0;
   let skipped = 0;
 
-  // Send in batches of 10 (Resend rate limit friendly). Each recipient
-  // gets the same subject but a body that's been mail-merged with their
-  // first name — so {שם} renders as "דניאל" for דניאל, "שירה" for שירה,
-  // etc.
-  const BATCH = 10;
-  for (let i = 0; i < recipients.length; i += BATCH) {
-    const batch = recipients.slice(i, i + BATCH);
-    await Promise.all(
-      batch.map(async (r) => {
-        try {
-          // Personalise the subject too — Coral's draft starts with "{שם}, …"
-          const personalSubject = subject
-            .replace(/\{שם\}/g, r.firstName || "שלום")
-            .replace(/\{name\}/gi, r.firstName || "שלום");
-          const html = buildHtml(subject, body, senderName, {
-            audience,
-            recipientFirstName: r.firstName,
-          });
-          // Resend's SDK returns { data, error } and does NOT throw on
-          // API errors. Inspect `.error` explicitly so silent quarantines
-          // (unverified domain, malformed from-address, etc.) get counted
-          // as failures instead of slipping into `sent`.
-          const result = await resend.emails.send({
-            from:    FROM,
-            to:      r.email,
-            subject: personalSubject,
-            html,
-          });
-          if (result.error) {
-            console.error(`Broadcast: Resend rejected ${r.email}:`, result.error);
-            skipped++;
-          } else {
-            sent++;
-          }
-        } catch (err) {
-          console.error(`Broadcast: failed to send to ${r.email}`, err);
-          skipped++;
-        }
-      })
-    );
-    // Small pause between batches to avoid rate limits
-    if (i + BATCH < recipients.length) {
-      await new Promise((r) => setTimeout(r, 200));
+  // Send strictly sequentially with a 600ms gap between calls.
+  //
+  // Background: Resend's default per-project rate limit is 2 requests
+  // per second. Our previous "10 in parallel" loop blew through that
+  // and 55 of 59 sends came back with 429 errors on the May-17 manual
+  // run. Sequential + 600ms gap = ~1.67 req/sec, comfortably under the
+  // ceiling, and the full 59 emails still finish in ~35 seconds.
+  //
+  // The per-recipient mail-merge runs in the inner loop so {שם} resolves
+  // to each lead's first name ("דניאל" for דניאל, "שירה" for שירה, etc.).
+  const PAUSE_MS = 600;
+  for (let i = 0; i < recipients.length; i++) {
+    const r = recipients[i];
+    try {
+      const personalSubject = subject
+        .replace(/\{שם\}/g, r.firstName || "שלום")
+        .replace(/\{name\}/gi, r.firstName || "שלום");
+      const html = buildHtml(subject, body, senderName, {
+        audience,
+        recipientFirstName: r.firstName,
+      });
+      // Resend's SDK returns { data, error } and does NOT throw on API
+      // errors — we MUST inspect `.error` explicitly so 429s don't
+      // silently slip into the `sent` count.
+      const result = await resend.emails.send({
+        from:    FROM,
+        to:      r.email,
+        subject: personalSubject,
+        html,
+      });
+      if (result.error) {
+        console.error(`Broadcast: Resend rejected ${r.email}:`, result.error);
+        skipped++;
+      } else {
+        sent++;
+      }
+    } catch (err) {
+      console.error(`Broadcast: failed to send to ${r.email}`, err);
+      skipped++;
+    }
+    // Pause before the next call (skip the trailing pause after the
+    // last recipient so we don't sit idle).
+    if (i < recipients.length - 1) {
+      await new Promise((res) => setTimeout(res, PAUSE_MS));
     }
   }
 

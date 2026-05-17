@@ -121,40 +121,39 @@ export async function GET(req: NextRequest) {
   let skipped = 0;
   const errors: string[] = [];
 
-  const BATCH = 10;
-  for (let i = 0; i < recipients.length; i += BATCH) {
-    const batch = recipients.slice(i, i + BATCH);
-    await Promise.all(
-      batch.map(async (r) => {
-        try {
-          const personalSubject = subject
-            .replace(/\{שם\}/g, r.firstName || "שלום")
-            .replace(/\{name\}/gi, r.firstName || "שלום");
-          const html = buildHtml(subject, body, senderName, {
-            audience,
-            recipientFirstName: r.firstName,
-          });
-          const result = await resend.emails.send({
-            from:    FROM,
-            to:      r.email,
-            subject: personalSubject,
-            html,
-          });
-          if (result.error) {
-            const e = result.error as { message?: string };
-            errors.push(`${r.email}: ${e.message ?? "unknown"}`);
-            skipped++;
-          } else {
-            sent++;
-          }
-        } catch (err) {
-          errors.push(`${r.email}: ${String(err instanceof Error ? err.message : err).slice(0, 100)}`);
-          skipped++;
-        }
-      })
-    );
-    if (i + BATCH < recipients.length) {
-      await new Promise((res) => setTimeout(res, 200));
+  // Sequential, 600ms gap — Resend free tier rate-limits at 2 req/sec
+  // and our earlier "10 in parallel" loop tripped 429s on 55 of 59
+  // sends. 1.67 req/sec is safely under the ceiling.
+  const PAUSE_MS = 600;
+  for (let i = 0; i < recipients.length; i++) {
+    const r = recipients[i];
+    try {
+      const personalSubject = subject
+        .replace(/\{שם\}/g, r.firstName || "שלום")
+        .replace(/\{name\}/gi, r.firstName || "שלום");
+      const html = buildHtml(subject, body, senderName, {
+        audience,
+        recipientFirstName: r.firstName,
+      });
+      const result = await resend.emails.send({
+        from:    FROM,
+        to:      r.email,
+        subject: personalSubject,
+        html,
+      });
+      if (result.error) {
+        const e = result.error as { message?: string };
+        errors.push(`${r.email}: ${e.message ?? "unknown"}`);
+        skipped++;
+      } else {
+        sent++;
+      }
+    } catch (err) {
+      errors.push(`${r.email}: ${String(err instanceof Error ? err.message : err).slice(0, 100)}`);
+      skipped++;
+    }
+    if (i < recipients.length - 1) {
+      await new Promise((res) => setTimeout(res, PAUSE_MS));
     }
   }
 
