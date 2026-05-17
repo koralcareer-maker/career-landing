@@ -194,21 +194,19 @@ export async function toggleReminderComplete(reminderId: string) {
 }
 
 /**
- * Save a Job (from the /jobs catalogue) into the user's JobApplication
- * tracker as a SAVED-for-later entry — NOT as a submitted application.
+ * Record a JobApplication for a Job from the /jobs catalogue, fired
+ * ONLY when the user clicks the "הגשתי" button on the card — never on
+ * a passive "view" click.
  *
- * Previously this created the record with status = "APPLIED", on the
- * assumption that clicking the apply CTA meant the user had applied.
- * In practice users were clicking just to read the description, and
- * their tracker filled up with jobs they never actually applied to
- * (Rachel Zari complained that "כל מה שלחצת עליו הוסיף אוטומטית כאילו
- * הגשתי וזה לא נכון"). New default is SAVED — the user must explicitly
- * promote it to APPLIED via the tracker UI once they actually send a CV.
+ * Coral's rule (after Rachel Zari's tracker audit):
+ *   "אם אני לוחצת לצפות בפרטי משרה זה לא בהכרח אומר שהגשתי. רק אם אני
+ *    לוחצת הגשתי אז זה מתווסף לי להתקדמות".
  *
- * Idempotent: if a JobApplication for this Job (same jobLink or
- * company+role) already exists, returns the existing one instead of
- * creating a duplicate. Returns { id, isNew } so the client can show a
- * "נשמרה" vs "כבר במעקב" toast.
+ * So this action means "the user told us they applied" — status is
+ * APPLIED with today's date. Idempotent: a second click on the same
+ * job returns the existing record (isNew=false) instead of creating
+ * a duplicate. The client uses that flag to swap the button label
+ * between "נרשמה בטראקר" and "כבר רשומה בטראקר".
  */
 export async function trackApplicationFromJob(jobId: string): Promise<{
   id: string;
@@ -243,7 +241,7 @@ export async function trackApplicationFromJob(jobId: string): Promise<{
       jobLink: job.externalUrl,
       source: job.source ?? "מקטלוג המשרות",
       dateApplied: new Date(),
-      status: "SAVED",
+      status: "APPLIED",
       notes: job.summary ?? job.description ?? null,
     },
     select: { id: true },

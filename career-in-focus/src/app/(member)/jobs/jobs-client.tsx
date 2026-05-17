@@ -34,17 +34,20 @@ export interface JobItem {
 
 const REGION_ORDER = ["צפון", "חיפה", "מרכז", "שפלה", "ירושלים", "דרום", "אילת"];
 
-// ─── Open + Save-for-later Button ───────────────────────────────────────────
-// Wraps the catalogue's "open external URL" CTA so clicking ALSO saves the
-// job to the user's tracker as SAVED (i.e. "interested / to-do"), NOT as
-// APPLIED. Coral's feedback after Rachel Zari's audit: too many people were
-// just clicking through to read the description, and the old behaviour was
-// flooding their trackers with phantom applications. Now they have to
-// promote it to "הגשתי מועמדות" manually inside the tracker when they
-// actually send a CV. Idempotent — duplicates are detected on the server.
+// ─── View + "I applied" buttons ─────────────────────────────────────────────
+// Two distinct CTAs per job card, following Coral's rule:
+//   "אם אני לוחצת לצפות בפרטי משרה זה לא בהכרח אומר שהגשתי. רק אם אני לוחצת
+//    הגשתי אז זה מתווסף לי להתקדמות".
+//
+// - Primary button (`לצפייה במשרה`) opens the external posting in a new
+//   tab and writes NOTHING to the tracker. Cheap, side-effect-free.
+// - Secondary button (`✓ הגשתי`) is what records the JobApplication —
+//   only fires when the user has actually sent their CV. Stays in
+//   "✓ נרשמה בטראקר" state once clicked so the user gets visual proof
+//   without a second click creating a duplicate.
 function ApplyAndTrackButton({ job }: { job: JobItem }) {
-  const [, startTransition] = useTransition();
-  const [tracked, setTracked] = useState<"idle" | "added" | "exists">("idle");
+  const [, startApplied] = useTransition();
+  const [applied, setApplied] = useState<"idle" | "saved" | "exists" | "error">("idle");
 
   if (!job.externalUrl) {
     return (
@@ -54,41 +57,50 @@ function ApplyAndTrackButton({ job }: { job: JobItem }) {
     );
   }
 
+  function markApplied() {
+    if (applied !== "idle") return; // already recorded — don't duplicate
+    startApplied(async () => {
+      try {
+        const r = await trackApplicationFromJob(job.id);
+        setApplied(r.isNew ? "saved" : "exists");
+      } catch {
+        setApplied("error");
+      }
+    });
+  }
+
   return (
-    <a
-      href={job.externalUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={() => {
-        // Fire-and-forget — don't block the link from opening.
-        startTransition(async () => {
-          try {
-            const r = await trackApplicationFromJob(job.id);
-            setTracked(r.isNew ? "added" : "exists");
-          } catch {
-            // Silent failure — link still opened in a new tab.
-          }
-        });
-      }}
-      className="w-full inline-flex items-center justify-center gap-2 bg-teal text-white font-semibold py-2.5 rounded-xl hover:bg-teal-dark transition-colors text-sm relative"
-    >
-      {tracked === "idle" && (
-        <>
-          לצפייה במשרה
-          <ExternalLink size={13} />
-        </>
-      )}
-      {tracked === "added" && (
-        <>
-          <CheckCircle2 size={14} /> נשמרה לעיון + נפתחה בלשונית
-        </>
-      )}
-      {tracked === "exists" && (
-        <>
-          <CheckCircle2 size={14} /> כבר במעקב + נפתחה בלשונית
-        </>
-      )}
-    </a>
+    <div className="flex flex-col gap-2 w-full">
+      {/* Open the posting — no tracker side-effect */}
+      <a
+        href={job.externalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full inline-flex items-center justify-center gap-2 bg-teal text-white font-semibold py-2.5 rounded-xl hover:bg-teal-dark transition-colors text-sm"
+      >
+        לצפייה במשרה
+        <ExternalLink size={13} />
+      </a>
+
+      {/* Record an actual application — only when user has truly applied */}
+      <button
+        type="button"
+        onClick={markApplied}
+        disabled={applied !== "idle"}
+        className={`w-full inline-flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold transition-colors border ${
+          applied === "idle"
+            ? "bg-white border-slate-200 text-navy hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700"
+            : applied === "error"
+              ? "bg-red-50 border-red-200 text-red-600"
+              : "bg-emerald-50 border-emerald-200 text-emerald-700 cursor-default"
+        }`}
+      >
+        {applied === "idle" && <><CheckCircle2 size={13} /> הגשתי — סמני בטראקר</>}
+        {applied === "saved" && <><CheckCircle2 size={13} /> נרשמה בטראקר ✓</>}
+        {applied === "exists" && <><CheckCircle2 size={13} /> כבר רשומה בטראקר</>}
+        {applied === "error" && <>שגיאה — נסי שוב</>}
+      </button>
+    </div>
   );
 }
 
