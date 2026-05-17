@@ -73,6 +73,23 @@ function UrlStage({
       (["company", "role", "location", "notes", "source", "jobLink"] as const).forEach((k) => {
         if (data[k]) filled.add(k);
       });
+      // Sites like LinkedIn block server-side scraping, so the API can
+      // come back ok:true but with most fields null and reason="fetch-failed".
+      // Surface a short heads-up so the user isn't confused why so few
+      // fields auto-filled. We still proceed to Stage 2 — the URL itself
+      // and the source were captured, which is half the work.
+      if (data.reason === "fetch-failed" && !data.company && !data.role) {
+        setError(
+          t(
+            "האתר חוסם קריאה אוטומטית (קורה בעיקר בלינקדאין). הקישור נשמר — תמלאי בעצמך את החברה והתפקיד.",
+            "האתר חוסם קריאה אוטומטית (קורה בעיקר בלינקדאין). הקישור נשמר — תמלא בעצמך את החברה והתפקיד.",
+          ),
+        );
+        // Brief pause so the user notices the message before stage 2 loads
+        setTimeout(() => onPrefill(data, filled), 1500);
+        setLoading(false);
+        return;
+      }
       onPrefill(data, filled);
     } catch {
       setError(t("שגיאת רשת. נסי שוב, או הכניסי ידנית.", "שגיאת רשת. נסה שוב, או הכנס ידנית."));

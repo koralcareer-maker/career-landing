@@ -40,6 +40,71 @@ function sourceFromHostname(url: string): string {
   }
 }
 
+/**
+ * Cheap URL-only fallback parser for sites where we can't read the
+ * page HTML (LinkedIn, etc. block scraping or hide content behind
+ * JS). Most ATS-style hosts encode the company and role right in the
+ * path, so we can pull them out without ever fetching the page.
+ *
+ * Returns whatever it can find — fields the URL doesn't expose come
+ * back null, and the caller fills in the gaps from Gemini or leaves
+ * them blank for the user to type.
+ */
+function parseFromUrl(url: string): {
+  company: string | null;
+  role: string | null;
+} {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase().replace(/^www\./, "");
+    const parts = u.pathname.split("/").filter(Boolean);
+
+    // Title-case a kebab/underscore slug → "junior-customer-success" →
+    // "Junior Customer Success". Strip trailing numeric IDs.
+    const slugToTitle = (s: string) =>
+      s
+        .replace(/[_\-]+/g, " ")
+        .replace(/\b\d+\b/g, "")
+        .trim()
+        .split(/\s+/)
+        .map((w) => (w.length > 0 ? w[0].toUpperCase() + w.slice(1) : ""))
+        .join(" ")
+        .trim();
+
+    // Comeet: /jobs/COMPANY/CODE/ROLE-SLUG/EXTRA
+    if (host.includes("comeet.com") && parts[0] === "jobs" && parts.length >= 4) {
+      return { company: slugToTitle(parts[1]), role: slugToTitle(parts[3]) };
+    }
+
+    // Greenhouse boards: /COMPANY/jobs/123 — only company is reliable.
+    if (host.includes("greenhouse.io") && parts[1] === "jobs") {
+      return { company: slugToTitle(parts[0]), role: null };
+    }
+
+    // Lever: /COMPANY/UUID — only company.
+    if (host.includes("lever.co") && parts.length >= 2) {
+      return { company: slugToTitle(parts[0]), role: null };
+    }
+
+    // Workable: apply.workable.com/COMPANY/j/UUID — only company.
+    if (host.includes("workable.com") && parts.length >= 1) {
+      return { company: slugToTitle(parts[0]), role: null };
+    }
+
+    // SmartRecruiters: jobs.smartrecruiters.com/COMPANY/123-ROLE-SLUG
+    if (host.includes("smartrecruiters.com") && parts.length >= 2) {
+      const slug = parts[1].replace(/^\d+-?/, "");
+      return { company: slugToTitle(parts[0]), role: slug ? slugToTitle(slug) : null };
+    }
+
+    // Generic numeric-ID job boards (LinkedIn /jobs/view/123, Drushim,
+    // Civi, AllJobs) — nothing useful to pull from the URL alone.
+    return { company: null, role: null };
+  } catch {
+    return { company: null, role: null };
+  }
+}
+
 async function fetchHtml(url: string): Promise<string | null> {
   try {
     const r = await fetch(url, {
@@ -148,16 +213,19 @@ export async function POST(req: NextRequest) {
   }
 
   const source = sourceFromHostname(url);
+  const urlGuess = parseFromUrl(url);
 
   const html = await fetchHtml(url);
   if (!html) {
     // Page couldn't be fetched (LinkedIn 403, network error, etc.).
-    // Still give the user the URL + auto-detected source — they'll
-    // fill the rest manually.
+    // Still give the user whatever the URL itself encodes — for Comeet
+    // and ATS-style hosts that's enough to pre-fill company+role — and
+    // the auto-detected source + jobLink so the rest is just a quick
+    // review.
     return NextResponse.json({
       ok: true,
-      company: null,
-      role: null,
+      company: urlGuess.company,
+      role: urlGuess.role,
       location: null,
       notes: null,
       source,
@@ -168,10 +236,15 @@ export async function POST(req: NextRequest) {
 
   const extracted = await extractWithGemini(html, url);
 
+  // Merge Gemini output with the URL-based guess: Gemini wins when it
+  // returns a value, the URL parser fills in any gaps it leaves blank.
+  // This way a LinkedIn URL that Gemini fails on still gets company/role
+  // from the slug if the slug exposes them, and a Comeet URL where
+  // Gemini reads the page cleanly keeps the more accurate values.
   return NextResponse.json({
     ok: true,
-    company: extracted?.company ?? null,
-    role: extracted?.role ?? null,
+    company: extracted?.company ?? urlGuess.company,
+    role: extracted?.role ?? urlGuess.role,
     location: extracted?.location ?? null,
     notes: extracted?.notes ?? null,
     source,

@@ -194,12 +194,21 @@ export async function toggleReminderComplete(reminderId: string) {
 }
 
 /**
- * Auto-tracks a Job (from the /jobs catalogue) into the user's
- * JobApplication tracker when they click "Apply". Idempotent — if a
- * JobApplication for the same Job (same jobLink or company+role) already
- * exists for this user, returns the existing one instead of creating a
- * duplicate. Returns { id, isNew } so the client can show a "תווסף למעקב"
- * vs. "כבר במעקב" toast.
+ * Save a Job (from the /jobs catalogue) into the user's JobApplication
+ * tracker as a SAVED-for-later entry — NOT as a submitted application.
+ *
+ * Previously this created the record with status = "APPLIED", on the
+ * assumption that clicking the apply CTA meant the user had applied.
+ * In practice users were clicking just to read the description, and
+ * their tracker filled up with jobs they never actually applied to
+ * (Rachel Zari complained that "כל מה שלחצת עליו הוסיף אוטומטית כאילו
+ * הגשתי וזה לא נכון"). New default is SAVED — the user must explicitly
+ * promote it to APPLIED via the tracker UI once they actually send a CV.
+ *
+ * Idempotent: if a JobApplication for this Job (same jobLink or
+ * company+role) already exists, returns the existing one instead of
+ * creating a duplicate. Returns { id, isNew } so the client can show a
+ * "נשמרה" vs "כבר במעקב" toast.
  */
 export async function trackApplicationFromJob(jobId: string): Promise<{
   id: string;
@@ -234,7 +243,7 @@ export async function trackApplicationFromJob(jobId: string): Promise<{
       jobLink: job.externalUrl,
       source: job.source ?? "מקטלוג המשרות",
       dateApplied: new Date(),
-      status: "APPLIED",
+      status: "SAVED",
       notes: job.summary ?? job.description ?? null,
     },
     select: { id: true },

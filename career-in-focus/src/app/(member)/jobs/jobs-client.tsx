@@ -34,11 +34,14 @@ export interface JobItem {
 
 const REGION_ORDER = ["צפון", "חיפה", "מרכז", "שפלה", "ירושלים", "דרום", "אילת"];
 
-// ─── Apply + Track Button ───────────────────────────────────────────────────
-// Wraps the catalogue's "open external URL" CTA so that clicking it ALSO
-// adds the job to the user's /progress tracker (idempotent — duplicates
-// are detected and skipped on the server). Uses startTransition so the
-// external tab opens immediately without waiting for the server roundtrip.
+// ─── Open + Save-for-later Button ───────────────────────────────────────────
+// Wraps the catalogue's "open external URL" CTA so clicking ALSO saves the
+// job to the user's tracker as SAVED (i.e. "interested / to-do"), NOT as
+// APPLIED. Coral's feedback after Rachel Zari's audit: too many people were
+// just clicking through to read the description, and the old behaviour was
+// flooding their trackers with phantom applications. Now they have to
+// promote it to "הגשתי מועמדות" manually inside the tracker when they
+// actually send a CV. Idempotent — duplicates are detected on the server.
 function ApplyAndTrackButton({ job }: { job: JobItem }) {
   const [, startTransition] = useTransition();
   const [tracked, setTracked] = useState<"idle" | "added" | "exists">("idle");
@@ -71,13 +74,13 @@ function ApplyAndTrackButton({ job }: { job: JobItem }) {
     >
       {tracked === "idle" && (
         <>
-          פרטים ומועמדות
+          לצפייה במשרה
           <ExternalLink size={13} />
         </>
       )}
       {tracked === "added" && (
         <>
-          <CheckCircle2 size={14} /> נשמרה במעקב + נפתחה בלשונית
+          <CheckCircle2 size={14} /> נשמרה לעיון + נפתחה בלשונית
         </>
       )}
       {tracked === "exists" && (
