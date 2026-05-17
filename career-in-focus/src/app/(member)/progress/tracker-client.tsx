@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import {
   Briefcase, Calendar, Plus, FileText,
   CheckCircle2, AlertTriangle, Sparkles, Bell, ChevronLeft,
   TrendingUp, Target, Trophy, Flame, ArrowUpCircle,
-  Search, Zap, Activity, Clock,
+  Search, Zap, Activity, Clock, Trash2, Loader2,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { deleteJobApplication } from "@/lib/actions/progress";
 import type { Insight } from "@/lib/job-search-insights";
 import type { ScoreBreakdown } from "@/lib/job-search-score";
 import type { ActionTask } from "@/lib/daily-action-plan";
@@ -655,13 +656,52 @@ function ApplicationCard({ app }: { app: AppDTO }) {
   const interviewSoon = interviewDays !== null && interviewDays >= 0 && interviewDays <= 7;
   const statusLabel = STATUS_LABELS[app.status] ?? app.status;
   const statusColor = STATUS_COLORS[app.status] ?? "bg-gray-100 text-gray-600";
+  const [deleting, startDelete] = useTransition();
+  const [removed, setRemoved] = useState(false);
+
+  // Stop the click from bubbling to the parent <Link> (which would
+  // navigate to the application detail page) and confirm the destructive
+  // action before firing it. We optimistically hide the card so the user
+  // gets instant feedback; the server-side revalidatePath then removes
+  // it from the next render entirely.
+  function handleDelete(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (deleting) return;
+    const ok = window.confirm(
+      `למחוק את המועמדות ל-${app.role} ב-${app.company}? הפעולה לא הפיכה.`,
+    );
+    if (!ok) return;
+    setRemoved(true);
+    startDelete(async () => {
+      const r = await deleteJobApplication(app.id);
+      if (r.deleted === 0) setRemoved(false); // restore card on failure
+    });
+  }
+
+  if (removed && !deleting) return null;
 
   return (
     <Link
       href={`/progress/${app.id}`}
-      className="block bg-white rounded-2xl border border-slate-100 p-4 hover:border-teal/30 hover:shadow-sm transition-all group"
+      className={`block bg-white rounded-2xl border border-slate-100 p-4 hover:border-teal/30 hover:shadow-sm transition-all group relative ${
+        deleting ? "opacity-40 pointer-events-none" : ""
+      }`}
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
+      {/* Delete (trash) — top-start corner, visible on hover (desktop) /
+          always on touch. Stops the Link from firing. */}
+      <button
+        type="button"
+        onClick={handleDelete}
+        disabled={deleting}
+        aria-label="מחיקת המועמדות"
+        title="מחיקה"
+        className="absolute top-2 start-2 z-10 w-7 h-7 rounded-full bg-white/90 hover:bg-red-50 hover:text-red-600 text-gray-300 backdrop-blur flex items-center justify-center shadow-sm border border-slate-100 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+      >
+        {deleting ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+      </button>
+
+      <div className="flex items-start justify-between gap-2 mb-2 ps-7">
         <div className="flex-1 min-w-0">
           <p className="font-bold text-navy text-sm truncate">{app.role}</p>
           <p className="text-teal text-xs font-semibold truncate">{app.company}</p>

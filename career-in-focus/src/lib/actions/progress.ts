@@ -72,10 +72,23 @@ export async function updateJobApplication(
   revalidatePath("/progress");
 }
 
-export async function deleteJobApplication(id: string) {
+/**
+ * Permanently delete one of the caller's JobApplication rows.
+ *
+ * Uses deleteMany with {id, userId} so the ownership filter is
+ * enforced at the SQL level — a request for someone else's id is a
+ * silent no-op (0 rows affected) rather than a privilege escalation.
+ * Returns the number of rows deleted so the client can distinguish
+ * "deleted" from "already gone / not yours".
+ */
+export async function deleteJobApplication(id: string): Promise<{ deleted: number }> {
   const session = await auth();
-  if (!session?.user) return;
+  if (!session?.user?.id) return { deleted: 0 };
 
-  await prisma.jobApplication.delete({ where: { id, userId: session.user.id } });
+  const result = await prisma.jobApplication.deleteMany({
+    where: { id, userId: session.user.id },
+  });
   revalidatePath("/progress");
+  revalidatePath("/dashboard");
+  return { deleted: result.count };
 }
