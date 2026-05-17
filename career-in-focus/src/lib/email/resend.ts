@@ -2,6 +2,15 @@ import { Resend } from "resend";
 
 export const FROM = process.env.EMAIL_FROM ?? "קריירה בפוקוס <noreply@careerinfocus.co.il>";
 
+/**
+ * Where Reply-To should point. Our `FROM` is a `noreply@` mailbox with
+ * no inbox — without setting this, anyone who clicks Reply gets either
+ * a bounce or silent loss. Route every reply to Coral's real Gmail so
+ * she sees them like normal mail. Pass to Resend as `replyTo: REPLY_TO`.
+ */
+export const REPLY_TO =
+  process.env.EMAIL_REPLY_TO ?? "koralcareer@gmail.com";
+
 // Single source of truth for the admin notification inbox. Coral asked
 // for everything to flow to koralcareer@gmail.com by default; an env
 // var can override (ADMIN_NOTIFY_EMAIL takes priority, then the legacy

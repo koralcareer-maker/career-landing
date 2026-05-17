@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
-import { FROM } from "@/lib/email/resend";
+import { FROM, REPLY_TO } from "@/lib/email/resend";
 import { buildHtml, firstNameOf } from "@/lib/email/broadcast-render";
 import { Resend } from "resend";
 
@@ -116,6 +116,7 @@ export async function sendBroadcastTest(prevState: unknown, formData: FormData):
     const result = await resend.emails.send({
       from:    FROM,
       to:      recipients,
+      replyTo: REPLY_TO,
       subject: personalSubject,
       html,
     });
@@ -183,6 +184,7 @@ export async function sendBroadcast(prevState: unknown, formData: FormData): Pro
       const result = await resend.emails.send({
         from:    FROM,
         to:      r.email,
+        replyTo: REPLY_TO,
         subject: personalSubject,
         html,
       });

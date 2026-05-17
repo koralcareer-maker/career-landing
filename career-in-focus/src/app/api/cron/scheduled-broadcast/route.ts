@@ -28,7 +28,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { FROM } from "@/lib/email/resend";
+import { FROM, REPLY_TO } from "@/lib/email/resend";
 import { buildHtml, firstNameOf, OLD_LEADS_BROADCAST_TEMPLATE } from "@/lib/email/broadcast-render";
 import { Resend } from "resend";
 
@@ -138,6 +138,7 @@ export async function GET(req: NextRequest) {
       const result = await resend.emails.send({
         from:    FROM,
         to:      r.email,
+        replyTo: REPLY_TO,
         subject: personalSubject,
         html,
       });
