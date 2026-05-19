@@ -156,7 +156,11 @@ export function Sidebar({ user, unreadCount = 0 }: SidebarProps) {
         </div>
 
         <div className="flex items-center gap-1 text-xs text-slate-400 px-1">
-          <Link href="/admin" className="hover:text-teal transition-colors px-2 py-1">עזרה</Link>
+          {/* "עזרה" used to point at /admin — visible to every signed-in
+              user and (per Coral) misleading on top of being a privilege
+              hint. Routed to /contact (the real support form) so members
+              who actually need help get somewhere useful. */}
+          <Link href="/contact" className="hover:text-teal transition-colors px-2 py-1">עזרה</Link>
           <span>|</span>
           <Link href="/profile" className="hover:text-teal transition-colors px-2 py-1">הגדרות</Link>
           <span>|</span>
