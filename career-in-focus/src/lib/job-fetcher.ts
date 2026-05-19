@@ -112,36 +112,61 @@ async function askGeminiForJobs(cat: FetchCategory): Promise<FetchedJob[]> {
   ]
 }`;
 
+  // Model cascade. Pro has the best grounded-search quality but free
+  // tier is capped at ~50 requests/day across the project, and on
+  // 2026-05-19 the first SOCIAL fetch run came back with 0 fetched /
+  // 0 errors logged — Pro was silently quota-blocked. Flash gives us
+  // ~1500 requests/day on the same key and supports grounded search.
+  // Try each model in order; whichever returns a non-empty array wins.
+  const MODELS = ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"];
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${key}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        // The grounded-search tool is what makes this actually work —
-        // without it the model just makes URLs up. Google Search is
-        // the public tool name; Gemini auto-routes the query and feeds
-        // the snippets back into the answer.
-        tools: [{ google_search: {} }],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
-      }),
-    });
-    if (!res.ok) {
-      console.warn("[job-fetcher] Gemini HTTP", res.status, await res.text().catch(() => ""));
-      return [];
+    for (const model of MODELS) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          // The grounded-search tool is what makes this actually work —
+          // without it the model just makes URLs up. Google Search is
+          // the public tool name; Gemini auto-routes the query and feeds
+          // the snippets back into the answer.
+          tools: [{ google_search: {} }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
+        }),
+      });
+      if (!res.ok) {
+        console.warn(`[job-fetcher] ${model} HTTP`, res.status, await res.text().catch(() => ""));
+        // 429 = quota / rate limit. Try the next model.
+        if (res.status === 429 || res.status === 503) continue;
+        // Other HTTP errors: bail this query, don't burn through every model.
+        return [];
+      }
+      const data = (await res.json()) as {
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      };
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+      if (!text.trim()) {
+        // Empty body — possibly safety-blocked or a silent quota issue.
+        // Fall through to the next cheaper model.
+        continue;
+      }
+      // Grounded responses sometimes wrap JSON in ```json ... ``` fences.
+      const clean = text.replace(/```json\n?|\n?```/g, "").trim();
+      try {
+        const parsed = JSON.parse(clean) as { jobs?: FetchedJob[] };
+        const jobs = Array.isArray(parsed.jobs) ? parsed.jobs : [];
+        if (jobs.length > 0) return jobs;
+        // Zero jobs from this model — try the next.
+      } catch {
+        // JSON parse fail — try the next model.
+      }
     }
-    const data = (await res.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    };
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    // Grounded responses sometimes wrap JSON in ```json ... ``` fences.
-    const clean = text.replace(/```json\n?|\n?```/g, "").trim();
-    const parsed = JSON.parse(clean) as { jobs?: FetchedJob[] };
-    return Array.isArray(parsed.jobs) ? parsed.jobs : [];
+    return [];
   } catch (e) {
     console.warn("[job-fetcher] error for query", cat.query, e instanceof Error ? e.message : e);
     return [];
