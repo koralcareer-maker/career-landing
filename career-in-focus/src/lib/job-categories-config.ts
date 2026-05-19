@@ -63,4 +63,23 @@ export const PROFESSIONAL: FetchCategory[] = [
   { field: "תפעול",          query: "Operations Manager startup Israel", target: 10 },
 ];
 
-export const ALL_CATEGORIES = [...MANAGEMENT, ...TECH, ...PROFESSIONAL];
+// ── Social & Community sector (target: ~45) ───────────────────────────
+// Added 2026-05-19 per Coral. Members in this field were under-served
+// by the tech/management-heavy default mix. Queries lean toward real
+// Israeli employers: עמותות, מתנ"סים, רווחה, בריאות הנפש, חינוך
+// בלתי-פורמלי, נוער בסיכון. Average yield is ~4-6 real listings per
+// query, so 10 queries should land ~40-60 jobs per fetch cycle.
+export const SOCIAL: FetchCategory[] = [
+  { field: "חברתי קהילתי",   query: "עובד סוציאלי משרד הרווחה ישראל", target: 6 },
+  { field: "חברתי קהילתי",   query: "עובדת סוציאלית עמותה ישראל", target: 5 },
+  { field: "חברתי קהילתי",   query: "רכז קהילה מתנס ישראל", target: 5 },
+  { field: "חברתי קהילתי",   query: "מנהל פרויקטים בעמותה ישראל", target: 5 },
+  { field: "חברתי קהילתי",   query: "מדריך נוער בסיכון ישראל", target: 4 },
+  { field: "חברתי קהילתי",   query: "מנחה קבוצות בריאות הנפש ישראל", target: 4 },
+  { field: "חברתי קהילתי",   query: "רכזת חינוך בלתי פורמלי ישראל", target: 4 },
+  { field: "חברתי קהילתי",   query: "מנהלת מרכז משפחה רווחה ישראל", target: 4 },
+  { field: "חברתי קהילתי",   query: "מתאם תוכניות חברתיות עירייה ישראל", target: 4 },
+  { field: "חברתי קהילתי",   query: "רכז גיוס תרומות עמותה ישראל", target: 4 },
+];
+
+export const ALL_CATEGORIES = [...MANAGEMENT, ...TECH, ...PROFESSIONAL, ...SOCIAL];
