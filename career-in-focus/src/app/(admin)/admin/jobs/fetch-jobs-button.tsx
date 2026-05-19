@@ -31,11 +31,22 @@ const BUCKET_LABELS: Record<Bucket, string> = {
   professional: "מקצועי",
 };
 
+interface PerCategory {
+  query: string;
+  fetched: number;
+  inserted: number;
+  skipped: number;
+  errors: string[];
+}
 interface FetchResult {
   ok?: boolean;
   bucket?: string;
   companyCareers?: { inserted: number } | null;
-  geminiFallback?: { totalInserted: number; totalSkipped: number };
+  geminiFallback?: {
+    totalInserted: number;
+    totalSkipped: number;
+    perCategory?: PerCategory[];
+  };
   error?: string;
 }
 
@@ -95,15 +106,49 @@ export function FetchJobsButton() {
         </button>
       </div>
 
-      {result?.ok && (
+      {result?.ok && totalInserted > 0 && (
         <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 text-xs text-emerald-700 max-w-md">
           <CheckCircle2 size={14} className="shrink-0 mt-0.5" />
           <span>
             הוספו <strong>{totalInserted}</strong> משרות חדשות
-            {result.geminiFallback?.totalSkipped ? `, דילגתי על ${result.geminiFallback.totalSkipped} (כפילויות)` : ""}.
+            {result.geminiFallback?.totalSkipped ? `, דילגתי על ${result.geminiFallback.totalSkipped} (כפילויות / קישורים מתים)` : ""}.
             הקטלוג רוענן.
           </span>
         </div>
+      )}
+      {result?.ok && totalInserted === 0 && (
+        // Zero new jobs — most likely Gemini's grounded-search couldn't
+        // find fresh listings, OR every candidate URL was a duplicate
+        // or failed the URL-reachability probe. Surface the per-query
+        // breakdown so Coral can see WHY without digging into Vercel
+        // logs.
+        <details className="bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 max-w-2xl" open>
+          <summary className="flex items-center gap-2 px-3 py-2 cursor-pointer font-bold">
+            <AlertCircle size={14} />
+            לא נוספו משרות חדשות. הקליקי לראות פירוט
+          </summary>
+          <div className="px-3 pb-3 space-y-1.5 max-h-72 overflow-y-auto">
+            {result.geminiFallback?.perCategory?.length ? (
+              result.geminiFallback.perCategory.map((c, i) => (
+                <div key={i} className="bg-white rounded-lg px-3 py-2 border border-amber-100">
+                  <div className="font-mono text-[11px] text-slate-500 mb-0.5" dir="ltr">{c.query}</div>
+                  <div className="flex gap-3 text-[11px]">
+                    <span>נמצאו: <strong>{c.fetched}</strong></span>
+                    <span>נוספו: <strong className="text-emerald-700">{c.inserted}</strong></span>
+                    <span>דולגו: <strong className="text-slate-500">{c.skipped}</strong></span>
+                  </div>
+                  {c.errors.length > 0 && (
+                    <div className="text-[11px] text-red-600 mt-1 font-mono break-all">
+                      שגיאה: {c.errors[0]}
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-[11px]">אין נתוני per-category. ייתכן ש-GEMINI_API_KEY חסר או שה-quota מוצה.</p>
+            )}
+          </div>
+        </details>
       )}
       {result?.error && (
         <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-600 max-w-md">
