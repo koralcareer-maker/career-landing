@@ -15,6 +15,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/skills":       "ניתוח מיומנויות",
   "/courses":      "קורסים ותכנים",
   "/tools":        "כלים ומשאבים",
+  "/toolbox":      "ארגז הכלים החודשי",
   "/jobs":         "משרות",
   "/community":    "קהילה",
   "/events":       "אירועים ופעילויות",

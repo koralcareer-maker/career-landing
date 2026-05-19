@@ -163,14 +163,16 @@ export default async function ProfilePage({
         />
       )}
 
-      {/* Personal Analysis — appears AFTER the Career Passport is
-          ready. It's a deeper, optional layer that complements the
-          passport: birthdate + birthplace → numerology + career
-          psychology reading + role recommendations that feed back
-          into the passport's likelyFitRoles. We hide it for users
-          who haven't generated a passport yet so the flow stays
-          linear: questionnaire → passport → personal analysis. */}
-      {passport && (
+      {/* Personal Analysis (numerology + career-psychology) was hidden
+          on 2026-05-19 per Coral. The component and the DB column stay
+          in place so anyone who already generated an analysis hasn't
+          lost their data, but the card no longer renders on the
+          profile page. The product slot was replaced by the monthly
+          toolbox (/toolbox), surfaced via the sidebar.
+
+          If you ever want to bring this back, just restore the original
+          render block from git history (commit before this comment). */}
+      {false && passport && (
         <PersonalAnalysisCard
           initialAnalysis={personalAnalysis}
           initialAnalysedAt={rawAnalysisAt ? new Date(rawAnalysisAt).toISOString() : null}

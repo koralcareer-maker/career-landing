@@ -9,7 +9,7 @@ import {
   LayoutDashboard, TrendingUp, User, BookOpen, Wrench,
   Briefcase, Users, CalendarDays, Bell, MessageSquare,
   LogOut, Star, Settings, Sparkles, Network, HelpCircle,
-  CreditCard,
+  CreditCard, Package,
 } from "lucide-react";
 
 interface NavItem {
@@ -27,6 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/skills",              label: "מיומנויות",             icon: Star },
   { href: "/courses",             label: "קורסים",                icon: BookOpen },
   { href: "/tools",               label: "כלים",                  icon: Wrench },
+  { href: "/toolbox",             label: "ארגז הכלים החודשי",     icon: Package },
   { href: "/jobs",                label: "משרות",                 icon: Briefcase },
   { href: "/community",           label: "קהילה",                 icon: Users },
   { href: "/events",              label: "אירועים",               icon: CalendarDays },
