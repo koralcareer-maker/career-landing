@@ -10,7 +10,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { runJobFetch } from "@/lib/job-fetcher";
-import { ALL_CATEGORIES, MANAGEMENT, TECH, PROFESSIONAL } from "@/lib/job-categories-config";
+import { ALL_CATEGORIES, MANAGEMENT, TECH, PROFESSIONAL, SOCIAL } from "@/lib/job-categories-config";
 import { syncCompanyCareers } from "@/lib/company-careers";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +47,7 @@ export async function POST(req: Request) {
     bucket === "management" ? MANAGEMENT :
     bucket === "tech" ? TECH :
     bucket === "professional" ? PROFESSIONAL :
+    bucket === "social" ? SOCIAL :
     ALL_CATEGORIES;
 
   // Full ("all") mode also runs the company feed for free coverage.

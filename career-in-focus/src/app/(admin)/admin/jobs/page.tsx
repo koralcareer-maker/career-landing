@@ -6,18 +6,20 @@ import { Button } from "@/components/ui/button";
 import { deleteJob, toggleJobPublished } from "@/lib/actions/admin";
 import Link from "next/link";
 import { Plus, Trash2, Eye, EyeOff, Flame, Pencil } from "lucide-react";
+import { FetchJobsButton } from "./fetch-jobs-button";
 
 export default async function AdminJobsPage() {
   const jobs = await prisma.job.findMany({ orderBy: { createdAt: "desc" } });
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-black text-navy">ניהול משרות</h1>
           <p className="text-gray-500 text-sm">{jobs.length} משרות</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-start flex-wrap">
+          <FetchJobsButton />
           <Link href="/admin/jobs/import-civi-batch2">
             <Button variant="outline" className="border-teal/30 text-teal hover:bg-teal-pale">
               ייבוא Civi (10)
