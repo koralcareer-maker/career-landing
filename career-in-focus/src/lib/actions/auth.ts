@@ -30,67 +30,106 @@ export async function signup(prevState: unknown, formData: FormData) {
     return { error: result.error.issues[0].message };
   }
 
-  const { name, email, password, gender } = result.data;
+  const { name, password, gender } = result.data;
+  // Always store + look up email lowercased + trimmed. Without this,
+  // an admin-imported `Customer@gmail.com` and a user-typed
+  // `customer@gmail.com` create two non-matching records.
+  const email = result.data.email.toLowerCase().trim();
 
   // Read plan from form (passed as hidden field from pricing page)
   const planRaw = ((formData.get("plan") as string) ?? "MEMBER").toUpperCase();
   const plan: Plan = VALID_PLANS.includes(planRaw as Plan) ? (planRaw as Plan) : "MEMBER";
 
+  // Look for an existing row. Three possible cases:
+  //   1. real account (has password AND has paid)   → bounce to login
+  //   2. admin pre-create (no password, no payment) → let new owner claim
+  //   3. stuck signup (has password, never paid)    → let them reset by
+  //      signing up again — we treat it as "claim" too, since they
+  //      clearly forgot they started before and were blocked previously
+  // Coral on 2026-05-19: a lead reported "the system says I'm registered
+  // but I'm not" — turned out to be case (2). She had pre-opened a
+  // courtesy account for the customer; the customer typing the same
+  // email at /signup hit the old blanket "אימייל כבר רשום" error and
+  // gave up. We were losing customers.
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    return { error: "אימייל זה כבר רשום במערכת" };
-  }
-
   const passwordHash = await bcrypt.hash(password, 12);
 
-  // Referral handling — if the user arrived via a `ref` link, the signup
-  // page tucks the code into a hidden form field. We look up the referrer
-  // and pin the new user to them. The reward (free month) gets credited
-  // in the CardCom webhook after the new user pays, not here — we don't
-  // want to gift months to fake signups that never convert.
-  const referralCodeRaw = ((formData.get("ref") as string) ?? "").trim().toUpperCase();
-  let referredById: string | undefined;
-  if (referralCodeRaw && referralCodeRaw.length >= 6 && referralCodeRaw.length <= 12) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const referrer = await (prisma.user as any).findUnique({
-      where: { referralCode: referralCodeRaw },
-      select: { id: true },
+  if (existing) {
+    const hasPassword = !!existing.passwordHash;
+    const hasPaid     = !!existing.paidAt;
+    const realAccount = hasPassword && hasPaid;
+    if (realAccount) {
+      return {
+        error:
+          "אימייל זה כבר רשום במערכת. אם זה החשבון שלך, נסי להתחבר. שכחת סיסמה? יש כפתור איפוס בעמוד ההתחברות.",
+      };
+    }
+    // Claim path: overwrite the placeholder/unfinished row with the
+    // user's chosen name + password + plan. Keep the existing id +
+    // referralCode + referredById so any links already shared remain
+    // valid. Reset accessStatus to PENDING so the payment flow re-runs.
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        name,
+        passwordHash,
+        gender,
+        accessStatus: "PENDING",
+        membershipType: plan,
+      },
     });
-    if (referrer) referredById = referrer.id;
-  }
-
-  // Generate a unique referral code for the new user — they can start
-  // sharing it the moment they're in. Collisions on the 8-char code are
-  // astronomically rare but we retry once defensively.
-  function makeCode() {
-    return Math.random().toString(36).slice(2, 10).toUpperCase();
-  }
-  let referralCode = makeCode();
-
-  await prisma.user.create({
-    data: {
-      name,
-      email,
-      passwordHash,
-      gender,
-      role: "MEMBER",
-      accessStatus: "PENDING",
-      membershipType: plan, // store chosen plan — activated after payment
+    // Skip the create block entirely. Auto sign-in below still runs.
+  } else {
+    // Referral handling — if the user arrived via a `ref` link, the
+    // signup page tucks the code into a hidden form field. We look up
+    // the referrer and pin the new user to them. The reward (free month)
+    // gets credited in the CardCom webhook after the new user pays, not
+    // here — we don't want to gift months to fake signups that never
+    // convert.
+    const referralCodeRaw = ((formData.get("ref") as string) ?? "").trim().toUpperCase();
+    let referredById: string | undefined;
+    if (referralCodeRaw && referralCodeRaw.length >= 6 && referralCodeRaw.length <= 12) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...({ referralCode, referredById } as any),
-    },
-  }).catch(async () => {
-    // Almost certainly the referralCode unique-collision — regenerate once.
-    referralCode = makeCode();
+      const referrer = await (prisma.user as any).findUnique({
+        where: { referralCode: referralCodeRaw },
+        select: { id: true },
+      });
+      if (referrer) referredById = referrer.id;
+    }
+
+    // Generate a unique referral code for the new user — they can start
+    // sharing it the moment they're in. Collisions on the 8-char code
+    // are astronomically rare but we retry once defensively.
+    function makeCode() {
+      return Math.random().toString(36).slice(2, 10).toUpperCase();
+    }
+    let referralCode = makeCode();
+
     await prisma.user.create({
       data: {
-        name, email, passwordHash, gender,
-        role: "MEMBER", accessStatus: "PENDING", membershipType: plan,
+        name,
+        email,
+        passwordHash,
+        gender,
+        role: "MEMBER",
+        accessStatus: "PENDING",
+        membershipType: plan, // store chosen plan — activated after payment
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...({ referralCode, referredById } as any),
       },
+    }).catch(async () => {
+      // Almost certainly the referralCode unique-collision — regenerate once.
+      referralCode = makeCode();
+      await prisma.user.create({
+        data: {
+          name, email, passwordHash, gender,
+          role: "MEMBER", accessStatus: "PENDING", membershipType: plan,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...({ referralCode, referredById } as any),
+        },
+      });
     });
-  });
+  }
 
   // Auto sign in. Same trick as login: redirect:false on signIn + Next.js
   // relative redirect → keeps the user on the request's host instead of
