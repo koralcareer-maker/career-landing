@@ -25,6 +25,7 @@ export const JOB_CATEGORIES = [
   "בנייה ונדל\"ן",
   "דיגיטל",
   "הייטק",
+  "חברה וקהילה",
   "חברת השמה",
   "חוק ומשפט",
   "חינוך והדרכה",
@@ -88,6 +89,14 @@ export function mapFieldToCategory(field: string | null | undefined): JobCategor
   if (/דיגיטל|digital/i.test(field)) return "דיגיטל";
   if (/השמה|recruit|hr.recruit|talent.?acqu/i.test(field)) return "חברת השמה";
   if (/עו.?ד|חוק|משפט|legal|law/i.test(field)) return "חוק ומשפט";
+  // Social-sector + community work. Catches the fetcher's
+  // "חברתי קהילתי" field plus common Hebrew variants and the typical
+  // NGO / mental-health / welfare phrasing. Sits BEFORE the education
+  // rule because "חינוך בלתי-פורמלי" is community work in Coral's
+  // taxonomy, not classroom training.
+  if (/חברתי|קהילתי|סוציאל|רווחה|עמות|מתנ.?ס|בריאות.?הנפש|חינוך.?בלתי.?פורמלי|nonprofit|non.?profit|\bngo\b/i.test(field)) {
+    return "חברה וקהילה";
+  }
   if (/חינוך|הדרכה|מורה|trainer/i.test(field)) return "חינוך והדרכה";
   if (/חשמל|electric/i.test(field)) return "חשמל";
   // Finance / accounting umbrella — catches every legacy variant
