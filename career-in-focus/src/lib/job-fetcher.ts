@@ -64,7 +64,7 @@ export async function runJobFetch(
       errors: [],
     };
     try {
-      const jobs = await askGeminiForJobs(cat);
+      const jobs = await askGeminiForJobs(cat, summary.errors);
       summary.fetched = jobs.length;
       for (const j of jobs) {
         const ok = await tryInsertJob(j, cat);
@@ -86,9 +86,12 @@ export async function runJobFetch(
  * Ask Gemini (with Google Search grounding) for `cat.target` real job
  * listings matching the query. Returns parsed JSON or [] on any error.
  */
-async function askGeminiForJobs(cat: FetchCategory): Promise<FetchedJob[]> {
+async function askGeminiForJobs(cat: FetchCategory, errSink?: string[]): Promise<FetchedJob[]> {
   const key = process.env.GEMINI_API_KEY;
-  if (!key) return [];
+  if (!key) {
+    errSink?.push("GEMINI_API_KEY חסר במשתני הסביבה של Vercel");
+    return [];
+  }
 
   const prompt = `אני בונה לוח משרות בישראל. חפש בגוגל ${cat.target} משרות פעילות עבור: "${cat.query}".
 
@@ -140,7 +143,9 @@ async function askGeminiForJobs(cat: FetchCategory): Promise<FetchedJob[]> {
         }),
       });
       if (!res.ok) {
-        console.warn(`[job-fetcher] ${model} HTTP`, res.status, await res.text().catch(() => ""));
+        const body = await res.text().catch(() => "");
+        console.warn(`[job-fetcher] ${model} HTTP`, res.status, body);
+        errSink?.push(`${model}: HTTP ${res.status} ${body.slice(0, 120)}`);
         // 429 = quota / rate limit. Try the next model.
         if (res.status === 429 || res.status === 503) continue;
         // Other HTTP errors: bail this query, don't burn through every model.
@@ -153,6 +158,7 @@ async function askGeminiForJobs(cat: FetchCategory): Promise<FetchedJob[]> {
       if (!text.trim()) {
         // Empty body — possibly safety-blocked or a silent quota issue.
         // Fall through to the next cheaper model.
+        errSink?.push(`${model}: empty body (safety / quota?)`);
         continue;
       }
       // Grounded responses sometimes wrap JSON in ```json ... ``` fences.
@@ -162,8 +168,10 @@ async function askGeminiForJobs(cat: FetchCategory): Promise<FetchedJob[]> {
         const jobs = Array.isArray(parsed.jobs) ? parsed.jobs : [];
         if (jobs.length > 0) return jobs;
         // Zero jobs from this model — try the next.
-      } catch {
+        errSink?.push(`${model}: 0 jobs returned`);
+      } catch (e) {
         // JSON parse fail — try the next model.
+        errSink?.push(`${model}: JSON parse fail ${(e as Error).message?.slice(0, 80)}`);
       }
     }
     return [];
