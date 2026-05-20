@@ -15,11 +15,15 @@
  * The endpoint can take ~5 minutes for the full run, so the button
  * shows a spinner and disables until the call resolves. Results
  * (inserted / skipped counts) are surfaced as a small banner below.
+ *
+ * SeedSocialJobsButton is a sibling component for when Gemini's
+ * free-tier quota is exhausted — it inserts a curated set of 35
+ * pre-vetted social-sector entries directly, no LLM call required.
  */
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Download, Loader2, CheckCircle2, AlertCircle, Sprout } from "lucide-react";
 
 type Bucket = "all" | "social" | "tech" | "management" | "professional";
 
@@ -149,6 +153,66 @@ export function FetchJobsButton() {
             )}
           </div>
         </details>
+      )}
+      {result?.error && (
+        <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-600 max-w-md">
+          <AlertCircle size={14} className="shrink-0 mt-0.5" />
+          <span>{result.error}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Manual fallback when Gemini's quota is exhausted: insert 35 curated
+ * social-sector entries from a hard-coded list. Each entry points at
+ * either a Drushim/AllJobs/JobMaster/LinkedIn keyword-filtered search
+ * (always fresh) or a major Israeli social-sector employer's career
+ * landing page. Idempotent — re-clicking just skips duplicates.
+ */
+export function SeedSocialJobsButton() {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [result, setResult] = useState<{ inserted?: number; skipped?: number; error?: string } | null>(null);
+
+  function run() {
+    setResult(null);
+    startTransition(async () => {
+      try {
+        const r = await fetch("/api/admin/seed-social-jobs", { method: "POST" });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          setResult({ error: data.error ?? `שגיאה ${r.status}` });
+          return;
+        }
+        setResult({ inserted: data.inserted, skipped: data.skipped });
+        router.refresh();
+      } catch (e) {
+        setResult({ error: String(e instanceof Error ? e.message : e) });
+      }
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-2 items-end">
+      <button
+        type="button"
+        onClick={run}
+        disabled={pending}
+        title="מייבא 35 משרות חברה וקהילה ידנית מ-Drushim/AllJobs/LinkedIn ועמותות. שמיש כש-Gemini במכסה."
+        className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm px-4 py-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {pending ? <Loader2 size={14} className="animate-spin" /> : <Sprout size={14} />}
+        {pending ? "מייבא..." : "זרע חברה וקהילה (35)"}
+      </button>
+      {result?.inserted !== undefined && (
+        <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 text-xs text-emerald-700 max-w-md">
+          <CheckCircle2 size={14} className="shrink-0 mt-0.5" />
+          <span>
+            נוספו <strong>{result.inserted}</strong> משרות, דולגו <strong>{result.skipped}</strong> כפילויות.
+          </span>
+        </div>
       )}
       {result?.error && (
         <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-600 max-w-md">
