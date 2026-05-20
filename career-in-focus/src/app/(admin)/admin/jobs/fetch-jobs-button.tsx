@@ -138,9 +138,9 @@ export function FetchJobsButton() {
                     <span>דולגו: <strong className="text-slate-500">{c.skipped}</strong></span>
                   </div>
                   {c.errors.length > 0 && (
-                    <div className="text-[11px] text-red-600 mt-1 font-mono break-all">
-                      שגיאה: {c.errors[0]}
-                    </div>
+                    <ul className="text-[11px] text-red-600 mt-1 font-mono break-all space-y-0.5 list-disc list-inside">
+                      {c.errors.map((err, ei) => <li key={ei}>{err}</li>)}
+                    </ul>
                   )}
                 </div>
               ))
