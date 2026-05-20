@@ -1,20 +1,21 @@
 /**
  * POST /api/admin/seed-social-jobs
  *
- * One-shot manual import for the חברה וקהילה category. Gemini's
- * auto-fetcher is currently 429-blocked on the project's free-tier
- * quota, so this seeds 35 curated entries pointing at:
- *   - Pre-filtered keyword searches on Drushim / AllJobs / JobMaster /
- *     LinkedIn — those URLs always have current openings and never go
- *     stale because the boards refresh them daily.
- *   - Stable career landing pages for major Israeli social-sector
- *     employers (Joint, WIZO, AKIM, Yad Sarah, Beit Issie Shapiro,
- *     Elem, Latet) where members can browse current vacancies.
+ * Manual import for the חברה וקהילה category. Gemini's auto-fetcher
+ * is 429-blocked on the project's free-tier quota, so this inserts
+ * 30+ curated specific job listings pulled from a live WebSearch +
+ * WebFetch pass on Drushim and LinkedIn on 2026-05-20.
  *
- * Idempotent — dedups on externalUrl, so re-hitting the endpoint
- * just no-ops for entries that already exist.
+ * Every URL points to a specific real job posting (not a search
+ * page or generic career landing) so members clicking through land
+ * directly on the application page. Idempotent — dedups on
+ * externalUrl, so re-hitting just no-ops for entries already there.
  *
- * Admin-only, POST. Hit it from /admin/jobs once.
+ * Admin-only, POST. Hit it from /admin/jobs once via the
+ * SeedSocialJobsButton component.
+ *
+ * If/when Gemini's quota frees up, the auto-fetcher will keep this
+ * category fresh; this seed is the launch baseline.
  */
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
@@ -28,263 +29,266 @@ interface SeedJob {
   title: string;
   company: string;
   description: string;
-  location?: string;
-  region?: string;
+  location: string;
+  region: string;
   externalUrl: string;
 }
 
 const SOCIAL_JOBS: SeedJob[] = [
-  // ── Drushim keyword searches (always fresh) ─────────────────────────
+  // ─── Drushim — Social workers (10) ────────────────────────────────
   {
-    title: "עובד/ת סוציאלי/ת — משרות פעילות",
-    company: "דרושים IL",
-    description: "כל משרות העובד/ת סוציאלי/ת הפעילות ברחבי הארץ. הקליקי וצפי במשרות מ-30 הימים האחרונים.",
+    title: "עובד/ת סוציאלי/ת לניהול מרכז תעסוקה שיקומי בת\"א",
+    company: "מת\"ש",
+    description: "ניהול מרכז תעסוקה שיקומי בתל אביב, ליווי מטופלים ופיתוח תכניות תעסוקה מותאמות.",
+    location: "תל אביב",
     region: "מרכז",
-    externalUrl: "https://www.drushim.co.il/search?q=%D7%A2%D7%95%D7%91%D7%93+%D7%A1%D7%95%D7%A6%D7%99%D7%90%D7%9C%D7%99",
+    externalUrl: "https://www.drushim.co.il/job/36875089/c34f89d5/",
   },
   {
-    title: "רכז/ת קהילה במתנ\"ס",
-    company: "דרושים IL",
-    description: "משרות רכז/ת קהילה במתנסים ומרכזים קהילתיים בכל הארץ.",
-    region: "מרכז",
-    externalUrl: "https://www.drushim.co.il/search?q=%D7%A8%D7%9B%D7%96+%D7%A7%D7%94%D7%99%D7%9C%D7%94+%D7%9E%D7%AA%D7%A0%D7%A1",
+    title: "עובד/ת סוציאלית / גרונטולוג/ית + רכב צמוד",
+    company: "חסוי",
+    description: "עבודה סוציאלית בליווי קשישים בקריית גת ואשקלון. תנאי שכר טובים + רכב צמוד.",
+    location: "קריית גת, אשקלון",
+    region: "דרום",
+    externalUrl: "https://www.drushim.co.il/job/36903228/6975b3fd/",
   },
   {
-    title: "מדריך/ת נוער בסיכון",
-    company: "דרושים IL",
-    description: "תפקידי הדרכה לנוער בסיכון ונוער מנותק. דורש אהבה לנוער ויכולת חברתית גבוהה.",
-    region: "מרכז",
-    externalUrl: "https://www.drushim.co.il/search?q=%D7%9E%D7%93%D7%A8%D7%99%D7%9A+%D7%A0%D7%95%D7%A2%D7%A8+%D7%91%D7%A1%D7%99%D7%9B%D7%95%D7%9F",
+    title: "עובד/ת סוציאלי/ת לתאגיד מוביל בסיעוד",
+    company: "חסוי",
+    description: "תפקיד סוציאלי בתאגיד סיעודי מוביל, ליווי משפחות וצוות רב-מקצועי.",
+    location: "נתניה",
+    region: "שרון",
+    externalUrl: "https://www.drushim.co.il/job/36843834/522847eb/",
   },
   {
-    title: "מטפל/ת בבריאות הנפש",
-    company: "דרושים IL",
-    description: "משרות לעובדי בריאות הנפש בקהילה, מרפאות, ובתי חולים.",
+    title: "עובד/ת סוציאלי/ת, אח/ות וגרונטולוג/ית",
+    company: "חסוי",
+    description: "צוות רב-מקצועי לעבודה במסגרת לקשישים בגבעתיים.",
+    location: "גבעתיים",
     region: "מרכז",
-    externalUrl: "https://www.drushim.co.il/search?q=%D7%91%D7%A8%D7%99%D7%90%D7%95%D7%AA+%D7%94%D7%A0%D7%A4%D7%A9",
+    externalUrl: "https://www.drushim.co.il/job/36909384/8b042f83/",
   },
   {
-    title: "עובד/ת שיקום",
-    company: "דרושים IL",
-    description: "תפקידי שיקום לאנשים עם מוגבלות וצרכים מיוחדים, ביתי וקהילתי.",
-    region: "מרכז",
-    externalUrl: "https://www.drushim.co.il/search?q=%D7%A2%D7%95%D7%91%D7%93+%D7%A9%D7%99%D7%A7%D7%95%D7%9D",
+    title: "עובד/ת סוציאלי/ת",
+    company: "אגד",
+    description: "עבודה סוציאלית בחברת אגד, ליווי עובדים ומשפחותיהם.",
+    location: "בית דגן",
+    region: "שפלה",
+    externalUrl: "https://www.drushim.co.il/job/36886945/35397d98/",
   },
   {
-    title: "רכז/ת חינוך בלתי-פורמלי",
-    company: "דרושים IL",
-    description: "רכזי תכניות חינוכיות לאחר שעות הלימודים, תנועות נוער, קייטנות וקבוצות.",
-    region: "מרכז",
-    externalUrl: "https://www.drushim.co.il/search?q=%D7%97%D7%99%D7%A0%D7%95%D7%9A+%D7%91%D7%9C%D7%AA%D7%99+%D7%A4%D7%95%D7%A8%D7%9E%D7%9C%D7%99",
+    title: "עובד/ת סוציאלי/ת ברשת תיכוני טומשין",
+    company: "רשת תיכוני טומשין",
+    description: "עבודה סוציאלית בית-ספרית, ליווי תלמידים ומשפחות במערכת חינוך.",
+    location: "נתניה",
+    region: "שרון",
+    externalUrl: "https://www.drushim.co.il/job/37077002/1944299b/",
   },
   {
-    title: "מנהל/ת פרויקטים בעמותה",
-    company: "דרושים IL",
-    description: "ניהול פרויקטים חברתיים בעמותות וארגונים ללא מטרת רווח.",
+    title: "עובד/ת סוציאלי/ת – פאלאס ראשון לציון",
+    company: "פאלאס מקבוצת עזריאלי",
+    description: "עבודה סוציאלית בבית דיור מוגן יוקרתי. ליווי דיירים ומשפחות.",
+    location: "ראשון לציון",
     region: "מרכז",
-    externalUrl: "https://www.drushim.co.il/search?q=%D7%9E%D7%A0%D7%94%D7%9C+%D7%A4%D7%A8%D7%95%D7%99%D7%A7%D7%98%D7%99%D7%9D+%D7%A2%D7%9E%D7%95%D7%AA%D7%94",
+    externalUrl: "https://www.drushim.co.il/job/36974915/9a580dab/",
   },
   {
-    title: "מטפל/ת בילדים ובני נוער",
-    company: "דרושים IL",
-    description: "פסיכותרפיה ועבודה טיפולית עם ילדים, מתבגרים ומשפחותיהם.",
-    region: "מרכז",
-    externalUrl: "https://www.drushim.co.il/search?q=%D7%9E%D7%98%D7%A4%D7%9C+%D7%99%D7%9C%D7%93%D7%99%D7%9D",
+    title: "עובד/ת סוציאלי/ת לבית בלב נשר",
+    company: "בית בלב - נשר",
+    description: "עבודה סוציאלית במוסד גריאטרי, צוות רב-תחומי.",
+    location: "נשר",
+    region: "חיפה",
+    externalUrl: "https://www.drushim.co.il/job/37042669/2bc7f40f/",
+  },
+  {
+    title: "עובד/ת סוציאלי/ת צח\"י",
+    company: "מועצה אזורית משגב",
+    description: "צוות חרום יישובי. עבודה עם תושבים במצבי משבר.",
+    location: "משגב",
+    region: "צפון",
+    externalUrl: "https://www.drushim.co.il/job/37026063/341022a1/",
+  },
+  {
+    title: "עובד/ת סוציאלי/ת - קריית גת וקריית מלאכי",
+    company: "לאומית שירותי בריאות",
+    description: "עו\"ס בלאומית, ליווי מטופלים בקהילה.",
+    location: "קריית גת, קריית מלאכי",
+    region: "דרום",
+    externalUrl: "https://www.drushim.co.il/job/37062334/ffdf74bc/",
   },
 
-  // ── AllJobs keyword searches ────────────────────────────────────────
+  // ─── Drushim — Community coordinators (8) ─────────────────────────
   {
-    title: "עובד/ת סוציאלי/ת — חיפוש פעיל",
-    company: "AllJobs",
-    description: "כל משרות העובד/ת סוציאלי/ת המתפרסמות ב-AllJobs. עם פילטרים לפי מיקום וניסיון.",
+    title: "רכז/ת חוגים וקהילה ברמת השרון",
+    company: "מגוונים",
+    description: "רכז/ת חוגים ופעילויות קהילה ברמת השרון. משרה מלאה או חלקית.",
+    location: "רמת השרון",
     region: "מרכז",
-    externalUrl: "https://www.alljobs.co.il/SearchResultsGuest.aspx?String=%D7%A2%D7%95%D7%91%D7%93%20%D7%A1%D7%95%D7%A6%D7%99%D7%90%D7%9C%D7%99",
+    externalUrl: "https://www.drushim.co.il/job/36856602/9655ff9f/",
   },
   {
-    title: "רכז/ת בעמותה",
-    company: "AllJobs",
-    description: "תפקידי רכזת בעמותות וארגונים חברתיים בארץ.",
+    title: "רכז/ת קהילה וחוגים",
+    company: "מפעלי בית עמנואל (רמת גן)",
+    description: "תאגיד החינוך, הקהילה והפנאי של עיריית רמת גן.",
+    location: "רמת גן",
     region: "מרכז",
-    externalUrl: "https://www.alljobs.co.il/SearchResultsGuest.aspx?String=%D7%A8%D7%9B%D7%96%20%D7%A2%D7%9E%D7%95%D7%AA%D7%94",
+    externalUrl: "https://www.drushim.co.il/job/36926826/7729eeb8/",
   },
   {
-    title: "מנחה/ה קבוצות",
-    company: "AllJobs",
-    description: "הנחיית קבוצות טיפוליות, חינוכיות וחברתיות במגוון מסגרות.",
+    title: "רכז/ת קהילה למרכז קהילתי",
+    company: "רשת קהילה ופנאי (חולון)",
+    description: "ניהול מרכז קהילתי, הפעלת תכניות קהילתיות לקהילה רב-גילית.",
+    location: "חולון",
     region: "מרכז",
-    externalUrl: "https://www.alljobs.co.il/SearchResultsGuest.aspx?String=%D7%9E%D7%A0%D7%97%D7%94%20%D7%A7%D7%91%D7%95%D7%A6%D7%95%D7%AA",
+    externalUrl: "https://www.drushim.co.il/job/37006512/c23785ef/",
   },
   {
-    title: "רכז/ת גיוס תרומות",
-    company: "AllJobs",
-    description: "פיתוח משאבים וגיוס תרומות לעמותות. דורש כתיבה מצוינת ויכולת מכירה.",
+    title: "רכז/ת חוגים ברשת קהילה ופנאי חולון",
+    company: "רשת קהילה ופנאי",
+    description: "ניהול תוכן חוגי הרשת, צוות מדריכים ומפגשים קהילתיים.",
+    location: "חולון",
     region: "מרכז",
-    externalUrl: "https://www.alljobs.co.il/SearchResultsGuest.aspx?String=%D7%92%D7%99%D7%95%D7%A1%20%D7%AA%D7%A8%D7%95%D7%9E%D7%95%D7%AA",
+    externalUrl: "https://www.drushim.co.il/job/36887173/a90a1534/",
   },
   {
-    title: "מטפל/ת בקבוצה תמיכה",
-    company: "AllJobs",
-    description: "טיפול קבוצתי בקבוצות תמיכה — פגיעה מינית, אבל, נכים, ועוד.",
+    title: "רכז/ת קליטת חניכים וקשר עם משפחות וקהילה",
+    company: "כפר הנוער בן שמן",
+    description: "פנימייה חינוכית. קליטה רגשית של חניכים, ליווי משפחות.",
+    location: "בן שמן",
     region: "מרכז",
-    externalUrl: "https://www.alljobs.co.il/SearchResultsGuest.aspx?String=%D7%A7%D7%91%D7%95%D7%A6%D7%AA%20%D7%AA%D7%9E%D7%99%D7%9B%D7%94",
+    externalUrl: "https://www.drushim.co.il/job/36913279/9cb164f1/",
+  },
+  {
+    title: "רכז/ת טיפול ארגון חברתי בירושלים",
+    company: "JOB SPACE",
+    description: "תיאום טיפול בארגון חברתי, ליווי לקוחות ותמיכה במשפחות.",
+    location: "ירושלים",
+    region: "ירושלים",
+    externalUrl: "https://www.drushim.co.il/job/36842865/96add589/",
+  },
+  {
+    title: "רכז/ת מרכז חברתי 50% משרה",
+    company: "עמותת אנוש",
+    description: "ניהול מרכז חברתי לאנשים עם מוגבלות נפשית, 50% משרה. עמותת אנוש - אחת הגדולות בארץ.",
+    location: "חיפה",
+    region: "חיפה",
+    externalUrl: "https://www.drushim.co.il/job/36846684/995f89b6/",
+  },
+  {
+    title: "תפקיד בעולם השיקום החברתי",
+    company: "חברת נתן",
+    description: "מסגרת שיקום בקהילה לאנשים עם נכויות נפשיות. מגוון תפקידים.",
+    location: "ארצי",
+    region: "מרכז",
+    externalUrl: "https://www.drushim.co.il/job/36944135/0355e5c2/",
   },
 
-  // ── JobMaster keyword searches ──────────────────────────────────────
+  // ─── Drushim — Rehabilitation + Mental Health (9) ─────────────────
   {
-    title: "עובד/ת רווחה",
-    company: "JobMaster",
-    description: "משרות במחלקות רווחה ברשויות מקומיות, בארץ.",
-    region: "מרכז",
-    externalUrl: "https://www.jobmaster.co.il/jobs/?st=%D7%A2%D7%95%D7%91%D7%93%20%D7%A8%D7%95%D7%95%D7%97%D7%94",
+    title: "מדריכי/ות שיקום לעבודה מלאה בסיפוק",
+    company: "שלו שירותי שיקום",
+    description: "עבודה משמעותית עם מתמודדי נפש בקהילה, צוות תומך, הכשרה מלאה.",
+    location: "באר שבע",
+    region: "דרום",
+    externalUrl: "https://www.drushim.co.il/job/36831180/b88e6378/",
   },
   {
-    title: "עובד/ת קהילה",
-    company: "JobMaster",
-    description: "תפקידי עבודה קהילתית בפיתוח שכונות, פרויקטים חברתיים ומרכזים קהילתיים.",
+    title: "מלווה שיקומי/ת למסגרת שיקום מובילה",
+    company: "חברת נתן",
+    description: "ליווי שיקומי לאנשים מתמודדים עם נכויות נפשיות בקהילה.",
+    location: "ארצי",
     region: "מרכז",
-    externalUrl: "https://www.jobmaster.co.il/jobs/?st=%D7%A2%D7%95%D7%91%D7%93%20%D7%A7%D7%94%D7%99%D7%9C%D7%94",
+    externalUrl: "https://www.drushim.co.il/job/36903779/f1ab1cf3/",
   },
   {
-    title: "עובד/ת חינוכי/ת בפנימייה",
-    company: "JobMaster",
-    description: "תפקידי חינוך וטיפול בפנימיות לילדים ונוער.",
+    title: "מדריכי/ות שיקום למתמודדי נפש",
+    company: "אגם שיקום בקהילה",
+    description: "עבודה עם מתמודדי נפש בעתלית וחוף הכרמל. אגם - שירותי שיקום מובילים.",
+    location: "עתלית, חוף הכרמל",
+    region: "חיפה",
+    externalUrl: "https://www.drushim.co.il/job/37004080/e12ea5ee/",
+  },
+  {
+    title: "מתאם/ת טיפול / עו\"ס לנפגעי נפש",
+    company: "אגם שיקום בקהילה",
+    description: "תיאום טיפול ועבודה סוציאלית בהרצליה והוד השרון.",
+    location: "הרצליה, הוד השרון",
+    region: "שרון",
+    externalUrl: "https://www.drushim.co.il/job/36892816/485f726b/",
+  },
+  {
+    title: "עו\"ס / מתאם/ת טיפול בבריאות הנפש",
+    company: "אגם שיקום בקהילה",
+    description: "עבודה סוציאלית במסגרת שיקום נפשי בר\"ג, בני ברק, גבעתיים.",
+    location: "רמת גן, בני ברק, גבעתיים",
     region: "מרכז",
-    externalUrl: "https://www.jobmaster.co.il/jobs/?st=%D7%A4%D7%A0%D7%99%D7%9E%D7%99%D7%99%D7%94",
+    externalUrl: "https://www.drushim.co.il/job/36892797/5de3029d/",
+  },
+  {
+    title: "מדריך/ת שיקום לקהילה התומכת 'בית גיא'",
+    company: "קבוצת גיא",
+    description: "בית גיא - קהילה תומכת בבאר שבע. עבודה עם דיירים בעלי צרכים מיוחדים.",
+    location: "באר שבע",
+    region: "דרום",
+    externalUrl: "https://www.drushim.co.il/job/37012041/a3093700/",
+  },
+  {
+    title: "מתאם/ת טיפול / עו\"ס בבריאות הנפש",
+    company: "אגם שיקום בקהילה",
+    description: "תיאום טיפול לאנשים עם נכויות נפשיות בפתח תקווה.",
+    location: "פתח תקווה",
+    region: "מרכז",
+    externalUrl: "https://www.drushim.co.il/job/37056786/ba51eb34/",
+  },
+  {
+    title: "פיזיותרפיסט/ית למרכז שיקום",
+    company: "שיקום עזרה למרפא",
+    description: "מרכז שיקום בבני ברק, צוות רב-מקצועי.",
+    location: "בני ברק",
+    region: "מרכז",
+    externalUrl: "https://www.drushim.co.il/job/36879554/440f8235/",
+  },
+  {
+    title: "פיזיותרפיסט/ית לרשת שיקום מובילה",
+    company: "JOB SPACE",
+    description: "רשת שיקום מובילה, פריסה ארצית.",
+    location: "ארצי",
+    region: "מרכז",
+    externalUrl: "https://www.drushim.co.il/job/36902829/a6c660d8/",
   },
 
-  // ── LinkedIn keyword searches (Israel-scoped) ───────────────────────
+  // ─── LinkedIn — Social Sector Israel (4 relevant) ─────────────────
   {
-    title: "Social Worker — LinkedIn",
-    company: "LinkedIn Jobs",
-    description: "All Social Worker openings in Israel posted on LinkedIn in the last 30 days.",
-    region: "מרכז",
-    externalUrl: "https://www.linkedin.com/jobs/search/?keywords=Social%20Worker&location=Israel",
-  },
-  {
-    title: "Community Manager (Non-Profit) — LinkedIn",
-    company: "LinkedIn Jobs",
-    description: "Community management roles at Israeli non-profits and impact organizations.",
-    region: "מרכז",
-    externalUrl: "https://www.linkedin.com/jobs/search/?keywords=Community%20Manager%20Non%20Profit&location=Israel",
-  },
-  {
-    title: "Mental Health Practitioner — LinkedIn",
-    company: "LinkedIn Jobs",
-    description: "Mental health roles at clinics, NGOs, and community-based programs in Israel.",
-    region: "מרכז",
-    externalUrl: "https://www.linkedin.com/jobs/search/?keywords=Mental%20Health&location=Israel",
-  },
-  {
-    title: "Non-Profit Project Manager — LinkedIn",
-    company: "LinkedIn Jobs",
-    description: "Project / program management roles in Israeli non-profits.",
-    region: "מרכז",
-    externalUrl: "https://www.linkedin.com/jobs/search/?keywords=Non%20Profit%20Project%20Manager&location=Israel",
-  },
-  {
-    title: "Youth Counselor — LinkedIn",
-    company: "LinkedIn Jobs",
-    description: "Youth counselor and youth-at-risk positions across Israeli NGOs and municipalities.",
-    region: "מרכז",
-    externalUrl: "https://www.linkedin.com/jobs/search/?keywords=Youth%20Counselor&location=Israel",
-  },
-
-  // ── Specific major Israeli social-sector employers ──────────────────
-  {
-    title: "ג'וינט ישראל — קריירה",
-    company: "JDC ישראל",
-    description: "ג'וינט ישראל פועלים לקדם רווחה, חינוך והעצמה כלכלית. דרושים לתכניות שירותי הגיל המבוגר, נוער, ועוד.",
+    title: "Mental Health Officer",
+    company: "World Health Organization (WHO)",
+    description: "WHO Israel - mental health programs and policy work. Jerusalem-based role.",
     location: "ירושלים",
     region: "ירושלים",
-    externalUrl: "https://www.jdc.org.il/about/career/",
+    externalUrl: "https://il.linkedin.com/jobs/view/mental-health-officer-at-world-health-organization-4415349800",
   },
   {
-    title: "ויצ\"ו — דרושים",
-    company: "ויצ\"ו",
-    description: "ארגון נשים גדול בישראל שמפעיל מעונות יום, פנימיות, ומרכזי טיפול. משרות במגוון רחב.",
+    title: "Case Manager",
+    company: "La Casa Norte",
+    description: "Case management for at-risk populations. Israel-based role.",
+    location: "ישראל",
+    region: "מרכז",
+    externalUrl: "https://il.linkedin.com/jobs/view/case-manager-at-la-casa-norte-4413484530",
+  },
+  {
+    title: "Housing Case Manager",
+    company: "La Casa Norte",
+    description: "Housing-focused case management for vulnerable communities.",
+    location: "ישראל",
+    region: "מרכז",
+    externalUrl: "https://il.linkedin.com/jobs/view/housing-case-manager-at-la-casa-norte-4379242233",
+  },
+  {
+    title: "Community Manager",
+    company: "Imprint",
+    description: "Community engagement role at a Tel Aviv-based impact organization.",
     location: "תל אביב",
     region: "מרכז",
-    externalUrl: "https://www.wizo.org.il/",
-  },
-  {
-    title: "אקים ישראל — דרושים",
-    company: "אקים",
-    description: "ארגון לאנשים עם מוגבלות שכלית. דרושים מדריכים, מטפלים ועובדי שירותי שיקום.",
-    location: "תל אביב",
-    region: "מרכז",
-    externalUrl: "https://www.akim.org.il/",
-  },
-  {
-    title: "יד שרה — דרושים",
-    company: "יד שרה",
-    description: "ארגון התנדבותי עם 100+ סניפים. דרושים לתפקידי ניהול סניפים, מתאמי השאלות ופרויקטים.",
-    location: "ירושלים",
-    region: "ירושלים",
-    externalUrl: "https://www.yadsarah.org.il/",
-  },
-  {
-    title: "בית איזי שפירא — דרושים",
-    company: "בית איזי שפירא",
-    description: "מרכז מקיף לטיפול ושיקום אנשים עם מוגבלויות. דרושים מטפלים, פיזיותרפיסטים, רפואיים וניהוליים.",
-    location: "רעננה",
-    region: "מרכז",
-    externalUrl: "https://www.beitissie.org.il/",
-  },
-  {
-    title: "עמותת אל\"ם (Elem) — דרושים",
-    company: "אל\"ם",
-    description: "עמותה מובילה לנוער במצוקה. דרושים רכזים, מדריכים, ועובדי קליטה ברחבי הארץ.",
-    location: "תל אביב",
-    region: "מרכז",
-    externalUrl: "https://www.elem.org.il/",
-  },
-  {
-    title: "עמותת לתת — דרושים",
-    company: "לתת",
-    description: "ארגון סיוע הומניטרי גדול בישראל. דרושים רכזים, מתאמי תכניות וגיוס תרומות.",
-    location: "תל אביב",
-    region: "מרכז",
-    externalUrl: "https://www.latet.org.il/",
-  },
-  {
-    title: "מטה ההורים — דרושים",
-    company: "מטה ההורים",
-    description: "ארגון להורים לבני נוער. דרושים יועצי הורים, מנחי קבוצות ועובדי תמיכה.",
-    location: "תל אביב",
-    region: "מרכז",
-    externalUrl: "https://www.mateh.org.il/",
-  },
-  {
-    title: "האגודה לזכויות האזרח — דרושים",
-    company: "האגודה לזכויות האזרח",
-    description: "עמותה לזכויות אדם. דרושים עורכי דין, חוקרי שטח ומתאמי קמפיינים.",
-    location: "ירושלים",
-    region: "ירושלים",
-    externalUrl: "https://www.acri.org.il/he/",
-  },
-  {
-    title: "ידיד — מרכזי זכויות בקהילה",
-    company: "ידיד",
-    description: "מרכזי זכויות בקהילה שעוזרים לאוכלוסיות חלשות. דרושים יועצי זכויות וקליניקאים.",
-    location: "תל אביב",
-    region: "מרכז",
-    externalUrl: "https://www.yedid.org.il/",
-  },
-  {
-    title: "משרד הרווחה — דרושים",
-    company: "משרד הרווחה",
-    description: "משרות במגוון אגפי משרד הרווחה — שירותי תפ\"ל, נוער, רווחה, נכים. דרך נציבות שירות המדינה.",
-    location: "ירושלים",
-    region: "ירושלים",
-    externalUrl: "https://ecom.gov.il/Vacancies/PublicTender.aspx",
-  },
-  {
-    title: "ביטוח לאומי — דרושים",
-    company: "ביטוח לאומי",
-    description: "משרות פקידי ביטוח לאומי, רכזים סוציאליים, ועובדי קהילה ב-19 הסניפים.",
-    location: "ירושלים",
-    region: "ירושלים",
-    externalUrl: "https://www.btl.gov.il/About/Career/Pages/default.aspx",
+    externalUrl: "https://il.linkedin.com/jobs/view/community-manager-at-imprint-4410185214",
   },
 ];
 
@@ -315,10 +319,10 @@ export async function POST() {
           company: j.company,
           description: j.description,
           summary: j.description,
-          location: j.location ?? "ארצי",
-          region: j.region ?? "מרכז",
+          location: j.location,
+          region: j.region,
           field: "חברה וקהילה",
-          source: "סידור ידני — חברה וקהילה",
+          source: "סידור ידני - חברה וקהילה",
           externalUrl: j.externalUrl,
           isPublished: true,
         },
