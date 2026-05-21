@@ -434,6 +434,68 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "Graphic Designer - Nefesh B'Nefesh", company: "Nefesh B'Nefesh", description: "Graphic Designer ב-Nefesh B'Nefesh ירושלים.", location: "ירושלים", region: "ירושלים", field: "עיצוב", externalUrl: `${D}/job/36850712/8c2ac02e/` },
   { title: "Senior UX/UI Designer - Qualitest", company: "Qualitest", description: "Senior UX/UI Designer ב-Qualitest תל אביב.", location: "תל אביב", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37091974/9f1d8cbf/` },
   { title: "מעצב/ת אופנה - CASTRO Hoodies", company: "Castro", description: "מעצב אופנה לקסטרו Hoodies.", location: "מספר מקומות", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37016392/18af49d1/` },
+
+  // ─── Round 7: אבטחת מידע וסייבר (12) ────────────────────────────
+  { title: "Cyber Security Tech Support - ESET", company: "ESET Comscope", description: "תמיכה טכנית בסייבר ב-ESET חולון.", location: "חולון", region: "מרכז", field: "סייבר", externalUrl: `${D}/job/36926617/886aaaaa/` },
+  { title: "Cloud Cyber Security Architect - Kyndryl", company: "Kyndryl", description: "ארכיטקט סייבר בענן ב-Kyndryl תל אביב.", location: "תל אביב", region: "מרכז", field: "סייבר", externalUrl: `${D}/job/36983066/5ca350e8/` },
+  { title: "מתודולוג/ית סייבר - קבוצת יעל", company: "קבוצת יעל", description: "מתודולוג סייבר בקבוצת יעל ת\"א.", location: "תל אביב", region: "מרכז", field: "סייבר", externalUrl: `${D}/job/36829394/1db399ab/` },
+  { title: "מומחה הגנת סייבר - קבוצת יעל", company: "קבוצת יעל", description: "מומחה הגנת סייבר ב-Yael Group.", location: "תל אביב", region: "מרכז", field: "סייבר", externalUrl: `${D}/job/36829565/c2b3b342/` },
+  { title: "חוקרי סייבר - Prologic", company: "Prologic 1", description: "חוקרי סייבר ב-Prologic.", location: "מספר מקומות", region: "מרכז", field: "סייבר", externalUrl: `${D}/job/37036665/0aa6c0ad/` },
+  { title: "Cyber Project Manager - HMS", company: "HMS (Halperin)", description: "מנהל פרויקטי סייבר ב-HMS ירושלים.", location: "ירושלים", region: "ירושלים", field: "סייבר", externalUrl: `${D}/job/36947973/54dcacd9/` },
+  { title: "Cyber Defense Team Member - יעל", company: "קבוצת יעל", description: "חבר צוות הגנת סייבר ברמת גן.", location: "רמת גן", region: "מרכז", field: "סייבר", externalUrl: `${D}/job/36829451/adbc556e/` },
+  { title: "Cyber Audit Analyst - Kall Insurance", company: "Kall Insurance Group", description: "אנליסט ביקורת סייבר בכלל ביטוח.", location: "מספר מקומות", region: "מרכז", field: "סייבר", externalUrl: `${D}/job/37053955/af4facfd/` },
+  { title: "מומחה הגנת סייבר - Matrix חולון", company: "Matrix", description: "מומחה הגנת סייבר ב-Matrix חולון.", location: "חולון", region: "מרכז", field: "סייבר", externalUrl: `${D}/job/37083101/c3900fde/` },
+  { title: "מנחה/ת סייבר - Matrix Government", company: "Matrix Government", description: "מנחה סייבר ב-Matrix ממשלה חיפה.", location: "חיפה", region: "חיפה", field: "סייבר", externalUrl: `${D}/job/36861694/d8b0108a/` },
+  { title: "מיישם/ת סייבר - Matrix North", company: "Matrix North", description: "מיישם סייבר ב-Matrix North קריית ביאליק.", location: "קריית ביאליק", region: "חיפה", field: "סייבר", externalUrl: `${D}/job/37002085/787155ab/` },
+  { title: "ארכיטקט סייבר - Maccabi Dent", company: "Maccabi Dent", description: "ארכיטקט סייבר ב-Maccabi Dent ת\"א.", location: "תל אביב", region: "מרכז", field: "סייבר", externalUrl: `${D}/job/37081201/fd05ef2c/` },
+
+  // ─── Round 7: חשבונאות נוסף - מנהלי חשבונות ראשיים (12) ─────────
+  { title: "חשב/ת שכר ומנהל/ת חשבונות - עומרי חן", company: "עומרי חן רואי חשבון", description: "חשב שכר ומנהל חשבונות במשרד רו\"ח.", location: "מספר מקומות", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/36909422/4FBEBAC3/` },
+  { title: "מנהל/ת חשבונות - מדנס", company: "מדנס סוכנות לביטוח", description: "מנהל חשבונות בסוכנות מדנס.", location: "ישראל", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/37096610/1BAF8162-r7/` },
+  { title: "מנהל/ת חשבונות סוג 2 - נעורים", company: "נעורים פרמצבטיות", description: "מנהל חשבונות סוג 2 ומעלה.", location: "ישראל", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/37075140/B7E81DFB-r7/` },
+  { title: "פקיד/ת הנהלת חשבונות - קרביץ", company: "קרביץ", description: "פקיד הנה\"ח ברשת קרביץ.", location: "מודיעין", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/37039496/66037324-r7/` },
+  { title: "מנהל/ת חשבונות ראשי עצמאי עד מאזן", company: "חברת ייזום ובנייה", description: "ראשי עד מאזן עצמאי לחברת ייזום.", location: "ישראל", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/36879516/c5f7eb5f/` },
+  { title: "מנהל/ת חשבונות ראשית - PwC", company: "קסלמן וקסלמן (PwC)", description: "מנהל חשבונות ראשי ב-PwC יקנעם.", location: "יקנעם עילית", region: "צפון", field: "חשבונאות", externalUrl: `${D}/job/36916262/a7ae7d7c/` },
+  { title: "מנהל/ת חשבונות ראשי - מאגנוס הנדסה", company: "מאגנוס הנדסה ואחזקה", description: "ראשי במאגנוס הנדסה יבנה.", location: "יבנה", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/36863195/2bcac9a7/` },
+  { title: "מנהל/ת חשבונות ראשי בחברת בנייה", company: "חברת בנייה ויזמות", description: "הובלת מחלקת הנה\"ח בחברת בנייה.", location: "חולון", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/36978069/54ba5dbc-r7/` },
+  { title: "מנהל.ת חשבונות ראשית - מיטב משא", company: "מיטב משאבי אנוש", description: "מנהל חשבונות ראשית בצפת.", location: "צפת", region: "צפון", field: "חשבונאות", externalUrl: `${D}/job/36885805/ca9747e6/` },
+  { title: "מנהל/ת חשבונות ראשית - אורן מזרח", company: "אורן מזרח (הפניקס)", description: "מנהל חשבונות ראשית בחולון.", location: "חולון", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/36875260/cf556ecd/` },
+  { title: "מנהל/ת חשבונות ראשי - Marriott", company: "Marriott International", description: "מנהל חשבונות ראשי במלון מריוט ת\"א.", location: "תל אביב", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/36818564/66c6377b/` },
+  { title: "חשב/ת שכר ומנהל/ת חשבונות ראשי - TLV", company: "TLV מדיקל", description: "חשב שכר ומנהל חשבונות ראשי ב-TLV Medical.", location: "תל אביב", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/37029711/54437722/` },
+
+  // ─── Round 7: בכירים נוסף - מנהלי מחלקות (12) ──────────────────
+  { title: "מנהל/ת מחלקה - Jumbo תלפיות", company: "Jumbo יוון", description: "מנהל מחלקה ב-Jumbo תלפיות ירושלים.", location: "ירושלים", region: "ירושלים", field: "בכירים", externalUrl: `${D}/job/37006721/06e83fa9/` },
+  { title: "מנהל/ת מחלקת ניהול עצמי - עמותת לביא", company: "עמותת לביא", description: "מנהל מחלקת ניהול עצמי בעמותת לביא.", location: "ירושלים", region: "ירושלים", field: "בכירים", externalUrl: `${D}/job/37035126/069349d2/` },
+  { title: "מנהל/ת מחלקה - Jumbo ראשון לציון", company: "Jumbo יוון", description: "מנהל מחלקה ב-Jumbo ראשון לציון.", location: "ראשון לציון", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/36840528/4b2593db/` },
+  { title: "מנהל/ת מחלקה - תל-בר תעשיות", company: "תל-בר תעשיות", description: "מנהל מחלקה בתל-בר עפולה.", location: "עפולה", region: "צפון", field: "בכירים", externalUrl: `${D}/job/37110594/1b5fc43d/` },
+  { title: "מנהל/ת מחלקת טכנולוגיות למידה - John Bryce", company: "John Bryce", description: "מנהל מחלקת טכנולוגיות למידה ב-John Bryce.", location: "מספר מקומות", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/37016981/11d62de1/` },
+  { title: "מנהל/ת מחלקת בקרת מבנה", company: "חסוי", description: "מנהל מחלקת בקרת מבנה בראש העין.", location: "ראש העין", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/36808779/80fe55b9/` },
+  { title: "מנהל/ת מחלקה - Jumbo ראשון לציון 2", company: "Jumbo יוון", description: "מנהל מחלקה נוסף ב-Jumbo ראשון.", location: "ראשון לציון", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/37092544/4ff716d5/` },
+  { title: "מנהל מחלקת המשפטים - אקים ישראל", company: "אקים ישראל", description: "מנהל מחלקת משפטים באקים.", location: "תל אביב", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/36895248/34334dd7/` },
+  { title: "מנהל מחלקת הרדמה - אסותא", company: "אסותא מרכזים רפואיים", description: "מנהל מחלקת הרדמה באסותא באר שבע.", location: "באר שבע", region: "דרום", field: "בכירים", externalUrl: `${D}/job/36906363/cb9be806/` },
+  { title: "מנהל/ת מחלקת אינטגרציה - שרית", company: "שרית גיוס", description: "מנהל מחלקת אינטגרציה ביבנה.", location: "יבנה", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/36963933/e64926d8/` },
+  { title: "מנהל/ת מחלקת אחזקה - בית שמש", company: "חסוי", description: "מנהל מחלקת אחזקה בבית שמש.", location: "בית שמש", region: "ירושלים", field: "בכירים", externalUrl: `${D}/job/37087034/f1230b14/` },
+  { title: "מנהל מחלקת הנדסה - כפר סבא", company: "החברה לפיתוח כפר סבא", description: "מנהל אגף הנדסה בכפ\"ס.", location: "כפר סבא", region: "שרון", field: "בכירים", externalUrl: `${D}/job/36814308/033e315c/` },
+
+  // ─── Round 7: דאטה → תוכנה (12) ────────────────────────────────
+  { title: "Data Analyst - קבוצת יעל", company: "קבוצת יעל", description: "Data Analyst בירושלים.", location: "ירושלים", region: "ירושלים", field: "דאטה", externalUrl: `${D}/job/36829242/29ac3534/` },
+  { title: "Data Analyst למשרד ממשלתי - Prologic", company: "Prologic 1", description: "Data Analyst בירושלים.", location: "ירושלים", region: "ירושלים", field: "דאטה", externalUrl: `${D}/job/37045595/fe7bbbc6/` },
+  { title: "Data Analyst למשרד ממשלתי 2", company: "Prologic", description: "Data Analyst נוסף במשרד ממשלתי בירושלים.", location: "ירושלים", region: "ירושלים", field: "דאטה", externalUrl: `${D}/job/36972445/bdd14921/` },
+  { title: "Data Analyst - עזריאלי מכללה", company: "עזריאלי מכללה אקדמית להנדסה", description: "Data Analyst במכללת עזריאלי ירושלים.", location: "ירושלים", region: "ירושלים", field: "דאטה", externalUrl: `${D}/job/36991312/16c7ad72/` },
+  { title: "Data Analyst - Matrix DnA", company: "Matrix DnA", description: "Data Analyst ב-Matrix DnA כפר סבא.", location: "כפר סבא", region: "שרון", field: "דאטה", externalUrl: `${D}/job/36911664/db4672fd/` },
+  { title: "Data Analyst להראל ביטוח", company: "הראל ביטוח ופיננסים", description: "Data Analyst בהראל רמת גן.", location: "רמת גן", region: "מרכז", field: "דאטה", externalUrl: `${D}/job/36975732/b75f5bbc/` },
+  { title: "Data Analyst - Matrix DnA לוד", company: "Matrix DnA", description: "Data Analyst לארגון פיננסי בלוד.", location: "לוד", region: "מרכז", field: "דאטה", externalUrl: `${D}/job/36911797/79e9c8e6/` },
+  { title: "Data / Predictive Analyst", company: "חסוי", description: "Data ו-Predictive Analyst בירושלים.", location: "ירושלים", region: "ירושלים", field: "דאטה", externalUrl: `${D}/job/36996993/9bb0a566/` },
+  { title: "Data Analyst - עוז תוכנה", company: "עוז תוכנה", description: "Data Analyst בעוז תוכנה.", location: "מספר מקומות", region: "מרכז", field: "דאטה", externalUrl: `${D}/job/37018501/12c17503/` },
+  { title: "Data Analyst - Aqurate", company: "Aqurate", description: "Data Analyst ב-Aqurate גלילות.", location: "גלילות", region: "מרכז", field: "דאטה", externalUrl: `${D}/job/36910334/7f57a0e5/` },
+  { title: "Data Scientist - Prologic", company: "Prologic", description: "Data Scientist במשרדי ממשלה ירושלים.", location: "ירושלים", region: "ירושלים", field: "דאטה", externalUrl: `${D}/job/36972464/aa28785b/` },
+  { title: "Data Scientist - רזאל מערכות", company: "רזאל מערכות", description: "Data Scientist ברזאל מערכות ירושלים.", location: "ירושלים", region: "ירושלים", field: "דאטה", externalUrl: `${D}/job/36833346/cccf56ed/` },
+
+  // ─── Round 7: חינוך נוסף - גני ילדים (4) ───────────────────────
+  { title: "גננת לגני ישראל חב\"ד", company: "עמותת גן ישראל", description: "גננת לגני חב\"ד ברמת גן.", location: "רמת גן", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37004935/0887eca9/` },
+  { title: "מדריכים למרכז חירום בגן יבנה", company: "קבוצת רמות", description: "מדריכים עם לב למרכז חירום.", location: "גן יבנה", region: "דרום", field: "חינוך והדרכה", externalUrl: `${D}/job/37002636/b7e7c717/` },
+  { title: "מנהלת אדמיניסטרטיבית לגן ילדים", company: "ריינבואו", description: "מנהלת אדמיניסטרטיבית לגן ילדים ריינבואו בת\"א.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37089333/50c2bea6/` },
+  { title: "מאבטח/ת לגן לאומי בסופי שבוע", company: "עמישב", description: "מאבטח לגן לאומי ברוש העין בסופ\"ש.", location: "ראש העין", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37001154/83c42014-edu/` },
 ];
 
 export async function POST() {
