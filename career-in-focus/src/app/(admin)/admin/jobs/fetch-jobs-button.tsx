@@ -23,7 +23,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Loader2, CheckCircle2, AlertCircle, Sprout } from "lucide-react";
+import { Download, Loader2, CheckCircle2, AlertCircle, Sprout, Flame } from "lucide-react";
 
 type Bucket = "all" | "social" | "tech" | "management" | "professional";
 
@@ -211,6 +211,67 @@ export function SeedSocialJobsButton() {
           <CheckCircle2 size={14} className="shrink-0 mt-0.5" />
           <span>
             נוספו <strong>{result.inserted}</strong> משרות, דולגו <strong>{result.skipped}</strong> כפילויות.
+          </span>
+        </div>
+      )}
+      {result?.error && (
+        <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-600 max-w-md">
+          <AlertCircle size={14} className="shrink-0 mt-0.5" />
+          <span>{result.error}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Imports Coral's hand-picked URLs as FEATURED jobs (isHot=true).
+ * Calls /api/admin/seed-featured-jobs which holds the URL set she
+ * pasted in chat. Idempotent — already-fetched URLs get PROMOTED to
+ * isHot rather than skipped. Featured jobs sort to the top of /jobs
+ * automatically via the existing orderBy chain.
+ */
+export function SeedFeaturedJobsButton() {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [result, setResult] = useState<{ inserted?: number; promoted?: number; error?: string } | null>(null);
+
+  function run() {
+    setResult(null);
+    startTransition(async () => {
+      try {
+        const r = await fetch("/api/admin/seed-featured-jobs", { method: "POST" });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          setResult({ error: data.error ?? `שגיאה ${r.status}` });
+          return;
+        }
+        setResult({ inserted: data.inserted, promoted: data.promoted });
+        router.refresh();
+      } catch (e) {
+        setResult({ error: String(e instanceof Error ? e.message : e) });
+      }
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-2 items-end">
+      <button
+        type="button"
+        onClick={run}
+        disabled={pending}
+        title="מייבא את משרות ה-Civi שקורל בחרה ידנית, מסמן אותן כ'חמות' שיופיעו ראשונות בקטגוריה."
+        className="inline-flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm px-4 py-2 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {pending ? <Loader2 size={14} className="animate-spin" /> : <Flame size={14} />}
+        {pending ? "מייבא..." : "ייבא מועדפים של קורל"}
+      </button>
+      {result?.inserted !== undefined && (
+        <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 text-xs text-emerald-700 max-w-md">
+          <CheckCircle2 size={14} className="shrink-0 mt-0.5" />
+          <span>
+            נוספו <strong>{result.inserted}</strong> מועדפות,
+            {" "}<strong>{result.promoted}</strong> כבר היו במערכת וסומנו עכשיו כחמות.
           </span>
         </div>
       )}
