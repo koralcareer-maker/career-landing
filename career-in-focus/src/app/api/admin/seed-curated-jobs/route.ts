@@ -378,6 +378,62 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "בודק QA ידני - Proceed", company: "Proceed", description: "QA ידני ב-Proceed תל אביב.", location: "תל אביב", region: "מרכז", field: "QA", externalUrl: `${D}/job/37072708/84f2b443/` },
   { title: "בודק QA ידני למובייל - דור אלון", company: "דור אלון", description: "QA ידני למובייל בדור אלון.", location: "מספר מקומות", region: "מרכז", field: "QA", externalUrl: `${D}/job/37057907/11f3028b/` },
   { title: "QA BI Tester - Matrix DnA", company: "Matrix DnA", description: "QA BI Tester ב-Matrix DnA ירושלים.", location: "ירושלים", region: "ירושלים", field: "QA", externalUrl: `${D}/job/36911379/62461b89/` },
+
+  // ─── Round 6: הייטק / Software Engineers (12) ───────────────────
+  { title: "Software Engineer - מלם", company: "Malam מערכות", description: "Software Engineer בחברת מלם מערכות בתל אביב.", location: "תל אביב", region: "מרכז", field: "הייטק", externalUrl: `${D}/job/36935718/435fd7a5/` },
+  { title: "Software Development Engineer - Matrix בנקאות", company: "Matrix Banking", description: "Software Development Engineer ב-Matrix Banking בתל אביב.", location: "תל אביב", region: "מרכז", field: "הייטק", externalUrl: `${D}/job/36905432/56888d24/` },
+  { title: "Embedded Software Engineer - Matrix R&D", company: "Matrix R&D Services", description: "Embedded Software Engineer ברעננה.", location: "רעננה", region: "שרון", field: "הייטק", externalUrl: `${D}/job/36910752/4bd08204/` },
+  { title: "ATE Software Engineer (Python) - CodeValue", company: "CodeValue", description: "ATE Software Engineer ב-Python.", location: "מספר מקומות", region: "מרכז", field: "הייטק", externalUrl: `${D}/job/36831750/cc77d060/` },
+  { title: "מפתח/ת תוכנה - קבוצת יעל ירושלים", company: "קבוצת יעל", description: "מפתח תוכנה בקבוצת יעל ירושלים.", location: "ירושלים", region: "ירושלים", field: "הייטק", externalUrl: `${D}/job/36829527/b8d9e67c/` },
+  { title: "מפתח/ת תוכנה - קבוצת יעל 2", company: "קבוצת יעל", description: "מפתח תוכנה נוסף בקבוצת יעל ירושלים.", location: "ירושלים", region: "ירושלים", field: "הייטק", externalUrl: `${D}/job/36829280/59aa15bc/` },
+  { title: "מפתח/ת תוכנה - Matrix ממשלה", company: "Matrix Government", description: "מפתח תוכנה ב-Matrix Government בירושלים.", location: "ירושלים", region: "ירושלים", field: "הייטק", externalUrl: `${D}/job/36924090/ec411421/` },
+  { title: "מפתח/ת תוכנה - Matrix ממשלה 2", company: "Matrix Government", description: "מפתח תוכנה נוסף ב-Matrix Government ירושלים.", location: "ירושלים", region: "ירושלים", field: "הייטק", externalUrl: `${D}/job/36842219/f8127958/` },
+  { title: "מפתחים בחברות ביטחוניות - Infinity Labs", company: "Infinity Labs", description: "מפתחים לחברות ביטחוניות בחיפה.", location: "חיפה", region: "חיפה", field: "הייטק", externalUrl: `${D}/job/36824549/7ce2faad/` },
+  { title: "מפתח/ת תוכנה - Comm-IT קריית ביאליק", company: "Comm-IT", description: "מפתח תוכנה ב-Comm-IT קריית ביאליק.", location: "קריית ביאליק", region: "חיפה", field: "הייטק", externalUrl: `${D}/job/37027336/0c4231e1/` },
+  { title: "מפתח/ת JAVA - TALPIOT", company: "TALPIOT", description: "מפתח JAVA ב-TALPIOT.", location: "מספר מקומות", region: "מרכז", field: "הייטק", externalUrl: `${D}/job/37059047/9bedc0c8/` },
+  { title: "Automation Engineer (Python) - Matrix R&D", company: "Matrix R&D Services", description: "Automation Engineer ב-Python בתל אביב.", location: "תל אביב", region: "מרכז", field: "הייטק", externalUrl: `${D}/job/36913393/f54bedd8/` },
+
+  // ─── Round 6: ניהול פרויקטים נוסף (12) ─────────────────────────
+  { title: "Technical Project Manager - הראל", company: "הראל ביטוח ופיננסים", description: "Technical Project Manager בהראל רמת גן.", location: "רמת גן", region: "מרכז", field: "ניהול פרויקטים", externalUrl: `${D}/job/37073506/3dddfaec/` },
+  { title: "מנהל/ת פרויקטים טכנולוגיים - Matrix", company: "Matrix Government", description: "PM טכנולוגי ב-Matrix Government ירושלים.", location: "ירושלים", region: "ירושלים", field: "ניהול פרויקטים", externalUrl: `${D}/job/37033701/9cac182f/` },
+  { title: "Technical Project Manager - הראל 2", company: "הראל ביטוח ופיננסים", description: "Technical PM נוסף בהראל רמת גן.", location: "רמת גן", region: "מרכז", field: "ניהול פרויקטים", externalUrl: `${D}/job/36975846/77ebb4a7/` },
+  { title: "Marketing Project Manager - אדמטק", company: "אדמטק", description: "Marketing PM באדמטק חיפה.", location: "חיפה", region: "חיפה", field: "ניהול פרויקטים", externalUrl: `${D}/job/36919264/0b89ade7/` },
+  { title: "IT Project Portfolio Manager - Matrix בנקאות", company: "Matrix Banking", description: "Portfolio Manager ב-Matrix Banking פ\"ת.", location: "פתח תקווה", region: "מרכז", field: "ניהול פרויקטים", externalUrl: `${D}/job/37104400/d78d5def/` },
+  { title: "מנהל/ת פרויקט - CALANIT", company: "CALANIT by one", description: "מנהל פרויקט ב-CALANIT תל אביב.", location: "תל אביב", region: "מרכז", field: "ניהול פרויקטים", externalUrl: `${D}/job/36805074/680dfb78/` },
+  { title: "מנהל/ת פרויקט ביטחוני - כפר יונה", company: "חסוי", description: "מנהל פרויקט ביטחוני בכפר יונה.", location: "כפר יונה", region: "שרון", field: "ניהול פרויקטים", externalUrl: `${D}/job/36949683/770c0ffe/` },
+  { title: "מנהל/ת תכנון - אלקטרה", company: "אלקטרה", description: "מנהל תכנון באלקטרה נתניה.", location: "נתניה", region: "שרון", field: "ניהול פרויקטים", externalUrl: `${D}/job/36949417/d73c4162/` },
+  { title: "מנהל/ת פרוייקטים - רכבת ישראל", company: "רכבת ישראל", description: "מנהל פרויקטים ברכבת ישראל חיפה.", location: "חיפה", region: "חיפה", field: "ניהול פרויקטים", externalUrl: `${D}/job/37073069/419e7d81/` },
+  { title: "מוביל/ת פרוייקטים אסטרטגיים - PwC", company: "קסלמן וקסלמן (PwC Israel)", description: "מוביל פרויקטים אסטרטגיים ב-PwC.", location: "תל אביב", region: "מרכז", field: "ניהול פרויקטים", externalUrl: `${D}/job/37100657/b19587b1/` },
+  { title: "מנהל/ת פרויקט בקרה תעשייתית - MATRIX", company: "MATRIX", description: "PM בקרה תעשייתית ב-MATRIX תל אביב.", location: "תל אביב", region: "מרכז", field: "ניהול פרויקטים", externalUrl: `${D}/job/36944895/acfd7cdd/` },
+  { title: "מנהל/ת פרויקטים - bulthaup", company: "bulthaup", description: "מנהל פרויקטים ב-bulthaup מודיעין.", location: "מודיעין", region: "מרכז", field: "ניהול פרויקטים", externalUrl: `${D}/job/37079928/d52a7d7c/` },
+
+  // ─── Round 6: מכירות ושיווק נוסף - Account Managers (12) ───────
+  { title: "Account Manager בתחילת הדרך - Matrix DnA", company: "Matrix DnA", description: "Account Manager ג'וניור בכפר סבא.", location: "כפר סבא", region: "שרון", field: "Account Manager", externalUrl: `${D}/job/36912082/46039d57/` },
+  { title: "Account Manager - CTV מדיה", company: "CTV מדיה ישראל", description: "Account Manager ב-CTV מדיה חולון.", location: "חולון", region: "מרכז", field: "Account Manager", externalUrl: `${D}/job/36848489/30f6107d/` },
+  { title: "Account Manager - בני ברק", company: "חסוי", description: "Account Manager בבני ברק.", location: "בני ברק", region: "מרכז", field: "Account Manager", externalUrl: `${D}/job/36902867/3215cb02/` },
+  { title: "Account Manager לתחום פארמה", company: "חסוי", description: "Account Manager בתחום הפארמה בבני ברק.", location: "בני ברק", region: "מרכז", field: "Account Manager", externalUrl: `${D}/job/36862701/72840363/` },
+  { title: "Account Manager מכירות שירות", company: "בינת תקשורת מחשבים", description: "Account Manager תקשורת מחשבים בתל אביב.", location: "תל אביב", region: "מרכז", field: "Account Manager", externalUrl: `${D}/job/36869009/2e26f2dc/` },
+  { title: "Account Manager - Matrix אינטגריטי", company: "Matrix Integrity", description: "Account Manager ב-Matrix Integrity כפר סבא.", location: "כפר סבא", region: "שרון", field: "Account Manager", externalUrl: `${D}/job/37010920/6611c878/` },
+  { title: "Account Manager - בינת רמת החייל", company: "בינת תקשורת מחשבים", description: "Account Manager ברמת החייל.", location: "רמת החייל", region: "מרכז", field: "Account Manager", externalUrl: `${D}/job/36826905/7de338ba/` },
+  { title: "מנהל/ת תיקי לקוחות", company: "חסוי", description: "Account Manager - תיקי לקוחות.", location: "מספר מקומות", region: "מרכז", field: "Account Manager", externalUrl: `${D}/job/37089998/55bc7367/` },
+  { title: "מנהל/ת תיקי לקוחות שוק ההון", company: "שינובי אסטרטגיות", description: "תיקי לקוחות בתחום שוק ההון ברמת גן.", location: "רמת גן", region: "מרכז", field: "Account Manager", externalUrl: `${D}/job/36993079/b3629c2e/` },
+  { title: "מנהל/ת תיקי לקוחות זכויות רפואיות", company: "חסוי", description: "תיקי לקוחות זכויות רפואיות בחיפה.", location: "חיפה", region: "חיפה", field: "Account Manager", externalUrl: `${D}/job/36936611/0a5ed076/` },
+  { title: "רפרנט/ית ניהול תיק לקוחות עסקי", company: "שרית גיוס", description: "תיק לקוחות עסקי ביקום.", location: "יקום", region: "שרון", field: "Account Manager", externalUrl: `${D}/job/36925040/4d5a6b8f/` },
+  { title: "מנהל/ת תיקי לקוחות - הוברמן ובניו", company: "הוברמן ובניו", description: "תיקי לקוחות בפ\"ת.", location: "פתח תקווה", region: "מרכז", field: "Account Manager", externalUrl: `${D}/job/37048312/2bfb8c8f/` },
+
+  // ─── Round 6: עיצוב נוסף (12) ──────────────────────────────────
+  { title: "מעצב/ת מוצר תעשייתי - יבנה", company: "חסוי", description: "מעצב מוצר תעשייתי ביבנה.", location: "יבנה", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/36943185/d6e2be06/` },
+  { title: "מעצב/ת תעשייתי/ת R&D - מתקני פסגות", company: "Matkney Psgot", description: "מעצב תעשייתי למחלקת R&D.", location: "מספר מקומות", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37074361/7bd421f5/` },
+  { title: "גרפיקאי/ת אופסט - Par Print", company: "Par Print", description: "גרפיקאי אופסט בנס ציונה.", location: "נס ציונה", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/36966004/5a511bb0/` },
+  { title: "מעצב/ת מנוסה - אדלר חומסקי", company: "Adler Homskey", description: "מעצב מנוסה לקבוצת אדלר חומסקי בת\"א.", location: "תל אביב", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37041567/b677c4be/` },
+  { title: "Art Director - אדלר חומסקי", company: "Adler Homskey", description: "Art Director בקבוצת אדלר חומסקי בת\"א.", location: "תל אביב", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37041586/0932ca7f/` },
+  { title: "מעצב/ת גרפי/ת וקריאייטיב", company: "אורן מזרח (הפניקס)", description: "מעצב גרפי וקריאייטיב בחולון.", location: "חולון", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/36926902/0d9c77b3/` },
+  { title: "3D Designer תערוכות - Netto Design", company: "Netto Design House", description: "מעצב 3D לתערוכות ומרכזי מבקרים בנס ציונה.", location: "נס ציונה", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37004137/0ba89d49/` },
+  { title: "מעצב/ת לקפיצה ל-Art Director", company: "Sunny Communications", description: "מעצב עם פוטנציאל ל-Art Director בפ\"ת.", location: "פתח תקווה", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/36802870/0d466375/` },
+  { title: "מעצב/ת גרפי ועורך וידאו - HIT", company: "HIT - מכון הולון", description: "מעצב גרפי ועורך וידאו במכון הולון.", location: "חולון", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37069744/77a5c89f/` },
+  { title: "Graphic Designer - Nefesh B'Nefesh", company: "Nefesh B'Nefesh", description: "Graphic Designer ב-Nefesh B'Nefesh ירושלים.", location: "ירושלים", region: "ירושלים", field: "עיצוב", externalUrl: `${D}/job/36850712/8c2ac02e/` },
+  { title: "Senior UX/UI Designer - Qualitest", company: "Qualitest", description: "Senior UX/UI Designer ב-Qualitest תל אביב.", location: "תל אביב", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37091974/9f1d8cbf/` },
+  { title: "מעצב/ת אופנה - CASTRO Hoodies", company: "Castro", description: "מעצב אופנה לקסטרו Hoodies.", location: "מספר מקומות", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37016392/18af49d1/` },
 ];
 
 export async function POST() {
