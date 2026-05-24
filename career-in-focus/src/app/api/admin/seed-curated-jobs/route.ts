@@ -694,6 +694,77 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "סייע/ת מרפאה - אלאור", company: "אלאור", description: "סייעת מרפאה בפרדס חנה-כרכור.", location: "פרדס חנה", region: "חיפה", field: "שירות לקוחות", externalUrl: `${D}/job/36923102/36472537/` },
   { title: "סייע/ת לגן פרטי - מרתה", company: "גן מרתה", description: "סייעת לגן ילדים פרטי.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37010483/2a3f219d/` },
   { title: "סייע/ת לרופא שיניים - מאוחדת חולון", company: "מאוחדת", description: "סייעת לרופא שיניים בחולון.", location: "חולון", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/37071530/21276231/` },
+
+  // ─── Round 11 (72) ──────────────────────────────────────────────
+  // Frontend Developers
+  { title: "Frontend SAP/UI5 + Vue - Matrix", company: "Matrix", description: "Frontend SAP/UI5 + Vue.", location: "מודיעין", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36914951/eeadd5ae/` },
+  { title: "Frontend Developer - קבוצת יעל", company: "קבוצת יעל", description: "Frontend Dev בכפר סבא.", location: "כפר סבא", region: "שרון", field: "פיתוח", externalUrl: `${D}/job/36829204/13daf531/` },
+  { title: "Frontend Developer מנוסה - TALPIOT", company: "TALPIOT", description: "Frontend מנוסה בבית שמש.", location: "בית שמש", region: "ירושלים", field: "פיתוח", externalUrl: `${D}/job/36909878/d856fe7b/` },
+  { title: "Frontend Developer - Mertens Malam", company: "Mertens Malam", description: "Frontend בחולון.", location: "חולון", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37114413/69d10a02/` },
+  { title: "Senior Frontend / Team Leader", company: "Avivit Davush", description: "Frontend בכיר/ראש צוות.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36836386/e029d64a/` },
+  { title: "Senior Developer - Mertens Malam", company: "Mertens Malam", description: "מפתח בכיר בת\"א.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37114375/93cbb41b/` },
+  { title: "Full Stack - Software AG SPL", company: "Software AG", description: "Full Stack ברמת גן.", location: "רמת גן", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36904786/463e1270/` },
+  { title: "Full Stack - Gtech", company: "Gtech", description: "Full Stack בחולון.", location: "חולון", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36885634/c5f763ab/` },
+  { title: "Full Stack Telecom - Elad", company: "Elad Software", description: "Full Stack תקשורת.", location: "ראשון לציון", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37068927/628cd28c/` },
+  { title: "Full Stack CRM - Proceed", company: "Proceed", description: "Full Stack CRM בחולון.", location: "חולון", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37082018/46359779/` },
+  { title: "Senior Full Stack - HighTech", company: "HighTech Company", description: "Senior Full Stack בת\"א.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37103450/93c8f878/` },
+  { title: "Full Stack Angular + .NET", company: "Yonilink", description: "Full Stack Angular .NET.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36848223/31e5771e/` },
+
+  // Customer Success Managers → מכירות ושיווק
+  { title: "Customer Success Manager - Proceed", company: "Proceed", description: "CSM ב-Proceed כ\"ס.", location: "כפר סבא", region: "שרון", field: "Customer Success", externalUrl: `${D}/job/36679085/80d99f08/` },
+  { title: "CSM - Matrix R&D", company: "Matrix R&D", description: "CSM ב-Matrix R&D.", location: "כפר סבא", region: "שרון", field: "Customer Success", externalUrl: `${D}/job/36913146/822ba47c/` },
+  { title: "Technical CSM - Meshlucha", company: "Meshlucha", description: "Technical CSM ברמת גן.", location: "רמת גן", region: "מרכז", field: "Customer Success", externalUrl: `${D}/job/36994143/efa75f40/` },
+  { title: "PM Customer Success - פמה", company: "Pama Finance", description: "PM Customer Success.", location: "תל אביב", region: "מרכז", field: "Customer Success", externalUrl: `${D}/job/37107345/9ffca5a9/` },
+  { title: "Service Center Manager - Interspace", company: "Interspace", description: "מנהל מרכז שירות.", location: "נתניה", region: "שרון", field: "Customer Success", externalUrl: `${D}/job/36960437/d2516158/` },
+  { title: "CS Tech Company - Meckano", company: "Meckano", description: "Customer Success ב-Meckano.", location: "פתח תקווה", region: "מרכז", field: "Customer Success", externalUrl: `${D}/job/36893329/6124776f/` },
+  { title: "Customer Success - IBI Roeto", company: "IBI Investment", description: "CS ב-IBI.", location: "תל אביב", region: "מרכז", field: "Customer Success", externalUrl: `${D}/job/36825195/7ba9da39/` },
+  { title: "Client Success - Omnitelecom", company: "Omnitelecom", description: "Client Success ורמת גן.", location: "רמת גן", region: "מרכז", field: "Customer Success", externalUrl: `${D}/job/36935243/14f0a728/` },
+  { title: "CSM Welfare PM - Hitech Zone", company: "Hitech Zone", description: "CSM פרויקטים ברווחה.", location: "כפר סבא", region: "שרון", field: "Customer Success", externalUrl: `${D}/job/37033055/40db7325/` },
+  { title: "IBI Trade - Customer Success", company: "IBI Investment", description: "IBI Trade CS.", location: "תל אביב", region: "מרכז", field: "Customer Success", externalUrl: `${D}/job/36865969/811b2ed1/` },
+  { title: "Operational Manager - The Fox", company: "The Fox", description: "Operational Manager global.", location: "תל אביב", region: "מרכז", field: "Customer Success", externalUrl: `${D}/job/36920727/6bfe7d82/` },
+  { title: "Customer Service Manager - JOB SPACE", company: "JOB SPACE", description: "Customer Service Manager.", location: "מספר מקומות", region: "מרכז", field: "Customer Success", externalUrl: `${D}/job/36930683/22daf4fd/` },
+
+  // Car mechanics → נהגים, רכב ותחבורה
+  { title: "טכנאי קירור רכב צפון 1", company: "חסוי", description: "טכנאי קירור עם רכב צמוד צפון.", location: "צפון", region: "צפון", field: "רכב", externalUrl: `${D}/job/36897509/792805ca/` },
+  { title: "טכנאי קירור רכב צפון 2", company: "חסוי", description: "טכנאי קירור צפון, רכב צמוד.", location: "צפון", region: "צפון", field: "רכב", externalUrl: `${D}/job/37121424/88dd0a33/` },
+  { title: "טכנאי קירור רכב צפון 3", company: "חסוי", description: "טכנאי קירור צפון, רכב צמוד.", location: "צפון", region: "צפון", field: "רכב", externalUrl: `${D}/job/37121443/6cd1ae53/` },
+  { title: "טכנאי/הנדסאי רכב - הטכניון", company: "הטכניון", description: "טכנאי רכב במוסד הטכניון.", location: "חיפה", region: "חיפה", field: "רכב", externalUrl: `${D}/job/36942805/73585ef2/` },
+  { title: "טכנאי/הנדסאי קירור בכיר + רכב", company: "קנקון מוצרים", description: "הנדסאי קירור בכיר.", location: "מודיעין", region: "מרכז", field: "רכב", externalUrl: `${D}/job/37134477/8d187f78/` },
+  { title: "טכנאי אזעקות ומצלמות - רכב", company: "מוקד אמון סביון", description: "טכנאי אזעקות + רכב.", location: "יהוד", region: "מרכז", field: "רכב", externalUrl: `${D}/job/36969975/900ccf2a/` },
+  { title: "טכנאים על רכבים - 50 שעתי!", company: "אלקטרה סקיוריטי", description: "טכנאים על רכבים למבצעים.", location: "תל אביב", region: "מרכז", field: "רכב", externalUrl: `${D}/job/37031459/b5ab4d15/` },
+  { title: "טכנאי דיאגנוסטיקה לרכב", company: "חולון מוטורס", description: "טכנאי דיאגנוסטיקה.", location: "חולון", region: "מרכז", field: "רכב", externalUrl: `${D}/job/36936630/be063c0a/` },
+  { title: "מסגר/ית לרכב כבד", company: "מאיר", description: "מסגר לרכב כבד באשדוד.", location: "אשדוד", region: "דרום", field: "רכב", externalUrl: `${D}/job/37012535/9ea26c68/` },
+  { title: "מכונאי ניידת שירות - מאיר", company: "מאיר", description: "מכונאי ניידת באשדוד.", location: "אשדוד", region: "דרום", field: "רכב", externalUrl: `${D}/job/37012649/75d4c646/` },
+  { title: "מכונאי אופנועים - מאיר", company: "מאיר", description: "מכונאי אופנועים בראשל\"צ.", location: "ראשון לציון", region: "מרכז", field: "רכב", externalUrl: `${D}/job/36891942/16555a43/` },
+  { title: "מכונאי רכב - כלמוביל כרמיאל", company: "כלמוביל", description: "מכונאי רכב בכרמיאל.", location: "כרמיאל", region: "צפון", field: "רכב", externalUrl: `${D}/job/36964351/4cada614/` },
+
+  // Economists → כספים
+  { title: "כלכלן - דלק מוטורס", company: "דלק מוטורס", description: "כלכלן בחברת מימון רכב.", location: "ניר צבי", region: "מרכז", field: "כלכלה", externalUrl: `${D}/job/37094273/345bc7a9/` },
+  { title: "הנדסאי/כלכלן - קווים", company: "קווים תחבורה", description: "הנדסאי תעשייה/כלכלן.", location: "חולון", region: "מרכז", field: "כלכלה", externalUrl: `${D}/job/36840604/b8dceffe/` },
+  { title: "כלכלן - שלג לבן", company: "שלג לבן", description: "כלכלן בנתניה.", location: "נתניה", region: "שרון", field: "כלכלה", externalUrl: `${D}/job/37134629/535034a9/` },
+  { title: "כלכלן - Matrix כפר סבא", company: "Matrix", description: "כלכלן ב-Matrix.", location: "כפר סבא", region: "שרון", field: "כלכלה", externalUrl: `${D}/job/37018843/85222df7/` },
+  { title: "כלכלן - מכבי שירותי בריאות", company: "מכבי", description: "כלכלן באגף כלכלה ורגולציה.", location: "מספר מקומות", region: "מרכז", field: "כלכלה", externalUrl: `${D}/job/37015651/11b0c0e5/` },
+  { title: "כלכלן - דיפלומט", company: "Diplomat", description: "כלכלן בדיפלומט.", location: "מספר מקומות", region: "מרכז", field: "כלכלה", externalUrl: `${D}/job/37011414/0ee9f88d/` },
+  { title: "כלכלן - DHL Airport City", company: "DHL", description: "כלכלן ב-DHL.", location: "אייר פורט סיטי", region: "מרכז", field: "כלכלה", externalUrl: `${D}/job/37064481/cbf02e8d/` },
+  { title: "רואה חשבון/כלכלן - ברלב", company: "ברלב ושות'", description: "רו\"ח או כלכלן.", location: "מספר מקומות", region: "מרכז", field: "כלכלה", externalUrl: `${D}/job/36867527/f33dfc60/` },
+  { title: "כלכלן - שחף הדר", company: "שחף הדר ושות'", description: "כלכלן בראש העין.", location: "ראש העין", region: "מרכז", field: "כלכלה", externalUrl: `${D}/job/36937504/6835df13/` },
+  { title: "כלכלן - קבוצת פז", company: "Paz Group", description: "כלכלן ביקום.", location: "יקום", region: "שרון", field: "כלכלה", externalUrl: `${D}/job/36903285/a6d813fc/` },
+  { title: "כלכלן - יוניליוור", company: "יוניליוור", description: "כלכלן בחל\"ד.", location: "אייר פורט סיטי", region: "מרכז", field: "כלכלה", externalUrl: `${D}/job/36992889/52a3b821/` },
+  { title: "כלכלן - רפא מעבדות", company: "רפא", description: "כלכלן ברפא ירושלים.", location: "ירושלים", region: "ירושלים", field: "כלכלה", externalUrl: `${D}/job/36900017/411d796a/` },
+
+  // Fashion/Tailors → קמעונאות ורכש
+  { title: "תופר/ת דוגמאות - RENUAR", company: "RENUAR", description: "תופר דוגמאות ברנואר.", location: "מספר מקומות", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/36972274/c1452e8f/` },
+  { title: "תופר/ת שמלות כלה", company: "חסוי", description: "תופר שמלות כלה בחולון.", location: "חולון", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/36906610/3270bfa9/` },
+  { title: "תופר/ת תעשיית רכב", company: "JOBS AI", description: "תופר בתעשיית הרכב.", location: "ישראל", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/37108827/b30106ba/` },
+  { title: "רפד/ית מקצועי/ת", company: "JOBS AI", description: "רפד מקצועי.", location: "ישראל", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/36976321/25ed85d8/` },
+  { title: "מעצב אופנה - קסטרו Hoodies r11", company: "Castro", description: "מעצב אופנה.", location: "מספר מקומות", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/37016392/18af49d1-r11/` },
+  { title: "סטייליסט/ית - Galia Lahav", company: "Galia Lahav International", description: "סטייליסט בגלי לחב ת\"א.", location: "תל אביב", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/36987987/364d99fc/` },
+  { title: "מעצב אופנת גברים", company: "חסוי", description: "מעצב אופנת גברים בחולון.", location: "חולון", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/37057755/e961b4d2/` },
+  { title: "עובד/ת לוגיסטית אופנה", company: "JOBS AI", description: "עובד לוגיסטי באופנה.", location: "ישראל", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/37053271/bf91e866/` },
+  { title: "עובד/ת כללית לאופנת נשים", company: "JOBS AI", description: "עובד כללי באופנת נשים.", location: "ישראל", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/37059769/62042def/` },
+  { title: "תדמיתן/ית - Penina Torna", company: "Penina Torna", description: "תדמיתנית בחולון.", location: "חולון", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/36905717/c9d61249/` },
+  { title: "מעצב/ת אופנה למותג יוקרה", company: "Adel YN", description: "מעצב אופנה מותג יוקרה.", location: "יבנה", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/37006151/48d0b6f4/` },
+  { title: "מנהל סטודיו וקריאטיב אופנה", company: "Lee Cooper", description: "מנהל סטודיו אופנה.", location: "ראשון לציון", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/36874842/df3a0492/` },
 ];
 
 export async function POST() {
