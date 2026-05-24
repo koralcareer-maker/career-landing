@@ -765,6 +765,63 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "תדמיתן/ית - Penina Torna", company: "Penina Torna", description: "תדמיתנית בחולון.", location: "חולון", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/36905717/c9d61249/` },
   { title: "מעצב/ת אופנה למותג יוקרה", company: "Adel YN", description: "מעצב אופנה מותג יוקרה.", location: "יבנה", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/37006151/48d0b6f4/` },
   { title: "מנהל סטודיו וקריאטיב אופנה", company: "Lee Cooper", description: "מנהל סטודיו אופנה.", location: "ראשון לציון", region: "מרכז", field: "אופנה", externalUrl: `${D}/job/36874842/df3a0492/` },
+
+  // ─── Round 12 (48) ──────────────────────────────────────────────
+  // Backend Developers
+  { title: "Data Engineer / BI Backend - Dataway", company: "Dataway", description: "Backend Data Engineer.", location: "באר יעקב", region: "שפלה", field: "פיתוח", externalUrl: `${D}/job/36882708/5af6b062/` },
+  { title: "Senior Python Backend - TALPIOT", company: "TALPIOT (Matrix)", description: "Python Backend בכיר.", location: "פתח תקווה", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36838324/4894f6c8/` },
+  { title: "Senior Python Backend - Matrix R&D", company: "Matrix R&D", description: "Python Backend בכיר ב-Matrix.", location: "פתח תקווה", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36913241/8fc3ef9d/` },
+  { title: "Backend Developer - HMS", company: "HMS", description: "Backend עיבוד מסמכים.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37136434/86eb80b4/` },
+  { title: "Backend Engineer AI - Comm-IT", company: "Comm-IT", description: "Backend AI.", location: "ראשון לציון", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36926731/2fe7d75a/` },
+  { title: "Senior Data Engineer Airflow - Proceed", company: "Proceed", description: "Senior Data Engineer Airflow.", location: "כפר סבא", region: "שרון", field: "פיתוח", externalUrl: `${D}/job/37013143/3e14e79f/` },
+  { title: "Senior Back-End - Unitronics", company: "Unitronics", description: "Back-End ב-Unitronics.", location: "אייר פורט סיטי", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37027431/d7fec236/` },
+  { title: "Senior Backend .NET - Clarity", company: "Clarity Services", description: "Backend .NET ב-Clarity.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37053461/0ad4e1b3/` },
+  { title: "Senior PHP Backend - RYB", company: "RYB Technologies", description: "PHP Backend ירושלים.", location: "ירושלים", region: "ירושלים", field: "פיתוח", externalUrl: `${D}/job/36920442/4fec7036/` },
+  { title: "Back End Developer - RYB", company: "RYB Technologies", description: "Backend נוסף ב-RYB.", location: "ירושלים", region: "ירושלים", field: "פיתוח", externalUrl: `${D}/job/36850332/a2922eda/` },
+  { title: "Senior Backend C# - HighTech", company: "HighTech Company", description: "Backend C# בכיר.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37088668/a314b89a/` },
+  { title: "Senior Backend Node.js - HighTech", company: "HighTech Company", description: "Backend Node.js בכיר.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37088649/3fe1372f/` },
+
+  // Nurses → חברה וקהילה
+  { title: "עזר מציון - מטה", company: "עזר מציון", description: "תפקיד מטה בעזר מציון.", location: "ישראל", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36942900/288e0064/` },
+  { title: "אח/ות + עו\"ס + גרונטולוג + רכב", company: "חסוי", description: "צוות רב-תחומי בקריית גת.", location: "קריית גת", region: "דרום", field: "חברה וקהילה", externalUrl: `${D}/job/36903228/6975b3fd-r12/` },
+  { title: "אח/ות למוסדות חינוך מיוחד", company: "פרח", description: "אחיות למוסדות חינ\"מ.", location: "אלעד, ביתר", region: "ירושלים", field: "חברה וקהילה", externalUrl: `${D}/job/37021769/fc5ae36c/` },
+  { title: "אח/ות גסטרו - אסותא רעננה", company: "אסותא", description: "אחיות גסטרו ברעננה.", location: "רעננה", region: "שרון", field: "חברה וקהילה", externalUrl: `${D}/job/37048825/37f45ca6/` },
+  { title: "אח/ות גסטרו - אסותא ירושלים", company: "אסותא", description: "אחיות גסטרו ירושלים.", location: "ירושלים", region: "ירושלים", field: "חברה וקהילה", externalUrl: `${D}/job/36871973/8658e864/` },
+  { title: "אח/ות מחלקה סיעודית - מעונות הורים", company: "מעונות הורים", description: "אחיות מחלקה סיעודית.", location: "ירושלים", region: "ירושלים", field: "חברה וקהילה", externalUrl: `${D}/job/37017266/01770c92/` },
+  { title: "אח/ות ללא משמרות - FEMI", company: "FEMI", description: "אחיות ללא משמרות.", location: "ישראל", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/37017532/361cee25/` },
+  { title: "עו\"ס + אחיות + גרונטולוגים - לב זהב", company: "עמותת לב זהב", description: "צוות רב-תחומי.", location: "ישראל", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36969177/106bb3c9/` },
+  { title: "אח/ות למרפאת יוספטל", company: "מאוחדת", description: "אחיות במרפאה.", location: "בת ים", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36870339/f73de8c1/` },
+  { title: "אחיות מוסמכות - חברה יציבה", company: "אחוזת ראשונים-רובינשטיין", description: "אחיות מוסמכות.", location: "ראשון לציון", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36836025/b769c2d9/` },
+  { title: "אח/ות - אסותא עד הבית", company: "אסותא", description: "אחיות מוקד אסותא עד הבית.", location: "תל אביב", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/37115268/9fdd9202/` },
+  { title: "אח/ות להוסטל נפגעי נפש", company: "חסוי", description: "אחיות להוסטל בריאות הנפש.", location: "פתח תקווה", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/37038926/ec1f1178/` },
+
+  // Product Managers → ניהול פרויקטים
+  { title: "Product Manager - HR Navigator", company: "HR Navigator", description: "PM ב-HR Navigator.", location: "רמת גן", region: "מרכז", field: "מוצר", externalUrl: `${D}/job/37112779/cfb2756b/` },
+  { title: "Product Manager - JDC", company: "JDC International", description: "PM ב-JDC.", location: "ירושלים", region: "ירושלים", field: "מוצר", externalUrl: `${D}/job/36936915/870f94a5/` },
+  { title: "PM משרד ממשלתי - Matrix", company: "Matrix Government", description: "PM למשרד ממשלתי.", location: "ירושלים", region: "ירושלים", field: "מוצר", externalUrl: `${D}/job/37100562/04602735/` },
+  { title: "SmartCS Product Manager - Zim", company: "Zim", description: "SmartCS PM בצים.", location: "חיפה", region: "חיפה", field: "מוצר", externalUrl: `${D}/job/37096496/cb2e52a2/` },
+  { title: "PM AI First - BridgeJoy", company: "BridgeJoy", description: "PM ל-AI First.", location: "תל אביב", region: "מרכז", field: "מוצר", externalUrl: `${D}/job/36920461/2832ff4c/` },
+  { title: "Senior PM B2C - top-soft", company: "top-soft", description: "Senior PM B2C.", location: "פתח תקווה", region: "מרכז", field: "מוצר", externalUrl: `${D}/job/36891315/3f028faa/` },
+  { title: "Data Product Manager - Matrix DnA כ\"ס", company: "Matrix DnA", description: "Data PM ב-Matrix.", location: "כפר סבא", region: "שרון", field: "מוצר", externalUrl: `${D}/job/36911531/1d2eebc5/` },
+  { title: "Data Product Manager - Matrix DnA ת\"א", company: "Matrix DnA", description: "Data PM נוסף ב-Matrix.", location: "תל אביב", region: "מרכז", field: "מוצר", externalUrl: `${D}/job/36912139/1d23d294/` },
+  { title: "PM Simulator - אגם לידרים", company: "אגם לידרים", description: "PM לסימולטור.", location: "פתח תקווה", region: "מרכז", field: "מוצר", externalUrl: `${D}/job/36993820/e694e3f5/` },
+  { title: "Product Manager - Swish", company: "Swish", description: "PM ב-Swish פ\"ת.", location: "פתח תקווה", region: "מרכז", field: "מוצר", externalUrl: `${D}/job/37029844/8d57b87d/` },
+  { title: "PM Mid Level - Matrix Education", company: "Matrix", description: "Mid PM ב-Matrix.", location: "מספר מקומות", region: "מרכז", field: "מוצר", externalUrl: `${D}/job/37017855/32807cce/` },
+  { title: "SMART PM - כלמוביל", company: "כלמוביל", description: "SMART PM בכלמוביל.", location: "ראש העין", region: "מרכז", field: "מוצר", externalUrl: `${D}/job/37035886/71e8e355/` },
+
+  // Financial Advisors → כספים / ביטוח
+  { title: "יועץ פיננסי - ברק פיננסים", company: "ברק פיננסים", description: "יועץ פיננסי.", location: "בריות יצחק", region: "צפון", field: "חשבונאות", externalUrl: `${D}/job/36864829/4855a8a2/` },
+  { title: "מנהל צוות פנסיה ופיצויים - כלל", company: "כלל ביטוח", description: "ניהול צוות פנסיה.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/37094235/d85dd52b/` },
+  { title: "סוכן ביטוח פנסיוני - JOB SPACE", company: "JOB SPACE", description: "סוכן ביטוח פנסיוני.", location: "פתח תקווה", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/36873474/2ecd70cd-r12/` },
+  { title: "מתכנן פיננסי ופנסיוני - Infinity", company: "Infinity Investment", description: "מתכנן פנסיוני.", location: "מספר מקומות", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/37036285/631bb81c/` },
+  { title: "יועץ השקעות - בנק לאומי", company: "בנק לאומי", description: "יועץ השקעות בלאומי.", location: "מספר מקומות", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/37069516/3be5efb7/` },
+  { title: "יועץ השקעות לבנק מוביל - Fixjob", company: "Fixjob", description: "יועץ השקעות לבנק.", location: "לוד", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/36974307/525af40b/` },
+  { title: "בעל רישיון פנסיה למכירות - מגדל", company: "מגדל", description: "בעל רישיון פנסיה במגדל.", location: "פתח תקווה", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/37090321/d7cc14cb/` },
+  { title: "מנהל תיקים עם רישיון פנסיוני", company: "אגם לידרים", description: "מנהל תיקים פנסיוני.", location: "רמת גן", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/37102804/e5f645a8/` },
+  { title: "בעל רישיון פנסיה - כלל", company: "כלל ביטוח", description: "בעל רישיון פנסיה בכלל.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/36987816/69a52407/` },
+  { title: "בנקאי עסקי - מזרחי טפחות", company: "בנק מזרחי טפחות", description: "בנקאי עסקי במזרחי.", location: "רמת גן", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/36854436/d9e8285f/` },
+  { title: "יועצי משכנתאות", company: "חסוי", description: "יועצי משכנתאות במרכז.", location: "מספר מקומות", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/37093741/b54f5d79/` },
+  { title: "כלכלן הלוואות עסקיות - חסוי", company: "חסוי", description: "כלכלן הלוואות עסקיות.", location: "רחובות", region: "שפלה", field: "חשבונאות", externalUrl: `${D}/job/36964370/17d9c21b/` },
 ];
 
 export async function POST() {
