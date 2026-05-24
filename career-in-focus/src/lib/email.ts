@@ -399,6 +399,74 @@ export async function sendLeadNotification({
   });
 }
 
+// ─── Recruiter-Submitted Job Notification (admin) ─────────────────────
+// Sent whenever a recruiter uses the public /post-job form to submit
+// a role. The job lands in the DB as isPublished=false so Coral can
+// approve from /admin/jobs. This email gives her enough context to
+// approve or reject from her phone in 5 seconds.
+
+export async function sendRecruiterJobNotification({
+  id, recruiterName, recruiterEmail, recruiterPhone,
+  company, title, location, field, description, externalUrl,
+}: {
+  id: string;
+  recruiterName: string;
+  recruiterEmail: string;
+  recruiterPhone: string;
+  company: string;
+  title: string;
+  location: string;
+  field: string;
+  description: string;
+  externalUrl: string;
+}) {
+  const to =
+    process.env.ADMIN_NOTIFY_EMAIL ??
+    process.env.ADMIN_EMAIL ??
+    "koralcareer@gmail.com";
+
+  const esc = (s: string) => s.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const html = `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<body style="font-family:-apple-system,sans-serif;direction:rtl;background:#f6f7fb;padding:20px;">
+  <div style="max-width:580px;margin:0 auto;background:#fff;border-radius:14px;padding:26px;box-shadow:0 4px 16px rgba(0,0,0,.06);">
+    <h2 style="margin:0 0 6px 0;color:#1C1C2E;font-size:20px;">📥 משרה חדשה מ-מגייס/ת</h2>
+    <p style="margin:0 0 18px 0;color:#666;font-size:13px;">המשרה נשמרה כממתינה לאישור (לא פורסמה עדיין). אישור או דחייה דרך פאנל המשרות.</p>
+
+    <div style="background:#F5F1EB;border-radius:10px;padding:14px 18px;margin-bottom:16px;">
+      <div style="font-size:13px;color:#666;margin-bottom:4px;">פרטי המגייס/ת</div>
+      <div style="font-size:15px;font-weight:700;color:#1C1C2E;">${esc(recruiterName)}</div>
+      <div style="margin-top:6px;font-size:13px;direction:ltr;text-align:right;">
+        <a href="mailto:${esc(recruiterEmail)}" style="color:#2BAAAA;">${esc(recruiterEmail)}</a>
+        ${recruiterPhone ? `&nbsp;·&nbsp;<a href="tel:${esc(recruiterPhone)}" style="color:#2BAAAA;">${esc(recruiterPhone)}</a>` : ""}
+      </div>
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      <tr><td style="padding:8px 0;color:#888;width:110px;">תפקיד:</td><td style="padding:8px 0;font-weight:700;">${esc(title)}</td></tr>
+      <tr><td style="padding:8px 0;color:#888;">חברה:</td><td style="padding:8px 0;">${esc(company)}</td></tr>
+      <tr><td style="padding:8px 0;color:#888;">מיקום:</td><td style="padding:8px 0;">${esc(location || "—")}</td></tr>
+      <tr><td style="padding:8px 0;color:#888;">תחום:</td><td style="padding:8px 0;">${esc(field)}</td></tr>
+      ${externalUrl ? `<tr><td style="padding:8px 0;color:#888;">קישור:</td><td style="padding:8px 0;direction:ltr;text-align:right;"><a href="${esc(externalUrl)}" style="color:#2BAAAA;word-break:break-all;">${esc(externalUrl.slice(0, 60))}…</a></td></tr>` : ""}
+      <tr><td style="padding:8px 0;color:#888;vertical-align:top;">תיאור:</td><td style="padding:8px 0;color:#444;white-space:pre-wrap;line-height:1.55;">${esc(description)}</td></tr>
+    </table>
+
+    <a href="${APP_URL}/admin/jobs"
+       style="display:inline-block;margin-top:22px;background:#3ECFCF;color:#fff;font-weight:700;padding:11px 22px;border-radius:10px;text-decoration:none;">
+      לפאנל המשרות לאישור ←
+    </a>
+    <p style="margin:18px 0 0;color:#aaa;font-size:11px;">Job ID: ${id}</p>
+  </div>
+</body></html>`;
+
+  await sendEmail({
+    to,
+    subject: `📥 משרה חדשה ממגייס/ת: ${title} ב-${company}`,
+    html,
+  });
+}
+
 // ─── New-Purchase Notification (admin) ──────────────────────────────
 // Coral asked to be pinged every time someone purchases a paid plan
 // so she can welcome them personally and verify the funnel works.
