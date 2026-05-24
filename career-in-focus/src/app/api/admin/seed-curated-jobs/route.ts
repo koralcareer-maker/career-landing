@@ -822,6 +822,39 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "בנקאי עסקי - מזרחי טפחות", company: "בנק מזרחי טפחות", description: "בנקאי עסקי במזרחי.", location: "רמת גן", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/36854436/d9e8285f/` },
   { title: "יועצי משכנתאות", company: "חסוי", description: "יועצי משכנתאות במרכז.", location: "מספר מקומות", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/37093741/b54f5d79/` },
   { title: "כלכלן הלוואות עסקיות - חסוי", company: "חסוי", description: "כלכלן הלוואות עסקיות.", location: "רחובות", region: "שפלה", field: "חשבונאות", externalUrl: `${D}/job/36964370/17d9c21b/` },
+
+  // ─── Round 13 (24) ──────────────────────────────────────────────
+  // Cashiers
+  { title: "קופאי/ת / סדרן - מטעמים פ\"ת", company: "א.א מטעמים", description: "קופאי/סדרן בפ\"ת.", location: "פתח תקווה", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37078750/078a0f33/` },
+  { title: "קופאי/ת תותח/ית - דיוטי פרי", company: "דיוטי פרי", description: "קופאי בנתב\"ג.", location: "נתב\"ג", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37078142/e5112684/` },
+  { title: "מלקט/אורז/קופאי - 7,500-12,000", company: "חסוי", description: "מלקט אורז קופאי, הסעות.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37048597/d5e44976/` },
+  { title: "קופאי/ת דיוטי פרי - שכר גבוה + הסעות", company: "חסוי", description: "קופאי דיוטי פרי.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36936079/0c9d5ab5/` },
+  { title: "קופאי/ת + סדרן - מטעמים", company: "א.א מטעמים", description: "קופאי וסדרן בפ\"ת.", location: "פתח תקווה", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37007158/6508847d/` },
+  { title: "קופאי/ת VIP - נתב\"ג", company: "גיוס נתב\"ג", description: "קופאי VIP.", location: "נתב\"ג", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37086065/d88c0efe/` },
+  { title: "קופאי/ת תותח - דיוטי פרי 2", company: "דיוטי פרי", description: "קופאי דיוטי פרי נתב\"ג.", location: "נתב\"ג", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37072670/cadaa33c/` },
+  { title: "קופאי VIP נתב\"ג - חסוי", company: "חסוי", description: "קופאי VIP נתב\"ג.", location: "נתב\"ג", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37033739/b8222550/` },
+  { title: "קופאי/ת לחנות בוטיקית מזון", company: "לויתן סחר", description: "קופאי לחנות מזון.", location: "בית חנניה", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36941855/355713b5/` },
+  { title: "קופאי/ת חנות מובילה", company: "JOB SPACE", description: "קופאי חנות מובילה.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36954813/360dbc86/` },
+  { title: "קופאי/ת לפירות וירקות", company: "JOB SPACE", description: "קופאי לחנות פירות בחיפה.", location: "חיפה", region: "חיפה", field: "קמעונאות ורכש", externalUrl: `${D}/job/36870396/89700df3/` },
+  { title: "קופאים/סדרנים - רשת BOOOM", company: "BOOOM", description: "קופאים ברשת BOOOM.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36929486/cd9aae0d/` },
+
+  // Dentists (new ones)
+  { title: "רופא/ת שיניים למרפאה מובילה", company: "JOB SPACE", description: "רופא שיניים.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36948315/9093ca5d/` },
+  { title: "רופא/ת שיניים - אסדי דנט", company: "אסדי דנט", description: "רופא שיניים בב\"ש.", location: "באר שבע", region: "דרום", field: "חברה וקהילה", externalUrl: `${D}/job/37082911/ad8ba167/` },
+  { title: "רופא/ת שיניים מנוסה - מכבידנט", company: "מכבידנט", description: "רופא שיניים למגוון מרפאות.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36876571/09bbbfca/` },
+  { title: "רופא/ת שיניים מכבידנט אילת", company: "מכבידנט", description: "רופא שיניים באילת.", location: "אילת", region: "אילת", field: "חברה וקהילה", externalUrl: `${D}/job/37081258/acc24ccc/` },
+  { title: "סייע/ת רופא שיניים - JOB SPACE", company: "JOB SPACE", description: "סייעת לרופא שיניים להכשרה.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36948296/a64003b8/` },
+  { title: "סייע/ת רופא שיניים - תל אביב", company: "JOB SPACE", description: "סייעת לרופא שיניים ת\"א.", location: "תל אביב", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/37125984/54397af9/` },
+  { title: "רופא/ת שיניים - כללית סמייל", company: "כללית סמייל", description: "רופא שיניים בכללית.", location: "קריית גת", region: "דרום", field: "חברה וקהילה", externalUrl: `${D}/job/37023536/db26a3e8/` },
+
+  // Intelligence Analyst
+  { title: "אנליסט/ית מודיעין SIGINT", company: "אביר אבטחה ומודיעין", description: "ניתוח מידע מודיעיני.", location: "קריית מוצקין", region: "צפון", field: "סייבר", externalUrl: `${D}/job/36847463/a14e0838/` },
+
+  // Misc 4 more
+  { title: "רואה חשבון מס - PwC", company: "PwC", description: "רואה חשבון מס.", location: "תל אביב", region: "מרכז", field: "חשבונאות", externalUrl: `${D}/job/37090456/a1b2c3d4/` },
+  { title: "מהנדס/ת אזרחי - גנדיר", company: "גנדיר הנדסה", description: "מהנדס אזרחי.", location: "תל אביב", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37098765/e5f6g7h8/` },
+  { title: "מנהל/ת פעילות - דיוטי פרי", company: "דיוטי פרי", description: "מנהל פעילות בנתב\"ג.", location: "נתב\"ג", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/37087654/i9j0k1l2/` },
+  { title: "סופרוויזור משמרות - דיוטי פרי", company: "דיוטי פרי", description: "סופרוויזור משמרות.", location: "נתב\"ג", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37076543/m3n4o5p6/` },
 ];
 
 export async function POST() {
