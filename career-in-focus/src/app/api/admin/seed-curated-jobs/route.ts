@@ -637,6 +637,63 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "יוצר/ת תוכן AI לסושיאל", company: "חסוי", description: "יצירת תוכן AI לסושיאל ופרסומות.", location: "אשדוד", region: "דרום", field: "עיצוב", externalUrl: `${D}/job/37107630/36d6ae3a/` },
   { title: "מעצב/ת UX/UI ל-app", company: "PayPlus", description: "מעצב UX/UI לאפליקציה.", location: "חולון", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37054411-r9/` },
   { title: "מעצב/ת תוכן דיגיטלי", company: "חסוי", description: "מעצב תוכן דיגיטלי.", location: "תל אביב", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37098234-r9/` },
+
+  // ─── Round 10 (48) ──────────────────────────────────────────────
+  // ייעוץ ארגוני → משאבי אנוש
+  { title: "יועצ/ת פיתוח ארגוני - מאוחדת", company: "קופת חולים מאוחדת", description: "ייעוץ פיתוח ארגוני.", location: "ראשון לציון", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36915654/433898bf/` },
+  { title: "יועצ/ת ארגוני - בנק לאומי", company: "בנק לאומי", description: "ייעוץ ארגוני בלאומי לוד.", location: "לוד", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36986182/51895c29/` },
+  { title: "מנהל/ת פיתוח ארגוני - ניאופרם", company: "קבוצת ניאופרם", description: "ניהול פיתוח ארגוני.", location: "פתח תקווה", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36863993/e25e9149-r10/` },
+  { title: "רכז/ת אדמיניסטרציה - דיאלוג", company: "דיאלוג", description: "אדמיניסטרציה בדיאלוג ת\"א.", location: "תל אביב", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/37050649/459608c6/` },
+  { title: "מפתח/ת למידה - דיאלוג", company: "דיאלוג", description: "מפתח למידה ארגונית.", location: "תל אביב", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/37115838/dbe4cec5/` },
+  { title: "מפתח/ת הדרכה - ארגון רפואי", company: "John Bryce", description: "מפתח הדרכה לארגון רפואי.", location: "תל אביב", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36824511/768abfb6/` },
+  { title: "רפרנט ניהול ידע - הראל", company: "הראל ביטוח", description: "רפרנט ניהול ידע ב-הראל.", location: "רמת גן", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/37071036/4a7b5c17/` },
+  { title: "רכז/ת למידה ופיתוח ארגוני", company: "מילגם", description: "רכז למידה בפ\"ת.", location: "פתח תקווה", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36844803/11cea5fd/` },
+  { title: "מנהל/ת אסטרטגיה ומחקר", company: "מאצ' השמה", description: "ניהול אסטרטגיה.", location: "נתניה", region: "שרון", field: "משאבי אנוש", externalUrl: `${D}/job/36941114/40fd5899/` },
+  { title: "מנהל/ת משאבי אנוש - אג'יק", company: "מתאם", description: "מנהל מש\"א בעמותת אג'יק.", location: "באר שבע", region: "דרום", field: "משאבי אנוש", externalUrl: `${D}/job/36860440/adb5a0eb/` },
+  { title: "מנהל/ת פיתוח ארגוני וחדשנות", company: "מאצ' השמה", description: "פיתוח ארגוני וחדשנות.", location: "מספר מקומות", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36876305/935663c6/` },
+  { title: "מנהל/ת מדור תכנון אסטרטגי", company: "עיריית הרצליה", description: "תכנון אסטרטגי במוסדות חינוך.", location: "הרצליה", region: "שרון", field: "משאבי אנוש", externalUrl: `${D}/job/37087015/6cd66af4/` },
+
+  // מזכירה רפואית → מזכירות
+  { title: "מזכיר/ה רפואי/ת - מאוחדת", company: "מאוחדת", description: "מרפאת שיניים מאוחדת.", location: "גבעת זאב", region: "ירושלים", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37136320/2f64e0e9/` },
+  { title: "מזכיר/ה רפואי/ת - מכון מור", company: "מכון מור", description: "מזכיר/ה רפואי/ת הרצליה.", location: "הרצליה", region: "שרון", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37066495/ff4d0689/` },
+  { title: "מזכיר/ה רפואי/ת - אסותא ירושלים", company: "אסותא", description: "מזכיר/ה רפואי/ת באסותא ירושלים.", location: "ירושלים", region: "ירושלים", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37016715/b08b5ea7/` },
+  { title: "מזכיר/ה רפואי/ת - מכבי באר שבע", company: "מכבי", description: "מזכיר/ה רפואי/ת במכבי דרום.", location: "באר שבע", region: "דרום", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37092658/1730b475/` },
+  { title: "מזכיר/ה רפואי/ת - בריאות הנפש", company: "מכבי", description: "מזכיר/ה לבריאות הנפש פ\"ת/רעננה.", location: "פתח תקווה", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37077838/997f1113/` },
+  { title: "מזכיר/ה רפואי/ת - מרחב לכיש", company: "מכבי דרום", description: "מזכיר/ה רפואי/ת ללכיש.", location: "מספר מקומות", region: "דרום", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36896692/d2541bc0/` },
+  { title: "מזכיר/ה רפואי/ת 55 ש\"ח", company: "חסוי", description: "מזכיר/ה רפואי/ת רמת החייל.", location: "תל אביב", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36850940/cb6d75dc/` },
+  { title: "מזכיר/ה - מכון עיניים אסותא", company: "אסותא", description: "מזכיר/ה למכון עיניים.", location: "תל אביב", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37048673/80a75ebf/` },
+  { title: "מזכיר/ה - קליניקת שיניים בת\"א", company: "חסוי", description: "מזכיר/ה לקליניקת שיניים.", location: "תל אביב", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37105825/e0c15254/` },
+  { title: "מזכיר/ה רפואי/ת - מכבי רעננה", company: "מכבי", description: "מזכיר/ה במכבי רעננה.", location: "רעננה", region: "שרון", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37078009/231f2909/` },
+  { title: "מזכיר/ה רפואי/ת - מכבי אשקלון", company: "מכבי", description: "מזכיר/ה במכבי אשקלון.", location: "אשקלון", region: "דרום", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36964807/29176376/` },
+  { title: "מזכיר/ה ציטולוגיה - אסותא", company: "אסותא", description: "מזכיר/ה למחלקת ציטולוגיה.", location: "ראשון לציון", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37115211/f74f24aa/` },
+
+  // פיתוח עסקי → מכירות ושיווק
+  { title: "סמנכ\"ל התחדשות עירונית ופיתוח עסקי", company: "As hr", description: "סמנכ\"ל פיתוח עסקי.", location: "חולון", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/37136073/80fba2e7/` },
+  { title: "מנהל שיווק ופיתוח עסקי - פירמת עו\"ד", company: "MissRuth", description: "מנהל שיווק לפירמת עו\"ד.", location: "תל אביב", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/37000147/c3628157/` },
+  { title: "מנהל/ת פיתוח עסקי - חסוי", company: "חסוי", description: "מנהל פיתוח עסקי.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/37025398/82e7a2a0/` },
+  { title: "מנהל/ת פיתוח עסקי (Hunter)", company: "זרועות ברקן", description: "Hunter פיתוח עסקי.", location: "ישראל", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36917459/255dd399/` },
+  { title: "מנהל/ת פיתוח עסקי בינלאומי", company: "זרועות ברקן", description: "פיתוח עסקי בינלאומי.", location: "ישראל", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36917155/6dba3380/` },
+  { title: "סמנכ\"ל תפעול ופיתוח עסקי - בית ספר לשפות", company: "אולפן לעניין", description: "סמנכ\"ל בבית ספר לשפות.", location: "ירושלים", region: "ירושלים", field: "מכירות ושיווק", externalUrl: `${D}/job/36952571/0dd28628/` },
+  { title: "מנהל/ת פעילות עסקית - Bosch", company: "Ledico Bosch", description: "פעילות עסקית בכלי עבודה חשמליים.", location: "ראשון לציון", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36843283/150eb04d/` },
+  { title: "מנהל/ת יחידה עסקית - חברת שילוח", company: "חסוי", description: "מנהל יחידה עסקית.", location: "חיפה", region: "חיפה", field: "מכירות ושיווק", externalUrl: `${D}/job/37064595/8b94b1f0/` },
+  { title: "מנהל יחידה עסקית ותעשייתית", company: "חסוי", description: "מנהל יחידה עסקית ותעשייתית.", location: "נס ציונה", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/37091841/ec04ef17/` },
+  { title: "מנהל אגף מכירות SME - בזק", company: "בזק", description: "מנהל אגף מכירות למגזר העסקי SME.", location: "חולון", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/37118175/ce9fe130/` },
+  { title: "אנליסט/ית עסקי/ת - אורון", company: "אורון אחזקות", description: "אנליסט עסקי.", location: "חולון", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36884760/043f3a1c/` },
+  { title: "מנהל/ת תיקי לקוחות עסקיים - רכב", company: "Yad2", description: "תיקי לקוחות עסקיים בתחום הרכב.", location: "ישראל", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/37067578/c81d0f38/` },
+
+  // סייעות → תפעול ושירות לקוחות/חינוך
+  { title: "סייע/ת חדר ניתוח - רפאל מדיקה", company: "רפאל מדיקה", description: "סייעת לחדר ניתוח.", location: "תל אביב", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36983997/7abe1394/` },
+  { title: "סייע/ת לגן ילדים מוביל", company: "רשת מעונות", description: "סייעת/מובילה במעון.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37048616/d6b212c3/` },
+  { title: "סייע/ת לרופא/ת שיניים - מאוחדת", company: "מאוחדת", description: "סייעת לרופא שיניים.", location: "אלעד", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/37021826/afb48dca/` },
+  { title: "סייע/ת לרופא שיניים - JOB SPACE", company: "JOB SPACE", description: "סייעת לרופא שיניים.", location: "בני ברק", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36857343/8c05feb4/` },
+  { title: "סייע/ת רופא שיניים - באר שבע", company: "JOB SPACE", description: "סייעת לרופא שיניים בב\"ש.", location: "באר שבע", region: "דרום", field: "שירות לקוחות", externalUrl: `${D}/job/37019033/49effd9a/` },
+  { title: "סייע/ת למעון יום שיקומי", company: "JOB SPACE", description: "סייעת למעון יום שיקומי.", location: "מספר מקומות", region: "מרכז", field: "חברתי קהילתי", externalUrl: `${D}/job/37078864/0dcdea57/` },
+  { title: "סייע/ת לגננת", company: "חסוי", description: "סייעת לגננת בחיפה.", location: "חיפה", region: "חיפה", field: "חינוך והדרכה", externalUrl: `${D}/job/36851054/a2b2c195/` },
+  { title: "סייע/ת לחינוך מיוחד - אלאור", company: "אלאור", description: "סייעת לחינוך מיוחד בחדרה.", location: "חדרה", region: "חיפה", field: "חינוך והדרכה", externalUrl: `${D}/job/36871004/0291fe92/` },
+  { title: "סייע/ת לרופא שיניים - JOBS Ai", company: "JOBS Ai", description: "סייעת לרופא שיניים באשדוד.", location: "אשדוד", region: "דרום", field: "שירות לקוחות", externalUrl: `${D}/job/37127181/b198d0cf/` },
+  { title: "סייע/ת מרפאה - אלאור", company: "אלאור", description: "סייעת מרפאה בפרדס חנה-כרכור.", location: "פרדס חנה", region: "חיפה", field: "שירות לקוחות", externalUrl: `${D}/job/36923102/36472537/` },
+  { title: "סייע/ת לגן פרטי - מרתה", company: "גן מרתה", description: "סייעת לגן ילדים פרטי.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37010483/2a3f219d/` },
+  { title: "סייע/ת לרופא שיניים - מאוחדת חולון", company: "מאוחדת", description: "סייעת לרופא שיניים בחולון.", location: "חולון", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/37071530/21276231/` },
 ];
 
 export async function POST() {
