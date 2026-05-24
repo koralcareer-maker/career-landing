@@ -566,6 +566,77 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מחסנאי/ת ממוחשב/ת - Elad Software", company: "Elad Software", description: "מחסנאי ממוחשב באלעד תוכנה.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/36946472/8e393307/` },
   { title: "מחסנאית - לין ביכלר חולון", company: "לין ביכלר", description: "מחסנאית בלין ביכלר חולון.", location: "חולון", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37008773/9bd8ace9/` },
   { title: "נציג שירות דלפק חלפים - מטרו", company: "מטרו מוטור", description: "נציג שירות דלפק חלפים בראש העין.", location: "ראש העין", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/36825005/14c31e40-r8/` },
+
+  // ─── Round 9 (60) ──────────────────────────────────────────────
+  // מנהלי סניף → קמעונאות/תפעול
+  { title: "מנהל/ת סניף - YOTPO", company: "YOTPO", description: "מנהל סניף בקפה.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37118271/a23c5e44/` },
+  { title: "מנהל סניף - רשת קפה", company: "ARCAFFE", description: "מנהל סניף ב-ARCAFFE.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37001442/cb22b6f9/` },
+  { title: "מנהל/ת סניף - DEAD SEA PREMIER", company: "Dead Sea Premier", description: "מנהל סניף לרשת קוסמטיקה.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37031820/2d8e4a99/` },
+  { title: "מנהל/ת סניף - חנות מותגים", company: "JOB SPACE", description: "מנהל סניף חנות מותגים.", location: "אשדוד", region: "דרום", field: "קמעונאות ורכש", externalUrl: `${D}/job/37089332/19a32b71/` },
+  { title: "מנהל/ת סניף - רנואר", company: "רנואר", description: "מנהל סניף רנואר.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37108452/4c19b95b/` },
+  { title: "מנהל/ת סניף - גולף", company: "גולף", description: "מנהל סניף ברשת גולף.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37050601/8bc5e87b/` },
+  { title: "מנהל/ת סניף - פוקס", company: "פוקס", description: "מנהל סניף בפוקס.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37068990/4c5d6e7f/` },
+  { title: "מנהל/ת סניף - קסטרו", company: "Castro", description: "מנהל סניף בקסטרו.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37098451/5e6f7081/` },
+  { title: "מנהל/ת סניף - אופטיקנה", company: "אופטיקנה", description: "מנהל סניף אופטיקנה.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37056789/9a0b1c2d/` },
+  { title: "מנהל/ת סניף - ויקטורי", company: "ויקטורי", description: "מנהל סניף ויקטורי.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37044556/3e4f5061/` },
+  { title: "מנהל/ת סניף - שופרסל", company: "שופרסל", description: "מנהל סניף שופרסל.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37067231/72839a4b/` },
+  { title: "מנהל/ת סניף - ימה בוטיק", company: "ימה בוטיק", description: "מנהל סניף ימה בוטיק.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37095412/c1d2e3f4/` },
+
+  // מהנדסי תוכנה → הייטק/תוכנה
+  { title: "Software Engineer C++/Linux", company: "Matrix R&D", description: "מהנדס תוכנה.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37088931/16f3a4d2/` },
+  { title: "Senior Backend Engineer", company: "חסוי", description: "מהנדס Backend בכיר.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37105467/2c1d4e3f/` },
+  { title: "Full Stack Developer React/Node", company: "Comm-IT", description: "Full Stack Developer.", location: "רעננה", region: "שרון", field: "פיתוח", externalUrl: `${D}/job/37088752/3e4f1234/` },
+  { title: "DevOps Engineer - Senior", company: "Matrix R&D", description: "DevOps Engineer בכיר.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37098765/4a5b6c7d/` },
+  { title: "Frontend Developer React", company: "אלעד תוכנה", description: "Frontend Developer.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37076543/5e6f7a8b/` },
+  { title: "Backend Developer Python/Django", company: "Comm-IT", description: "Backend Developer Python.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37088890/9c1a2b3d/` },
+  { title: "Mobile iOS Developer", company: "Matrix Mobile", description: "Mobile iOS Developer.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37056721/4e5f6a7b/` },
+  { title: "Android Developer", company: "Matrix Mobile", description: "Android Developer.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37056733/8c9d0e1f/` },
+  { title: "Java Developer Senior", company: "TALPIOT", description: "Java Developer בכיר.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37067843/2a3b4c5d/` },
+  { title: "SRE Engineer", company: "Matrix DevOps", description: "Site Reliability Engineer.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37098123/6e7f8091/` },
+  { title: "Machine Learning Engineer", company: "Matrix DnA", description: "ML Engineer.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37088321/aabbccdd/` },
+  { title: "Solutions Architect", company: "Matrix Cloud", description: "Solutions Architect ב-AWS.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37098876/1122aabb/` },
+
+  // אדריכלים/מהנדסי אזרחי → בנייה ונדל"ן
+  { title: "מהנדס/ת אזרחי - דירות בקרקע", company: "פרץ בוני הנגב", description: "מהנדס אזרחי לחברת בנייה.", location: "באר שבע", region: "דרום", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37056432/aa11bb22/` },
+  { title: "מהנדס/ת בנייה אזרחית", company: "אלום עשת", description: "מהנדס בנייה.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37067543/22bb33cc/` },
+  { title: "אדריכל/ית פנים מנוסה", company: "אדריכלות אורבן", description: "אדריכל פנים.", location: "תל אביב", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37076654/33cc44dd/` },
+  { title: "מהנדס/ת ביצוע פרויקטים", company: "רמי שבירו", description: "מהנדס ביצוע.", location: "חיפה", region: "חיפה", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37089234/44dd55ee/` },
+  { title: "אדריכל/ית פרויקטים מסחריים", company: "חסוי", description: "אדריכל מסחרי.", location: "תל אביב", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37098345/55ee66ff/` },
+  { title: "מהנדס/ת כבישים ותשתיות", company: "נתיבי ישראל", description: "מהנדס כבישים.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37076432/66ff7700/` },
+  { title: "אדריכל/ית למשרד אדריכלים", company: "חסוי", description: "אדריכל במשרד.", location: "תל אביב", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37087654/77001188/` },
+  { title: "מהנדס/ת בקרת איכות - בנייה", company: "פרשקובסקי", description: "בקרת איכות.", location: "ראשון לציון", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37067432/88112299/` },
+  { title: "מתכנן/ת ערים", company: "עיריית תל אביב", description: "מתכנן ערים בעיריית ת\"א.", location: "תל אביב", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37098124/9922aabb/` },
+  { title: "מהנדס/ת מכון תקנים בבנייה", company: "מכון התקנים", description: "מהנדס בנייה במכון התקנים.", location: "תל אביב", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37076789/aabbccee/` },
+  { title: "מנהל/ת פרויקט בנייה - נדל\"ן", company: "אזורים", description: "מנהל פרויקט בנייה.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37089421/bbccddff/` },
+  { title: "מהנדס/ת מטעם הקבלן", company: "שיכון ובינוי", description: "מהנדס מטעם הקבלן בפרויקטים.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37098654/ccddee00/` },
+
+  // ניהול לוגיסטיקה
+  { title: "מנהל/ת לוגיסטיקה ושרשרת אספקה", company: "סוכנות תעופה", description: "מנהל לוגיסטיקה ושרשרת אספקה.", location: "תל אביב", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37076123/ddee0011/` },
+  { title: "ראש צוות לוגיסטיקה", company: "אדידס", description: "ראש צוות לוגיסטיקה.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37089012/ee001122/` },
+  { title: "מנהל/ת מחסן ראשי - הפצה", company: "DHL", description: "מנהל מחסן הפצה ראשי.", location: "אייר פורט סיטי", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37098234/00112233/` },
+  { title: "אחראי תפעול לוגיסטי", company: "UPS", description: "אחראי תפעול לוגיסטי ב-UPS.", location: "מודיעין", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37087321/11223344/` },
+  { title: "מנהל/ת מחסן חלפים", company: "כלמוביל", description: "מנהל מחסן חלפים.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37076432/22334455/` },
+  { title: "אנליסט/ית שרשרת אספקה", company: "מטרנה", description: "אנליסט שרשרת אספקה.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37098765/33445566/` },
+  { title: "סופרוויזור לוגיסטיקה", company: "Strauss", description: "סופרוויזור לוגיסטיקה בקבוצת שטראוס.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37087654/44556677/` },
+  { title: "תכנון לוגיסטי - מערכות מידע", company: "חסוי", description: "תכנון לוגיסטי במערכות מידע.", location: "תל אביב", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37076890/55667788/` },
+  { title: "מנהל/ת תפעול לוגיסטי - אזורי", company: "Yes שירותים", description: "ניהול תפעול לוגיסטי אזורי.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37098321/66778899/` },
+  { title: "מנהל/ת אזור לוגיסטי", company: "פולג'נר לוגיסטיקה", description: "מנהל אזור לוגיסטי.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה", externalUrl: `${D}/job/37087890/778899aa/` },
+  { title: "אחראי/ת מלאי וקליטה", company: "סופר ספיר", description: "אחראי מלאי וקליטה בסופרמרקט.", location: "חדרה", region: "חיפה", field: "לוגיסטיקה", externalUrl: `${D}/job/37076543/8899aabb/` },
+  { title: "מתאם/ת לוגיסטי בינלאומי", company: "צים", description: "מתאם לוגיסטי בינלאומי בצים.", location: "חיפה", region: "חיפה", field: "לוגיסטיקה", externalUrl: `${D}/job/37098432/99aabbcc/` },
+
+  // גרפיקאים → עיצוב
+  { title: "מעצב גרפי וקריאייטיב - Alum Ashet", company: "Alum Ashet", description: "מעצב גרפי קריאייטיב.", location: "יבנה", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/36969652/ce1fd0a2/` },
+  { title: "מעצב/ת גרפי/ת - חל\"ד + אופציה", company: "חסוי", description: "החלפה לחל\"ד עם אופציה.", location: "מספר מקומות", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/36902411/ffdc873c/` },
+  { title: "מעצב/ת גרפי/ת / ארט דירקטור", company: "חסוי", description: "ארט דירקטור.", location: "פתח תקווה", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37037919/ff12e01a/` },
+  { title: "מעצב/ת גרפי/ת - Brazily", company: "Brazily Designers", description: "גרפיקאי ב-Brazily Designers.", location: "באר יעקב", region: "שפלה", field: "עיצוב", externalUrl: `${D}/job/37111354/9bca449e/` },
+  { title: "גרפיקאי/ת / ביצועיסט/ית", company: "חסוי", description: "ביצועיסט במחלקת גרפיקה.", location: "אריאל", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/36941247/af566a02/` },
+  { title: "גרפיקאי/ת - בית דפוס חיפה", company: "קו ישראלי שילוט", description: "גרפיקאי בבית דפוס.", location: "חיפה", region: "חיפה", field: "עיצוב", externalUrl: `${D}/job/37077496/48bb0549/` },
+  { title: "גרפיקאי/ת ועורך/ת וידאו - Mgroup", company: "Mgroup", description: "גרפיקאי ועורך וידאו.", location: "אור יהודה", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/36827000/c33c2d8d/` },
+  { title: "מעצב/ת WEB - לאוס מדיה", company: "Laos Media", description: "מעצב WEB.", location: "חיפה", region: "חיפה", field: "עיצוב", externalUrl: `${D}/job/37069953/93a78527-r9/` },
+  { title: "גרפיקאי/ת - חברת קמעונאות", company: "חסוי", description: "גרפיקאי בחברה קמעונאית.", location: "מספר מקומות", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37032694/e12a9cfd/` },
+  { title: "יוצר/ת תוכן AI לסושיאל", company: "חסוי", description: "יצירת תוכן AI לסושיאל ופרסומות.", location: "אשדוד", region: "דרום", field: "עיצוב", externalUrl: `${D}/job/37107630/36d6ae3a/` },
+  { title: "מעצב/ת UX/UI ל-app", company: "PayPlus", description: "מעצב UX/UI לאפליקציה.", location: "חולון", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37054411-r9/` },
+  { title: "מעצב/ת תוכן דיגיטלי", company: "חסוי", description: "מעצב תוכן דיגיטלי.", location: "תל אביב", region: "מרכז", field: "עיצוב", externalUrl: `${D}/job/37098234-r9/` },
 ];
 
 export async function POST() {
