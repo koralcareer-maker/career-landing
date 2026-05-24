@@ -883,6 +883,49 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מתאמ/ת מכירות - CBC", company: "CBC ISRAEL", description: "מתאם מכירות בגבעת חיים.", location: "גבעת חיים", region: "שרון", field: "מכירות ושיווק", externalUrl: `${D}/job/36940582/8427a989/` },
   { title: "מתאם/ת מכירות Back Office - Systematics", company: "Systematics", description: "מתאם מכירות BO.", location: "תל אביב", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36861903/39f2c4db/` },
   { title: "מתאמ/ת פגישות - אשטרום", company: "אשטרום", description: "מתאם פגישות למשרד מכירות.", location: "בני ברק", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/37068623/e179f091/` },
+
+  // ─── Round 15 (36) ──────────────────────────────────────────────
+  // Physiotherapists
+  { title: "פיזיותרפיסט/ית לבתי אבות", company: "JOB SPACE", description: "פיזיותרפיסט לבתי אבות.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36948410/42c5e0ac/` },
+  { title: "פיזיותרפיסט/ית - בית רחל ליצ׳ק", company: "ליצ׳ק השקעות", description: "פיזיותרפיסט בבית רחל ליצ\"ק.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/35826593/3d5af24d/` },
+  { title: "פיזיו עם הידרותרפיה - בית בלב ראשל\"צ", company: "בית בלב (מכבי)", description: "פיזיותרפיסט הידרותרפיה.", location: "ראשון לציון", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36939917/86858aba/` },
+  { title: "פיזיותרפיסטית למוסדות חינוך מיוחד", company: "פרח", description: "פיזיותרפיסט לחינוך מיוחד.", location: "ארצי", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/37021636/744707b9/` },
+  { title: "פיזיותרפיסט/ית - מאוחדת אור יהודה", company: "מאוחדת", description: "פיזיותרפיסט במכון אור יהודה.", location: "אור יהודה", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36989564/c40cddc5/` },
+  { title: "פיזיותרפיסט/ית - אסותא רמת החייל", company: "אסותא", description: "פיזיותרפיסט באסותא רמת החייל.", location: "תל אביב", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36907693/88fe4c4e/` },
+  { title: "פיזיותרפיסטים - רשת בית בלב", company: "בית בלב", description: "פיזיותרפיסטים ברשת בית בלב.", location: "ארצי", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/37039591/4b40411e/` },
+  { title: "פיזיו - התפתחות הילד דרום", company: "מאוחדת", description: "פיזיו להתפתחות ילד.", location: "מספר מקומות", region: "דרום", field: "חברה וקהילה", externalUrl: `${D}/job/36929752/353a5dcc/` },
+  { title: "פיזיו התפתחות הילד - ארצי", company: "מאוחדת", description: "פיזיו התפתחות הילד.", location: "ארצי", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36993877/bb7d1e7d/` },
+  { title: "פיזיו למרכז שיקום - בני ברק", company: "Rehab Help", description: "פיזיו במרכז שיקום.", location: "בני ברק", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36879554/440f8235-r15/` },
+  { title: "פיזיו רשת שיקום ארצית", company: "JOB SPACE", description: "פיזיו לרשת שיקום ארצית.", location: "ארצי", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36902829/a6c660d8-r15/` },
+  { title: "פיזיו או מרפא בעיסוק - אור אזרחים", company: "אור אזרחים", description: "פיזיו או מרפא בעיסוק.", location: "רמת גן", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/37089485/b0c90c44/` },
+
+  // Cosmetologists / aestheticians
+  { title: "מטפלת לייזר/קוסמטיקאית", company: "חסוי", description: "מטפלת לייזר משמרות ערב.", location: "קריית מוצקין", region: "צפון", field: "קמעונאות ורכש", externalUrl: `${D}/job/37044512/e5762381/` },
+  { title: "קוסמטיקאית - אמביאנס", company: "Ambiance Medical", description: "קוסמטיקאית במרפאת אסתטיקה.", location: "ירושלים, רמת גן", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36981546/1a2d957e/` },
+  { title: "קוסמטיקאית - טיפולים אסתטיים", company: "חסוי", description: "קוסמטולוגית.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36948391/2e697da1/` },
+  { title: "מטפלת לייזר - JOB SPACE", company: "JOB SPACE", description: "מטפלים לייזר.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36846703/c8c0896c/` },
+  { title: "קוסמטיקאית / טכנאית לייזר - כפ\"ס", company: "חסוי", description: "קוסמטיקאית/טכנאית לייזר.", location: "כפר סבא", region: "שרון", field: "קמעונאות ורכש", externalUrl: `${D}/job/37095831/6438d5b3/` },
+  { title: "קוסמטיקאית - מכבי אסתטיקה", company: "מכבידנט", description: "קוסמטולוג למכבי אסתטיקה.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37081277/d1a8dea3/` },
+  { title: "קוסמטיקאית - מרפאת אסתטיקה ת\"א", company: "JOBS AI", description: "קוסמטיקאית במרפאה ת\"א.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36937770/6bfa9cf5/` },
+  { title: "מטפלת אסתטיקה - JOBS AI", company: "JOBS AI", description: "מטפלת אסתטיקה.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37123096/9f963596/` },
+  { title: "מדריכה לחברת קוסמטיקה", company: "ICE Commerce", description: "מדריכה ליבוא מותגי קוסמטיקה.", location: "רעננה", region: "שרון", field: "קמעונאות ורכש", externalUrl: `${D}/job/36945560/d75104c9/` },
+  { title: "יועצ/ת אסתטיקה - Cosmo Clinic", company: "Cosmo Clinic", description: "יועצת אסתטיקה.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36958461/314f36e4/` },
+  { title: "מפעיל/ת מכשור אסתטי - הלפרין", company: "Halperin Aesthetics", description: "מפעיל מכשור אסתטיקה.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36842903/8b16ffcb/` },
+  { title: "טכנאי/ת הסרת שיער - CARE", company: "CARE Medical", description: "טכנאי הסרת שיער.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36997259/1d18a7d2/` },
+
+  // Teachers / early childhood
+  { title: "מטפלים/מורה/תומך הוראה - טומשין נתיבות", company: "רשת תיכוני טומשין", description: "מטפלים ותומכי הוראה.", location: "נתיבות", region: "דרום", field: "חינוך והדרכה", externalUrl: `${D}/job/36986809/a9ac357b/` },
+  { title: "מטפל/ת מחנכ/ת - ויצו", company: "ויצו", description: "מחנכת ברשת ויצו.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36951260/8997e930/` },
+  { title: "מחנכ/ת לחינוך מיוחד - טומשין בת ים", company: "רשת תיכוני טומשין", description: "מחנכת חינוך מיוחד בבת ים.", location: "בת ים", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37017912/10901212/` },
+  { title: "גננת/מטפל/ת - גן מרתה", company: "גן מרתה", description: "גננת לגן פרטי.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37010483/2a3f219d-r15/` },
+  { title: "מובילות כיתה לגיל הרך", company: "JOBS Ai", description: "מובילות לגיל הרך ת\"א.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37005980/8f7f9dad/` },
+  { title: "מדריכים למערכי דיור - רמות חיפה", company: "קבוצת רמות", description: "מדריכים למערכי דיור.", location: "חיפה", region: "חיפה", field: "חינוך והדרכה", externalUrl: `${D}/job/37002389/d02c55f7/` },
+  { title: "מחנכות ומטפלות לגיל הרך - ת\"א", company: "JOBS AI", description: "מחנכות ומטפלות גיל רך.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36976188/2cbf5645/` },
+  { title: "מטפלות ומובילות - ירושלים", company: "מיי פייס", description: "מטפלות למעונות ירושלים.", location: "ירושלים", region: "ירושלים", field: "חינוך והדרכה", externalUrl: `${D}/job/36952400/1315a259/` },
+  { title: "גננת/מטפלת לגן בוטיק", company: "מיי פייס", description: "גננת לגן בוטיק.", location: "רמת גן", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36969215/a19eaceb/` },
+  { title: "מטפלות/מובילות כיתה - רחובות", company: "JOBS AI", description: "מטפלות לגיל הרך ברחובות.", location: "רחובות", region: "שפלה", field: "חינוך והדרכה", externalUrl: `${D}/job/36963249/939f90a0/` },
+  { title: "סייעת/מטפלת - גן ברמת החייל", company: "מיי פייס", description: "סייעת לגן ברמת החייל.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36968778/5d6f362e/` },
+  { title: "אנשי צוות למעונות - ברנקו וייס", company: "ברנקו וייס", description: "צוות מעונות באשכול.", location: "אשכול", region: "דרום", field: "חינוך והדרכה", externalUrl: `${D}/job/36951412/7b1499e0/` },
 ];
 
 export async function POST() {
