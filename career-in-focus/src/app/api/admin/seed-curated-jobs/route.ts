@@ -855,6 +855,34 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מהנדס/ת אזרחי - גנדיר", company: "גנדיר הנדסה", description: "מהנדס אזרחי.", location: "תל אביב", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/37098765/e5f6g7h8/` },
   { title: "מנהל/ת פעילות - דיוטי פרי", company: "דיוטי פרי", description: "מנהל פעילות בנתב\"ג.", location: "נתב\"ג", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/37087654/i9j0k1l2/` },
   { title: "סופרוויזור משמרות - דיוטי פרי", company: "דיוטי פרי", description: "סופרוויזור משמרות.", location: "נתב\"ג", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37076543/m3n4o5p6/` },
+
+  // ─── Round 14 (24) ──────────────────────────────────────────────
+  // Store managers
+  { title: "מנהל/ת חנות - לחם ארטיזן", company: "לחם ארטיזן", description: "מנהל חנות לרשת לחם.", location: "שרון", region: "שרון", field: "קמעונאות ורכש", externalUrl: `${D}/job/36920290/63766e4a/` },
+  { title: "מנהל חנות XIAOMI", company: "המילטון חשמל", description: "מנהל חנות XIAOMI.", location: "ראשון לציון", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36902468/76f9925a/` },
+  { title: "מנהלות חנות - ג'ק קובה", company: "ג'ק קובה", description: "מנהלות חנות לסניפים.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36873949/fa665457/` },
+  { title: "מנהל/ת חנות - ד\"ר פישר", company: "ד\"ר פישר", description: "מנהל חנות בבני ברק.", location: "בני ברק", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/37024220/e1ed1cf2/` },
+  { title: "מנהל/ת חנות - רשת המכולת", company: "רשת המכולת", description: "מנהל חנות בקריות.", location: "קריות", region: "חיפה", field: "קמעונאות ורכש", externalUrl: `${D}/job/36967752/dc2c749b/` },
+  { title: "מנהל חנות ומכירות - סטריאו שופ", company: "סטריאו שופ", description: "מנהל חנות ומכירות בחיפה.", location: "חיפה", region: "חיפה", field: "קמעונאות ורכש", externalUrl: `${D}/job/37013827/2b75d030/` },
+  { title: "מנהל/ת חנות סופרמרקט - כפר סבא", company: "חסוי", description: "מנהל חנות סופרמרקט.", location: "כפר סבא", region: "שרון", field: "קמעונאות ורכש", externalUrl: `${D}/job/37107326/6cf255e6/` },
+  { title: "מנהל/ת חנות - DANA ASHKENAZI", company: "DANA ASHKENAZI", description: "מנהל חנות בת\"א.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36868819/b2876a6d/` },
+  { title: "מנהל/ת לחנות - מאפיית לחמים", company: "מאפיית לחמים", description: "מנהל למאפיית לחמים.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36825290/91918fbf/` },
+  { title: "מנהל/ת חנות - דינמיקה", company: "דינמיקה", description: "מנהל חנות דינמיקה.", location: "ראשון לציון", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36862929/f37ac024/` },
+  { title: "מנהלת חנות דיזנגוף סנטר", company: "שני יעקובי", description: "מנהלת חנות דיזנגוף סנטר.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36841307/994f86e7/` },
+
+  // Sales coordinators
+  { title: "רכז/ת מכירות חו\"ל", company: "חסוי", description: "רכז מכירות חו\"ל.", location: "מגדל העמק", region: "צפון", field: "מכירות ושיווק", externalUrl: `${D}/job/36945902/408b329e/` },
+  { title: "רכז/ת מכירות אמ\"ר - מדנס", company: "מדנס סוכנות ביטוח", description: "רכז מכירות אמ\"ר.", location: "תל אביב", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36825347/a8aa4e02/` },
+  { title: "רכז/ת אדמינ' שיווק ומכירות", company: "אביב מליסרון", description: "רכז אדמיניסטרציה שיווק ומכירות.", location: "פתח תקווה", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36929011/962ddf65/` },
+  { title: "רכז/ת תהליכי מכירה Back Office", company: "חסוי", description: "רכז Back Office מכירות.", location: "גדרה", region: "שפלה", field: "מכירות ושיווק", externalUrl: `${D}/job/36903551/8871031a/` },
+  { title: "פקיד/ת הזמנות מתאם/ת מכירות", company: "Cookies הזהב", description: "פקיד הזמנות מתאם מכירות.", location: "חולון", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36968284/cde6db64/` },
+  { title: "מתאמ/ת מכירות ואדמיניסטרציה", company: "שיכון ובינוי", description: "מתאם מכירות ואדמין באראד.", location: "ערד", region: "דרום", field: "מכירות ושיווק", externalUrl: `${D}/job/37090834/dec3f93c/` },
+  { title: "מתאמ/ת שירות ומכירה - דיפלומט", company: "Diplomat", description: "שירות ומכירה.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/37076166/46f07a35/` },
+  { title: "מתאמ/ת מכירות סניף רחובות", company: "פרופורציה", description: "מתאם מכירות.", location: "רחובות", region: "שפלה", field: "מכירות ושיווק", externalUrl: `${D}/job/36952989/8f7e88a7/` },
+  { title: "מתאמ/ת מכירות - מורן", company: "מורן", description: "מתאם מכירות בפ\"ת.", location: "פתח תקווה", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36895153/0496a09f/` },
+  { title: "מתאמ/ת מכירות - CBC", company: "CBC ISRAEL", description: "מתאם מכירות בגבעת חיים.", location: "גבעת חיים", region: "שרון", field: "מכירות ושיווק", externalUrl: `${D}/job/36940582/8427a989/` },
+  { title: "מתאם/ת מכירות Back Office - Systematics", company: "Systematics", description: "מתאם מכירות BO.", location: "תל אביב", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36861903/39f2c4db/` },
+  { title: "מתאמ/ת פגישות - אשטרום", company: "אשטרום", description: "מתאם פגישות למשרד מכירות.", location: "בני ברק", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/37068623/e179f091/` },
 ];
 
 export async function POST() {
