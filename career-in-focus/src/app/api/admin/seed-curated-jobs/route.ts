@@ -959,6 +959,49 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "תזונאים/נטורופתים יזמות", company: "חסוי", description: "תזונאים מודל יזמות.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37117890/fe29dc1e/` },
   { title: "רכז נוער חלקית - הרצליה", company: "JOBS AI", description: "רכז נוער חלקי.", location: "הרצליה", region: "שרון", field: "חינוך והדרכה", externalUrl: `${D}/job/36977632/c60b5cb1/` },
   { title: "עובד אחזקה - בית הלוחם אשדוד", company: "ארגון נכי צה\"ל", description: "עובד אחזקה בבית הלוחם.", location: "אשדוד", region: "דרום", field: "תפעול", externalUrl: `${D}/job/37003244/2dfd8881/` },
+
+  // ─── Round 17 (36) ──────────────────────────────────────────────
+  // Pharmacists
+  { title: "רוקח/ת בנתניה", company: "yesnet", description: "רוקח לארגון רפואי.", location: "נתניה", region: "שרון", field: "חברה וקהילה", externalUrl: `${D}/job/37107896/aa00bb11/` },
+  { title: "רוקח/ת ארצי - מכבי פארם", company: "מכבי", description: "רוקח ארצי במכבי פארם.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36841972/bb11cc22/` },
+  { title: "רוקח/ת בקריות", company: "חסוי", description: "רוקח בקריות.", location: "קריות", region: "חיפה", field: "חברה וקהילה", externalUrl: `${D}/job/36892930/cc22dd33/` },
+  { title: "רוקח/ת - רפאל בתי חולים", company: "רפאל", description: "רוקח לבית חולים רמב\"ם.", location: "תל אביב", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/37008317/dd33ee44/` },
+  { title: "סגן רוקחת ראשית - מכבי פארם", company: "מכבי", description: "סגן רוקחת ראשית.", location: "תל אביב", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36968607/ee44ff55/` },
+  { title: "רוקחים לסופר-פארם", company: "Super-Pharm", description: "רוקחים לסניפים.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/37047932/ff556677/` },
+  { title: "מנהל/ת מערך בתי מרקחת", company: "Capsule Solutions", description: "מנהל בתי מרקחת.", location: "ירושלים", region: "ירושלים", field: "חברה וקהילה", externalUrl: `${D}/job/36867774/aa667788/` },
+  { title: "רוקח קליני - לאומית", company: "לאומית", description: "רוקח קליני בלאומית ת\"א.", location: "תל אביב", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36879364/bb778899/` },
+  { title: "מומחה איכות בייצור - תרו", company: "Taro Pharma", description: "מומחה איכות תרופות.", location: "חיפה", region: "חיפה", field: "חברה וקהילה", externalUrl: `${D}/job/36889358/cc8899aa/` },
+  { title: "פורמולטור/ית - ד\"ר פישר", company: "ד\"ר פישר", description: "פורמולטור.", location: "בני ברק", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/37024695/dd99aabb/` },
+  { title: "רוקח/ת מוסמך - Shor Tabatznik", company: "שור טבצניק", description: "רוקח מוסמך.", location: "פתח תקווה", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36936991/eeaabbcc/` },
+  { title: "מנהל אשכול רוקחות", company: "Staffing Solutions", description: "מנהל אשכול רוקחות בת\"א.", location: "תל אביב", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36991141/ffbbccdd/` },
+
+  // Tech Team Leaders
+  { title: "מנהל צוות פיתוח דיגיטל - כלמוביל", company: "כלמוביל", description: "מנהל צוות פיתוח דיגיטל.", location: "ראש העין", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36874918/b99f496d/` },
+  { title: "ראש צוות פיתוח - Partner", company: "Partner", description: "ראש צוות פיתוח.", location: "ראש העין", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36933723/746b6e5b/` },
+  { title: "ראש צוות פיתוח - אורן מזרח", company: "אורן מזרח (הפניקס)", description: "ראש צוות פיתוח.", location: "חולון", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36895438/5a59d0b8/` },
+  { title: "ראש צוות פיתוח DATA - עוז תוכנה", company: "עוז תוכנה", description: "ראש צוות פיתוח Data.", location: "לוד", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37077686/dc3be596/` },
+  { title: "ראש צוות / CTO - Proceed", company: "Proceed", description: "ראש צוות / CTO בחיפה.", location: "חיפה", region: "חיפה", field: "פיתוח", externalUrl: `${D}/job/37071549/82b2a668/` },
+  { title: "React Native Team Lead - matrix", company: "matrix", description: "React Native Team Lead.", location: "לוד", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36910277/9571cc59/` },
+  { title: "ר\"צ פיתוח React & Node - matrix", company: "matrix", description: "ר\"צ React & Node.", location: "לוד", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36961767/3a346558/` },
+  { title: "ר\"צ Frontend - Proceed", company: "Proceed", description: "ר\"צ Frontend.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37013865/792f8aca/` },
+  { title: "ראש צוות AI & Cloud - עידור", company: "עידור מערכות", description: "ראש צוות AI & Cloud.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37083766/bd5e4489/` },
+  { title: "Tech Lead Android - היבט אנושי", company: "היבט אנושי", description: "Tech Lead Android.", location: "ראשון לציון", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36875469/74998fa8/` },
+  { title: "FullStack Team Leader - Proceed", company: "Proceed", description: "FullStack Team Leader.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37017627/8ebe545a/` },
+  { title: "Senior Frontend / Team Lead", company: "אביבית דבוש", description: "Senior Frontend.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36836386/e029d64a-r17/` },
+
+  // Analysts / Researchers
+  { title: "אנליסט תחקור ובקרה - matrix", company: "matrix", description: "אנליסט תחקור ובקרה.", location: "רמת גן", region: "מרכז", field: "דאטה", externalUrl: `${D}/job/37082987/141bd4dc/` },
+  { title: "אנליסט תחקור - הראל", company: "הראל ביטוח", description: "אנליסט תחקור.", location: "רמת גן", region: "מרכז", field: "דאטה", externalUrl: `${D}/job/36908168/1e9c7844/` },
+  { title: "אנאליסט TIER2/TIER1 - TrustNet", company: "TrustNet", description: "אנליסט TIER2/TIER1 פ\"ת.", location: "פתח תקווה", region: "מרכז", field: "דאטה", externalUrl: `${D}/job/36848337/1a48a8dd/` },
+  { title: "BI System Analyst - Aqurate", company: "Aqurate", description: "BI System Analyst.", location: "ראשון לציון", region: "מרכז", field: "דאטה", externalUrl: `${D}/job/36945313/9539c2c2/` },
+  { title: "Data Analyst - matrix DnA r17", company: "matrix DnA", description: "Data Analyst.", location: "כפר סבא", region: "שרון", field: "דאטה", externalUrl: `${D}/job/36911664/db4672fd-r17/` },
+  { title: "בקר/ית אשראי - הפניקס", company: "הפניקס", description: "בקר אשראי בהפניקס.", location: "ראשון לציון", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/37119543/f8612677/` },
+  { title: "מגדיר/ת דרישות - איילון", company: "איילון", description: "מגדיר דרישות.", location: "רמת גן", region: "מרכז", field: "דאטה", externalUrl: `${D}/job/37069155/0ec4e659/` },
+  { title: "ממונה אכיפה - הפניקס", company: "הפניקס בית השקעות", description: "ממונה על אכיפה.", location: "בני ברק", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/36934217/0c6cdae1/` },
+  { title: "תומך אפליקטיבי - מידעטק", company: "מידעטק", description: "תומך אפליקטיבי.", location: "מספר מקומות", region: "מרכז", field: "דאטה", externalUrl: `${D}/job/37030281/f1e7c0e0/` },
+  { title: "נציג שירות - מידעטק", company: "מידעטק", description: "נציג שירות אפליקטיבי.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/37030243/82c4b0e2/` },
+  { title: "מהנדס ביצועים - Dataway", company: "Dataway", description: "מהנדס ביצועים.", location: "באר יעקב", region: "שפלה", field: "פיתוח", externalUrl: `${D}/job/37011129/61248628/` },
+  { title: "ר\"צ אימות פיתוח - MATRIX", company: "MATRIX", description: "ר\"צ אימות פיתוח.", location: "באר יעקב", region: "שפלה", field: "פיתוח", externalUrl: `${D}/job/36980425/34cbbea4/` },
 ];
 
 export async function POST() {
