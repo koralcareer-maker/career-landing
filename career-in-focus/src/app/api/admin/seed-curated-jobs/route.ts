@@ -28,7 +28,11 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+// Seed file grew past 700 entries — sequential dedup/insert against
+// Turso runs ~80-100ms each, so total wall time approaches 60s and
+// Vercel's default cuts the request mid-loop. Bumping to the plan
+// ceiling (300s) so future rounds can complete in one shot.
+export const maxDuration = 300;
 
 interface SeedJob {
   title: string;
