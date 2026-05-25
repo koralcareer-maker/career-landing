@@ -1472,6 +1472,45 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מאבטחים/ות למעברי הגבול", company: "חסוי", description: "מאבטחים למעברי הגבול, קורס אחיד ושכר מהגבוהים בענף.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36437899/1168a4f7/` },
   { title: "ראש/ת מודיעין - אזרחי", company: "חסוי", description: "ראש מודיעין אזרחי.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36403376/30916dfd/` },
   { title: "אופטיקאי/ת - חנויות אופטיקה", company: "חסוי", description: "אופטיקאי לחנויות אופטיקה.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36561513/fa36a12a/` },
+
+  // ─── Round 31 (28) ──────────────────────────────────────────────
+  // Drivers
+  { title: "נהג/ת אוטובוס זעיר/מונית", company: "חברת הסעות", description: "נהג אוטובוס זעיר או מונית, משמרות בוקר/אחה\"צ/לילה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36498927/178fcaa9/` },
+  { title: "נהגים/ות - shagrir מענק 8000", company: "shagrir", description: "נהגים לקבוצת shagrir עם מענק 8,000.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36531645/318f0f8f/` },
+  { title: "נהג עם רכב צמוד - הפצה כרמיאל", company: "חסוי", description: "נהג עם רכב צמוד לחברת הפצה מובילה בכרמיאל.", location: "כרמיאל", region: "צפון", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/35392367/4609c435/` },
+  { title: "אחראי נהגים - מוסך מורשה ראשל\"צ", company: "חסוי", description: "אחראי נהגים ליחידת שינוע במוסך מורשה.", location: "ראשון לציון", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36914742/cfd7d37a/` },
+  { title: "נהג C1 / מכונה ניידת - מטאטא כביש", company: "חסוי", description: "נהג C1 או מכונה ניידת למטאטא כביש.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36637798/4c4f5839/` },
+  { title: "נהג/ת שינוע רכבים - AVIS", company: "AVIS", description: "נהג שינוע רכבים לחברת AVIS.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/35614743/c81d7565/` },
+  { title: "נהג/ת אוטובוס - תנופה", company: "תנופה", description: "נהג אוטובוס בחברת תנופה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/35666708/d9ba4c5b/` },
+  { title: "מכונאי רכב ודיאגנוסטיקה", company: "חסוי", description: "מכונאי רכב ודיאגנוסטיקה, שכר גבוה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36613744/a6dad237/` },
+
+  // Fitness / sports
+  { title: "מורה לספורט - חינוך מיוחד ירוחם", company: "חסוי", description: "מורה לספורט לבית ספר לחינוך מיוחד בירוחם.", location: "ירוחם", region: "דרום", field: "חינוך והדרכה", externalUrl: `${D}/job/33886066/4a49fb2f/` },
+  { title: "מדריכ/ת כושר - פאלאס להבים", company: "פאלאס להבים", description: "מדריך כושר בפאלאס להבים, בוקר/ערב.", location: "להבים", region: "דרום", field: "חינוך והדרכה", externalUrl: `${D}/job/36649825/c2083d94/` },
+  { title: "מנהל/ת מועדון כושר - רמת ישי", company: "חסוי", description: "מנהל מועדון כושר במגדל עסקים ברמת ישי.", location: "רמת ישי", region: "צפון", field: "חינוך והדרכה", externalUrl: `${D}/job/36320403/cf27ea5f/` },
+  { title: "מאמן/ת טניס", company: "חסוי", description: "מאמן טניס.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/34459733/7e2afa33/` },
+
+  // Banking / real estate
+  { title: "בנקאי/ת - לאומי כפר סבא", company: "בנק לאומי", description: "בנקאי לסניף לאומי בכפר סבא.", location: "כפר סבא", region: "שרון", field: "בנקאות ופיננסים", externalUrl: `${D}/job/36674791/CC3FBE8A/` },
+  { title: "מנהל/ת אולם תצוגה - BYD באר שבע", company: "BYD", description: "מנהל אולם תצוגה BYD באר שבע.", location: "באר שבע", region: "דרום", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/34305738/102fea51/` },
+  { title: "נציג/ת מכירות טלפוניות - נדל\"ן", company: "חברת נדל\"ן", description: "מכירות טלפוניות לחברת נדל\"ן.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36708915/19c1e8d5/` },
+  { title: "סוכנ/ת מכירות - אביסרור משה ובניו", company: "אביסרור משה ובניו", description: "סוכן מכירות לפרויקט יוקרה בתל אביב.", location: "תל אביב", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/34769167/c518f69d/` },
+  { title: "מנהל/ת פרויקט מצד היזם - BST", company: "BST", description: "מנהל פרויקט מצד היזם.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/36702892/726ec44d/` },
+  { title: "משרד ייעוץ נדל\"ן", company: "חסוי", description: "משרד ייעוץ נדל\"ן.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/25221097/708cc46f/` },
+  { title: "עוזר/ת חשב - חברה בינלאומית חדרה", company: "חברה בינלאומית", description: "עוזר חשב לחברה בינלאומית בחדרה.", location: "חדרה", region: "חיפה", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/24853086/29b183d4/` },
+  { title: "מתאם/ת תפעול", company: "חסוי", description: "מתאם תפעול.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/34256357/94c4ebd1/` },
+
+  // Cellular / customer service
+  { title: "מוקד מכירות - פרטנר חיסכון לטיול", company: "פרטנר", description: "מוקד מכירות פרטנר, חיסכון לטיול.", location: "מספר מקומות", region: "מרכז", field: "מוקד טלפוני", externalUrl: `${D}/job/36621211/edabad86/` },
+  { title: "נציג/ת מכירות - פרטנר 15K", company: "פרטנר", description: "נציג מכירות בפרטנר, ממוצע שכר 15K.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36379702/be4b82c1/` },
+  { title: "WhatsApp שירות - PARTNER", company: "PARTNER", description: "שירות בוואטסאפ ב-PARTNER.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36334273/6145ac06/` },
+  { title: "נציגי/ות שירות ומכירה - Cal", company: "Cal", description: "נציגי שירות ומכירה ב-Cal, עבודה יציבה + מענק 11K.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36407328/c65db193/` },
+  { title: "לוחמים/ות - משרד החוץ", company: "משרד החוץ", description: "לוחמים לתפקיד משמעותי במשרד החוץ.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36621325/7970f496/` },
+
+  // Misc - logistics + security
+  { title: "מלגזן/ית לעבודת ערב - מרלו\"ג מודיעין", company: "חסוי", description: "מלגזן לעבודת ערב במרלו\"ג במודיעין.", location: "מודיעין", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/34285408/0c9c3280/` },
+  { title: "פקח/ית מיון כבודה", company: "חסוי", description: "פקח מיון כבודה.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/35148920/ce21fc34/` },
+  { title: "סייר/ת בשמירה ואבטחה", company: "חסוי", description: "סייר בשמירה ואבטחה.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36707300/29296e5c/` },
 ];
 
 export async function POST() {
