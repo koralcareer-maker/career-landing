@@ -1033,6 +1033,38 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "Kubernetes Engineer - Comm-IT", company: "Comm-IT", description: "Kubernetes Engineer.", location: "ראשון לציון", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37098123/defg5555/` },
   { title: "Data Engineer ETL - Matrix", company: "Matrix DnA", description: "Data Engineer ETL.", location: "כפר סבא", region: "שרון", field: "פיתוח", externalUrl: `${D}/job/37089234/efgh6666/` },
   { title: "Senior C++ Engineer - Defense", company: "חסוי", description: "Senior C++ ביטחוני.", location: "חיפה", region: "חיפה", field: "פיתוח", externalUrl: `${D}/job/37076345/fghi7777/` },
+
+  // ─── Round 19 (24) ──────────────────────────────────────────────
+  // Training coordinators / instructors
+  { title: "רכז/ת הדרכה והוראה", company: "חסוי", description: "רכז/ת הדרכה והוראה לתוכנית פדגוגית.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36744730/823a6a26/` },
+  { title: "רכז/ת הדרכה לעברית כשפה שנייה", company: "חסוי", description: "רכז הדרכה לעברית כשפה שנייה בעל יסודי.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/34028110/759a3d9e/` },
+  { title: "רכז/ת קשרי מורים", company: "חסוי", description: "רכז קשרי מורים והדרכה.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/34125827/fd1fa7b2/` },
+  { title: "רכז/ת הדרכה - בזן", company: "קבוצת בזן", description: "רכז הדרכה לפרויקט עד 5 שנים. תיאום קורסים, מדריכים, לוגיסטיקה.", location: "חיפה", region: "חיפה", field: "חינוך והדרכה", externalUrl: `${D}/job/23468499/79635bcd/` },
+  { title: "רכזות קורסים", company: "חסוי", description: "רכזות קורסים איכותיות לסביבת הדרכה מקצועית.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36117426/58fc9a80/` },
+  { title: "רכז/ת ידע והדרכה", company: "ארגון מוביל", description: "רכז ידע והדרכה בארגון מוביל בפתח תקווה. בניית חומרי הדרכה, ניהול ידע.", location: "פתח תקווה", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/35657702/1900d301/` },
+  { title: "צוות הדרכה - כפר ילדים", company: "כפר טוקאייר", description: "צוות הדרכה לכפר הילדים והנוער טוקאייר.", location: "מספר מקומות", region: "צפון", field: "חינוך והדרכה", externalUrl: `${D}/job/36960418/f94c99b6/` },
+  { title: "רכז/ת תכנית סיוע לחיים", company: "ארגון לתת", description: "רכז תכנית סיוע לחיים בארגון לתת.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36631300/f72956c8/` },
+  { title: "מדריך/ת ספורט - John Bryce", company: "John Bryce", description: "מדריך ספורט להדרכת הגנה עצמית.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36182007/613ee73b/` },
+  { title: "מדריך/ה שיקומי/ת - אדנמ", company: "אדנמ", description: "מדריך שיקומי במרכזי תעסוקה מוגנת בצפון.", location: "מספר מקומות", region: "צפון", field: "חינוך והדרכה", externalUrl: `${D}/job/34294775/dd0b4d6a/` },
+  { title: "מדריך/ת ירי ולחימה", company: "ארגון ביטחוני", description: "מדריך ירי ולחימה לארגון ביטחוני.", location: "בית שמש", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36612813/56ec4cd9/` },
+  { title: "מדריך/ת ERP - מודול מכירות", company: "ארגון תעשייתי", description: "מדריך ERP, הוראת מודול מכירות לעובדים.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36703823/3512157f/` },
+
+  // Customer service
+  { title: "נציג/ת שירות לקוחות ביטוח רכב", company: "לוויט יבוא רכב", description: "נציג שירות לקוחות ביטוח רכב, ~10.5K. ראשון לציון.", location: "ראשון לציון", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36445898/802e918b/` },
+  { title: "נציג/ה שירות לקוחות דיגיטל - סטימצקי", company: "סטימצקי", description: "נציג שירות לקוחות דיגיטל ברשת סטימצקי.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/34128943/11307a9c/` },
+  { title: "תמיכה טלפונית - מערכת פריוריטי", company: "חסוי", description: "תמיכה טלפונית למערכת פריוריטי.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/34354758/2c9a4b90/` },
+  { title: "נציג/ת שירות לקוחות - אסם נסטלה", company: "אסם נסטלה", description: "נציג שירות לקוחות למוקד הצרכנים של אסם נסטלה.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/33851201/b9dfa5d4/` },
+  { title: "נציג/ת שירות טלפוני / ווטסאפ", company: "חסוי", description: "נציג שירות טלפוני ובוואטסאפ, שכר גבוה.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36431629/2a061cb8/` },
+  { title: "נציג/ת שירות לקוחות - פנדור", company: "פנדור", description: "נציג שירות לקוחות ובק אופיס לחברת פנדור.", location: "ראשון לציון", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/34207489/22833b15/` },
+  { title: "נציג/ת שירות לקוחות - ZARA", company: "ZARA", description: "שירות לקוחות במשרדי ZARA, היברידי. 8:00-17:00, שכר ~8K + ארוחות ונסיעות.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36675893/5dc32f6b/` },
+  { title: "נציג/ת שירות לקוחות טכני - פוינטר", company: "פוינטר", description: "שירות לקוחות למחלקה הטכנית של חברת פוינטר.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/34287859/9b931b3e/` },
+  { title: "נציג/ת שירות לקוחות דיגיטלי - תן ביס", company: "תן ביס", description: "נציג שירות לקוחות דיגיטלי לתן ביס.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/35618771/2b2d484a/` },
+
+  // Insurance / pension agents
+  { title: "סוכן/ת ביטוח פנסיוני - שקל", company: "סוכנות שקל", description: "סוכן ביטוח פנסיוני לסוכנות שקל.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/36314399/867cbabf/` },
+  { title: "מיישב/ת תביעות בריאות וחיים", company: "חסוי", description: "מיישב תביעות בריאות וחיים בהיברידי.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/34199034/c9f2fd7d/` },
+  { title: "משווק/ת פנסיוני - כלל ביטוח", company: "כלל ביטוח", description: "משווק פנסיוני בכלל ביטוח.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/33912571/ea4a0e25/` },
+  { title: "אנליסט/ית מכירות לאגף הפצת סוכנים", company: "חסוי", description: "אנליסט מכירות לאגף הפצת סוכנים.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/34210073/dcded72c/` },
 ];
 
 export async function POST() {
