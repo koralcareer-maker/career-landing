@@ -1390,6 +1390,51 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "עוזרים/ות טכניים להתקנות אלומיניום", company: "חסוי", description: "עוזרים טכניים להתקנות אלומיניום, 45-75 ש\"ח לשעה.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/36310998/35f1b453/` },
   { title: "כתיבה ואנשים - מכללת אפקה", company: "מכללת אפקה", description: "מכללת אפקה מחפשת איש כתיבה ותקשורת.", location: "מספר מקומות", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/34248814/4e01d9e1/` },
   { title: "משנע/ת-דיספצ'ר - AVIS", company: "AVIS", description: "משנע-דיספצ'ר ב-AVIS, חברה מובילה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/34330989/ba0a0881/` },
+
+  // ─── Round 29 (36) ──────────────────────────────────────────────
+  // Super-Pharm / retail / Erroca
+  { title: "אנשי/ות צוות שירות - סופר-פארם", company: "סופר-פארם", description: "אנשי צוות שירות בסניפי סופר-פארם.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36625448/7ffd839f/` },
+  { title: "רוקחים/ות - סופר-פארם", company: "סופר-פארם", description: "רוקחים בסניפי סופר-פארם.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36486178/8e3f427e/` },
+  { title: "יועצת/ת מכירה - אירוקה נתניה", company: "אירוקה", description: "יועצת מכירה באירוקה נתניה, קניון השרון.", location: "נתניה", region: "שרון", field: "קמעונאות ורכש", externalUrl: `${D}/job/36630388/4041ab60/` },
+  { title: "יועצת/ת מכירה - אירוקה ת\"א דיזינגוף", company: "אירוקה", description: "יועצת מכירה באירוקה תל אביב, דיזינגוף סנטר.", location: "תל אביב", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36761792/f361fe96/` },
+  { title: "אחראי/ת חנות - אירוקה רחובות", company: "אירוקה", description: "אחראי חנות אירוקה בקניון רחובות.", location: "רחובות", region: "שפלה", field: "קמעונאות ורכש", externalUrl: `${D}/job/35959821/f7601c74/` },
+
+  // Branch managers
+  { title: "מנהל/ת סניף בתנאים טובים", company: "חסוי", description: "מנהל סניף ברשת קמעונאית.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36782198/b09bbf77/` },
+  { title: "מנהל/ת סניף - דרום שפלה", company: "חברה לאומית", description: "מנהל סניף לחברה מובילה באזור דרום-שפלה.", location: "מספר מקומות", region: "דרום", field: "קמעונאות ורכש", externalUrl: `${D}/job/36752596/6651b14e/` },
+  { title: "מנהלת סניף - שני יעקובי מלחה", company: "שני יעקובי", description: "מנהלת סניף שני יעקובי מלחה ירושלים.", location: "ירושלים", region: "ירושלים", field: "קמעונאות ורכש", externalUrl: `${D}/job/36671694/d5625a91/` },
+  { title: "עובדים/ות - ארומה אוניברסיטת חיפה", company: "ארומה", description: "עובדי ארומה סניף אוניברסיטת חיפה.", location: "חיפה", region: "חיפה", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/22266787/d0db3033/` },
+
+  // Procurement / back office
+  { title: "מנהל/ת רכש - חברה מובילה", company: "חסוי", description: "מנהל רכש מקומי וייבוא, 5+ שנות ניסיון.", location: "מספר מקומות", region: "מרכז", field: "רכש", externalUrl: `${D}/job/33922755/c915dc8c/` },
+  { title: "רפרנט/ית בק אופיס - רכש וסחר", company: "חברה ארצית", description: "רפרנט בק אופיס בתחום רכש וסחר.", location: "מספר מקומות", region: "מרכז", field: "רכש", externalUrl: `${D}/job/36399063/ea11dfcf/` },
+  { title: "פקידת קבלה - סטודיו קעקועים", company: "סטודיו קעקועים יוקרתי", description: "פקידת קבלה לסטודיו קעקועים יוקרתי.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/34061873/f3e72a73/` },
+  { title: "מפקח/ת רכישה - מגדל", company: "מגדל", description: "מפקח רכישה במגדל.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/34434425/2f0e4e8c/` },
+  { title: "פקידת קבלה - שכר 7K", company: "חסוי", description: "פקידת קבלה, שכר 7,000 ש\"ח.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/24473960/fb2bcb4b/` },
+  { title: "פקיד/ה הצעות מחיר - תעשייה ביטחונית", company: "תעשייה ביטחונית", description: "פקיד הצעות מחיר והזמנות בתעשייה ביטחונית.", location: "מספר מקומות", region: "מרכז", field: "רכש", externalUrl: `${D}/job/36598791/f99977d5/` },
+  { title: "מפקח/ת רכישה - הראל ביטוח", company: "קבוצת הראל", description: "מפקח רכישה לקבוצת הראל ביטוח ופיננסים.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/34506511/28401b78/` },
+  { title: "פקיד/ת בק אופיס", company: "חסוי", description: "פקיד בק אופיס.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36203895/3d8c4a55/` },
+
+  // Project managers
+  { title: "מנהל/ת צוות פרויקטים - תשתיות גז", company: "חסוי", description: "מנהל צוות פרויקטים בתחום תשתיות גז. Excel ו-MS Project.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36156243/a5bef532/` },
+  { title: "מנהל/ת פרויקטים PV - דקסל", company: "דקסל", description: "מנהל פרויקטים PV למערך האיכות של דקסל, זמני.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36780488/7aa2ca4e/` },
+  { title: "מנהל/ת פרויקטים - ירושלים ממשלתי", company: "ארגון ממשלתי", description: "מנהל פרויקטים ל-IT במיפוי, תקצוב ובקרה.", location: "ירושלים", region: "ירושלים", field: "מערכות מידע", externalUrl: `${D}/job/35633287/aad7af86/` },
+  { title: "מנהל/ת פרויקטים - משרה זמנית", company: "אוניברסיטת ת\"א", description: "מנהל פרויקטים זמני באוניברסיטה, טכנולוגיה ובריאות.", location: "תל אביב", region: "מרכז", field: "ניהול פרויקטים", externalUrl: `${D}/job/34119994/05e897fa/` },
+  { title: "מנהל/ת פרויקט NPI", company: "חסוי", description: "מנהל פרויקט NPI, החלפה לחל\"ד.", location: "מספר מקומות", region: "מרכז", field: "ניהול פרויקטים", externalUrl: `${D}/job/36329770/459f4ed8/` },
+  { title: "מנהל/ת פרויקטים ומנתח/ת מערכות - NY", company: "חסוי", description: "מנהל פרויקטים ומנתח מערכות, NY.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/35814718/a3212f2e/` },
+  { title: "תומך HELP DESK", company: "חסוי", description: "תומך HELP DESK.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/20761037/81cdb38b/` },
+
+  // Misc - shifts + maintenance + sales + admin
+  { title: "אחראי/ת משמרת - ישראייר גבעתיים/שדרות", company: "ישראייר", description: "אחראי משמרת למוקד ישראייר בגבעתיים ושדרות.", location: "מספר מקומות", region: "מרכז", field: "מוקד טלפוני", externalUrl: `${D}/job/36715204/e5b62b46/` },
+  { title: "נאמן/ת מחשוב / רפרנט/ית", company: "חסוי", description: "נאמן מחשוב או רפרנט.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/34433228/1a215ab4/` },
+  { title: "מתאם/ת שינויי דיירים", company: "חסוי", description: "מתאם שינויי דיירים.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/36132037/c27fdac4/` },
+  { title: "נציג/ת מכירות טלפוניות - סופרגז פאוור", company: "סופרגז פאוור", description: "נציג מכירות טלפוניות בסופרגז פאוור.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36119915/3e418546/` },
+  { title: "OP תחזוקה - קבוצת זארה", company: "זארה", description: "OP תחזוקה, איש תחזוקה לקבוצת זארה.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/34350540/f2d4d0ef/` },
+  { title: "יועצת שירות / פקידת קבלה", company: "חסוי", description: "יועצת שירות או פקידת קבלה, שכר גבוה.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/35609765/8e46c8fc/` },
+  { title: "אנליסט שיווק - שסטוביץ", company: "שסטוביץ", description: "אנליסט שיווק לחברת שסטוביץ.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36653948/4cff904d/` },
+  { title: "אחראי/ת תקשורת שיווקית - זמני", company: "חסוי", description: "אחראי תקשורת שיווקית, משרה זמנית.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/35911124/e9c368ac/` },
+  { title: "חווטים/ות - מודיעין", company: "חברה במודיעין", description: "חווטים וחווטות לחברה מובילה במודיעין.", location: "מודיעין", region: "מרכז", field: "אלקטרוניקה", externalUrl: `${D}/job/36683037/a54cc7b6/` },
+  { title: "תפעול מערכות פיננסיות - חיסכון", company: "חסוי", description: "תפעול מערכות פיננסיות בחיסכון ארוך טווח.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36367390/bc8c1dbc/` },
 ];
 
 export async function POST() {
