@@ -1065,6 +1065,37 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מיישב/ת תביעות בריאות וחיים", company: "חסוי", description: "מיישב תביעות בריאות וחיים בהיברידי.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/34199034/c9f2fd7d/` },
   { title: "משווק/ת פנסיוני - כלל ביטוח", company: "כלל ביטוח", description: "משווק פנסיוני בכלל ביטוח.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/33912571/ea4a0e25/` },
   { title: "אנליסט/ית מכירות לאגף הפצת סוכנים", company: "חסוי", description: "אנליסט מכירות לאגף הפצת סוכנים.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/34210073/dcded72c/` },
+
+  // ─── Round 20 (24) ──────────────────────────────────────────────
+  // Sales managers
+  { title: "מנהל/ת מכירות שטח - לקוחות אסטרטגיים", company: "Dun & Bradstreet", description: "מנהל מכירות שטח ללקוחות אסטרטגיים.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36467368/99cf571b/` },
+  { title: "מנהל/ת מכירות ארצי חלפים - רכב צמוד", company: "חסוי", description: "מנהל מכירות ארצי חלפים, רכב צמוד.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36898383/35326fc4/` },
+  { title: "מנהל/ת מכירות מתחם טרייד יוקרה", company: "חסוי", description: "מנהל מכירות מתחם טרייד יוקרה. הובלת צוות מכירות.", location: "פתח תקווה", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36088147/794c124d/` },
+  { title: "מנהל/ת מכירות שטח - דלתות פנדור", company: "דלתות פנדור", description: "מנהל מכירות שטח לקבלנים.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/33952680/6905ba76/` },
+  { title: "מנהל/ת מכירות אולם תצוגה - דלתות פנדור", company: "דלתות פנדור", description: "מנהל מכירות באולם תצוגה.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36419412/8ba6d034/` },
+  { title: "מנהל/ת חוזים ומכירות", company: "אלביט", description: "מנהל חוזים ומכירות מסחריות.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36755997/38d52d86/` },
+  { title: "מנהל/ת מוקד מכירות - אלן קאר", company: "אלן קאר", description: "מנהל מוקד מכירות אלן קאר, באר שבע.", location: "באר שבע", region: "דרום", field: "מכירות ושיווק", externalUrl: `${D}/job/20710953/eb53c545/` },
+  { title: "מנהל/ת צוות מוקד מכירות פיננסי", company: "חסוי", description: "מנהל צוות מוקד מכירות, ייעוץ פיננסי. 12-15K.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/25309922/2e655531/` },
+
+  // Software engineering
+  { title: "מהנדס/ת מערכת", company: "חסוי", description: "מהנדס מערכת לפרויקטים מורכבים, שליטה והגנה אווירית.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/34329792/91aac3dc/` },
+  { title: "מפתח/ת ג'וניור בהייטק - אקדמאים ללא ניסיון", company: "חסוי", description: "מסלול הכשרת מפתחי תוכנה לאקדמאיים ללא ניסיון. Backend Java/C++.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36532215/022d383a/` },
+  { title: "מהנדס/ת פתרונות SIEM", company: "Safeway / Cellcom", description: "מהנדס SIEM, ניסיון בתשתיות IT וצוותי אבטחה.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/34147430/9a6ee8e8/` },
+  { title: "מהנדס/ת Data Science - בטחוני", company: "מוסד בטחוני", description: "מהנדס Data Science, פיתוח ומחקר ב-Generative AI ו-LLMs.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36513481/b9d466af/` },
+  { title: "מהנדס/ת אינטגרציה ושילובים", company: "מוסד בטחוני", description: "מהנדס אינטגרציה ושילובים אלקטרוניים.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36309535/d70d30a7/` },
+  { title: "QA ידני - חברת הייטק גלובלית", company: "חסוי", description: "QA ידני, ללא ניסיון נדרש.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/25243612/8b4df262/` },
+
+  // Nurses / medical
+  { title: "אח/ות - מכון בריאות האישה", company: "בית חולים שערי צדק", description: "אחות למכון בריאות האישה, בי\"ח שערי צדק. הזדמנות לפיתוח מקצועי.", location: "ירושלים", region: "ירושלים", field: "רפואה ובריאות", externalUrl: `${D}/job/34152370/390ff8c9/` },
+  { title: "אח/ות רפואי/ת לתיירות מרפא", company: "חסוי", description: "אחות רפואית לייעוץ בתיירות מרפא, נדרשים עברית ורוסית.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36138592/67727731/` },
+  { title: "כוח עזר מיומן לחדר ניתוח", company: "אסותא חיפה", description: "כוח עזר לחדר ניתוח באסותא חיפה.", location: "חיפה", region: "חיפה", field: "רפואה ובריאות", externalUrl: `${D}/job/36581748/59a4d8a5/` },
+  { title: "אח/ות מוסמך/ת - מרפאת קרן היסוד", company: "מרפאת קרן היסוד", description: "אח/ות מוסמך/ת לאשדוד, משרה זמנית.", location: "אשדוד", region: "דרום", field: "רפואה ובריאות", externalUrl: `${D}/job/36492961/5f9b0559/` },
+
+  // Misc - finance + admin + construction + content
+  { title: "מנהל/ת כספים בכיר/ה - וולפסון", company: "בית חולים וולפסון", description: "מנהל כספים בכיר לבית חולים וולפסון.", location: "חולון", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/34168121/40440504/` },
+  { title: "מנהל/ת משרד - מכבי מרכז איכילוב", company: "מכבי שירותי בריאות", description: "מנהלת משרד מכבי מחוז מרכז, בית חולים איכילוב.", location: "תל אביב", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/25842245/8c9c877a/` },
+  { title: "מהנדס/ת ביצוע - שיפוצים בירושלים", company: "חסוי", description: "מהנדס ביצוע לפרויקטי תוספות בנייה ושיפוצים.", location: "ירושלים", region: "ירושלים", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36494196/b759638e/` },
+  { title: "כותבי/ות תוכן אקדמי מהבית", company: "חסוי", description: "כותבי תוכן אקדמי לעבודה מהבית, תנאים טובים.", location: "מהבית", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/36644011/0a01e0b0/` },
 ];
 
 export async function POST() {
