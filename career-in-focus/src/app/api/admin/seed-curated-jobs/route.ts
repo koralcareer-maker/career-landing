@@ -1299,6 +1299,50 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מנהל/ת תכנון ורישוי - גוש דן", company: "גוף ציבורי", description: "מנהל מחלקת תכנון ורישוי לגוף ציבורי.", location: "גוש דן", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36459749/50fd230b/` },
   { title: "מנהל/ת מטה ובקרה", company: "חסוי", description: "מנהל מטה ובקרה.", location: "מספר מקומות", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/34101070/a5102851/` },
   { title: "רכזי/ות גיוס", company: "חסוי", description: "רכזי גיוס.", location: "מספר מקומות", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/22060333/B9E5AF60/` },
+
+  // ─── Round 27 (36) ──────────────────────────────────────────────
+  // Resident-change coordinators (construction)
+  { title: "מתאמ/ת שינויי דיירים", company: "חסוי", description: "מתאם שינויי דיירים, ליווי מקצה לקצה עד מסירת מפתח.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/36475424/1e572a1f/` },
+  { title: "מתאם/ת שינויי דיירים", company: "חסוי", description: "מתאם שינויי דיירים.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/33180824/33845fab/` },
+  { title: "מתאם שינויי דיירים - יזמית קבלנית", company: "חסוי", description: "מתאם שינויי דיירים בחברה יזמית-קבלנית.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/34059042/0d824e9d/` },
+  { title: "מתאם/ת שינויי דיירים - תדהר", company: "תדהר", description: "מתאם שינויי דיירים לתדהר.", location: "רעננה", region: "שרון", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/36467463/c7d62937/` },
+  { title: "מתאם/ת שינויי דיירים - מרכז", company: "חברה מובילה", description: "מתאם שינויי דיירים לחברה מובילה במרכז.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/34054520/8bbf5129/` },
+  { title: "מתאם/ת שינויי דיירים - נדל\"ן", company: "חסוי", description: "מתאם שינויי דיירים לחברת נדל\"ן מובילה.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/34045533/d282a3b2/` },
+  { title: "מתאם/ת שינויי דיירים - ת\"א ונתניה", company: "חסוי", description: "מתאם שינויי דיירים לחברה בת\"א ובנתניה.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/36110206/7db48f0d/` },
+  { title: "מתאם/ת שינויי דיירים - מרכז", company: "חברה מובילה", description: "מתאם שינויי דיירים לחברה מובילה במרכז.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/33930564/1aa6c267/` },
+  { title: "בקר/ית תקציב - BST", company: "קבוצת BST", description: "בקר תקציב לפרויקטי בנייה.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/36414453/505d8337/` },
+
+  // Legal / law office
+  { title: "עורך/ת דין - פייפר כהן", company: "משרד פייפר כהן", description: "עורך דין במשרד פייפר כהן, כפר סבא. 1-2 שנות ניסיון.", location: "כפר סבא", region: "שרון", field: "חוק ומשפט", externalUrl: `${D}/job/35521852/5c851019/` },
+  { title: "מנהלת משרד - יד ימינו לעו\"ד", company: "משרד בוטיק", description: "מנהלת משרד למשרד עו\"ד בוטיק במרכז ת\"א.", location: "תל אביב", region: "מרכז", field: "חוק ומשפט", externalUrl: `${D}/job/36874690/06d11ce2/` },
+  { title: "יועץ/ת משפטי - סטארטאפ צעיר", company: "סטארטאפ", description: "יועץ משפטי לסטארטאפ צעיר בצמיחה מואצת.", location: "מספר מקומות", region: "מרכז", field: "חוק ומשפט", externalUrl: `${D}/job/36299218/ccb86e9d/` },
+  { title: "יועץ משפטי מנוסה - תשלובת דר פישר", company: "ד\"ר פישר", description: "יועץ משפטי בתשלובת ד\"ר פישר. עו\"ד עם ניסיון.", location: "מספר מקומות", region: "מרכז", field: "חוק ומשפט", externalUrl: `${D}/job/36562045/bd422713/` },
+  { title: "יועץ/ת משפטי - סטארטאפ פינטק", company: "סטארטאפ פינטק", description: "יועץ משפטי יחיד לסטארטאפ פינטק. 4+ שנות ניסיון.", location: "מספר מקומות", region: "מרכז", field: "חוק ומשפט", externalUrl: `${D}/job/35698096/1a7f25cd/` },
+
+  // Accounting / audit / finance
+  { title: "עוזר חשב - דיווח כספי", company: "חסוי", description: "עוזר חשב לצוות דיווח כספי.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/34325840/296cfda4/` },
+  { title: "עוזר/ת מנהלת כספים - קבוצת YSB", company: "קבוצת YSB", description: "עוזר מנהלת כספים בקבוצת YSB, באר שבע.", location: "באר שבע", region: "דרום", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36655943/aa374f1a/` },
+  { title: "חשב - רואה חשבון", company: "חסוי", description: "חשב, רואה חשבון.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/24395300/31cded66/` },
+  { title: "ע. חשבת שכר - FOX", company: "קבוצת FOX", description: "ע. חשבת שכר בקבוצת FOX.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36130745/86d93cfc/` },
+  { title: "חשב/ת כמויות", company: "חסוי", description: "חשב כמויות.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36301973/31e31ae9/` },
+  { title: "מתמחים/ות - BDO 2025", company: "BDO", description: "מתמחים לפירמת BDO 2025, ביקורת/מיסים/ייעוץ.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/34408452/4c854a69/` },
+  { title: "רו\"ח לאחר התמחות - BDO SMB", company: "BDO", description: "רו\"ח לאחר התמחות, מחלקת SMB.", location: "תל אביב", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/23194500/ac06a52d/` },
+  { title: "אנליסט מיסים ותוכן - BDO", company: "BDO", description: "אנליסט מיסים ותוכן לפירמת BDO.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/34403132/f8089937/` },
+  { title: "מתמחה/סטודנט/ית - רו\"ח", company: "חסוי", description: "מתמחה או סטודנט למשרד רואי חשבון.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/25540620/70ab04eb/` },
+
+  // Marketing / brands
+  { title: "אנליסט/ית שיווק - חברת נדל\"ן", company: "חברת נדל\"ן מובילה", description: "אנליסט שיווק לחברת נדל\"ן.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/35735906/5dab4fda/` },
+  { title: "מנהל/ת מותג - ד\"ר פישר", company: "ד\"ר פישר", description: "מנהל מותג בחטיבת השיווק בד\"ר פישר.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36057386/216723a8/` },
+  { title: "מנהל/ת תחום מאפה - אסם", company: "אסם", description: "אסם מגייסת מנהל תחום מאפה לתפקיד שיווק.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/34069074/7244873e/` },
+  { title: "מנהל/ת חווית לקוח - נדל\"ן", company: "חברת נדל\"ן ציבורית", description: "מנהל חווית לקוח בחברת נדל\"ן ציבורית.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36144216/163db188/` },
+
+  // Misc - medical resident + education + cost + drivers + back office + marketing
+  { title: "רופא/ה מתמחה - אורתופדיה כפ\"ס", company: "מרפאת כפר סבא", description: "רופא מתמחה באורתופדיה למרפאת כפר סבא.", location: "כפר סבא", region: "שרון", field: "רפואה ובריאות", externalUrl: `${D}/job/36294468/532a2390/` },
+  { title: "ראש/ת מדור - הוראה וטכנולוגיות למידה", company: "חסוי", description: "ראש מדור הוראה וטכנולוגיות למידה.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/26643247/84cad14a/` },
+  { title: "מתמחר/ת - חברה מובילה", company: "חסוי", description: "מתמחר לחברה מובילה.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36613098/ff5ee69f/` },
+  { title: "נהגים/ות - סטארטאפ", company: "חברת סטארט אפ", description: "נהגים לחברת סטארט אפ.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/20302073/ea113121/` },
+  { title: "תומך/ת Back Office - אקוסאפ", company: "אקוסאפ", description: "תומך Back Office לחברת אקוסאפ.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36298477/3cb6192c/` },
+  { title: "אשת/איש שיווק שטח - תחום הרפואה", company: "חסוי", description: "אשת שיווק שטח לחברה בתחום הרפואה.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/35237441/f8c0d44e/` },
 ];
 
 export async function POST() {
