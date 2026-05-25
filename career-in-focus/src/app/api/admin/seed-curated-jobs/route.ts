@@ -1130,6 +1130,41 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "שרטט/ת אוטוקאד מנוסה", company: "חסוי", description: "שרטט אוטוקאד מנוסה.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36292492/6e91962c/` },
   { title: "מתאמי/ות פגישות - שחל (טלמיטינג)", company: "שחל", description: "נציגי תיאום פגישות לחברת שחל, טלמיטינג.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/34419795/985937c9/` },
   { title: "נציגי/ות מכירות טלפוניות - היברידי", company: "חסוי", description: "מכירות טלפוניות, עבודה היברידית.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36151759/cc8bf842/` },
+
+  // ─── Round 22 (24) ──────────────────────────────────────────────
+  // Medical / paramedical
+  { title: "פרא-רפואי/ת למעונות ומרכזי יום", company: "חסוי", description: "פרא-רפואי למעונות יום, תנאים שווים.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36686837/879fc5da/` },
+  { title: "כוח עזר באסותא השלום", company: "אסותא השלום", description: "כוח עזר רפואי באסותא השלום.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36498072/22286185/` },
+  { title: "חובש/ת או בעל/ת הכשרה רפואית", company: "חסוי", description: "חובש או בעל הכשרה רפואית, מקומכם איתנו.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36753394/164ccf8d/` },
+
+  // Civil engineering / construction
+  { title: "מהנדס/הנדסאי מכונות / אזרחי / מים", company: "חסוי", description: "מהנדס או הנדסאי, פרויקטי תיכון וביצוע.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36659876/d1709344/` },
+  { title: "מנהל/ת מחלקת תכנון ורישוי", company: "גוף ציבורי גוש דן", description: "מנהל מחלקת תכנון ורישוי, נדרש רישום בפנקס מהנדסים.", location: "גוש דן", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36459749/50fd230b/` },
+  { title: "מנהל/ת מרכז הנדסה במרכז", company: "חסוי", description: "מנהל מרכז הנדסה, 7+ שנות הנדסה ו-5+ ניהול.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/35273465/1e565910/` },
+  { title: "מנהל/ת פרויקט מצד היזם - BST", company: "קבוצת BST", description: "מנהל פרויקט מצד היזם.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36438621/d642c6ed/` },
+  { title: "מנהל/ת עבודה מוסמך - בנייה ותשתיות", company: "חסוי", description: "מנהל עבודה מוסמך בבנייה ותשתיות.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36551405/f576aa5b/` },
+  { title: "מנהל/ת פרויקט תשתיות", company: "חסוי", description: "מנהל פרויקט לתחום התשתיות. 5+ שנות ניסיון.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36620717/07ffca1e/` },
+
+  // Trade / commercial / contracts
+  { title: "מתפעל/ת אתר סחר", company: "חסוי", description: "מתפעל אתר סחר אונליין.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36401172/4b0d4f52/` },
+  { title: "עורך/ת תוכן ועריכה לשונית", company: "חסוי", description: "עורך תוכן ועריכה לשונית.", location: "מספר מקומות", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/35963279/a3c09313/` },
+  { title: "מנהל/ת חוזים ומכירות", company: "חסוי", description: "מנהל חוזים ומכירות.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36498433/0cf36c58/` },
+  { title: "אחראי/ת סחר ג'וניור - אלטמן בריאות", company: "אלטמן בריאות", description: "אחראי סחר ג'וניור באלטמן בריאות.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/33931248/fd8cc70a/` },
+
+  // Tech / SAP / customer success
+  { title: "מדריך/ה ומטמיע/ת SAP", company: "חסוי", description: "מדריך ומטמיע SAP.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36733976/174a06d0/` },
+  { title: "סוחר/ת ניהול תיקים", company: "חסוי", description: "סוחר לניהול תיקי השקעות.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36344951/a0769074/` },
+  { title: "Customer Success Representative", company: "חסוי", description: "Customer Success Representative.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36806081/22428b41/` },
+  { title: "רפרנט/ית שירות לקוחות - אופנה", company: "יבואנית אופנה מובילה", description: "רפרנט שירות לקוחות ליבואנית אופנה.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/34561231/622398dd/` },
+  { title: "תפעול מערכות פיננסיות חיסכון ארוך טווח", company: "חסוי", description: "תפעול מערכות פיננסיות בחיסכון ארוך טווח.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36367390/bc8c1dbc/` },
+
+  // Misc
+  { title: "רכז/ת מש\"א ג'וניור - ת\"א", company: "חסוי", description: "רכז מש\"א ג'וניור בתל אביב, ליד הרכבת.", location: "תל אביב", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/34877106/8459afd9/` },
+  { title: "יועצי/ות נדל\"ן בכירים", company: "חסוי", description: "קריירת נדל\"ן רווחית ומעצימה.", location: "מספר מקומות", region: "מרכז", field: "נדל\"ן", externalUrl: `${D}/job/35717039/96da74c3/` },
+  { title: "מהנדס/ת מכירות - ציוד טכני", company: "חסוי", description: "מהנדס מכירות לשיווק ציוד טכני.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36218012/d376ac4b/` },
+  { title: "מנהל/ת מותג - איב רושה", company: "איב רושה", description: "מנהל מותג למותג איב רושה.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/34802398/01475156/` },
+  { title: "מאבטחים/ות - משרד ראש הממשלה", company: "משרד רה\"מ", description: "מאבטחים למשרד ראש הממשלה.", location: "ירושלים", region: "ירושלים", field: "אבטחה", externalUrl: `${D}/job/36970317/4ed7db66/` },
+  { title: "מנהל/ת שיווק וקמפיינר/ית - בית ספר לעסקים", company: "בית ספר לעסקים", description: "מנהל שיווק וקמפיינר לבית ספר לעסקים.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36789798/93b4fd6a/` },
 ];
 
 export async function POST() {
