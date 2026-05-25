@@ -1233,6 +1233,37 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מאבטחים/ות - הוד השרון 47.5 ש\"ח", company: "חסוי", description: "מאבטחי מוסדות חינוך בהוד השרון, 47.5 ש\"ח לשעה.", location: "הוד השרון", region: "שרון", field: "אבטחה", externalUrl: `${D}/job/35500838/9d851b16/` },
   { title: "מאבטחים/ות - מוסדות חינוך ירושלים", company: "חסוי", description: "מאבטחי מוסדות חינוך בירושלים, 55 ש\"ח יסוד.", location: "ירושלים", region: "ירושלים", field: "אבטחה", externalUrl: `${D}/job/36365452/d51aa6f3/` },
   { title: "מאבטחים/ות - מתקנים ממשלתיים בירושלים", company: "חסוי", description: "מאבטחים למתקנים ממשלתיים בירושלים.", location: "ירושלים", region: "ירושלים", field: "אבטחה", externalUrl: `${D}/job/36159853/57dc28bd/` },
+
+  // ─── Round 25 (24) ──────────────────────────────────────────────
+  // Warehouse / logistics
+  { title: "מנהל/ת מחסן", company: "מ. יוחננוף ובניו", description: "מנהל מחסן ת\"א, 1-2 שנות ניסיון, ניהול מלאי וצוות.", location: "תל אביב", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36906876/98e14ec1/` },
+  { title: "מנהל/ת מחסן - תחנת הכוח אורות יוסף", company: "תחנת הכוח אורות יוסף", description: "מנהל מחסן בתחנת הכוח, רמת חובב.", location: "רמת חובב", region: "דרום", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/34190845/146d097c/` },
+  { title: "מנהל/ת לוגיסטיקה", company: "חסוי", description: "מנהל לוגיסטיקה.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/23645712/94efee2e/` },
+  { title: "מנהל/ת אתר התקנות", company: "חסוי", description: "מנהל אתר התקנות.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/34172453/c66465bc/` },
+  { title: "מנהל מחסן לוגיסטי - שקדיה", company: "שקדיה", description: "מנהל מחסן לוגיסטי בשקדיה.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/34356582/658f449b/` },
+  { title: "מנהל/ת מחסן - רמי לוי אור עקיבא", company: "רמי לוי שיווק השקמה", description: "מנהל מחסן לסניף אור עקיבא ברמי לוי.", location: "אור עקיבא", region: "חיפה", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/25840953/2b846043/` },
+  { title: "מחסנא/ית מרלו\"ג - DHL EXPRESS", company: "DHL EXPRESS", description: "מחסנא במרלו\"ג של DHL.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36443808/6fd6f6ae/` },
+  { title: "מנהל/ת מחסן וניהול מלאי - הפועל ת\"א", company: "מועדון הפועל תל אביב", description: "מנהל מחסן וניהול מלאי לחנות הפועל ת\"א.", location: "תל אביב", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36774446/91eba531/` },
+  { title: "מנהל/ת לוגיסטיקה - רכב צמוד", company: "חסוי", description: "מנהל לוגיסטיקה, רכב צמוד.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/34090658/d7911f63/` },
+  { title: "צוות שירות - מחסני חשמל", company: "מחסני חשמל", description: "צוות השירות של מחסני חשמל מגייסים.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/34000598/f99b9bec/` },
+
+  // Account managers
+  { title: "מנהל/ת תיקי לקוח - ASSA ABLOY IL", company: "ASSA ABLOY IL", description: "מנהל תיקי לקוח ב-ASSA ABLOY IL.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/21887110/1152107a/` },
+  { title: "מנהלת תיק - סוכן/ת ביטוח משרדי/ת", company: "חסוי", description: "מנהלת תיק, סוכן ביטוח משרדי.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/36787290/0bbef76e/` },
+  { title: "מנהלת תיקי לקוחות", company: "חסוי", description: "מנהלת תיקי לקוחות.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/23890451/d1707b6e/` },
+  { title: "מנהל/ת תיק לקוחות - קרפור תווי קנייה", company: "קרפור", description: "מנהל תיק לקוחות לרשת קרפור, תווי קנייה.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/34345087/8b13dc4e/` },
+  { title: "מנהל/ת תיקי לקוחות - חברת דיגיטל", company: "חברת דיגיטל מובילה", description: "מנהל תיקי לקוחות בחברת דיגיטל.", location: "מספר מקומות", region: "מרכז", field: "דיגיטל", externalUrl: `${D}/job/35591202/47395f04/` },
+  { title: "נציגי/ות בניית תיק לקוח - פיננסי 12-18K", company: "חסוי", description: "בניית תיק לקוח, חברה פיננסית, 12-18K.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/35992368/74c10e64/` },
+  { title: "מנהל/ת לקוח - OLIN יגור", company: "OLIN", description: "מנהל לקוח בחברת OLIN, קיבוץ יגור.", location: "קיבוץ יגור", region: "חיפה", field: "מכירות ושיווק", externalUrl: `${D}/job/35954026/88e955f9/` },
+  { title: "מנהל/ת תיק לקוחות אסטרטגיים - UPS", company: "UPS", description: "מנהל תיק לקוחות אסטרטגיים ב-UPS.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36739866/e8e091c5/` },
+  { title: "מומחה/ית מכירת מחשבי PC - iDigital", company: "iDigital", description: "מומחה במכירת מחשבי PC ב-iDigital.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36623168/ed8e2778/` },
+
+  // Misc - sales / exec / finance / IT
+  { title: "אנשי/נשות מכירות שטח - הצפון", company: "חסוי", description: "מכירות שטח בצפון, שכר גבוה.", location: "מספר מקומות", region: "צפון", field: "מכירות ושיווק", externalUrl: `${D}/job/36458742/e7e2f75d/` },
+  { title: "סמנכ\"ל/ית תפעול (COO) - רשת STORY", company: "רשת STORY", description: "COO לרשת STORY.", location: "מספר מקומות", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/33983612/81bf47c9/` },
+  { title: "מנהל/ת FP&A", company: "חסוי", description: "מנהל FP&A.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36471719/9015652e/` },
+  { title: "מנהל/ת תחום מערכות מידע - חברה מסחרית", company: "חסוי", description: "מנהל תחום מערכות מידע לחברה מסחרית, שכר גבוה.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/36484031/11e3c3e1/` },
+  { title: "עוזר/ת חשב - קבוצת MER", company: "קבוצת MER", description: "עוזר חשב בקבוצת MER.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36163273/674a5944/` },
 ];
 
 export async function POST() {
