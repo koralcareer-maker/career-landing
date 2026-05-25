@@ -1200,6 +1200,39 @@ const CURATED_JOBS: SeedJob[] = [
   // Misc tech
   { title: "מפתח/ת .NET - מוביל מקצועי FHIR", company: "חסוי", description: "מפתח .NET ומוביל מקצועי לתחום ה-FHIR.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36805074/680dfb78/` },
   { title: "Magnet Design Physicist", company: "חסוי", description: "Magnet Design Physicist.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/35033172/9a13a33d/` },
+
+  // ─── Round 24 (24) ──────────────────────────────────────────────
+  // Chefs / kitchen / food service
+  { title: "טבח/ית - טרמינל פתאל נתב\"ג", company: "פתאל נתב\"ג", description: "טבח מנוסה לטרמינל יוקרתי של רשת פתאל בנתב\"ג.", location: "נתב\"ג", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/34180452/4efd1d29/` },
+  { title: "טבחים/ות - בנדיקט בילו", company: "מסעדת בנדיקט", description: "מסעדת בנדיקט בילו מחפשת טבחים.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/33993340/e430e354/` },
+  { title: "טבח/ית - חדר אוכל", company: "חסוי", description: "טבח לחדר אוכל.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/27085339/eed58ce0/` },
+  { title: "טבחים וקונדיטורים - מהדרין", company: "מסעדת מהדרין", description: "טבחים וקונדיטורים למסעדת מהדרין.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/34216457/06bc67d4/` },
+  { title: "עוזר/ת טבח - מרכז רפואי שיקומי", company: "מרכז רפואי שיקומי", description: "עוזר טבח למרכז רפואי שיקומי בראשון לציון.", location: "ראשון לציון", region: "שפלה", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/24590886/a69e2ed4/` },
+  { title: "טבח/ית - פאלאס להבים", company: "פאלאס להבים (עזריאלי)", description: "טבח לפאלאס להבים מקבוצת עזריאלי.", location: "להבים", region: "דרום", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/34110152/f93fe1ff/` },
+  { title: "טבח/ית - מלון קראון פלזה", company: "קראון פלזה", description: "טבח למלון קראון פלזה.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/34141255/9ac098ec/` },
+  { title: "טבחים/יות ועוזרי/ות טבח", company: "חסוי", description: "טבחים ועוזרי טבחים.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/22376341/8b40c728/` },
+
+  // Reception clerks
+  { title: "פקיד/ת קבלה - כללית סמייל גילה", company: "כללית סמייל", description: "פקיד קבלה בכללית סמייל סניף גילה ירושלים.", location: "ירושלים", region: "ירושלים", field: "רפואה ובריאות", externalUrl: `${D}/job/36366326/2ff9ba87/` },
+  { title: "פקיד/ת קבלה - מרכז השתלות", company: "מרכז השתלות שיער", description: "פקיד קבלה למרכז השתלות שיער בראשל\"צ.", location: "ראשון לציון", region: "שפלה", field: "רפואה ובריאות", externalUrl: `${D}/job/34174448/1b542fd4/` },
+  { title: "פקיד/ת קבלה - מוסך אוטו שי", company: "מוסך אוטו שי", description: "פקיד קבלה למוסך אוטו שי, תנאים ושכר מעולים.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/33675565/2eb3110f/` },
+  { title: "פקיד/ת קבלה - כללית סמייל שדרות", company: "כללית סמייל", description: "פקיד קבלה למרפאת כללית סמייל שדרות.", location: "שדרות", region: "דרום", field: "רפואה ובריאות", externalUrl: `${D}/job/36089895/8e9555a2/` },
+  { title: "פקיד/ת קבלה - כללית סמייל שוהם", company: "כללית סמייל", description: "פקיד קבלה לכללית סמייל שוהם.", location: "שוהם", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36726832/2503e9d3/` },
+  { title: "פקיד/ת קבלה זמני/ת - כללית סמייל בת ים", company: "כללית סמייל", description: "פקיד קבלה זמני בכללית סמייל בת ים.", location: "בת ים", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36726376/7d644bfb/` },
+
+  // Call center management
+  { title: "מנהל/ת מוקד מכירות - גולן טלקום", company: "גולן טלקום", description: "מנהל מוקד מכירות גולן.", location: "מספר מקומות", region: "מרכז", field: "מוקד טלפוני", externalUrl: `${D}/job/36119972/8ca80c31/` },
+  { title: "מנהל/ת מוקד - האוניברסיטה הפתוחה", company: "האוניברסיטה הפתוחה", description: "מנהל מוקד עם ~20 נציגי מכירות, חמש בתי ספר ברחבי הארץ.", location: "מספר מקומות", region: "מרכז", field: "מוקד טלפוני", externalUrl: `${D}/job/24828861/3a2af7d1/` },
+  { title: "מנהל/ת מוקד דיגיטל - צ'אט/מייל/טלפוני", company: "חברה מובילה", description: "מנהל מוקד דיגיטל לצ'אט, מייל וטלפוני.", location: "מספר מקומות", region: "מרכז", field: "מוקד טלפוני", externalUrl: `${D}/job/21670225/565e0e1a/` },
+  { title: "נציג/ת מוקד טלמיטינג", company: "חסוי", description: "נציג מוקד טלמיטינג.", location: "מספר מקומות", region: "מרכז", field: "מוקד טלפוני", externalUrl: `${D}/job/36713836/da177ef0/` },
+  { title: "תומכ/ת סקיל A", company: "חסוי", description: "תומך טכני סקיל A לארגונים.", location: "מספר מקומות", region: "מרכז", field: "מוקד טלפוני", externalUrl: `${D}/job/27859323/dde7d16b/` },
+
+  // Security at schools / govt
+  { title: "מאבטח/ת - מוסדות חינוך רמלה", company: "חסוי", description: "מאבטח במוסדות חינוך ברמלה.", location: "רמלה", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36718073/68453301/` },
+  { title: "מאבטחים/ות - מוסדות חינוך שרון", company: "חסוי", description: "מאבטחים למוסדות חינוך בשרון.", location: "מספר מקומות", region: "שרון", field: "אבטחה", externalUrl: `${D}/job/36748188/398570f8/` },
+  { title: "מאבטחים/ות - הוד השרון 47.5 ש\"ח", company: "חסוי", description: "מאבטחי מוסדות חינוך בהוד השרון, 47.5 ש\"ח לשעה.", location: "הוד השרון", region: "שרון", field: "אבטחה", externalUrl: `${D}/job/35500838/9d851b16/` },
+  { title: "מאבטחים/ות - מוסדות חינוך ירושלים", company: "חסוי", description: "מאבטחי מוסדות חינוך בירושלים, 55 ש\"ח יסוד.", location: "ירושלים", region: "ירושלים", field: "אבטחה", externalUrl: `${D}/job/36365452/d51aa6f3/` },
+  { title: "מאבטחים/ות - מתקנים ממשלתיים בירושלים", company: "חסוי", description: "מאבטחים למתקנים ממשלתיים בירושלים.", location: "ירושלים", region: "ירושלים", field: "אבטחה", externalUrl: `${D}/job/36159853/57dc28bd/` },
 ];
 
 export async function POST() {
