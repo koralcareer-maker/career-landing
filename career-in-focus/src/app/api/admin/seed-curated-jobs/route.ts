@@ -1435,6 +1435,43 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "אחראי/ת תקשורת שיווקית - זמני", company: "חסוי", description: "אחראי תקשורת שיווקית, משרה זמנית.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/35911124/e9c368ac/` },
   { title: "חווטים/ות - מודיעין", company: "חברה במודיעין", description: "חווטים וחווטות לחברה מובילה במודיעין.", location: "מודיעין", region: "מרכז", field: "אלקטרוניקה", externalUrl: `${D}/job/36683037/a54cc7b6/` },
   { title: "תפעול מערכות פיננסיות - חיסכון", company: "חסוי", description: "תפעול מערכות פיננסיות בחיסכון ארוך טווח.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36367390/bc8c1dbc/` },
+
+  // ─── Round 30 (30) ──────────────────────────────────────────────
+  // Production / factory managers
+  { title: "מנהל/ת מפעל - שקדיה", company: "שקדיה", description: "מנהל מפעל בשקדיה, מזון. 5+ שנות ניסיון.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/34341401/794f0a77/` },
+  { title: "מנהל/ת מפעל - יטבתה", company: "קבוצת שטראוס", description: "מנהל מפעל בקבוצת שטראוס, יטבתה.", location: "יטבתה", region: "דרום", field: "תעשייה וייצור", externalUrl: `${D}/job/33922546/3954bfbb/` },
+  { title: "מנהל/ת מפעל - חברה תעשייתית", company: "חברה תעשייתית מובילה", description: "מנהל מפעל לחברה תעשייתית.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/26396171/727f9439/` },
+  { title: "מנהל/ת ייצור - עלבד דימונה", company: "עלבד", description: "מנהל ייצור במפעל עלבד דימונה.", location: "דימונה", region: "דרום", field: "תעשייה וייצור", externalUrl: `${D}/job/34104794/1b980605/` },
+  { title: "מנהל/ת תשתיות ואחזקה", company: "חסוי", description: "מנהל תשתיות ואחזקה.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/36109598/83008e60/` },
+  { title: "מנהל/ת ייצור - פארק ראם רכב חברה", company: "חסוי", description: "מנהל ייצור בפארק ראם עם רכב חברה.", location: "פארק ראם", region: "דרום", field: "תעשייה וייצור", externalUrl: `${D}/job/34809143/3c9cd98c/` },
+  { title: "עתודה למנהלי מפעל בטון - שפיר", company: "שפיר", description: "שפיר מגייסת למסלול עתודה למנהלי מפעל בטון.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/36582489/3ac4ccaf/` },
+  { title: "מהנדסים תעו\"נ - עתודה ניהולית", company: "חסוי", description: "מהנדסים ובוגרי תואר תעו\"נ למסלול עתודה ניהולית.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/25558423/a6cee76b/` },
+  { title: "מכונאי/ת אחזקה - כרמיאל", company: "חסוי", description: "מכונאי אחזקה בכרמיאל.", location: "כרמיאל", region: "צפון", field: "תעשייה וייצור", externalUrl: `${D}/job/34037382/e8c593c4/` },
+
+  // Accounts managers
+  { title: "מנהל/ת חשבונות וגבייה - יוניון מוביליטי", company: "יוניון מוביליטי", description: "מנהל חשבונות וגבייה ב-Union Mobility, תהליך גבייה מקצה לקצה.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36708421/d17a24f0/` },
+  { title: "מנהלת חשבונות - משרד רו\"ח", company: "משרד רו\"ח", description: "מנהלת חשבונות למשרד רואי חשבון.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/26204727/a7f8455e/` },
+  { title: "מנהלת חשבונות - משרה מלאה", company: "חסוי", description: "מנהלת חשבונות למשרה מלאה.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/34082925/719cae40/` },
+  { title: "מנהל/ת חשבונות - עמותת דרך עמי", company: "עמותת דרך עמי", description: "מנהל חשבונות עם ידע בחשבות שכר, משרה מלאה.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/26100797/85a7c7b3/` },
+  { title: "מנהל/ת חשבונות - קרן מורשת הכותל", company: "קרן מורשת הכותל המערבי", description: "מנהל חשבונות זמני עם אופציה להארכה.", location: "ירושלים", region: "ירושלים", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/35850742/c453b4e5/` },
+  { title: "מנהל/ת חשבונות", company: "חסוי", description: "מנהל חשבונות, ייבוא ציוד רפואי, חלקי.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/24474758/64927e22/` },
+  { title: "מנהל/ת חשבונות - משרד רו\"ח חיפה", company: "משרד רו\"ח", description: "מנהל חשבונות למשרד רואי חשבון בחיפה, סוג 3 כפול עד מאזן.", location: "חיפה", region: "חיפה", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/27318564/e1fe2fe3/` },
+  { title: "מנהל/ת חשבונות - דיירקטקום", company: "דיירקטקום", description: "מנהל חשבונות בדיירקטקום, ספקים+לקוחות+מאזן.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/26015601/b036f372/` },
+  { title: "מנהלי חשבונות - לשכת מנהלי החשבונות", company: "לשכת מנהלי החשבונות", description: "לשכת מנהלי החשבונות מחפשת מנהלי חשבונות בכל הרמות.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/32903139/edbedf53/` },
+
+  // Misc - helpers + tech + healthcare
+  { title: "עוזר/ת נהג - מרכז הפצה אסם נסטלה", company: "אסם נסטלה", description: "עוזר נהג למרכז הפצה של אסם נסטלה בשהם.", location: "שהם", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/35694030/a1546e77/` },
+  { title: "טכנאי קירור ועוזר טכנאי", company: "חברת קירור תעשייתי", description: "טכנאי קירור ועוזר טכנאי לחברת קירור תעשייתי.", location: "מספר מקומות", region: "מרכז", field: "חשמל", externalUrl: `${D}/job/36644505/2f1df328/` },
+  { title: "טכנאי/ת מעבדה - מטבח מוסדי", company: "חסוי", description: "טכנאי מעבדה לציוד למטבח המוסדי.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/36790577/7efd8dea/` },
+  { title: "אקטואר/ית - מודלים חיים ובריאות", company: "חסוי", description: "אקטואר למחלקת מודלים חיים ובריאות.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/33961154/ad06fb16/` },
+  { title: "תומכ/ת אפליקטיבי - משרה התחלתית היברידית", company: "חסוי", description: "תומך אפליקטיבי, משרה התחלתית, היברידית.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/36473600/b508a3d3/` },
+  { title: "מפעיל/ת NOC - סיווג ביטחוני בירושלים", company: "חסוי", description: "מפעיל NOC עם סיווג ביטחוני בירושלים.", location: "ירושלים", region: "ירושלים", field: "מערכות מידע", externalUrl: `${D}/job/36353159/624da290/` },
+  { title: "מטפלים/ות ומטפלות", company: "חסוי", description: "מטפלים ומטפלות.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/20566819/4b19c2f2/` },
+  { title: "מתפעל/ת השקעות - אגף הכספים", company: "חסוי", description: "מתפעל השקעות לאגף הכספים.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/26940426/2cc4e9aa/` },
+  { title: "אנליסט/ית בכספים / שוק ההון", company: "חסוי", description: "אנליסט בכספים ושוק ההון.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36554996/31d1e68c/` },
+  { title: "מאבטחים/ות למעברי הגבול", company: "חסוי", description: "מאבטחים למעברי הגבול, קורס אחיד ושכר מהגבוהים בענף.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36437899/1168a4f7/` },
+  { title: "ראש/ת מודיעין - אזרחי", company: "חסוי", description: "ראש מודיעין אזרחי.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36403376/30916dfd/` },
+  { title: "אופטיקאי/ת - חנויות אופטיקה", company: "חסוי", description: "אופטיקאי לחנויות אופטיקה.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36561513/fa36a12a/` },
 ];
 
 export async function POST() {
