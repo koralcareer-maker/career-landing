@@ -1096,6 +1096,40 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מנהל/ת משרד - מכבי מרכז איכילוב", company: "מכבי שירותי בריאות", description: "מנהלת משרד מכבי מחוז מרכז, בית חולים איכילוב.", location: "תל אביב", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/25842245/8c9c877a/` },
   { title: "מהנדס/ת ביצוע - שיפוצים בירושלים", company: "חסוי", description: "מהנדס ביצוע לפרויקטי תוספות בנייה ושיפוצים.", location: "ירושלים", region: "ירושלים", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36494196/b759638e/` },
   { title: "כותבי/ות תוכן אקדמי מהבית", company: "חסוי", description: "כותבי תוכן אקדמי לעבודה מהבית, תנאים טובים.", location: "מהבית", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/36644011/0a01e0b0/` },
+
+  // ─── Round 21 (24) ──────────────────────────────────────────────
+  // Social work / community
+  { title: "עו\"ס לניהול קהילת נפגעי 7/10", company: "חסוי", description: "ניהול קהילה של ילדים שחולצו ויתומי 7/10. נדרש תואר שני בעבודה סוציאלית.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36356978/0174a81b/` },
+  { title: "עו\"ס לרשת מגדלי הים התיכון", company: "מגדלי הים התיכון", description: "עובד סוציאלי במגדלי הים התיכון רחובות. עבודה עם דיירי גיל הזהב.", location: "רחובות", region: "שפלה", field: "חברה וקהילה", externalUrl: `${D}/job/35708014/6c52bc34/` },
+  { title: "עו\"ס במרכז עוצמ\"ה - נושמים לרווחה", company: "מרכז עוצמ\"ה", description: "טיפול ישיר במשפחות במרכז עוצמ\"ה לרווחה.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/34170002/f104aa64/` },
+  { title: "פסיכולוגים קליניים ועו\"ס מומחים", company: "מדיטון", description: "פסיכולוגים קליניים ועובדים סוציאליים מומחים, חוות דעת רפואיות.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36409589/f670c9bb/` },
+  { title: "מטפלים/ות לתחום ההתמכרויות", company: "מכבי שירותי בריאות", description: "מטפלים לשירותי התמכרויות, ארצי.", location: "ארצי", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36809387/75b8c65c/` },
+  { title: "מנהל/ת פנימייה לילדים ונוער בסיכון", company: "חסוי", description: "מנהל פנימייה לילדים ונוער בסיכון.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36709941/75c37f48/` },
+
+  // Teachers
+  { title: "מורה לאמנות - בית ספר לחינוך מיוחד", company: "חסוי", description: "מורה לאמנות בבית ספר לחינוך מיוחד.", location: "חדרה", region: "חיפה", field: "חינוך והדרכה", externalUrl: `${D}/job/33992048/f4dec0ab/` },
+  { title: "מורים/ות מחליפים/ות", company: "subteacher", description: "מורים מחליפים דרך מערכת subteacher.", location: "ארצי", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36216796/e057c699/` },
+  { title: "מורה לאנגלית - שכר גבוה", company: "בית ספר פרטי", description: "מורה לאנגלית בבית ספר פרטי, נס ציונה. שכר גבוה.", location: "נס ציונה", region: "שפלה", field: "חינוך והדרכה", externalUrl: `${D}/job/34176595/bc539852/` },
+  { title: "מורים/ות לתכנית היל\"ה - חיפה", company: "תכנית היל\"ה", description: "מורים לתכנית היל\"ה מחוז חיפה, אנגלית, עברית, גיאוגרפיה וערבית.", location: "חיפה", region: "חיפה", field: "חינוך והדרכה", externalUrl: `${D}/job/36515457/ccf4955e/` },
+  { title: "מורים/ות לעברית בירושלים", company: "חסוי", description: "מורים לעברית בירושלים, גם ללא ניסיון.", location: "ירושלים", region: "ירושלים", field: "חינוך והדרכה", externalUrl: `${D}/job/36146914/46af23f9/` },
+  { title: "מורה לחינוך גופני - חינוך מיוחד", company: "חסוי", description: "מורה לחינוך גופני בית ספר לחינוך מיוחד.", location: "זכרון יעקב", region: "חיפה", field: "חינוך והדרכה", externalUrl: `${D}/job/33993967/efca2d8e/` },
+  { title: "מורים/ות בתכנית שלבים", company: "מיזמים חינוכיים", description: "תכנית שלבים מיזמים חינוכיים מגייסת מורים.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/34292590/927a8b78/` },
+
+  // Hospitality / retail / services
+  { title: "חדרנים/יות לרשת מלונות מובילה", company: "רשת מלונות צפון", description: "חדרניות לרשת מלונות מובילה באזור הצפון.", location: "מספר מקומות", region: "צפון", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/34444514/814135a5/` },
+  { title: "מלצרים/ות לג'פינקה רחובות", company: "ג'פינקה", description: "מלצרים בג'פינקה רחובות, מודל שכר הכי שווה בשוק. בסיס + טיפים.", location: "רחובות", region: "שפלה", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/35732942/8bbfd144/` },
+  { title: "עובדים/ות לדיוטי פרי", company: "דיוטי פרי", description: "עובדים לדיוטי פרי, שכר גבוה, גם לסטודנטים. הסעות.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/34782277/3e45cd43/` },
+  { title: "פקיד/ה קבלה - אנא אגרון", company: "אנא אגרון", description: "פקיד קבלה באנא אגרון, תנאים מעולים.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/36002001/bbcdf8e6/` },
+
+  // Executive assistants
+  { title: "עוזר/ת אישית למנכ\"ל ולהנהלה", company: "חסוי", description: "עוזר אישית למנכ\"ל ולהנהלה, 10-15K. ניהול יומנים מורכבים.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36063808/70766f9b/` },
+  { title: "עוזר/ת אישית בכירה - אלקטרה-טרגט", company: "אלקטרה-טרגט", description: "עוזר אישית בכירה למנכ\"ל אלקטרה-טרגט. עבודה מול גורמי ממשל ורשויות.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/35038036/f3b90ca0/` },
+
+  // Driver + drafting + telesales + telemeeting
+  { title: "נהג משאית - UPS נתב\"ג", company: "UPS", description: "נהג משאית ל-UPS נתב\"ג, שכר גבוה, התחלה מיידית.", location: "נתב\"ג", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36827418/f0290bd4/` },
+  { title: "שרטט/ת אוטוקאד מנוסה", company: "חסוי", description: "שרטט אוטוקאד מנוסה.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36292492/6e91962c/` },
+  { title: "מתאמי/ות פגישות - שחל (טלמיטינג)", company: "שחל", description: "נציגי תיאום פגישות לחברת שחל, טלמיטינג.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/34419795/985937c9/` },
+  { title: "נציגי/ות מכירות טלפוניות - היברידי", company: "חסוי", description: "מכירות טלפוניות, עבודה היברידית.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36151759/cc8bf842/` },
 ];
 
 export async function POST() {
