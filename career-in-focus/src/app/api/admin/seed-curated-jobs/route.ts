@@ -1343,6 +1343,53 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "נהגים/ות - סטארטאפ", company: "חברת סטארט אפ", description: "נהגים לחברת סטארט אפ.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/20302073/ea113121/` },
   { title: "תומך/ת Back Office - אקוסאפ", company: "אקוסאפ", description: "תומך Back Office לחברת אקוסאפ.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36298477/3cb6192c/` },
   { title: "אשת/איש שיווק שטח - תחום הרפואה", company: "חסוי", description: "אשת שיווק שטח לחברה בתחום הרפואה.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/35237441/f8c0d44e/` },
+
+  // ─── Round 28 (36) ──────────────────────────────────────────────
+  // Cosmeticians
+  { title: "קוסמטיקאי/ת לטיפולים אסתטיים", company: "חסוי", description: "קוסמטיקאית לטיפולים אסתטיים, פנים, גוף, הסרת שיער.", location: "מספר מקומות", region: "מרכז", field: "ספרות וקוסמטיקה", externalUrl: `${D}/job/36624745/8f1e6bcf/` },
+  { title: "קוסמטיקאית - חברת קוסמטיקה ת\"א", company: "חברת קוסמטיקה מובילה", description: "קוסמטיקאית לחברת קוסמטיקה מובילה בת\"א.", location: "תל אביב", region: "מרכז", field: "ספרות וקוסמטיקה", externalUrl: `${D}/job/35737160/8769a54e/` },
+  { title: "קוסמטיקאי/ת מנוסה - משרה בכירה", company: "Ambiance", description: "קוסמטיקאית מנוסה למשרה בכירה ברמת גן.", location: "רמת גן", region: "מרכז", field: "ספרות וקוסמטיקה", externalUrl: `${D}/job/33990471/b985277a/` },
+  { title: "קוסמטיקאי/ת - מרפאת אסתטיקה ת\"א", company: "מרפאת אסתטיקה מובילה", description: "קוסמטיקאית למרפאת אסתטיקה מובילה בתל אביב.", location: "תל אביב", region: "מרכז", field: "ספרות וקוסמטיקה", externalUrl: `${D}/job/36627139/3499e1f3/` },
+
+  // Field sales
+  { title: "איש/ת מכירות שטח - קונימבו", company: "קונימבו", description: "מכירות שטח לקונימבו, חנויות אונליין.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36440046/469dc7de/` },
+  { title: "סוכן/ת מכירות שטח - חלקי חילוף", company: "חסוי", description: "סוכן מכירות שטח לתחום חלקי חילוף.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/34099208/6ac9fd2b/` },
+  { title: "נציג/ת מכירות שטח - DHL EXPRESS", company: "DHL EXPRESS", description: "מכירות שטח DHL EXPRESS אזור המרכז.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36416695/fa8a5d6c/` },
+  { title: "מכירות שטח וניהול תיקי לקוחות + רכב", company: "חסוי", description: "מכירות שטח וניהול תיקי לקוחות עם רכב צמוד.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36789760/31988f7a/` },
+  { title: "סוכן/ת מכירות שטח - קנאביס רפואי", company: "חסוי", description: "סוכן מכירות שטח לתחום הקנאביס הרפואי.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36211476/bbb231c7/` },
+  { title: "מנהל/ת מכירות שטח - מגזר ערבי", company: "חסוי", description: "מנהל מכירות שטח למגזר הערבי.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36560012/1e2f74f7/` },
+
+  // Customer relations
+  { title: "מנהל/ת קשרי לקוחות - פרידנזון", company: "פרידנזון", description: "מנהל קשרי לקוחות באשדוד.", location: "אשדוד", region: "דרום", field: "שירות לקוחות", externalUrl: `${D}/job/25556409/8d9fad2b/` },
+  { title: "נציג/ת תשלומים - מוקד חברת חשמל", company: "חברת חשמל", description: "נציג תשלומים במוקד חברת חשמל ת\"א.", location: "תל אביב", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36178720/793d5e76/` },
+  { title: "מנהל/ת תיקי לקוחות - ENT", company: "חסוי", description: "מנהל תיקי לקוחות ENT, 2+ שנות ניסיון.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/20636948/a4e5815c/` },
+  { title: "מנהל/ת קשרי לקוחות - בנק דיסקונט", company: "בנק דיסקונט", description: "מנהל קשרי לקוחות בנק דיסקונט, חטיבת מסחר.", location: "מספר מקומות", region: "מרכז", field: "בנקאות ופיננסים", externalUrl: `${D}/job/24590620/a1d697e6/` },
+  { title: "מנהל/ת תיק לקוחות - SME", company: "חברת מדיה", description: "מנהל תיק לקוחות SME בחברת מדיה.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/22775246/a31f30b6/` },
+
+  // Travel / tourism
+  { title: "סוכני/ות נסיעות פרילנס - מהבית", company: "חסוי", description: "סוכני נסיעות פרילנס, עבודה מהבית, מכירת חופשות וטיולים.", location: "מהבית", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/35624870/47e23830/` },
+  { title: "דיילים/ות - QAS וטרקליני דן בנתב\"ג", company: "QAS / טרקליני דן", description: "דיילים לטרקליני דן בנתב\"ג.", location: "נתב\"ג", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/34513047/54c5f4f0/` },
+  { title: "עבודה מהבית - עולם התיירות", company: "חסוי", description: "אוהבים את עולם התיירות? עבודה מהבית.", location: "מהבית", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/36626987/fa82cd31/` },
+  { title: "רפרנט/ית קשרי סוכנים - מיטב", company: "בית השקעות מיטב", description: "רפרנט קשרי סוכנים לבית ההשקעות מיטב.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36575060/e56bc6ad/` },
+
+  // Misc - drivers + security + therapists + misc
+  { title: "סדרן/ית נהגים - חברה גדולה", company: "חסוי", description: "סדרן נהגים לחברה גדולה ויציבה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36647868/1ea0e3f7/` },
+  { title: "נציג/ת מכירות טלפוני/ווטסאפ/פרונטלי", company: "חסוי", description: "נציג מכירות טלפוני, ווטסאפ ופרונטלי, שכר גבוה.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/35329781/db229685/` },
+  { title: "מאבטחים/ות - ביטחון רמב\"ם", company: "ביטחון רמב\"ם", description: "מאבטחים בקריירה בביטחון רמב\"ם, שכר מעולה.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36431933/3c08354f/` },
+  { title: "סיירים/ות - יחידת אכיפה קיסריה", company: "אכיפה וביטחון קיסריה", description: "סיירים ליחידת האכיפה והביטחון של קיסריה.", location: "קיסריה", region: "חיפה", field: "אבטחה", externalUrl: `${D}/job/36236727/cfb71f1d/` },
+  { title: "רכז/ת גיוס - הזדמנות חדשה", company: "חסוי", description: "רכז או רכזת גיוס.", location: "מספר מקומות", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36697363/0052ccf7/` },
+  { title: "מטפל/ת - רשת מעונות ויצו", company: "רשת מעונות ויצו", description: "מטפל לרשת מעונות ויצו, פריסה ארצית.", location: "ארצי", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36319320/2707db72/` },
+  { title: "מטפס/ת תרנים", company: "חסוי", description: "מטפס תרנים, שכר גבוה והכשרה.", location: "מספר מקומות", region: "מרכז", field: "תקשורת ואינטרנט", externalUrl: `${D}/job/36541430/1d8fff46/` },
+  { title: "פסיכולוגים/ות מהבית - קינן שפי", company: "קינן שפי", description: "פסיכולוגים לעבודה מהבית, ראיונות וסימולציות.", location: "מהבית", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36442839/816a368c/` },
+  { title: "לוקח/ת דמים - מרפאת נופים", company: "מרפאת נופים", description: "לוקח דמים למרפאת נופים, מודיעין.", location: "מודיעין", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36423174/96e31bd1/` },
+  { title: "רופא/ה - בית אבות אשקלון", company: "בית אבות ותיק", description: "רופא לבית אבות ותיק באשקלון.", location: "אשקלון", region: "דרום", field: "רפואה ובריאות", externalUrl: `${D}/job/35814186/07d6df34/` },
+  { title: "כותבי/ות תוכן אקדמי - מהבית", company: "חסוי", description: "כותבי תוכן אקדמי לעבודה מהבית, תנאים טובים.", location: "מהבית", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/35248803/c30e1ffa/` },
+  { title: "כתב/ת בריאות - אתר mako", company: "mako", description: "כתב בריאות לאתר mako.", location: "מספר מקומות", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/33694774/258a850e/` },
+  { title: "סגן ר\"א התקשרויות - מהנדס אזרחי", company: "חסוי", description: "סגן ראש אגף התקשרויות, מהנדס אזרחי או הנדסאי.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36534020/ac67c1f7/` },
+  { title: "נאמן/ת מחשוב", company: "ארגון ממשלתי", description: "נאמן מחשוב לתמיכה במשתמשים.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/34558438/f533440b/` },
+  { title: "עוזרים/ות טכניים להתקנות אלומיניום", company: "חסוי", description: "עוזרים טכניים להתקנות אלומיניום, 45-75 ש\"ח לשעה.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/36310998/35f1b453/` },
+  { title: "כתיבה ואנשים - מכללת אפקה", company: "מכללת אפקה", description: "מכללת אפקה מחפשת איש כתיבה ותקשורת.", location: "מספר מקומות", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/34248814/4e01d9e1/` },
+  { title: "משנע/ת-דיספצ'ר - AVIS", company: "AVIS", description: "משנע-דיספצ'ר ב-AVIS, חברה מובילה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/34330989/ba0a0881/` },
 ];
 
 export async function POST() {
