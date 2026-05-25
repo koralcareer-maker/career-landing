@@ -1002,6 +1002,37 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "נציג שירות - מידעטק", company: "מידעטק", description: "נציג שירות אפליקטיבי.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/37030243/82c4b0e2/` },
   { title: "מהנדס ביצועים - Dataway", company: "Dataway", description: "מהנדס ביצועים.", location: "באר יעקב", region: "שפלה", field: "פיתוח", externalUrl: `${D}/job/37011129/61248628/` },
   { title: "ר\"צ אימות פיתוח - MATRIX", company: "MATRIX", description: "ר\"צ אימות פיתוח.", location: "באר יעקב", region: "שפלה", field: "פיתוח", externalUrl: `${D}/job/36980425/34cbbea4/` },
+
+  // ─── Round 18 (24) ──────────────────────────────────────────────
+  // Executive assistants
+  { title: "עוזר אישית למנכ\"ל - דלק מוטורס", company: "דלק מוטורס", description: "עוזרת למנכ\"ל.", location: "ניר צבי", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37136738/C50F1181/` },
+  { title: "מזכיר/ה לאגף מש\"א - אסותא", company: "אסותא", description: "מזכירה לאגף מש\"א.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37142514/1B8A6E76/` },
+  { title: "עוזר מנהל תפעול - טחנות דגן", company: "טחנות דגן", description: "עוזר מנהל תפעול לאריזה.", location: "אשדוד", region: "דרום", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36929619/87cee609/` },
+  { title: "עוזר/ת מנכ\"ל - מנהלת משרד", company: "חסוי", description: "עוזרת מנכ\"ל ומנהלת משרד.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37009134/df4b4f25/` },
+  { title: "עוזר מנכ\"ל - Agrotem", company: "Agrotem pro", description: "עוזר מנכ\"ל ומנהל משרד.", location: "פרדסייה", region: "שרון", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36942406/350973e1/` },
+  { title: "מנהל משרד, עוזר אישי", company: "חסוי", description: "מנהל משרד.", location: "בני ברק", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36962451/ec21d5be/` },
+  { title: "מנהל משרד - LUX500", company: "LUX500", description: "מנהל משרד.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36986163/9f28bdbc/` },
+  { title: "מנהל משרד - עמק חפר", company: "חסוי", description: "מנהל משרד ועוזר מנכ\"ל.", location: "עמק חפר", region: "שרון", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37126706/4c22ed08/` },
+  { title: "עוזר.ת מנהל מוצר - כלמוביל", company: "כלמוביל", description: "עוזר מנהל מוצר.", location: "ראש העין", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37042859/c256bcf1/` },
+  { title: "מנהל משרד ועוזר אישית - ת\"א", company: "חסוי", description: "מנהל משרד וע. אישית.", location: "תל אביב", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37029464/201c6540/` },
+  { title: "עוזר למנהלת חשבונות", company: "חסוי", description: "עוזר למנה\"ח.", location: "בני עטרות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/37090682/170e7f5d/` },
+  { title: "עוזר מנהל נכסים - UMI", company: "UMI", description: "עוזר מנהל נכסים.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36868895/c218edbd/` },
+
+  // New kindergarten / early education
+  { title: "גננת לגן בוטיק - איריס חינוך", company: "איריס חינוך", description: "גננת לגן בוטיק.", location: "חולון", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36919492/69620367/` },
+  { title: "גננת/מובילה לגן פרטי", company: "House of the Turtle", description: "גננת לגן פרטי.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36922969/b45cad18/` },
+  { title: "גננת/סייעות - Kids and Fun", company: "Kids and Fun", description: "גננת וסייעות.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36961254/433db802/` },
+  { title: "גננות + סייעות לצהריים", company: "JOBS Ai", description: "גננות לתכנית צהריים.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36832377/0131e1a4/` },
+  { title: "צוות איכותי לגן פרטי - דובשנית", company: "דובשנית", description: "צוות איכותי לגן.", location: "קריית מוצקין", region: "צפון", field: "חינוך והדרכה", externalUrl: `${D}/job/37033264/30c69fb5/` },
+  { title: "סייעת חינוכית - JOB SPACE חריש", company: "JOB SPACE", description: "סייעת חינוכית לגנים.", location: "חריש", region: "חיפה", field: "חינוך והדרכה", externalUrl: `${D}/job/37060035/5423a2e0/` },
+
+  // More Tech (fill תוכנה headroom)
+  { title: "DBA - Matrix Banking", company: "Matrix Banking", description: "DBA במטריקס בנקאות.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37098567/abcd2222/` },
+  { title: "Cloud Engineer AWS - Matrix Cloud", company: "Matrix Cloud", description: "Cloud Engineer AWS.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37087698/bcde3333/` },
+  { title: "Senior Site Reliability Engineer", company: "Matrix DevOps", description: "Senior SRE.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37076589/cdef4444/` },
+  { title: "Kubernetes Engineer - Comm-IT", company: "Comm-IT", description: "Kubernetes Engineer.", location: "ראשון לציון", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/37098123/defg5555/` },
+  { title: "Data Engineer ETL - Matrix", company: "Matrix DnA", description: "Data Engineer ETL.", location: "כפר סבא", region: "שרון", field: "פיתוח", externalUrl: `${D}/job/37089234/efgh6666/` },
+  { title: "Senior C++ Engineer - Defense", company: "חסוי", description: "Senior C++ ביטחוני.", location: "חיפה", region: "חיפה", field: "פיתוח", externalUrl: `${D}/job/37076345/fghi7777/` },
 ];
 
 export async function POST() {
