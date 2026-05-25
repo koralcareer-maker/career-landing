@@ -1165,6 +1165,41 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מנהל/ת מותג - איב רושה", company: "איב רושה", description: "מנהל מותג למותג איב רושה.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/34802398/01475156/` },
   { title: "מאבטחים/ות - משרד ראש הממשלה", company: "משרד רה\"מ", description: "מאבטחים למשרד ראש הממשלה.", location: "ירושלים", region: "ירושלים", field: "אבטחה", externalUrl: `${D}/job/36970317/4ed7db66/` },
   { title: "מנהל/ת שיווק וקמפיינר/ית - בית ספר לעסקים", company: "בית ספר לעסקים", description: "מנהל שיווק וקמפיינר לבית ספר לעסקים.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36789798/93b4fd6a/` },
+
+  // ─── Round 23 (24) ──────────────────────────────────────────────
+  // Medical support
+  { title: "Case Operator - הטסות רפואיות", company: "חברת הטסות רפואיות", description: "Case Operator לחברת הטסות רפואיות, נתב\"ג.", location: "נתב\"ג", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/34129741/2955b162/` },
+  { title: "נציג/ת שירות למוקד רפואי - מהבית", company: "מוקד רפואי ארצי", description: "שירות למוקד רפואי, עבודה מהבית.", location: "מהבית", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36928061/87b15f50/` },
+  { title: "מזכיר/ה רפואי/ת - מכון עיניים", company: "מכון עיניים", description: "מזכיר רפואי במכון עיניים.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36212084/bf9e6ed5/` },
+  { title: "סניטר/ית - בית חולים פרטי רמת החייל", company: "בית חולים פרטי", description: "סניטר בבית חולים פרטי ברמת החייל.", location: "תל אביב", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36698769/a2b36d18/` },
+  { title: "צוות מסייע במרכז רפואי", company: "חסוי", description: "עובד לצוות מסייע במרכז רפואי.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36224339/0b1a6c6d/` },
+  { title: "סניטר/ית - מרכז רפואי פרטי רמת החייל", company: "מרכז רפואי פרטי", description: "סניטר במרכז רפואי פרטי, רמת החייל תל אביב.", location: "תל אביב", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/35901624/9fc04981/` },
+
+  // React / tech developers
+  { title: "מפתח/ת Cross-Platform (React Native / Flutter)", company: "חברת מדיקל", description: "מפתח Cross-Platform, React Native ו-Flutter, צוות טכנולוגי מוביל.", location: "חיפה", region: "חיפה", field: "פיתוח", externalUrl: `${D}/job/33963282/3702b377/` },
+  { title: "מפתח/ת FS - React & Node.js", company: "Realcommerce", description: "מפתח Full Stack React & Node.js. תל אביב.", location: "תל אביב", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/23937267/cf2075ec/` },
+  { title: "מפתח/ת React Native", company: "ארגון פיננסי", description: "מפתח React Native לארגון פיננסי בצמיחה.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/26453855/3797565b/` },
+  { title: "React Native Developer - יד2", company: "יד2", description: "React Native Developer ל-R&D של יד2.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/26390680/61e49fc9/` },
+  { title: "Backend Engineer", company: "חסוי", description: "Backend Engineer.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/23805977/883a97a2/` },
+  { title: "מפתח/ת CRM Dynamics", company: "חסוי", description: "מפתח CRM Dynamics.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36673119/d91a43f8/` },
+
+  // Fashion / retail / bakery
+  { title: "מנהל/ת מכירות - TOUS", company: "TOUS", description: "מנהל מכירות למותג TOUS הבינלאומי.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/34643995/05f1dde7/` },
+  { title: "מוכרים/ות - ZARA HOME גלילות", company: "ZARA HOME", description: "מוכרים למותג ZARA HOME בגלילות.", location: "גלילות", region: "שרון", field: "קמעונאות ורכש", externalUrl: `${D}/job/34843495/c6fb6907/` },
+  { title: "מנהלי/ות מחסן - קרפור אילת", company: "קרפור", description: "מנהלי מחסן לסניף קרפור באילת.", location: "אילת", region: "דרום", field: "קמעונאות ורכש", externalUrl: `${D}/job/36526021/f8e21169/` },
+  { title: "מנהל/ת סניף - SEBO קריון", company: "SEBO", description: "רשת האופנה SEBO מחפשת מנהל לסניף קריון, 25K.", location: "קריון", region: "צפון", field: "קמעונאות ורכש", externalUrl: `${D}/job/37016278/10ea5bf9/` },
+  { title: "מנהלי/ות חנויות - SEBO צפון", company: "SEBO", description: "רשת האופנה SEBO מחפשת מנהלי חנויות לצפון, 25K.", location: "מספר מקומות", region: "צפון", field: "קמעונאות ורכש", externalUrl: `${D}/job/36690656/f2849730/` },
+  { title: "אופה", company: "חסוי", description: "אופה.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/35652857/9d15b194/` },
+
+  // Drivers / security
+  { title: "נהג/ת משאית C + מנופאי/ת ד2", company: "חסוי", description: "נהג משאית דרגה C ומנופאי ד2.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36261883/a211185e/` },
+  { title: "נהג/ת משאית C / 1C", company: "חסוי", description: "נהג משאית עם רישיון C או 1C.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/34254191/50d62371/` },
+  { title: "לוחם/ת סיירת הביטחון - רובאי 07/05", company: "סיירת הביטחון", description: "לוחם סיירת הביטחון, רובאי 07/05, שכר 51.7.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/35632299/befd3a1f/` },
+  { title: "מפקח/ת אבטחה - מוסדות חינוך", company: "חסוי", description: "מפקח אבטחה למערך אבטחת מוסדות חינוך.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/34149710/68b67f62/` },
+
+  // Misc tech
+  { title: "מפתח/ת .NET - מוביל מקצועי FHIR", company: "חסוי", description: "מפתח .NET ומוביל מקצועי לתחום ה-FHIR.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36805074/680dfb78/` },
+  { title: "Magnet Design Physicist", company: "חסוי", description: "Magnet Design Physicist.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/35033172/9a13a33d/` },
 ];
 
 export async function POST() {
