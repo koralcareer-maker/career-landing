@@ -1264,6 +1264,41 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מנהל/ת FP&A", company: "חסוי", description: "מנהל FP&A.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36471719/9015652e/` },
   { title: "מנהל/ת תחום מערכות מידע - חברה מסחרית", company: "חסוי", description: "מנהל תחום מערכות מידע לחברה מסחרית, שכר גבוה.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/36484031/11e3c3e1/` },
   { title: "עוזר/ת חשב - קבוצת MER", company: "קבוצת MER", description: "עוזר חשב בקבוצת MER.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36163273/674a5944/` },
+
+  // ─── Round 26 (24) ──────────────────────────────────────────────
+  // Delivery drivers
+  { title: "נהגי חלוקה - ראשון לציון 12 טון", company: "חסוי", description: "נהגי חלוקה לחברה בראשון לציון, 12 טון.", location: "ראשון לציון", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/35234819/65d4ce1a/` },
+  { title: "נהג/ת חלוקה והפצה 18 טון + מנוף", company: "חסוי", description: "נהג חלוקה והפצה 18 טון עם מנוף, מרכז.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/34993766/c25e5c5a/` },
+  { title: "נהג/ת חלוקה", company: "חסוי", description: "נהג חלוקה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36197302/b22b93bd/` },
+  { title: "נהג/ת חלוקה - חומרי בניין", company: "חסוי", description: "נהג חלוקה לחברת חומרי בניין מובילה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36812902/4d6c5e77/` },
+  { title: "נהג/ת חלוקה עד 12 טון", company: "חסוי", description: "נהג חלוקה עד 12 טון.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/22503204/e1ba18f0/` },
+  { title: "נהג/ת חלוקה - גליקסמן 14.5-18K", company: "גליקסמן", description: "נהג חלוקה בחברת גליקסמן, שכר 14.5-18K.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36083397/36db1c4f/` },
+  { title: "נהג רכב צמוד - לוגיסטיקה פ\"ת", company: "חסוי", description: "נהג עם רכב צמוד לחברת לוגיסטיקה גדולה בפ\"ת.", location: "פתח תקווה", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/35626371/a32d759e/` },
+  { title: "מתכנן/ת קווי חלוקה", company: "חסוי", description: "מתכנן קווי חלוקה.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36302752/e641abdc/` },
+
+  // Healthcare / optics
+  { title: "אופטיקאי/ת - חנויות אופטיקה", company: "חסוי", description: "אופטיקאי בחנויות אופטיקה בתל אביב ובאר שבע.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/35746223/02a8c065/` },
+  { title: "דיאטנית/ת - מרכז גריאטרי אור יהודה", company: "מרכז גריאטרי", description: "דיאטנית למרכז גריאטרי באור יהודה.", location: "אור יהודה", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36672264/96f5a924/` },
+  { title: "חוקר/ת Database המטולוגי", company: "חסוי", description: "חוקר Database וניהול נתונים המטולוגי.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/34483407/2c559128/` },
+  { title: "מאבחנת ממד\"ה - שב\"ס", company: "שירות בתי הסוהר", description: "מאבחנת ממד\"ה במכללה הלאומית למקצועות הכליאה.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36740265/c6d8bb9e/` },
+
+  // Analysts / finance / data
+  { title: "אנליסט/ית ניתוח הכנסות - מי עדן", company: "מי עדן", description: "אנליסט ניתוח הכנסות במי עדן.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/33951160/5c186e2f/` },
+  { title: "אנליסט/ית אשראי - הראל", company: "הראל", description: "אנליסט אשראי לחטיבת ההשקעות בהראל.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36818032/7fb77e98/` },
+
+  // Tech support / fiber
+  { title: "תומכ/ת בק אופיס - 8K + בונוסים", company: "חסוי", description: "תומך בק אופיס, שכר בסיס 8K + בונוסים.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36482435/34998956/` },
+  { title: "טכנאי/ת שטח סיבים אופטיים", company: "חסוי", description: "טכנאי שטח סיבים אופטיים, לעצמאיים/עוסק מורשה.", location: "מספר מקומות", region: "מרכז", field: "תקשורת ואינטרנט", externalUrl: `${D}/job/34441360/5b05359f/` },
+
+  // Misc - tourism, creative, cosmetics, general
+  { title: "טור אופרייטור - אחראי משלחות פולין", company: "חסוי", description: "טור אופרייטור, אחראי תפעול משלחות פולין.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/36312005/849b58d6/` },
+  { title: "פורמולטור/ית", company: "חסוי", description: "פורמולטור בקוסמטיקה/מזון/פרמצבטיקה.", location: "מספר מקומות", region: "מרכז", field: "כימיה וביוטכנולוגיה", externalUrl: `${D}/job/36210773/c59c4bb6/` },
+  { title: "מנהל/ת סטודיו - קריאייטיב ועיצוב מוצר", company: "חסוי", description: "מנהל סטודיו לקריאייטיב ועיצוב מוצר.", location: "מספר מקומות", region: "מרכז", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/33876243/1640df54/` },
+  { title: "עובדים/ות כלליים/ות - נוף הגליל", company: "חסוי", description: "עובדים כלליים בנוף הגליל, שכר גבוה.", location: "נוף הגליל", region: "צפון", field: "תעשייה וייצור", externalUrl: `${D}/job/35651223/2b1101ea/` },
+  { title: "נציג/ת מכירות - טויוטה מלגזות", company: "טויוטה מלגזות", description: "נציג מכירות בטויוטה מלגזות, החלפה לחל\"ד.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36343659/cbb899c6/` },
+  { title: "מנהל/ת תכנון ורישוי - גוש דן", company: "גוף ציבורי", description: "מנהל מחלקת תכנון ורישוי לגוף ציבורי.", location: "גוש דן", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36459749/50fd230b/` },
+  { title: "מנהל/ת מטה ובקרה", company: "חסוי", description: "מנהל מטה ובקרה.", location: "מספר מקומות", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/34101070/a5102851/` },
+  { title: "רכזי/ות גיוס", company: "חסוי", description: "רכזי גיוס.", location: "מספר מקומות", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/22060333/B9E5AF60/` },
 ];
 
 export async function POST() {
