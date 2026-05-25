@@ -926,6 +926,35 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מטפלות/מובילות כיתה - רחובות", company: "JOBS AI", description: "מטפלות לגיל הרך ברחובות.", location: "רחובות", region: "שפלה", field: "חינוך והדרכה", externalUrl: `${D}/job/36963249/939f90a0/` },
   { title: "סייעת/מטפלת - גן ברמת החייל", company: "מיי פייס", description: "סייעת לגן ברמת החייל.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36968778/5d6f362e/` },
   { title: "אנשי צוות למעונות - ברנקו וייס", company: "ברנקו וייס", description: "צוות מעונות באשכול.", location: "אשכול", region: "דרום", field: "חינוך והדרכה", externalUrl: `${D}/job/36951412/7b1499e0/` },
+
+  // ─── Round 16 (24) ──────────────────────────────────────────────
+  // Occupational therapists
+  { title: "מרפא/ה בעיסוק - נאות התיכון", company: "נאות התיכון", description: "מרפא בעיסוק.", location: "נס ציונה", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36951602/b11e37e2/` },
+  { title: "מרפא/ה בעיסוק - וולפסון 1", company: "בית חולים וולפסון", description: "מרפא בעיסוק.", location: "חולון", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36915084/2b4e9655/` },
+  { title: "מרפא/ה בעיסוק אחראי - וולפסון", company: "בית חולים וולפסון", description: "מרפא בעיסוק אחראי.", location: "חולון", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36915122/49bbbffd/` },
+  { title: "מרפא בעיסוק לילדים - מכון צמיחה", company: "מכון צמיחה", description: "מרפא בעיסוק לילדים.", location: "מודיעין", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36953160/3fd89178/` },
+  { title: "מרפא/ה בעיסוק - חיפה", company: "חסוי", description: "מרפא בעיסוק בחיפה.", location: "חיפה", region: "חיפה", field: "חברה וקהילה", externalUrl: `${D}/job/36880029/13981c78/` },
+  { title: "מרפא בעיסוק - חינוך מיוחד ירוחם", company: "אלאור", description: "מרפא בעיסוק לחינוך מיוחד.", location: "ירוחם", region: "דרום", field: "חברה וקהילה", externalUrl: `${D}/job/36870833/e935b429/` },
+  { title: "מרפא בעיסוק - התפתחות הילד", company: "JOB SPACE", description: "מרפא בעיסוק התפתחות הילד.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36968227/948103ee/` },
+  { title: "מרפא בעיסוק - מכבי שרון", company: "מכבי", description: "מרפא בעיסוק במחוז שרון.", location: "מספר מקומות", region: "שרון", field: "חברה וקהילה", externalUrl: `${D}/job/36993801/a49e13c4/` },
+  { title: "מרפאות בעיסוק - חינוך מיוחד פרח", company: "פרח", description: "מרפאות בעיסוק לחנ\"מ.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/37021465/5206be82/` },
+  { title: "קלינאי תקשורת + מרפא בעיסוק", company: "מרכז פריים חיפה", description: "קלינאי תקשורת או מרפא בעיסוק.", location: "חיפה", region: "חיפה", field: "חברה וקהילה", externalUrl: `${D}/job/37027260/f39f1cea/` },
+  { title: "ראש תחום ריפוי בעיסוק", company: "שיקום עזרה למרפא", description: "ראש תחום בני ברק.", location: "בני ברק", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36879535/5720271f/` },
+  { title: "מרפא בעיסוק - גריאטריה", company: "JOBS AI", description: "מרפא בעיסוק למוסד גריאטרי.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36865665/9546db58/` },
+
+  // Fitness trainers
+  { title: "מאמן/ת כושר - הולמס פלייס", company: "הולמס פלייס", description: "מאמן כושר 70 ש\"ח/שעה.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36888731/fd6ae152/` },
+  { title: "מאמ/נת כושר מקצועי", company: "JOB SPACE", description: "מאמן כושר נמרץ.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36942710/54fd340a/` },
+  { title: "מאמן כושר - הכנסה פסיבית", company: "Fit K", description: "מאמן כושר עם הכנסה פסיבית.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37117909/8b52309f/` },
+  { title: "מאמנת כושר - שכר גבוה", company: "חסוי", description: "מאמנת כושר.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36983864/7dacb45c/` },
+  { title: "מאמני כושר - הידרותרפיה שער הנגב", company: "Hydro Shaar HaNegev", description: "מאמני כושר להידרותרפיה.", location: "שדרות", region: "דרום", field: "חינוך והדרכה", externalUrl: `${D}/job/37113501/faae06c5/` },
+  { title: "מאמן כושר פרילאנס - הולמס פלייס", company: "הולמס פלייס", description: "מאמן כושר פרילאנס.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36920651/fabd0aae/` },
+  { title: "מאמן/ת כושר לדיור מוגן - ירושלים", company: "JOBS AI", description: "מאמן כושר לדיור מוגן.", location: "ירושלים", region: "ירושלים", field: "חינוך והדרכה", externalUrl: `${D}/job/37111962/f49809c6/` },
+  { title: "מדריך תנועה - 100 ש\"ח ל-40 דקות", company: "מיי פייס", description: "מדריך תנועה.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/36969424/31d29981/` },
+  { title: "מורה לחינוך גופני - רמת השרון", company: "מרכזי טניס", description: "מורה לחינוך גופני.", location: "רמת השרון", region: "שרון", field: "חינוך והדרכה", externalUrl: `${D}/job/36910828/6b76f69b/` },
+  { title: "תזונאים/נטורופתים יזמות", company: "חסוי", description: "תזונאים מודל יזמות.", location: "תל אביב", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/37117890/fe29dc1e/` },
+  { title: "רכז נוער חלקית - הרצליה", company: "JOBS AI", description: "רכז נוער חלקי.", location: "הרצליה", region: "שרון", field: "חינוך והדרכה", externalUrl: `${D}/job/36977632/c60b5cb1/` },
+  { title: "עובד אחזקה - בית הלוחם אשדוד", company: "ארגון נכי צה\"ל", description: "עובד אחזקה בבית הלוחם.", location: "אשדוד", region: "דרום", field: "תפעול", externalUrl: `${D}/job/37003244/2dfd8881/` },
 ];
 
 export async function POST() {
