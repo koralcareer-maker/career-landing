@@ -1583,6 +1583,43 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "פקיד/ת שירות וגבייה - קצרין", company: "מח' ארנונה", description: "פקיד שירות וגבייה במחלקת הארנונה בקצרין.", location: "קצרין", region: "צפון", field: "שירות לקוחות", externalUrl: `${D}/job/35013678/cd9ab2b9/` },
   { title: "פקיד/ת מחסן ולוגיסטיקה", company: "חסוי", description: "פקיד מחסן ולוגיסטיקה.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/35440380/4b5b3663/` },
   { title: "פקיד/ת מחסן - עמק חפר", company: "חסוי", description: "פקיד מחסן בעמק חפר.", location: "עמק חפר", region: "שרון", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36641009/7df25422/` },
+
+  // ─── Round 34 (25) ──────────────────────────────────────────────
+  // Bus drivers / transport
+  { title: "נהגי/ות אוטובוס ומיניבוס D/D1", company: "חסוי", description: "נהגי אוטובוס ומיניבוס (D/D1), שכר גבוה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36635803/f14db9bb/` },
+  { title: "בודקים בטחוניים - רכבת ישראל 55 ש\"ח", company: "רכבת ישראל", description: "בודקים בטחוניים לרכבת ישראל, 55 ש\"ח לשעה.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36513158/e83939a4/` },
+  { title: "מנהל/ת משרד - שעות נוחות", company: "חסוי", description: "מנהלת משרד עם שעות נוחות.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36225973/dbb53cfd/` },
+  { title: "טכנאי/ת שטח - חברת תחבורה", company: "חסוי", description: "טכנאי שטח לחברת תחבורה, ניסיון ורקע טכני.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/35390562/317eef07/` },
+  { title: "מפקח/ת אוטובוסים - קווים", company: "קווים", description: "קווים מגייסת מפקחים לאוטובוסים, מלא/חלקי.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36622275/568e1aa6/` },
+
+  // Video editors / digital marketing
+  { title: "עורך/ת וידאו - פרויקט דיגיטלי", company: "חסוי", description: "עורך וידאו, יצירת תוכן דינמי לנרטיב ברור.", location: "מספר מקומות", region: "מרכז", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/36285234/9c1d8a08/` },
+  { title: "Video Editor - iFOR Fintech", company: "iFOR Fintech", description: "Video Editor למחלקת השיווק, תוכן פיננסי קצר ובינוני.", location: "מספר מקומות", region: "מרכז", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/36673290/85fb0572/` },
+  { title: "מנהל/ת מרקום", company: "חסוי", description: "מנהל מרקום.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36087862/0ca2f586/` },
+  { title: "רכז/ת דיגיטל - מולטילוק", company: "מולטילוק", description: "רכז דיגיטל במחלקת שיווק במולטילוק.", location: "מספר מקומות", region: "מרכז", field: "דיגיטל", externalUrl: `${D}/job/34456693/3c19e5e2/` },
+  { title: "מנהל/ת סושיאל מדיה - קבוצת עיצוב", company: "קבוצת עיצוב", description: "מנהל סושיאל מדיה לקבוצת עיצוב מובילה, שכר גבוה.", location: "מספר מקומות", region: "מרכז", field: "דיגיטל", externalUrl: `${D}/job/36304386/e1755d45/` },
+
+  // Industry / production engineers
+  { title: "Planner, Planning and Control", company: "חסוי", description: "Planner, Planning and Control. B.Sc תעו\"נ או לוגיסטיקה.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/36293480/bb21060f/` },
+  { title: "מהנדס/ת מכירות - אוטומציה ורובוטיקה", company: "חסוי", description: "מהנדס מכירות לאוטומציה ורובוטיקה למרלו\"גים.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36676140/6f188575/` },
+  { title: "מנהל/ת איכות - אלקטרוניקה יצרני", company: "חברה יצרנית באלקטרוניקה", description: "מנהל איכות לחברה יצרנית באלקטרוניקה.", location: "מספר מקומות", region: "מרכז", field: "אלקטרוניקה", externalUrl: `${D}/job/36876191/8043c0df/` },
+  { title: "אנליסט/ית / TM מנוסה", company: "חסוי", description: "אנליסט/TM מנוסה.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36681555/f9ba6433/` },
+
+  // Work-from-home / remote
+  { title: "נציג/ת מכירות טלפוניות - מהבית", company: "חסוי", description: "מכירות טלפוניות, עבודה מהבית.", location: "מהבית", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/34051765/31b8e465/` },
+  { title: "נציג/ת שירות - מהבית", company: "חסוי", description: "נציג שירות, עבודה מהבית.", location: "מהבית", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/33974112/63197ee3/` },
+  { title: "שיווק דיגיטלי - מהבית", company: "חסוי", description: "שיווק דיגיטלי בעבודה מהבית, תנאים מעולים.", location: "מהבית", region: "מרכז", field: "דיגיטל", externalUrl: `${D}/job/33869764/9383e9f6/` },
+  { title: "מתמלל/ת / מטייב/ת - מהבית", company: "חסוי", description: "מתמלל ומטייב, עבודה מהבית.", location: "מהבית", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/35287183/6fe20be4/` },
+
+  // Accounts managers
+  { title: "מנהל/ת חשבונות - אמפנול תל-עד", company: "אמפנול תל-עד", description: "מנהל חשבונות לצוות הכספים באמפנול תל-עד.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/34007552/ba6bf36d/` },
+  { title: "מנהל/ת חשבונות - התאמות", company: "חסוי", description: "מנהל חשבונות מנוסה בתחום ההתאמות.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/34034266/6c7f4ef8/` },
+  { title: "מנהלת חשבונות", company: "חסוי", description: "מנהלת חשבונות.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36634967/e804a8dc/` },
+  { title: "מנה\"ח ניסיון קודם - 10K", company: "חסוי", description: "מנהל חשבונות עם ניסיון קודם, 10K.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/26031656/80c5f22f/` },
+  { title: "מנהל/ת חשבונות סוג 2", company: "חסוי", description: "מנהל חשבונות סוג 2.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/34048459/ce5ab956/` },
+
+  // Misc
+  { title: "נהג/ת אוטובוס/מיניבוס - דב טרנס", company: "דב טרנס", description: "נהג אוטובוס/מיניבוס בחברת דב טרנס, הכשרה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36475889/3ca0fac8/` },
 ];
 
 export async function POST() {
