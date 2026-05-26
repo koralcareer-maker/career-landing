@@ -1691,6 +1691,42 @@ const CURATED_JOBS: SeedJob[] = [
   // Admin
   { title: "אדמיניסטרטור/ית - ניהול משרד", company: "חסוי", description: "אדמיניסטרטור לניהול משרד.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36520359/153dcd1b/` },
   { title: "פקיד/ת קבלה - מטבחי סמל ת\"א ורמת השרון", company: "מטבחי סמל", description: "פקיד קבלה למטבחי סמל בת\"א ורמת השרון.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36104848/ffc73729/` },
+
+  // ─── Round 37 (23) ──────────────────────────────────────────────
+  // Boutique / retail / sales
+  { title: "מנהל/ת חנות - בוטיק עמנואל", company: "בוטיק עמנואל", description: "מנהל חנות בבוטיק עמנואל, מותגים בינלאומיים.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/35752892/032ED216/` },
+  { title: "שירות מוכר - חברת אשראי 45 ש\"ח", company: "חברת אשראי", description: "שירות מוכר בחברת אשראי מובילה בישראל, 45 ש\"ח לשעה.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36737149/7d678ec4/` },
+  { title: "מוכרנים/מוקדנים - מנו ספנות חיפה/ת\"א", company: "מנו ספנות", description: "מוכרנים ומוקדנים למוקד מכירות של מנו ספנות.", location: "חיפה / תל אביב", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36345844/9f46449c/` },
+  { title: "מוכר/ת לחנות - אלקליל", company: "אלקליל", description: "מוכר לחנות של אלקליל, תנאים מעולים.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36624175/e1909ab4/` },
+  { title: "מלקטים ואנשי תפעול - מרלוג בישפרו", company: "מרלוג בישפרו סנטר", description: "מלקטים ואנשי תפעול במרלו\"ג בישפרו סנטר.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36486292/1d043cdf/` },
+  { title: "נציג/ת מכירות - תנועות הנוער קרביץ", company: "קרביץ עסקים", description: "נציג מכירות לתחום תנועות הנוער בקרביץ עסקים.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/35520294/a21e96c7/` },
+
+  // Engineering / construction
+  { title: "מהנדס/ת ראשי/ת - בית חולים", company: "בית חולים", description: "מהנדס ראשי לבית חולים, פיקוח ויעוץ מקצועי.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/27130369/b7a49900/` },
+  { title: "מהנדס/ת למידת מכונה", company: "חסוי", description: "מהנדס למידת מכונה.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36588512/842fed06/` },
+  { title: "מתכנן/ת חשמל, תאורה ותקשורת", company: "חסוי", description: "מתכנן חשמל, תאורה ותקשורת.", location: "מספר מקומות", region: "מרכז", field: "חשמל", externalUrl: `${D}/job/36215219/68a2cc5e/` },
+  { title: "עובדי/ות תפעול ושירות - כפר המכביה", company: "כפר המכביה", description: "עובדי תפעול ושירות בכפר המכביה, מגיל 18+.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/34025963/a2c5c702/` },
+
+  // CEO/management assistants
+  { title: "עו\"ד - עוזר/ת מנכ\"ל בחברה ציבורית", company: "חברה ציבורית", description: "עו\"ד למשרת עוזר מנכ\"ל בחברה ציבורית, עשייה מגוונת.", location: "מספר מקומות", region: "מרכז", field: "חוק ומשפט", externalUrl: `${D}/job/20472560/CD320F12/` },
+  { title: "מנהל/ת משרד - יד ימינו של המנכ\"ל", company: "קבוצה קמעונאית", description: "מנהל משרד שישמש כיד ימינו של המנכ\"ל, קבוצה קמעונאית.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/27412253/06f1c8da/` },
+  { title: "מנכ\"ל/ית - תאגיד עובדים זרים בבנייה", company: "תאגיד עובדים זרים", description: "מנכ\"ל תאגיד עובדים זרים בבנייה לאזור הדרום.", location: "מספר מקומות", region: "דרום", field: "בכירים", externalUrl: `${D}/job/34363175/c0869636/` },
+  { title: "חשב/ת - אלטל אופקים", company: "אלטל אופקים", description: "חשב לאלטל אופקים.", location: "אופקים", region: "דרום", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/34033335/f6ad5c66/` },
+
+  // Hybrid / tech / digital
+  { title: "Data Engineer - GCP", company: "חסוי", description: "Data Engineer מנוסה בענן GCP. עבודה היברידית גבוהה.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36911816/83f62311/` },
+  { title: "חוקר/ת סייבר בכיר/ה - משרד ממשלתי", company: "משרד ממשלתי", description: "חוקר סייבר בכיר במשרד ממשלתי, היברידי.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36771653/4b51dc4f/` },
+  { title: "נציג/ת שירות - בונוסים תן ביס + היברידי", company: "חסוי", description: "נציג שירות, בונוסים תן ביס ועבודה היברידית.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36200798/e98c2c44/` },
+
+  // Procurement coordinators
+  { title: "מתאם/ת תפעול רכש - נתניה", company: "חסוי", description: "מתאם תפעול רכש בנתניה, ללא ניסיון נדרש.", location: "נתניה", region: "שרון", field: "רכש", externalUrl: `${D}/job/36131980/8e8b6342/` },
+  { title: "מתאם/ת תפעול - אשדוד", company: "חסוי", description: "מתאם תפעול באשדוד.", location: "אשדוד", region: "דרום", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36200285/a2c02a57/` },
+  { title: "מתאמ/ת סחר - כלי בית", company: "חסוי", description: "מתאם סחר בכלי בית, ניהול הזמנות וספקים.", location: "מספר מקומות", region: "מרכז", field: "רכש", externalUrl: `${D}/job/36127648/6e96e4f3/` },
+  { title: "קדמ/ת רכש - Smart Shooter", company: "Smart Shooter", description: "קדמ רכש ג'וניור ב-Smart Shooter, חברת אבטחה.", location: "מספר מקומות", region: "מרכז", field: "רכש", externalUrl: `${D}/job/36080224/ba0e7329/` },
+
+  // Special ed teachers
+  { title: "מורים/ות - הוראה מתקנת או חינוך מיוחד", company: "חסוי", description: "מורים בהוראה מתקנת או חינוך מיוחד. 10-30 שעות חודשי, 80-95 ש\"ח לשעה.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/23358641/52829cb0/` },
+  { title: "מדריכים/ות - בתי ספר וגני ילדים", company: "חסוי", description: "מדריכים לבתי ספר וגני ילדים.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/24051058/b8f50716/` },
 ];
 
 export async function POST() {
