@@ -57,6 +57,7 @@ const FEATURED_JOBS: FeaturedJob[] = [
   { title: "מבקר/ת איכות למוצרים אלקטרוניים", company: "חברה גלובלית בטכנולוגיה", description: "ביקורת איכות למוצרים אלקטרוניים, תהליכי אינטגרציה. נדרש רקע הנדסת אלקטרוניקה + אנגלית מתקדמת.", location: "כפר סבא", region: "שרון", field: "אלקטרוניקה וחומרה", externalUrl: `${C}/id=863469&src=16379` },
   { title: "Junior Product Specialist בתחום הרכב", company: "חברת רכב גדולה", description: "עבודה מול רשת המכירות, ניהול מלאי רכבים, ביצוע הזמנות לפי דרישות שוק.", location: "ראשל\"צ", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${C}/id=980884&src=16379` },
   { title: "טכנאי בקרת איכות לפרויקט תשתיות", company: "חברה בינלאומית", description: "בדיקות מכניות וויזואליות ליחידות רכבת, ניהול חוסרים, פיקוח קבלני משנה, תיעוד דיגיטלי. כולל אתר ירושלים לפי הצורך.", location: "תל אביב-יהוד", region: "מרכז", field: "אלקטרוניקה וחומרה", externalUrl: `${C}/id=760636&src=16379` },
+  { title: "מנהל/ת מחלקת CRM - Dynamics 365", company: "חסוי", description: "ניהול מחלקת CRM Dynamics 365, פרויקטים מורכבים, צוותים מקצועיים ותהליכים עסקיים בחטיבה.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: "https://app.civi.co.il/promo/id=589586&hid=WGXGZCJLKY" },
 ];
 
 export async function POST() {
