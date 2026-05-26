@@ -92,6 +92,32 @@ export async function POST(req: Request) {
     );
   }
 
+  // Name + email dedup (Coral's rule: one candidate per person). Email
+  // wins because it's globally unique; name match is the fallback when
+  // the CV doesn't have an email or the email differs (e.g. work vs
+  // personal). Case-insensitive trim on name to handle "רחל" vs " רחל ".
+  const ov = (body.overrides ?? {}) as Partial<typeof extracted>;
+  const candidateName = (ov.name ?? extracted.name)?.trim();
+  const candidateEmail = (ov.email ?? extracted.email)?.trim().toLowerCase();
+  const dupChecks: Array<{ email?: string } | { name: string }> = [];
+  if (candidateEmail) dupChecks.push({ email: candidateEmail });
+  if (candidateName && candidateName !== "לא ידוע") dupChecks.push({ name: candidateName });
+  if (dupChecks.length > 0) {
+    const dup = await prisma.candidate.findFirst({
+      where: { OR: dupChecks as never },
+      select: { id: true, name: true, email: true },
+    });
+    if (dup) {
+      return NextResponse.json({
+        ok: true,
+        status: "duplicate-by-identity",
+        candidateId: dup.id,
+        name: dup.name,
+        matchedBy: dup.email === candidateEmail ? "email" : "name",
+      });
+    }
+  }
+
   // Compute embedding. If this fails we still store the candidate
   // without an embedding — the auto-matcher can backfill later.
   let embeddingJson: string | null = null;
@@ -103,7 +129,7 @@ export async function POST(req: Request) {
   }
 
   // Apply caller overrides (e.g. force a name when extractor said "לא ידוע").
-  const ov = (body.overrides ?? {}) as Partial<typeof extracted>;
+  // (ov is already declared above for the dedup check.)
   const merged = { ...extracted, ...ov };
 
   const candidate = await prisma.candidate.create({
