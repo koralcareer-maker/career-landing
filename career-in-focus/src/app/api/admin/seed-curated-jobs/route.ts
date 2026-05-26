@@ -1549,6 +1549,40 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מאבטח/ת - מוסדות חינוך חיפה/קריות", company: "חסוי", description: "מאבטח למוסדות חינוך חיפה והקריות.", location: "מספר מקומות", region: "חיפה", field: "אבטחה", externalUrl: `${D}/job/35989119/f0b8022f/` },
   { title: "צוותי אבטחה - מוסדות חינוך לוד", company: "חסוי", description: "צוותי אבטחה למוסדות חינוך בלוד.", location: "לוד", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/35672807/d243847b/` },
   { title: "מאבטחים - רמת הגולן", company: "חסוי", description: "מאבטחים למשרות ברמת הגולן, סוציאליות מלאות.", location: "רמת הגולן", region: "צפון", field: "אבטחה", externalUrl: `${D}/job/36577530/3777c2a4/` },
+
+  // ─── Round 33 (26) ──────────────────────────────────────────────
+  // Retail / media / iStore
+  { title: "מנהל/ת סניף - תנאים טובים", company: "חסוי", description: "מנהל סניף ברשת קמעונאית, תנאים טובים.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36263422/81bf2b9d/` },
+  { title: "רפרנט/ית שכר ומש\"א - מלון דן פנורמה ת\"א", company: "מלון דן פנורמה", description: "רפרנט שכר ומשאבי אנוש למלון דן פנורמה תל אביב.", location: "תל אביב", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36154666/acf9a149/` },
+  { title: "מתמללים/ות לשידורים חיים - רשת 13", company: "רשת 13", description: "מתמללים לשידורים חיים ברשת 13.", location: "מספר מקומות", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/23237402/7d681e93/` },
+  { title: "מפתח/ת אפליקציות - iStore", company: "iStore", description: "מפתח אפליקציות ברשת iStore.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/23321933/fbd7fa83/` },
+  { title: "סוגר/ת יום שידור (טראפיק) - רשת 13", company: "רשת 13", description: "סוגר יום שידור (טראפיק) ברשת 13.", location: "מספר מקומות", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/22403644/d8148965/` },
+  { title: "אנשי/נשות תקשורת - אמת דורקום", company: "אמת דורקום", description: "אנשי תקשורת לאמת דורקום.", location: "מספר מקומות", region: "מרכז", field: "תקשורת ואינטרנט", externalUrl: `${D}/job/36653378/2814e8f1/` },
+  { title: "עובד/ת תמיכה טכנית במחשבים", company: "חסוי", description: "עובד תמיכה טכנית במחשבים, חברה גלובלית.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/34803329/02270754/` },
+  { title: "בק אופיס - רכש iStore", company: "iStore", description: "בק אופיס למחלקת רכש ברשת iStore.", location: "מספר מקומות", region: "מרכז", field: "רכש", externalUrl: `${D}/job/25236715/6f449792/` },
+
+  // Insurance / security / pharma
+  { title: "יועצים/ות טבע - סופר-פארם", company: "סופר-פארם", description: "יועצי טבע לסניפי סופר-פארם.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/20700883/6aa13e34/` },
+  { title: "פקיד/ת אלמנטרי - סוכנות ביטוח ת\"א", company: "סוכנות ביטוח בוטיק", description: "פקיד אלמנטרי לסוכנות ביטוח בתל אביב.", location: "תל אביב", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/36233934/5f49b8da/` },
+  { title: "מאבטחים/ות - מלון דן חיפה", company: "מלון דן", description: "מאבטחים למלון דן חיפה.", location: "חיפה", region: "חיפה", field: "אבטחה", externalUrl: `${D}/job/36632364/cc78d743/` },
+  { title: "מאבטחים/ות - יחידת העילית משרד החוץ", company: "משרד החוץ", description: "מאבטחים ליחידת העילית של משרד החוץ בירושלים.", location: "ירושלים", region: "ירושלים", field: "אבטחה", externalUrl: `${D}/job/35217320/c8dfe951/` },
+  { title: "בודק/ת WEB ומובייל", company: "חסוי", description: "בודק WEB ומובייל.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/19318994/7faa6bea/` },
+
+  // Students
+  { title: "סטודנט/ית הנדסה כימית/חומרים/סביבה", company: "חסוי", description: "סטודנט הנדסה כימית/חומרים/סביבה, נסיון תעשייתי.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/36196713/05774d30/` },
+  { title: "משרת סטודנט - בקרי NOC לחוות שרתים", company: "חסוי", description: "בקרי NOC לחוות שרתים, סטודנטים.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/36180468/deddbf52/` },
+  { title: "סטודנט/ית HR - מטריקס (Matrix)", company: "מטריקס Matrix", description: "סטודנט HR במטריקס, נוכחות ורישום לקורסים.", location: "מספר מקומות", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36108040/0866ad03/` },
+  { title: "סטודנט/ית - אגף כלכלה ומחקר", company: "רשות החדשנות", description: "סטודנט לאגף כלכלה ומחקר ברשות החדשנות.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/27238878/12d3b0a7/` },
+  { title: "בנק דיגיטלי - שירות לקוחות לסטודנטים", company: "בנק דיגיטלי", description: "שירות לקוחות בבנק דיגיטלי, מתאים גם לסטודנטים.", location: "מספר מקומות", region: "מרכז", field: "בנקאות ופיננסים", externalUrl: `${D}/job/34520476/1c1af15a/` },
+  { title: "סטודנטים/יות להדרכת תכנות לילדים ונוער", company: "חסוי", description: "סטודנטים להדרכת תכנות לילדים ונוער.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/25023953/3af52604/` },
+
+  // Clerks / administrative
+  { title: "פקיד/ת רישוי מכס ותפעול נמלי", company: "חסוי", description: "פקיד רישוי מכס ותפעול נמלי, ייבוא וייצוא.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36123829/41f839bb/` },
+  { title: "פקיד/ה - מחלקת שירות צור יגאל", company: "חסוי", description: "פקיד למחלקת שירות בצור יגאל, תיאום טכנאים.", location: "צור יגאל", region: "שרון", field: "שירות לקוחות", externalUrl: `${D}/job/34295459/ef8af5e7/` },
+  { title: "פקיד/ה - שירות לקוחות צור יגאל", company: "חסוי", description: "פקיד מחלקת שירות לקוחות צור יגאל.", location: "צור יגאל", region: "שרון", field: "שירות לקוחות", externalUrl: `${D}/job/36830933/21e19588/` },
+  { title: "פקיד/ת שירות וגבייה - קצרין", company: "מח' ארנונה", description: "פקיד שירות וגבייה במחלקת הארנונה בקצרין.", location: "קצרין", region: "צפון", field: "שירות לקוחות", externalUrl: `${D}/job/35013678/cd9ab2b9/` },
+  { title: "פקיד/ת מחסן ולוגיסטיקה", company: "חסוי", description: "פקיד מחסן ולוגיסטיקה.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/35440380/4b5b3663/` },
+  { title: "פקיד/ת מחסן - עמק חפר", company: "חסוי", description: "פקיד מחסן בעמק חפר.", location: "עמק חפר", region: "שרון", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36641009/7df25422/` },
 ];
 
 export async function POST() {
