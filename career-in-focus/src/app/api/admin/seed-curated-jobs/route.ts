@@ -1511,6 +1511,44 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מלגזן/ית לעבודת ערב - מרלו\"ג מודיעין", company: "חסוי", description: "מלגזן לעבודת ערב במרלו\"ג במודיעין.", location: "מודיעין", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/34285408/0c9c3280/` },
   { title: "פקח/ית מיון כבודה", company: "חסוי", description: "פקח מיון כבודה.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/35148920/ce21fc34/` },
   { title: "סייר/ת בשמירה ואבטחה", company: "חסוי", description: "סייר בשמירה ואבטחה.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36707300/29296e5c/` },
+
+  // ─── Round 32 (27) ──────────────────────────────────────────────
+  // Construction / contractors
+  { title: "מהנדס/ת אלקטרוניקה - NPI", company: "חסוי", description: "מהנדס אלקטרוניקה להעברה מפיתוח לייצור (NPI). ניסיון 5+ שנים.", location: "מספר מקומות", region: "מרכז", field: "אלקטרוניקה", externalUrl: `${D}/job/36675741/db30c077/` },
+  { title: "מנהל/ת עבודה גמר ושלד - אשטרום", company: "אשטרום קבלנות", description: "מנהל עבודה גמר ושלד באשטרום.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/36437557/bc647f8a/` },
+  { title: "עובד/ת ריצוף / גבס / צבע / קבלני חשמל", company: "חסוי", description: "עובדים לקבלני משנה ועובדים יומיים לבסיסי צה\"ל במרכז.", location: "מספר מקומות", region: "מרכז", field: "בנייה ונדל\"ן", externalUrl: `${D}/job/36576922/71673e08/` },
+  { title: "עובד/ת ליווי קבלנים", company: "חברת אבטחה", description: "עובד ליווי קבלני משנה בחברת אבטחה.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36673936/af38bfec/` },
+  { title: "מרכיב/ה מכני - הייטק יהוד 80 ש\"ח", company: "חברת הייטק", description: "מרכיב מכני לחברת הייטק ביהוד, 80 ש\"ח לשעה.", location: "יהוד", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/36143133/9161c0b2/` },
+  { title: "סוכן/ת מכירות - לבידים ועץ", company: "חברה בתחום הלבידים והעץ", description: "סוכן מכירות לחברה בתחום הלבידים והעץ.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36780393/209670ce/` },
+
+  // Sales / retail
+  { title: "דייל/ת מכירות - משרה זמנית", company: "ניופן", description: "דייל מכירות לתערוכת תעופה, פברואר-מרץ.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36133671/2e553831/` },
+  { title: "דיילים/ות VIP - טרמינל פתאל נתב\"ג", company: "פתאל נתב\"ג", description: "דיילים למתן שירותי ליווי VIP בטרמינל פתאל בנתב\"ג.", location: "נתב\"ג", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/34953125/20f71909/` },
+  { title: "נציג/ת מכירות רכב - אומודה וג'אקו", company: "אומודה / ג'אקו", description: "נציג מכירות רכב למותגים אומודה וג'אקו בירושלים.", location: "ירושלים", region: "ירושלים", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/34059308/24f24c18/` },
+  { title: "מהנדס/ת מכירות ואפליקציות - מדיטל", company: "מדיטל", description: "מהנדס מכירות ואפליקציות במדיטל.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/34236198/855ba0e7/` },
+  { title: "מנהל/ת מכירות - הראל ביטוח ופיננסים", company: "הראל ביטוח ופיננסים", description: "מנהל מכירות בקבוצת הראל ביטוח ופיננסים.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/34112584/36914e24/` },
+  { title: "מנהלי/ות מתחם - פז yellow", company: "פז yellow", description: "מנהלי מתחם לפז yellow.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/34276782/bcac90ff/` },
+
+  // Customer service / support
+  { title: "נציג/ת שירות - מוקד הסתדרות העובדים", company: "הסתדרות העובדים החדשה", description: "נציג שירות למוקד הסתדרות העובדים החדשה בתל אביב.", location: "תל אביב", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/34115320/eb80f6ee/` },
+  { title: "נציג/ה - מרכז תמיכה VOIP", company: "חסוי", description: "נציג למרכז תמיכה בשירותי VOIP.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36100212/9494e97e/` },
+  { title: "נציג/ת שירות - תמיכה אפליקטיבית SL", company: "חסוי", description: "נציג שירות בצוות תמיכה אפליקטיבית.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/36221337/9d092fe9/` },
+  { title: "נציגי/ות שירות לקוחות - טוטו", company: "טוטו", description: "נציגי שירות לקוחות בחברת טוטו.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36040476/b9507264/` },
+  { title: "נציג/ת מכירות לעסקים - ללא שישי", company: "חסוי", description: "נציג מכירות לעסקים, ללא שישי, בונוסים גבוהים.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36361899/20037bb7/` },
+  { title: "טכנאי/ת תקשורת - שגרירות ארה\"ב", company: "שגרירות ארה\"ב", description: "טכנאי תקשורת (טלפוניה ורדיו) בשגרירות ארה\"ב.", location: "תל אביב", region: "מרכז", field: "תקשורת ואינטרנט", externalUrl: `${D}/job/36447836/7dacef68/` },
+
+  // Students / NOC
+  { title: "מפעיל/ת NOC - איתוראן", company: "איתוראן", description: "מפעיל NOC לאיתוראן, סטודנטים שנה א/ב למחשבים/חשמל.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/36169923/2da855e9/` },
+  { title: "סטודנט/ית - עוזר/ת מחקר סטארטאפ", company: "סטארטאפ במדעי החיים", description: "עוזר מחקר לסטארטאפ בתחום מדעי החיים, חקלאות חרקים. 40-50% משרה.", location: "מספר מקומות", region: "מרכז", field: "כימיה וביוטכנולוגיה", externalUrl: `${D}/job/36766998/1650d861/` },
+  { title: "נציגי/ות שירות לקוחות - GETT", company: "GETT", description: "שירות לקוחות ב-GETT, היברידי. מתאים גם לסטודנטים.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36437405/97430e2d/` },
+
+  // Misc + Security
+  { title: "מתמללים/ות - תמלול סימולטני", company: "חסוי", description: "מתמללים לתמלול סימולטני.", location: "מספר מקומות", region: "מרכז", field: "כתיבה ועריכה", externalUrl: `${D}/job/35807726/bb5fca89/` },
+  { title: "מאבטח/ת - אוניברסיטה הפתוחה רעננה", company: "האוניברסיטה הפתוחה", description: "מאבטח לקריית האוניברסיטה הפתוחה ברעננה.", location: "רעננה", region: "שרון", field: "אבטחה", externalUrl: `${D}/job/36791033/755b94c3/` },
+  { title: "מאבטח/ת - מכללת סמי שמעון אשדוד", company: "מכללת סמי שמעון", description: "מאבטח למכללת סמי שמעון באשדוד.", location: "אשדוד", region: "דרום", field: "אבטחה", externalUrl: `${D}/job/34830062/0280de27/` },
+  { title: "מאבטח/ת - מוסדות חינוך חיפה/קריות", company: "חסוי", description: "מאבטח למוסדות חינוך חיפה והקריות.", location: "מספר מקומות", region: "חיפה", field: "אבטחה", externalUrl: `${D}/job/35989119/f0b8022f/` },
+  { title: "צוותי אבטחה - מוסדות חינוך לוד", company: "חסוי", description: "צוותי אבטחה למוסדות חינוך בלוד.", location: "לוד", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/35672807/d243847b/` },
+  { title: "מאבטחים - רמת הגולן", company: "חסוי", description: "מאבטחים למשרות ברמת הגולן, סוציאליות מלאות.", location: "רמת הגולן", region: "צפון", field: "אבטחה", externalUrl: `${D}/job/36577530/3777c2a4/` },
 ];
 
 export async function POST() {
