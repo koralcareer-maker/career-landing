@@ -1727,6 +1727,36 @@ const CURATED_JOBS: SeedJob[] = [
   // Special ed teachers
   { title: "מורים/ות - הוראה מתקנת או חינוך מיוחד", company: "חסוי", description: "מורים בהוראה מתקנת או חינוך מיוחד. 10-30 שעות חודשי, 80-95 ש\"ח לשעה.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/23358641/52829cb0/` },
   { title: "מדריכים/ות - בתי ספר וגני ילדים", company: "חסוי", description: "מדריכים לבתי ספר וגני ילדים.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/24051058/b8f50716/` },
+
+  // ─── Round 38 (21) ──────────────────────────────────────────────
+  // Agriculture / outdoor
+  { title: "אגרונום/ית - ניהול תחום חקלאות", company: "חסוי", description: "אגרונום לניהול תחום חקלאות, גידולי ירקות.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/20610253/803EC8C3/` },
+  { title: "מלגזן/ית - הגש", company: "הגש", description: "מלגזן בהגש.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36075303/d112d5b9/` },
+  { title: "מדריך/ה שיקומי/ת - אדנם", company: "אדנם", description: "מדריך שיקומי באדנם.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/36540252/71ba713e/` },
+  { title: "עובד/ת לסניפי הרשת - הגרעין", company: "רשת הגרעין", description: "עובד לסניפי רשת הגרעין.", location: "מספר מקומות", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36617867/4ea7b8fb/` },
+  { title: "כלבנים/ות מפעילי/ות כלבים - גוף ביטחוני", company: "גוף ביטחוני", description: "כלבנים מפעילי כלבים לגוף ביטחוני.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36622598/fb201bcc/` },
+
+  // Mechanical engineering
+  { title: "מהנדס/ת למידת מכונה - חיפה", company: "חסוי", description: "מהנדס למידת מכונה, חיפה.", location: "חיפה", region: "חיפה", field: "פיתוח", externalUrl: `${D}/job/36278356/0c360749/` },
+  { title: "מהנדס/ת מכונות אחזקה - בית זיקוק", company: "בז\"ן / פז", description: "מהנדס מכונות אחזקה לבית זיקוק, ניהולי.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/26123445/75ff47e3/` },
+  { title: "מהנדס/ת מכונות - ישקר", company: "ישקר", description: "מהנדס מכונות בישקר.", location: "מספר מקומות", region: "צפון", field: "תעשייה וייצור", externalUrl: `${D}/job/33895300/f8f7e095/` },
+  { title: "מהנדס/הנדסאי/ת מכונות", company: "Inter-App מעליות", description: "מהנדס/הנדסאי מכונות ביבנה.", location: "יבנה", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/34267966/c88a8538/` },
+  { title: "מכשירן/ית - מפעל חיוני", company: "חסוי", description: "מכשירן למפעל חיוני, עבודה מאתגרת.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/34048136/8bfe3b14/` },
+  { title: "מהנדס/ת מכירות - ציוד סובב", company: "חסוי", description: "מהנדס מכירות לתחום הציוד הסובב בהרצליה.", location: "הרצליה", region: "שרון", field: "מכירות ושיווק", externalUrl: `${D}/job/35597567/207dc7d5/` },
+
+  // Lab tech
+  { title: "טכנאי/ת מעבדה - ת\"א שכר גבוה", company: "חסוי", description: "טכנאי מעבדה בתל אביב, שכר גבוה.", location: "תל אביב", region: "מרכז", field: "כימיה וביוטכנולוגיה", externalUrl: `${D}/job/35975040/946d5372/` },
+  { title: "עובד/ת מעבדה כימית - לבורנט", company: "חסוי", description: "עובד מעבדה כימית במפעל PCB בפ\"ת, טיטרציות ובדיקות.", location: "פתח תקווה", region: "מרכז", field: "כימיה וביוטכנולוגיה", externalUrl: `${D}/job/33966398/19f951d0/` },
+  { title: "עוזר/ת אישי - סמנכ\"ל פיתוח ועיצוב", company: "חסוי", description: "עוזר אישי לסמנכ\"ל פיתוח ועיצוב.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/34046787/cea26c04/` },
+  { title: "טכנאי/ת מעבדה אנליטית - Novatide", company: "Novatide", description: "טכנאי מעבדה אנליטית בנובאטייד, ביוטק.", location: "מספר מקומות", region: "מרכז", field: "כימיה וביוטכנולוגיה", externalUrl: `${D}/job/22329088/ae123f19/` },
+  { title: "רופא/ה מתמחה - אורתופדיה חיפה", company: "חסוי", description: "רופא מתמחה באורתופדיה לחיפה.", location: "חיפה", region: "חיפה", field: "רפואה ובריאות", externalUrl: `${D}/job/20813800/1410727C/` },
+
+  // Municipal enforcement / drivers
+  { title: "מנהל/ת מחלקת פיקוח עירוני - חורה", company: "מועצת חורה", description: "מנהל מחלקת פיקוח עירוני במועצת חורה.", location: "חורה", region: "דרום", field: "אבטחה", externalUrl: `${D}/job/36187726/7b94a388/` },
+  { title: "פקח מסייע - שיטור עירוני", company: "חסוי", description: "פקח מסייע במערך הפיקוח העירוני (שיטור עירוני).", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/34648536/14c55a66/` },
+  { title: "סייר/ת אופנוע - עיריית רמת גן", company: "עיריית רמת גן", description: "סייר אופנוע במשמרות בוקר בעיריית רמת גן.", location: "רמת גן", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/35977016/32f285b3/` },
+  { title: "נהג/ת מערבל טריילר", company: "חסוי", description: "נהג מערבל טריילר.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36288445/2ea49634/` },
+  { title: "נהג/ת שינוע צי רכבים - שפיר הנדסה פ\"ת", company: "שפיר הנדסה", description: "נהג שינוע לצי רכבים שפיר הנדסה פ\"ת.", location: "פתח תקווה", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/35735602/d8dbff6e/` },
 ];
 
 export async function POST() {
