@@ -1816,6 +1816,27 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "Junior DevOps - הזדמנות לכניסה", company: "חסוי", description: "Junior DevOps, הזדמנות לכניסה לתחום.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36608766/b5b5f427/` },
   { title: "טכנאי/ת מחשבים - מומחה מיקרוסופט", company: "חסוי", description: "טכנאי מחשבים בעל התמחות במיקרוסופט.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/35768016/17a4e2ac/` },
   { title: "מוכרנים/ות ואחמשים - אופיס דיפו ראשל\"צ", company: "אופיס דיפו", description: "מוכרנים ואחמשים באופיס דיפו ראשון לציון.", location: "ראשון לציון", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36803421/01023443/` },
+
+  // ─── Round 41 (16) ──────────────────────────────────────────────
+  // Field sales / cars
+  { title: "סוכן/ת שטח - כולל רכב", company: "חסוי", description: "סוכן שטח כולל רכב, בסיס 15K + 4% עמלות.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36615549/461e794c/` },
+  { title: "איש/אשת מכירות טכני - שכר גבוה + רכב", company: "חסוי", description: "מכירות טכני, שכר גבוה ורכב צמוד.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/35652325/10dc93fe/` },
+  { title: "סוכן/ת מכירות שטח - מימון רכבים יד2", company: "יד2", description: "סוכן מכירות שטח לתחום מימון רכבים ביד 2.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/21090535/823c4cad/` },
+  { title: "סוכני/ות שטח שכירים", company: "חסוי", description: "סוכני שטח שכירים.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/23031214/6f606b98/` },
+  { title: "נציגי/ות מכירת רכב - אזור צפון", company: "חסוי", description: "נציגי מכירת רכב לאזור הצפון.", location: "מספר מקומות", region: "צפון", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36130840/b5736b22/` },
+
+  // Engineering / production
+  { title: "מהנדס/ת אחזקה מכאנית - אתר דשנים", company: "אתר דשנים", description: "מהנדס אחזקה מכאנית לאתר דשנים.", location: "מספר מקומות", region: "דרום", field: "תעשייה וייצור", externalUrl: `${D}/job/36058849/90c65b71/` },
+  { title: "אינטגרטור/ית מרכיב/ה מכונות - מפעל אמריקאי", company: "מפעל אמריקאי", description: "אינטגרטור מרכיב מכונות למפעל אמריקאי.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/36367181/9221da03/` },
+
+  // Production workers
+  { title: "עובדי ייצור ומלגזנים - אשדוד", company: "מפעל גדול", description: "עובדי ייצור ומלגזנים למפעל באשדוד, שכר גבוה.", location: "אשדוד", region: "דרום", field: "תעשייה וייצור", externalUrl: `${D}/job/36722595/d0797bb3/` },
+  { title: "עובד/ת ייצור - Gauzy", company: "Gauzy", description: "עובד ייצור עדינה בחברת ננו טכנולוגיה Gauzy.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/33987165/03c21b0f/` },
+  { title: "עובדי/ות ייצור - מרכז", company: "אלביט", description: "עובדי ייצור באלביט במרכז.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/36529631/0d5843dc/` },
+  { title: "עובד/ת ייצור - חומרים מרוכבים", company: "חברת אווירונאוטיקה", description: "עובד ייצור, מבנאי חומרים מרוכבים. UAV וכלי טיס.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/34048782/a0a595a8/` },
+  { title: "אחראי/ת איכות - אולם ייצור", company: "חסוי", description: "אחראי איכות באולם ייצור.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/27054692/5227ef74/` },
+  { title: "מפעיל/ת מכונת סחיטה - פריגת CBC", company: "CBC ISRAEL / פריגת", description: "מפעיל מכונת סחיטה במפעל פריגת מבית CBC.", location: "גבעת חיים", region: "שרון", field: "תעשייה וייצור", externalUrl: `${D}/job/34395551/e0002a30/` },
+  { title: "מפעל וופלים ובצק סוכר - בית שמש", company: "מפעל וופלים", description: "עובדים למפעל וופלים ובצק סוכר בבית שמש.", location: "בית שמש", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/20587909/2CE6CC37/` },
 ];
 
 export async function POST() {
