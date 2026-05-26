@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Phone, ExternalLink } from "lucide-react";
 import { MigrateCandidateTableButton } from "./migrate-button";
+import { CandidateUploadButton } from "./upload-button";
 
 export const dynamic = "force-dynamic";
 
@@ -80,7 +81,10 @@ export default async function AdminCandidatesPage() {
                 }`}
           </p>
         </div>
-        <MigrateCandidateTableButton />
+        <div className="flex flex-col gap-2 items-end">
+          <CandidateUploadButton />
+          <MigrateCandidateTableButton />
+        </div>
       </div>
 
       {tableMissing ? (
