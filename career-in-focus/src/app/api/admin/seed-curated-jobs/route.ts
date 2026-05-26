@@ -1597,15 +1597,22 @@ export async function POST() {
   const perCategory: Record<string, { inserted: number; skipped: number }> = {};
   const errors: string[] = [];
 
+  // BATCH dedup: pull all existing externalUrls for the seed set in one
+  // query, then iterate in-memory. With ~1300 entries this turned the
+  // endpoint from ~120s of sequential round-trips into ~5s + the inserts
+  // for whatever is genuinely new. Avoids Vercel's 300s timeout cap.
+  const urls = CURATED_JOBS.map((j) => j.externalUrl);
+  const existing = await prisma.job.findMany({
+    where: { externalUrl: { in: urls } },
+    select: { externalUrl: true },
+  });
+  const existingSet = new Set(existing.map((e) => e.externalUrl));
+
   for (const j of CURATED_JOBS) {
     const bucket = perCategory[j.field] ?? { inserted: 0, skipped: 0 };
     perCategory[j.field] = bucket;
+    if (existingSet.has(j.externalUrl)) { bucket.skipped++; skipped++; continue; }
     try {
-      const dup = await prisma.job.findFirst({
-        where: { externalUrl: j.externalUrl },
-        select: { id: true },
-      });
-      if (dup) { bucket.skipped++; skipped++; continue; }
       await prisma.job.create({
         data: {
           title: j.title,
@@ -1620,6 +1627,7 @@ export async function POST() {
           isPublished: true,
         },
       });
+      existingSet.add(j.externalUrl); // dedup within this run too
       bucket.inserted++; inserted++;
     } catch (e) {
       errors.push(`${j.title}: ${String(e instanceof Error ? e.message : e).slice(0, 80)}`);
