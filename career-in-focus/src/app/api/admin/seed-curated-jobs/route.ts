@@ -1656,6 +1656,41 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "עוזר/ת נהג - אין צורך ברישיון", company: "חברה מובילה", description: "עוזר נהג, אין צורך ברישיון נהיגה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/33154490/d7045774/` },
   { title: "עוזר/ת מזכירה - ת\"א פרויקט ממשלתי", company: "חסוי", description: "עוזר מזכירה בתל אביב לפרויקט ממשלתי.", location: "תל אביב", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/23209092/ad722e63/` },
   { title: "מומחה/ית Microsoft 365 ותשתיות זהויות", company: "חסוי", description: "מומחה Microsoft 365 ותשתיות זהויות.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/36783433/8d011c3f/` },
+
+  // ─── Round 36 (24) ──────────────────────────────────────────────
+  // Dental assistants
+  { title: "סייע/ת לרופא/ת שיניים - הכשרה", company: "חסוי", description: "סייעת לרופא שיניים, הכשרה על חשבון החברה.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/34230004/6e134665/` },
+  { title: "מזכיר/ה רפואי/ת - מאוחדת רפואת שיניים", company: "מאוחדת רפואת שיניים", description: "מזכיר רפואי במאוחדת רפואת שיניים.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36863461/b7d5a017/` },
+  { title: "סייע/ת לרופא שיניים - כללית סמייל ת\"א", company: "כללית סמייל", description: "סייעת לרופא שיניים בכללית סמייל תל אביב.", location: "תל אביב", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/20749257/3ba6117f/` },
+  { title: "סייע/ת - כללית סמייל איילון", company: "כללית סמייל", description: "סייעת למרפאת איילון בתל אביב.", location: "תל אביב", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/24784230/53bb90c2/` },
+  { title: "סייע/ת - כללית סמייל ירמיהו", company: "כללית סמייל", description: "סייעת למרפאת כללית סמייל ירמיהו תל אביב.", location: "תל אביב", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/26323173/3b9f2c1e/` },
+  { title: "סייע/ת - כללית סמייל נתיבות", company: "כללית סמייל", description: "סייעת למרפאת נתיבות.", location: "נתיבות", region: "דרום", field: "רפואה ובריאות", externalUrl: `${D}/job/20733202/8a44f5fe/` },
+
+  // Tech leads / managers
+  { title: "ראש צוות פיתוח", company: "Hello My Career", description: "ראש צוות פיתוח, 1-2 שנות ניהול ו-3+ שנות פיתוח. C# ASP.NET ו-Angular.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/34031739/cb0fa917/` },
+  { title: "ראש צוות פיתוח - אורן מזרח (הפניקס)", company: "אורן מזרח / הפניקס", description: "ראש צוות פיתוח באורן מזרח, מבית הפניקס.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36541297/0dc5d328/` },
+  { title: "מפתח/ת תוכנה בכיר/ה", company: "חסוי", description: "מפתח תוכנה בכיר.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/25855754/43d9581f/` },
+  { title: "ראש/ת צוות חשמלאים - שפיר", company: "שפיר", description: "שפיר מגייסת ראש צוות חשמלאים.", location: "מספר מקומות", region: "מרכז", field: "חשמל", externalUrl: `${D}/job/36758657/fa62628b/` },
+  { title: "ראש צוות - סקטור מימון פרויקטים ותשתיות", company: "חסוי", description: "ראש צוות בסקטור מימון פרויקטים ותשתיות.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/33958209/fb2504f5/` },
+  { title: "ראש צוות - פרויקט טכנולוגי במרכז", company: "חסוי", description: "ראש צוות לפרויקט טכנולוגי במרכז הארץ.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/26486782/cce38cd9/` },
+  { title: "מנכ\"ל/ית - ועד מקומי גבעת ברנר", company: "ועד מקומי גבעת ברנר", description: "מנכ\"ל לוועד מקומי גבעת ברנר.", location: "גבעת ברנר", region: "שפלה", field: "בכירים", externalUrl: `${D}/job/35142840/24fdde93/` },
+
+  // Medical / B2B
+  { title: "רופא/ה מתמחה/ת - מרפאות ת\"א או חולון", company: "מרפאות פרטיות", description: "מתמחה או רופא מנוסה למרפאות בתל אביב או חולון.", location: "תל אביב", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/22728145/01f90177/` },
+  { title: "נהג/ת C1 - ניידת רפואית מדיטון", company: "מדיטון רשת מרכזים רפואיים", description: "נהג C1 לניידת רפואית במדיטון.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/36368758/aedb2891/` },
+  { title: "נציג/ה רפואי/ת תעמולה - אלטמן", company: "אלטמן", description: "נציגה רפואית (תעמולה) לחברת אלטמן.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/34808706/5d6a278e/` },
+  { title: "סמנכ\"ל/ית מכירות - D&B", company: "Dun & Bradstreet", description: "סמנכ\"ל מכירות ב-D&B, B2B SaaS ופיתוח עסקי.", location: "מספר מקומות", region: "מרכז", field: "בכירים", externalUrl: `${D}/job/35449139/2caa6369/` },
+  { title: "רכז/ת שירות ספקים - D&B", company: "Dun & Bradstreet", description: "רכז שירות ספקים, איסוף מידע עסקי.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/35666556/f2ba7310/` },
+
+  // Tech / development
+  { title: "Priority ERP Developer", company: "חסוי", description: "Priority ERP Developer.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/34121343/4866ef30/` },
+  { title: "Finance Operation - חברת סטארטאפ", company: "חברת סטארטאפ", description: "Finance Operation לחברה בתחום הסטארטאפים.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/36588322/d3b9005a/` },
+  { title: "שרטט/ת אוטוקד", company: "חסוי", description: "שרטט אוטוקאד.", location: "מספר מקומות", region: "מרכז", field: "אדריכלות והנדסה אזרחית", externalUrl: `${D}/job/36629457/46fe8c90/` },
+  { title: "מחסנא/ית - אלונים מ.מ.ש כפ\"ס", company: "אלונים מ.מ.ש", description: "מחסנאי לחברת אלונים מ.מ.ש בכפר סבא.", location: "כפר סבא", region: "שרון", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/36617582/6c61edf2/` },
+
+  // Admin
+  { title: "אדמיניסטרטור/ית - ניהול משרד", company: "חסוי", description: "אדמיניסטרטור לניהול משרד.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36520359/153dcd1b/` },
+  { title: "פקיד/ת קבלה - מטבחי סמל ת\"א ורמת השרון", company: "מטבחי סמל", description: "פקיד קבלה למטבחי סמל בת\"א ורמת השרון.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/36104848/ffc73729/` },
 ];
 
 export async function POST() {
