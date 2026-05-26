@@ -1757,6 +1757,35 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "סייר/ת אופנוע - עיריית רמת גן", company: "עיריית רמת גן", description: "סייר אופנוע במשמרות בוקר בעיריית רמת גן.", location: "רמת גן", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/35977016/32f285b3/` },
   { title: "נהג/ת מערבל טריילר", company: "חסוי", description: "נהג מערבל טריילר.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36288445/2ea49634/` },
   { title: "נהג/ת שינוע צי רכבים - שפיר הנדסה פ\"ת", company: "שפיר הנדסה", description: "נהג שינוע לצי רכבים שפיר הנדסה פ\"ת.", location: "פתח תקווה", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/35735602/d8dbff6e/` },
+
+  // ─── Round 39 (25) ──────────────────────────────────────────────
+  // Insurance / HR
+  { title: "מנהל/ת צוות רפרנטים - ביטוח", company: "חסוי", description: "מנהל צוות רפרנטים בתחום הביטוח.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/35608606/c2832fd8/` },
+  { title: "רכז/ת גיוס - סוכנות ביטוח", company: "סוכנות ביטוח", description: "רכז גיוס לסוכנות ביטוח מובילה.", location: "מספר מקומות", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36092194/c1b5e79c/` },
+  { title: "אנשי/ות מנהלי ביטוח - תפקידים מעולים", company: "חסוי", description: "אנשי וראשי מנהלי ביטוח לתפקידים מעולים.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/36065404/d581ddd8/` },
+  { title: "חתם/ת סיכונים מיוחדים - הראל", company: "הראל ביטוח ופיננסים", description: "חתם סיכונים מיוחדים בקבוצת הראל.", location: "מספר מקומות", region: "מרכז", field: "ביטוח", externalUrl: `${D}/job/36400640/57594c30/` },
+  { title: "מנהל/ת אבטחת שרים - משרד ממשלתי", company: "משרד ממשלתי", description: "מנהל אבטחת שרים למשרד ממשלתי באזור המרכז וי-ם.", location: "מספר מקומות", region: "מרכז", field: "אבטחה", externalUrl: `${D}/job/36580817/e54493dc/` },
+
+  // Mobile / tech apps
+  { title: "מנהל/ת אפליקציות - ZARA ישראל", company: "ZARA ישראל", description: "מנהל אפליקציות בקבוצת ZARA ישראל.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/21180063/D3278F88/` },
+  { title: "מפתח/ת BI ג'וניור - ללא ניסיון", company: "חסוי", description: "מפתח BI ג'וניור, ללא ניסיון נדרש.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/35599524/f4c89585/` },
+  { title: "מלקט/ת ומגייר/ת - iCongroup", company: "iCongroup", description: "מלקט ומגייר ל-iCongroup, משרה זמנית.", location: "מספר מקומות", region: "מרכז", field: "לוגיסטיקה ומחסנים", externalUrl: `${D}/job/34511774/415264e7/` },
+
+  // Customer service
+  { title: "שירות לקוחות נטו - 40 ש\"ח/שעה", company: "חסוי", description: "שירות לקוחות 08:00-16:00 בשכר 40 ש\"ח לשעה.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36690276/aeb791f8/` },
+  { title: "נציגי/ות שירות לקוחות - מרכז", company: "חסוי", description: "נציגי שירות לקוחות במרכז.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/26659245/c7262e9e/` },
+
+  // Graphic / design / multimedia
+  { title: "גרפיקאי/ת פרילנסר/ית - אלקטרה מוצרי צריכה", company: "אלקטרה מוצרי צריכה", description: "גרפיקאי פרילנסר לאלקטרה מוצרי צריכה.", location: "מספר מקומות", region: "מרכז", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/33902501/5a16db1e/` },
+  { title: "גרפיקאי/ת מנוסה - מתאים לפרילנסרים", company: "חסוי", description: "גרפיקאי מנוסה, נתניה, מתאים לפרילנסרים. מהבית.", location: "נתניה", region: "שרון", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/25863145/6ed36056/` },
+  { title: "מעצב/ת גרפי - תוצרי הדרכה", company: "חסוי", description: "מעצב גרפי לעיצוב תוצרי הדרכה, רעננה.", location: "רעננה", region: "שרון", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/25133830/4363008b/` },
+  { title: "מתכנת/ת פייתון - בפיג'מה", company: "חסוי", description: "מתכנת פייתון בפיג'מה, עבודה מהבית.", location: "מהבית", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/22245393/a1cbab61/` },
+  { title: "מעצב/ת - חברת פינטק", company: "חברת פינטק", description: "מעצב לחברת פינטק.", location: "מספר מקומות", region: "מרכז", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/25289801/8da8033e/` },
+  { title: "מנהל/ת תקשורת חזותית-שיווקית", company: "חסוי", description: "מנהל תקשורת חזותית-שיווקית, ניהול סטודיו גרפי.", location: "מספר מקומות", region: "מרכז", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/25610122/1a1cae5c/` },
+  { title: "UI/UX Designer - Experienced and creative", company: "חסוי", description: "UI/UX Designer מנוסה ויצירתי.", location: "מספר מקומות", region: "מרכז", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/22109999/D45E2446/` },
+  { title: "מתרגל/ת - קורס עיצוב גרפי", company: "חסוי", description: "מתרגל לקורס עיצוב גרפי.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/22962510/c4e97066/` },
+  { title: "Full Stack Developer - Python + SQL + JS", company: "חסוי", description: "Full Stack Developer, Python + SQL + JavaScript.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/23366963/a2a1301c/` },
+  { title: "הנדסאי/ת תקשורת חזותית - כרמיאל", company: "חברה מובילה", description: "הנדסאי תקשורת חזותית באזור כרמיאל.", location: "כרמיאל", region: "צפון", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/33955891/3cbf4d35/` },
 ];
 
 export async function POST() {
