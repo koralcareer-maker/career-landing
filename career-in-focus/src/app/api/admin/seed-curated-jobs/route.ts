@@ -1786,6 +1786,36 @@ const CURATED_JOBS: SeedJob[] = [
   { title: "מתרגל/ת - קורס עיצוב גרפי", company: "חסוי", description: "מתרגל לקורס עיצוב גרפי.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/22962510/c4e97066/` },
   { title: "Full Stack Developer - Python + SQL + JS", company: "חסוי", description: "Full Stack Developer, Python + SQL + JavaScript.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/23366963/a2a1301c/` },
   { title: "הנדסאי/ת תקשורת חזותית - כרמיאל", company: "חברה מובילה", description: "הנדסאי תקשורת חזותית באזור כרמיאל.", location: "כרמיאל", region: "צפון", field: "עיצוב ומולטימדיה", externalUrl: `${D}/job/33955891/3cbf4d35/` },
+
+  // ─── Round 40 (21) ──────────────────────────────────────────────
+  // Technical support
+  { title: "נציג/ת תמיכה טכנית - מתח נמוך וציוד תקשורת", company: "חסוי", description: "נציג תמיכה טכנית למערכות מתח נמוך וציוד תקשורת.", location: "מספר מקומות", region: "מרכז", field: "תקשורת ואינטרנט", externalUrl: `${D}/job/36781077/83acf154/` },
+  { title: "נציג/ת תמיכה טכנית - סלקום", company: "סלקום", description: "נציג תמיכה טכנית במוקד סלקום.", location: "מספר מקומות", region: "מרכז", field: "תקשורת ואינטרנט", externalUrl: `${D}/job/36720524/1708695e/` },
+  { title: "תומך/ת טכני שטח - מחלקת IT", company: "חסוי", description: "תומך טכני שטח במחלקת IT.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/36088755/56b89f8d/` },
+  { title: "נציגי/ות תמיכה טכנית - מוקד סלקום", company: "סלקום", description: "נציגי תמיכה טכנית במוקד סלקום.", location: "מספר מקומות", region: "מרכז", field: "תקשורת ואינטרנט", externalUrl: `${D}/job/35546286/950c778a/` },
+  { title: "טכנאים/יות - רקע טכני בסיסי", company: "חסוי", description: "טכנאים עם רקע טכני בסיסי.", location: "מספר מקומות", region: "מרכז", field: "תקשורת ואינטרנט", externalUrl: `${D}/job/36267032/14689452/` },
+  { title: "עובד/ת תפעול - מגדלי הים התיכון נורדיה", company: "מגדלי הים התיכון", description: "עובד תפעול ברשת מגדלי הים התיכון בנורדיה.", location: "נורדיה", region: "שרון", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/36627253/4fe1ea75/` },
+  { title: "מבנא/ית מטוסים", company: "חסוי", description: "מבנאי מטוסים.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/35703283/038efb8a/` },
+
+  // Sales / events / camps
+  { title: "מדריכים/ות לקייטנות קיץ - אוגוסט", company: "חסוי", description: "מדריכים לקייטנות קיץ בחודש אוגוסט.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/34138937/9ebed2cd/` },
+  { title: "עובדי/ות יריד - שבוע הספר", company: "חסוי", description: "עובדי יריד לשבוע הספר, תנאים שווים.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/36929277/9614431a/` },
+  { title: "Presale & Implementation Engineer - תקשורת ורשתות", company: "חסוי", description: "Presale & Implementation Engineer בתקשורת ורשתות.", location: "מספר מקומות", region: "מרכז", field: "מכירות ושיווק", externalUrl: `${D}/job/36701106/b36598a7/` },
+  { title: "מתאם/ת מכירות אירועים - מלון אינדיגו", company: "מלון אינדיגו", description: "מתאם מכירות אירועים למלון אינדיגו ברמת גן.", location: "רמת גן", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/36242294/16448c59/` },
+
+  // Cleaning / general
+  { title: "עובד/ת ניקיון - רעננה", company: "חסוי", description: "עובד ניקיון ברעננה, 08:00-16:00, 40 ש\"ח לשעה.", location: "רעננה", region: "שרון", field: "תעשייה וייצור", externalUrl: `${D}/job/35012975/8176f1d0/` },
+  { title: "עובד/ת ניקיון - משמרות בוקר", company: "חסוי", description: "עובד ניקיון, משמרות בוקר בלבד.", location: "תל אביב", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/25241674/0c149dd1/` },
+  { title: "עובדי/ות ניקיון - אילת + מגורים", company: "מלונות אילת", description: "עובדי ניקיון לאילת, מגורים סובסידיים, ארוחות ומענקים.", location: "אילת", region: "דרום", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/24848887/7cc7182b/` },
+  { title: "עובדים/ות כלליים - דיוטי פרי", company: "דיוטי פרי", description: "עובדים כלליים למגוון משרות בדיוטי פרי.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/33851258/1469d203/` },
+  { title: "מפקחים/ות - רכבת קלה גוש דן", company: "חברת הרכבת הקלה", description: "מפקחים לחברת הרכבת הקלה בגוש דן.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/27042418/a8037fc0/` },
+  { title: "מתקין/ה - מערכות חקלאיות", company: "חסוי", description: "מתקין מערכות חקלאיות.", location: "מספר מקומות", region: "מרכז", field: "תעשייה וייצור", externalUrl: `${D}/job/20801773/e3958376/` },
+
+  // DevOps / IT
+  { title: "Junior DevOps Engineer", company: "חסוי", description: "Junior DevOps Engineer, Linux ו-Windows, 1+ שנת ניסיון.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/26029604/68865695/` },
+  { title: "Junior DevOps - הזדמנות לכניסה", company: "חסוי", description: "Junior DevOps, הזדמנות לכניסה לתחום.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36608766/b5b5f427/` },
+  { title: "טכנאי/ת מחשבים - מומחה מיקרוסופט", company: "חסוי", description: "טכנאי מחשבים בעל התמחות במיקרוסופט.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/35768016/17a4e2ac/` },
+  { title: "מוכרנים/ות ואחמשים - אופיס דיפו ראשל\"צ", company: "אופיס דיפו", description: "מוכרנים ואחמשים באופיס דיפו ראשון לציון.", location: "ראשון לציון", region: "מרכז", field: "קמעונאות ורכש", externalUrl: `${D}/job/36803421/01023443/` },
 ];
 
 export async function POST() {
