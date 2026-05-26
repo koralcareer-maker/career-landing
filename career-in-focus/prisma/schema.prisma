@@ -998,3 +998,60 @@ model PageView {
   @@index([path, createdAt])
   @@index([utmSource, createdAt])
 }
+
+// Candidate pool — populated from imported Canva CVs (300+ Coral built
+// for trainees), Gmail attachments she received, WhatsApp Web files,
+// and the upcoming public "send us your CV" form. The auto-matcher
+// computes a Gemini embedding per candidate and per Job, then scores
+// cosine-similarity to surface the top fits whenever a job is added.
+// The sigma.js graph on /admin/candidates renders jobs + candidates as
+// nodes connected by their matching edges.
+model Candidate {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Identity (only name is required — some entries may have just a
+  // name + raw CV text and get enriched later by the AI extractor)
+  name            String
+  email           String?
+  phone           String?
+  linkedinUrl     String?
+
+  // Career
+  targetRole      String?  // What they're actively looking for
+  field           String?  // Maps to Job.field, used by auto-matcher
+  region          String?  // Maps to Job.region
+  city            String?
+  yearsExperience Int?
+  currentCompany  String?
+  currentTitle    String?
+
+  // Profile content
+  summary         String?  // Bio / professional headline
+  skills          String?  // JSON array of skills
+  languages       String?  // JSON array of languages
+  education       String?  // Plain-text summary
+  militaryUnit    String?
+
+  // Source tracking — where this CV came from, so re-imports can dedup
+  // and the admin UI can link back to the original.
+  source          String   // "canva" | "gmail" | "whatsapp" | "form" | "manual"
+  sourceRef       String?  // e.g. "canva:DAHKsz1s7-U:1" or "gmail:thread-id"
+  cvUrl           String?  // Link back to the original CV (Canva view URL, Drive link, etc.)
+  rawCvText       String?  // Full extracted text, kept so we can re-run the AI extractor
+
+  // AI matching — JSON-stringified Float32Array of the Gemini embedding
+  // for {name + targetRole + skills + summary}. Null until backfilled.
+  embedding       String?
+
+  // Workflow
+  isActive        Boolean  @default(true)
+  notes           String?
+  handledByCoral  Boolean  @default(false)  // Coral has reviewed this candidate
+
+  @@index([field, region])
+  @@index([source, sourceRef])
+  @@index([handledByCoral, createdAt])
+  @@index([email])
+}
