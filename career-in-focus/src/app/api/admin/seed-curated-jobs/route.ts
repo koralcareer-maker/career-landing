@@ -1620,6 +1620,42 @@ const CURATED_JOBS: SeedJob[] = [
 
   // Misc
   { title: "נהג/ת אוטובוס/מיניבוס - דב טרנס", company: "דב טרנס", description: "נהג אוטובוס/מיניבוס בחברת דב טרנס, הכשרה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/36475889/3ca0fac8/` },
+
+  // ─── Round 35 (27) ──────────────────────────────────────────────
+  // Junior tech / engineering
+  { title: "מפתח/ת Full Stack ג'וניור - חברה ביטחונית", company: "חברה ביטחונית", description: "מפתח Full Stack ג'וניור בפ\"ת. 1-2 שנות ניסיון, מנטור צמוד.", location: "פתח תקווה", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/36677489/5bf2fdda/` },
+  { title: "מכשירן/ית מערכות מחשב - המכון הגיאופיסי", company: "המכון הגיאופיסי לישראל", description: "מכשירן מערכות מחשב במכון הגיאופיסי לישראל.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/35533138/79053f3d/` },
+  { title: "מפתח/ת .NET מנוסה (KD)", company: "חסוי", description: "מפתח .NET מנוסה.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/35405914/ad1aa7a1/` },
+  { title: "בודק/ת תוכנה ידני - ללא ניסיון", company: "חברת הייטק", description: "בודק תוכנה ידני, ללא ניסיון נדרש.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/23139514/db4583e1/` },
+  { title: "OutSystems Developer", company: "חסוי", description: "OutSystems Developer.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/26042904/35bcb9f3/` },
+  { title: "Full Stack Engineer - Martech", company: "חברת Martech", description: "Full Stack Engineer בחברת Martech.", location: "מספר מקומות", region: "מרכז", field: "פיתוח", externalUrl: `${D}/job/26206114/2bd0f2ed/` },
+  { title: "מהנדס/ת חשמל Junior - DC + רכב", company: "חסוי", description: "מהנדס חשמל Junior, דריסת רגל בתחום DC עם רכב צמוד.", location: "מספר מקומות", region: "מרכז", field: "חשמל", externalUrl: `${D}/job/35657569/369fbba3/` },
+
+  // Customer service / hospitality
+  { title: "נציג/ת שירות דיגיטלי - מוקד שירות", company: "חסוי", description: "נציג שירות דיגיטלי במוקד שירות לקוחות.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/36466076/1163ebb4/` },
+  { title: "שירות לקוחות - גוגל ריקלוקיישן ליסבון", company: "גוגל", description: "שירות לקוחות בעברית, ריקלוקיישן ליסבון, דרכון אירופאי. 1,400 יורו + מענק.", location: "ליסבון", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/26486212/5bf4a8a1/` },
+  { title: "נציג/ת שירות דיגיטלי - מחלקת שירות", company: "חסוי", description: "נציג שירות דיגיטלי, מחלקת שירות.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/34246857/d3dc0ff3/` },
+  { title: "נציג/ת שירות לקוחות - USHOPS", company: "USHOPS", description: "שירות לקוחות לאתר USHOPS, e-commerce ושילוח בינ\"ל.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/21153539/3ad999ad/` },
+  { title: "ראש/ת צוות שירות לקוחות - חברה בינ\"ל", company: "חברה בינ\"ל", description: "ראש צוות שירות לקוחות לחברה בינלאומית.", location: "מספר מקומות", region: "מרכז", field: "שירות לקוחות", externalUrl: `${D}/job/25664842/21f1b15d/` },
+  { title: "פקיד/ת קבלה - מלון ישראל קנדה", company: "ישראל קנדה מלונות", description: "פקיד קבלה למלון מרשת ישראל קנדה מלונות.", location: "מספר מקומות", region: "מרכז", field: "מסעדנות, מלונאות ותיירות", externalUrl: `${D}/job/35708679/20f33c3b/` },
+
+  // Care / security / admin
+  { title: "מנהל/ת בית אבות - מורשת", company: "מורשת קבוצת בתי אבות", description: "מנהל בית אבות בקבוצת מורשת.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/20766490/F2708608/` },
+  { title: "מאבטח/ת - הסוכנות היהודית באר שבע", company: "הסוכנות היהודית", description: "מאבטח לסוכנות היהודית בבאר שבע, 46.8 ש\"ח.", location: "באר שבע", region: "דרום", field: "אבטחה", externalUrl: `${D}/job/36591229/d1b79d2a/` },
+  { title: "סגנ/ית מנהלת מש\"א - בית חולים שיבא", company: "בית חולים שיבא", description: "סגנית מנהלת מש\"א בבית חולים שיבא.", location: "תל השומר", region: "מרכז", field: "משאבי אנוש", externalUrl: `${D}/job/36485893/991163d4/` },
+  { title: "ממלא/ת מקום עו\"ס - תקיפה מינית", company: "חסוי", description: "ממלא מקום עו\"ס לטיפול בנפגעי תקיפה מינית.", location: "מספר מקומות", region: "מרכז", field: "חברה וקהילה", externalUrl: `${D}/job/25326129/5ae7a9e6/` },
+  { title: "מניקוריסטיות/פדיקורסטיות - סטודיו מושלם", company: "סטודיו מושלם", description: "מניקוריסטיות ופדיקורסטיות לסטודיו מושלם.", location: "מספר מקומות", region: "מרכז", field: "ספרות וקוסמטיקה", externalUrl: `${D}/job/33932407/e752cdde/` },
+  { title: "עוזר/ת רוקח", company: "חסוי", description: "עוזר רוקח בבית מרקחת.", location: "מספר מקומות", region: "מרכז", field: "רפואה ובריאות", externalUrl: `${D}/job/33875730/17420e47/` },
+  { title: "עוזר/ת אדמיניסטרטיבי - חצי משרה", company: "חסוי", description: "עוזר אדמיניסטרטיבי לחצי משרה.", location: "מספר מקומות", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/27296068/337b0820/` },
+  { title: "עוזר/ת חשב - דור אלון", company: "דור אלון", description: "עוזר חשב בחברת דור אלון.", location: "מספר מקומות", region: "מרכז", field: "כספים, חשבונאות וכלכלה", externalUrl: `${D}/job/24426479/c9b4f7c8/` },
+
+  // Teachers + misc
+  { title: "מורים/ות פרטיים", company: "חסוי", description: "מורים פרטיים בכל הארץ - מתמטיקה, אנגלית, תכנות.", location: "ארצי", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/23837821/2b1e5f6a/` },
+  { title: "אב/אם בית - תיכון טומשין ראש העין", company: "תיכון טומשין", description: "אב בית לתיכון טומשין בראש העין.", location: "ראש העין", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/22639510/39331d19/` },
+  { title: "מורים/ות - בית ספר מונטסורי", company: "בית ספר מונטסורי", description: "מורים לבית ספר מונטסורי.", location: "מספר מקומות", region: "מרכז", field: "חינוך והדרכה", externalUrl: `${D}/job/24511295/81ec5e3f/` },
+  { title: "עוזר/ת נהג - אין צורך ברישיון", company: "חברה מובילה", description: "עוזר נהג, אין צורך ברישיון נהיגה.", location: "מספר מקומות", region: "מרכז", field: "נהגים, רכב ותחבורה", externalUrl: `${D}/job/33154490/d7045774/` },
+  { title: "עוזר/ת מזכירה - ת\"א פרויקט ממשלתי", company: "חסוי", description: "עוזר מזכירה בתל אביב לפרויקט ממשלתי.", location: "תל אביב", region: "מרכז", field: "מזכירות ואדמיניסטרציה", externalUrl: `${D}/job/23209092/ad722e63/` },
+  { title: "מומחה/ית Microsoft 365 ותשתיות זהויות", company: "חסוי", description: "מומחה Microsoft 365 ותשתיות זהויות.", location: "מספר מקומות", region: "מרכז", field: "מערכות מידע", externalUrl: `${D}/job/36783433/8d011c3f/` },
 ];
 
 export async function POST() {
