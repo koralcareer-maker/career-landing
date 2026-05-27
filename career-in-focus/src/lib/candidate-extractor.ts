@@ -64,20 +64,60 @@ const SYSTEM_PROMPT = `אתה מומחה לעיבוד קורות חיים בעב
 החזר JSON תקין בלבד, ללא markdown, ללא הסברים, ללא טקסט מסביב.`;
 
 export async function extractCandidate(rawCvText: string): Promise<ExtractedCandidate> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY missing");
-
+  const geminiKey = process.env.GEMINI_API_KEY;
   let lastError: Error | null = null;
-  for (const model of GEMINI_MODELS) {
-    try {
-      return await callExtractor(model, rawCvText, key);
-    } catch (e) {
-      lastError = e instanceof Error ? e : new Error(String(e));
-      // 429 / 503 → cascade. Other errors → also cascade, log+continue.
-      continue;
+  // Try Gemini cascade first (free / cheap).
+  if (geminiKey) {
+    for (const model of GEMINI_MODELS) {
+      try {
+        return await callExtractor(model, rawCvText, geminiKey);
+      } catch (e) {
+        lastError = e instanceof Error ? e : new Error(String(e));
+        continue;
+      }
     }
   }
-  throw new Error(`Candidate extractor exhausted: ${lastError?.message ?? "unknown"}`);
+  // Gemini exhausted (or no key). Fall back to Claude — ANTHROPIC_API_KEY
+  // is already configured for the personal-analysis lib. Claude Haiku
+  // is fast and cheap (~$0.25/MM input tokens) and handles structured
+  // JSON output well, so we don't lose anything by routing through it
+  // when Gemini's daily quota tanks.
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (anthropicKey) {
+    try {
+      return await callClaudeExtractor(rawCvText, anthropicKey);
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+  throw new Error(`Candidate extractor exhausted: ${lastError?.message ?? "no API keys configured"}`);
+}
+
+async function callClaudeExtractor(raw: string, key: string): Promise<ExtractedCandidate> {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5",
+      max_tokens: 2048,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content: raw }],
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Claude ${res.status}: ${body.slice(0, 200)}`);
+  }
+  const data = (await res.json()) as {
+    content?: Array<{ type: string; text?: string }>;
+  };
+  const text = data.content?.find((c) => c.type === "text")?.text ?? "";
+  if (!text) throw new Error("empty response from Claude");
+  return parseExtractedCandidate(text);
 }
 
 async function callExtractor(model: string, raw: string, key: string): Promise<ExtractedCandidate> {
