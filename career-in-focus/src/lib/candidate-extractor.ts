@@ -16,7 +16,7 @@ const GEMINI_MODELS = [
   "gemini-2.0-flash",       // fast + roomy free-tier quota
   "gemini-2.5-flash-lite",  // cheaper fallback
   "gemini-2.5-flash",       // primary if 2.0 throttled
-  "gemini-1.5-flash",       // legacy
+  // gemini-1.5-flash removed — v1beta deprecated it, returns 404
 ];
 
 const REQUEST_TIMEOUT_MS = 30_000;
