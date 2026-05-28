@@ -175,7 +175,7 @@ export async function submitTalent(
         embedding: embeddingJson,
       },
     });
-  } catch (e) {
+  } catch {
     return {
       error: "אירעה שגיאה בשמירה. נסו שוב או כתבו ל-koralcareer@gmail.com",
       fields,
