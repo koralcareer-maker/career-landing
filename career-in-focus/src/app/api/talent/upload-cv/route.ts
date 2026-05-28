@@ -35,8 +35,9 @@ export async function POST(req: Request) {
   let text = "";
   try {
     if (name.endsWith(".pdf") || file.type === "application/pdf") {
-      const pdfParse = (await import("pdf-parse")).default;
-      text = ((await pdfParse(buf)).text ?? "").trim();
+      const { PDFParse } = await import("pdf-parse");
+      const parser = new PDFParse({ data: new Uint8Array(buf) });
+      text = ((await parser.getText()).text ?? "").trim();
     } else if (
       name.endsWith(".docx") ||
       file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
