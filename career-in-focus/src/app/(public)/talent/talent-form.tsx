@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { submitTalent, type SubmitTalentState } from "@/lib/actions/talent-submit";
-import { Send, CheckCircle2, AlertCircle, Loader2, Upload } from "lucide-react";
+import { Send, CheckCircle2, AlertCircle, Loader2, Upload, FileText } from "lucide-react";
 
 const REGION_OPTIONS = ["", "צפון", "חיפה", "מרכז", "שפלה", "ירושלים", "דרום", "אילת", "מהבית / מרחוק"];
 
@@ -10,6 +10,30 @@ const initial: SubmitTalentState = {};
 
 export function TalentForm() {
   const [state, formAction, pending] = useActionState(submitTalent, initial);
+  const [cvText, setCvText] = useState("");
+  const [cvName, setCvName] = useState("");
+  const [cvStatus, setCvStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
+
+  async function onFile(file: File | undefined) {
+    if (!file) return;
+    setCvName(file.name);
+    setCvStatus("uploading");
+    setCvText("");
+    try {
+      const fd = new FormData();
+      fd.append("cv", file);
+      const res = await fetch("/api/talent/upload-cv", { method: "POST", body: fd });
+      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; text?: string };
+      if (res.ok && j.ok && j.text) {
+        setCvText(j.text);
+        setCvStatus("done");
+      } else {
+        setCvStatus("error");
+      }
+    } catch {
+      setCvStatus("error");
+    }
+  }
 
   if (state?.ok) {
     return (
@@ -38,6 +62,8 @@ export function TalentForm() {
     <form action={formAction} className="space-y-5" dir="rtl">
       {/* Honeypot */}
       <input type="text" name="_hp" tabIndex={-1} autoComplete="off" className="absolute -left-[9999px] w-px h-px opacity-0" />
+      {/* CV text extracted client-side from the uploaded file */}
+      <input type="hidden" name="cvText" value={cvText} />
 
       <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 space-y-4">
         <h2 className="text-base font-black text-navy flex items-center gap-2">
@@ -83,7 +109,7 @@ export function TalentForm() {
               name="region" defaultValue={state?.fields?.region ?? ""}
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
             >
-              {REGION_OPTIONS.map((r) => <option key={r} value={r}>{r || "בחרו אזור"}</option>)}
+              {REGION_OPTIONS.map((r) => <option key={r || "none"} value={r}>{r || "בחרו אזור"}</option>)}
             </select>
           </div>
         </div>
@@ -107,13 +133,15 @@ export function TalentForm() {
             קורות חיים <span className="text-slate-400 font-normal">(PDF / Word, עד 8MB)</span>
           </label>
           <label className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 cursor-pointer hover:border-teal hover:bg-teal/5 transition-colors">
-            <Upload size={16} className="text-teal" />
-            <span className="text-sm text-slate-500">לחצו לבחירת קובץ קורות חיים</span>
-            <input name="cv" type="file" accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="hidden"
-              onChange={(e) => {
-                const span = e.currentTarget.previousElementSibling?.nextElementSibling as HTMLElement | null;
-                if (span && e.currentTarget.files?.[0]) span.textContent = e.currentTarget.files[0].name;
-              }}
+            {cvStatus === "uploading" ? <Loader2 size={16} className="text-teal animate-spin" /> : cvStatus === "done" ? <FileText size={16} className="text-emerald-600" /> : <Upload size={16} className="text-teal" />}
+            <span className="text-sm text-slate-600 truncate">
+              {cvStatus === "uploading" ? "מעלה קובץ..." : cvStatus === "done" ? `נטען: ${cvName}` : cvStatus === "error" ? "לא הצלחנו לקרוא, נסו קובץ אחר" : "לחצו לבחירת קובץ קורות חיים"}
+            </span>
+            <input
+              type="file"
+              accept=".pdf,.docx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              className="hidden"
+              onChange={(e) => onFile(e.target.files?.[0])}
             />
           </label>
           <p className="text-[11px] text-slate-400 mt-1.5">אפשר להשאיר פרטים גם בלי קובץ, אבל קורות חיים עוזרים להתאמה מדויקת יותר.</p>
@@ -132,7 +160,7 @@ export function TalentForm() {
           הפרטים נכנסים ישירות למאגר המאובטח של קורל ולא מועברים לאף גורם ללא אישורכם.
         </p>
         <button
-          type="submit" disabled={pending}
+          type="submit" disabled={pending || cvStatus === "uploading"}
           className="inline-flex items-center justify-center gap-2 bg-teal hover:bg-teal-dark text-white font-black px-6 py-3 rounded-xl shadow-lg shadow-teal/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {pending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}

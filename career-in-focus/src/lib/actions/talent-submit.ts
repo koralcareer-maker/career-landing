@@ -4,18 +4,22 @@
  * Public "קורל מקושרים" talent-pool intake.
  *
  * Anyone with the /talent link fills the form (name, contact, target
- * role, region, free-text about-me, optional CV file). On submit we:
- *   1. parse the CV file if attached (pdf-parse / mammoth)
- *   2. build a rawCvText blob from the form fields + parsed file
- *   3. run the Gemini→Claude extractor for a structured summary +
- *      a Gemini embedding (so the auto-matcher can rank them later)
- *   4. dedup by email/name (Coral's one-person rule)
- *   5. persist a Candidate row with source="form", handledByCoral=false
+ * role, region, free-text about-me). On submit we build a rawCvText
+ * blob from the fields, run the Gemini→Claude extractor for a
+ * structured summary + a Gemini embedding (so the auto-matcher can rank
+ * them later), dedup by email/name (Coral's one-person rule), and
+ * persist a Candidate row with source="form", handledByCoral=false.
+ *
+ * NOTE: CV file parsing lives in the dedicated /api/talent/upload-cv
+ * route handler, NOT here. Bundling node-only deps (pdf-parse/mammoth)
+ * inside a server action breaks the Next build because actions are
+ * wrapped as client-callable references; route handlers don't have
+ * that constraint. The form posts text here and (optionally) the file
+ * to that route separately.
  *
  * Public + unauthenticated by design — this is the link Coral blasts to
- * her audience. We guard with a honeypot field and basic validation,
- * and the endpoint only ever CREATES a candidate (never reads/edits the
- * pool), so there's no data-exposure surface.
+ * her audience. Honeypot + validation guard the open endpoint, and it
+ * only ever CREATES a candidate (never reads/edits the pool).
  */
 
 import { prisma } from "@/lib/prisma";
@@ -34,28 +38,6 @@ export type SubmitTalentState = {
   };
 };
 
-async function extractFileText(file: File): Promise<string> {
-  const buf = Buffer.from(await file.arrayBuffer());
-  const name = file.name.toLowerCase();
-  if (name.endsWith(".pdf") || file.type === "application/pdf") {
-    const pdfParse = (await import("pdf-parse")).default;
-    const res = await pdfParse(buf);
-    return (res.text ?? "").trim();
-  }
-  if (
-    name.endsWith(".docx") ||
-    file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-  ) {
-    const mammoth = await import("mammoth");
-    const res = await mammoth.extractRawText({ buffer: buf });
-    return (res.value ?? "").trim();
-  }
-  if (name.endsWith(".txt") || file.type.startsWith("text/")) {
-    return buf.toString("utf-8").trim();
-  }
-  return ""; // unknown type → ignore, we still have the form fields
-}
-
 export async function submitTalent(
   _prev: SubmitTalentState,
   formData: FormData,
@@ -69,7 +51,9 @@ export async function submitTalent(
   const targetRole = String(formData.get("targetRole") ?? "").trim();
   const region = String(formData.get("region") ?? "").trim();
   const about = String(formData.get("about") ?? "").trim();
-  const file = formData.get("cv");
+  // The client may have parsed a CV to text via /api/talent/upload-cv
+  // and passed it back in this hidden field.
+  const cvText = String(formData.get("cvText") ?? "").trim();
 
   const fields = { name, email, phone, targetRole, region, about };
 
@@ -79,20 +63,6 @@ export async function submitTalent(
     return { error: "כתובת האימייל לא תקינה", fields };
   }
 
-  // Parse the CV file if one was attached (≤8MB, pdf/docx/txt).
-  let fileText = "";
-  if (file instanceof File && file.size > 0) {
-    if (file.size > 8 * 1024 * 1024) {
-      return { error: "הקובץ גדול מדי (מקסימום 8MB)", fields };
-    }
-    try {
-      fileText = await extractFileText(file);
-    } catch {
-      // Non-fatal — proceed with just the form fields.
-    }
-  }
-
-  // Build the text blob the AI extractor works on.
   const rawCvText = [
     `שם: ${name}`,
     email && `אימייל: ${email}`,
@@ -100,7 +70,7 @@ export async function submitTalent(
     targetRole && `תפקיד מבוקש: ${targetRole}`,
     region && `אזור: ${region}`,
     about && `על עצמי: ${about}`,
-    fileText && `\nקורות חיים:\n${fileText}`,
+    cvText && `\nקורות חיים:\n${cvText}`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -135,11 +105,7 @@ export async function submitTalent(
       where: { OR: dupChecks as never },
       select: { id: true },
     });
-    if (dup) {
-      // Already in the pool — treat as success so the visitor isn't
-      // told "you already applied" (Coral can dedup-merge later).
-      return { ok: true };
-    }
+    if (dup) return { ok: true }; // already in pool — treat as success
   }
 
   // Embedding (non-fatal).
