@@ -21,7 +21,7 @@
 import { prisma } from "@/lib/prisma";
 import { extractCandidate, embedCandidate, type ExtractedCandidate } from "@/lib/candidate-extractor";
 
-export interface SubmitTalentState {
+export type SubmitTalentState = {
   ok?: boolean;
   error?: string;
   fields?: {
@@ -32,7 +32,7 @@ export interface SubmitTalentState {
     region?: string;
     about?: string;
   };
-}
+};
 
 async function extractFileText(file: File): Promise<string> {
   const buf = Buffer.from(await file.arrayBuffer());
