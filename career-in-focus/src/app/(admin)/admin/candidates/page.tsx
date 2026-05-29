@@ -29,6 +29,7 @@ interface CandidateRow {
   targetRole: string | null;
   field: string | null;
   region: string | null;
+  salaryExpectation: string | null;
   yearsExperience: number | null;
   currentCompany: string | null;
   source: string;
@@ -47,7 +48,7 @@ export default async function AdminCandidatesPage() {
       take: 500,
       select: {
         id: true, name: true, email: true, phone: true,
-        targetRole: true, field: true, region: true,
+        targetRole: true, field: true, region: true, salaryExpectation: true,
         yearsExperience: true, currentCompany: true,
         source: true, cvUrl: true, createdAt: true,
       },
@@ -110,6 +111,7 @@ export default async function AdminCandidatesPage() {
                     <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">תפקיד מבוקש</th>
                     <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">תחום</th>
                     <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">אזור</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">צ&quot;ש</th>
                     <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">ניסיון</th>
                     <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">חברה אחרונה</th>
                     <th className="text-right py-3 px-4 font-semibold text-gray-500 text-xs">קשר</th>
@@ -125,6 +127,7 @@ export default async function AdminCandidatesPage() {
                       <td className="py-3 px-4 text-gray-600 text-xs">{c.targetRole ?? "—"}</td>
                       <td className="py-3 px-4 text-gray-500 text-xs">{c.field ?? "—"}</td>
                       <td className="py-3 px-4 text-gray-500 text-xs">{c.region ?? "—"}</td>
+                      <td className="py-3 px-4 text-gray-500 text-xs">{c.salaryExpectation ?? "—"}</td>
                       <td className="py-3 px-4 text-gray-500 text-xs">
                         {c.yearsExperience != null ? `${c.yearsExperience} שנים` : "—"}
                       </td>

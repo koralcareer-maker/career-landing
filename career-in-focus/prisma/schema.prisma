@@ -1020,8 +1020,9 @@ model Candidate {
 
   // Career
   targetRole      String?  // What they're actively looking for
-  field           String?  // Maps to Job.field, used by auto-matcher
-  region          String?  // Maps to Job.region
+  field           String?  // Maps to Job.field. Comma-joined when multi-select (e.g. "הייטק, אנרגיה").
+  region          String?  // Maps to Job.region. Comma-joined when multi-select (e.g. "מרכז, שרון").
+  salaryExpectation String? // צ"ש — what they expect to earn (free text, e.g. "12,000-15,000")
   city            String?
   yearsExperience Int?
   currentCompany  String?

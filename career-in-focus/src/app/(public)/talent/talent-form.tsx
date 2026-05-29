@@ -4,15 +4,64 @@ import { useActionState, useState } from "react";
 import { submitTalent, type SubmitTalentState } from "@/lib/actions/talent-submit";
 import { Send, CheckCircle2, AlertCircle, Loader2, Upload, FileText } from "lucide-react";
 
-const REGION_OPTIONS = ["", "צפון", "חיפה", "מרכז", "שפלה", "ירושלים", "דרום", "אילת", "מהבית / מרחוק"];
+const DOMAIN_OPTIONS = [
+  "הייטק", "תוכנה ופיתוח", "אנרגיה", "הנדסה",
+  "מכירות ושיווק", "דיגיטל ומדיה", "ניהול ובכירים",
+  "כספים וחשבונאות", "בנקאות", "ביטוח",
+  "משאבי אנוש", "אדמיניסטרציה ומזכירות", "שירות לקוחות ומוקדים",
+  "לוגיסטיקה ומחסנים", "נהגים ותחבורה",
+  "חינוך והדרכה", "רפואה ובריאות", "חברה וקהילה",
+  "מסעדנות ותיירות", "קמעונאות", "עיצוב ומולטימדיה",
+  "חוק ומשפט", "בנייה ונדל\"ן", "אבטחה", "ייצור ותעשייה",
+];
+
+const LOCATION_OPTIONS = [
+  "צפון", "חיפה", "שרון", "מרכז", "שפלה", "ירושלים", "דרום", "אילת", "מהבית / מרחוק",
+];
 
 const initial: SubmitTalentState = {};
+
+function ChipMultiSelect({
+  options, selected, onToggle,
+}: {
+  options: string[];
+  selected: string[];
+  onToggle: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
+        const on = selected.includes(opt);
+        return (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => onToggle(opt)}
+            className={
+              "px-3 py-1.5 rounded-full text-xs font-bold border transition-colors " +
+              (on
+                ? "bg-teal text-white border-teal"
+                : "bg-white text-slate-600 border-slate-200 hover:border-teal hover:text-teal")
+            }
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export function TalentForm() {
   const [state, formAction, pending] = useActionState(submitTalent, initial);
   const [cvText, setCvText] = useState("");
   const [cvName, setCvName] = useState("");
   const [cvStatus, setCvStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
+  const [domains, setDomains] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
+
+  const toggle = (set: React.Dispatch<React.SetStateAction<string[]>>) => (v: string) =>
+    set((cur) => (cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]));
 
   async function onFile(file: File | undefined) {
     if (!file) return;
@@ -62,8 +111,10 @@ export function TalentForm() {
     <form action={formAction} className="space-y-5" dir="rtl">
       {/* Honeypot */}
       <input type="text" name="_hp" tabIndex={-1} autoComplete="off" className="absolute -left-[9999px] w-px h-px opacity-0" />
-      {/* CV text extracted client-side from the uploaded file */}
+      {/* Hidden fields populated from client state */}
       <input type="hidden" name="cvText" value={cvText} />
+      <input type="hidden" name="domains" value={domains.join(", ")} />
+      <input type="hidden" name="locations" value={locations.join(", ")} />
 
       <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 space-y-4">
         <h2 className="text-base font-black text-navy flex items-center gap-2">
@@ -104,20 +155,38 @@ export function TalentForm() {
             />
           </div>
           <div>
-            <label className="text-xs font-bold text-slate-600 mb-1.5 block">אזור מועדף</label>
-            <select
-              name="region" defaultValue={state?.fields?.region ?? ""}
+            <label className="text-xs font-bold text-slate-600 mb-1.5 block">ציפיות שכר (צ&quot;ש)</label>
+            <input
+              name="salaryExpectation" defaultValue={state?.fields?.salaryExpectation ?? ""}
+              placeholder="לדוגמה: 12,000-15,000 ש&quot;ח"
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:border-teal focus:ring-2 focus:ring-teal/20 focus:outline-none"
-            >
-              {REGION_OPTIONS.map((r) => <option key={r || "none"} value={r}>{r || "בחרו אזור"}</option>)}
-            </select>
+            />
           </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 space-y-5">
+        <h2 className="text-base font-black text-navy flex items-center gap-2">
+          <span className="w-7 h-7 rounded-full bg-teal/10 text-teal text-sm font-black flex items-center justify-center">2</span>
+          תחומים ומיקום
+        </h2>
+        <div>
+          <label className="text-xs font-bold text-slate-600 mb-2 block">
+            באילו תחומים אתם מחפשים? <span className="text-slate-400 font-normal">(אפשר לבחור כמה)</span>
+          </label>
+          <ChipMultiSelect options={DOMAIN_OPTIONS} selected={domains} onToggle={toggle(setDomains)} />
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-600 mb-2 block">
+            באילו אזורים? <span className="text-slate-400 font-normal">(אפשר לבחור כמה)</span>
+          </label>
+          <ChipMultiSelect options={LOCATION_OPTIONS} selected={locations} onToggle={toggle(setLocations)} />
         </div>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 space-y-4">
         <h2 className="text-base font-black text-navy flex items-center gap-2">
-          <span className="w-7 h-7 rounded-full bg-teal/10 text-teal text-sm font-black flex items-center justify-center">2</span>
+          <span className="w-7 h-7 rounded-full bg-teal/10 text-teal text-sm font-black flex items-center justify-center">3</span>
           קצת עליכם
         </h2>
         <div>

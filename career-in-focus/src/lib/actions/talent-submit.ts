@@ -35,6 +35,9 @@ export type SubmitTalentState = {
     targetRole?: string;
     region?: string;
     about?: string;
+    salaryExpectation?: string;
+    domains?: string;   // comma-joined multi-select
+    locations?: string; // comma-joined multi-select
   };
 };
 
@@ -49,13 +52,18 @@ export async function submitTalent(
   const email = String(formData.get("email") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
   const targetRole = String(formData.get("targetRole") ?? "").trim();
-  const region = String(formData.get("region") ?? "").trim();
   const about = String(formData.get("about") ?? "").trim();
+  const salaryExpectation = String(formData.get("salaryExpectation") ?? "").trim();
+  // Multi-select chips arrive as comma-joined strings.
+  const domains = String(formData.get("domains") ?? "").trim();
+  const locations = String(formData.get("locations") ?? "").trim();
+  // Region falls back to the multi-select locations (legacy single field kept for compat).
+  const region = locations || String(formData.get("region") ?? "").trim();
   // The client may have parsed a CV to text via /api/talent/upload-cv
   // and passed it back in this hidden field.
   const cvText = String(formData.get("cvText") ?? "").trim();
 
-  const fields = { name, email, phone, targetRole, region, about };
+  const fields = { name, email, phone, targetRole, region, about, salaryExpectation, domains, locations };
 
   if (name.length < 2) return { error: "נא למלא שם מלא", fields };
   if (!phone && !email) return { error: "נא להשאיר טלפון או אימייל ליצירת קשר", fields };
@@ -68,7 +76,9 @@ export async function submitTalent(
     email && `אימייל: ${email}`,
     phone && `טלפון: ${phone}`,
     targetRole && `תפקיד מבוקש: ${targetRole}`,
-    region && `אזור: ${region}`,
+    domains && `תחומים: ${domains}`,
+    locations && `אזורים: ${locations}`,
+    salaryExpectation && `ציפיות שכר: ${salaryExpectation}`,
     about && `על עצמי: ${about}`,
     cvText && `\nקורות חיים:\n${cvText}`,
   ]
@@ -94,7 +104,9 @@ export async function submitTalent(
   const finalEmail = (email || extracted.email || "").toLowerCase() || null;
   const finalPhone = phone || extracted.phone;
   const finalRole = targetRole || extracted.targetRole;
-  const finalRegion = region || extracted.region;
+  // Multi-select chips win over the AI's single guess.
+  const finalField = domains || extracted.field;
+  const finalRegion = locations || extracted.region;
 
   // Dedup by email then name (one person per pool).
   const dupChecks: Array<{ email?: string } | { name: string }> = [];
@@ -124,8 +136,9 @@ export async function submitTalent(
         phone: finalPhone,
         linkedinUrl: extracted.linkedinUrl,
         targetRole: finalRole,
-        field: extracted.field,
+        field: finalField,
         region: finalRegion,
+        salaryExpectation: salaryExpectation || null,
         city: extracted.city,
         yearsExperience: extracted.yearsExperience,
         currentCompany: extracted.currentCompany,

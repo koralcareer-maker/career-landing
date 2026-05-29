@@ -71,6 +71,12 @@ const STATEMENTS: Array<{ label: string; sql: string }> = [
     label: "Candidate_email_idx",
     sql: `CREATE INDEX IF NOT EXISTS "Candidate_email_idx" ON "Candidate"("email")`,
   },
+  {
+    // SQLite has no ADD COLUMN IF NOT EXISTS — the per-statement
+    // try/catch swallows the "duplicate column name" error on re-runs.
+    label: "Candidate.salaryExpectation column",
+    sql: `ALTER TABLE "Candidate" ADD COLUMN "salaryExpectation" TEXT`,
+  },
 ];
 
 export async function POST() {
