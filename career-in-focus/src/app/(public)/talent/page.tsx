@@ -2,9 +2,9 @@ import { Users, Sparkles, ShieldCheck, Search } from "lucide-react";
 import { TalentForm } from "./talent-form";
 
 export const metadata = {
-  title: "קורל מקושרים | הצטרפו למאגר המועמדים של קריירה בפוקוס",
+  title: "תנו למשרות להגיע אליכם | קריירה בפוקוס",
   description:
-    "השאירו פרטים וקורות חיים ותיכנסו ישירות למאגר של קורל שלו. כשתימצא משרה שמתאימה לכם בדיוק, נפנה אליכם. חינם, ללא רישום.",
+    "העלו קורות חיים והצטרפו למאגר המועמדים של קריירה בפוקוס, וקבלו הזדמנויות עבודה שרלוונטיות אליכם היום. חינם, ללא רישום.",
 };
 
 export default function TalentPage() {
@@ -18,10 +18,10 @@ export default function TalentPage() {
             קורל מקושרים
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-navy mb-3 leading-tight">
-            הצטרפו למאגר המועמדים שלי
+            תנו למשרות להגיע אליכם
           </h1>
           <p className="text-slate-600 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-            השאירו פרטים וקורות חיים, ותיכנסו ישירות למאגר האישי שלי. ברגע שאמצא משרה שמתאימה לכם בדיוק, אפנה אליכם. ללא עלות, ללא התחייבות.
+            העלו קורות חיים והצטרפו למאגר המועמדים של קריירה בפוקוס, וקבלו הזדמנויות עבודה שרלוונטיות אליכם היום.
           </p>
         </div>
 
