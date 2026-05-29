@@ -57,6 +57,7 @@ export function TalentForm() {
   const [cvText, setCvText] = useState("");
   const [cvName, setCvName] = useState("");
   const [cvStatus, setCvStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
+  const [dragOver, setDragOver] = useState(false);
   const [domains, setDomains] = useState<string[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
 
@@ -201,10 +202,22 @@ export function TalentForm() {
           <label className="text-xs font-bold text-slate-600 mb-1.5 block">
             קורות חיים <span className="text-slate-400 font-normal">(PDF / Word, עד 8MB)</span>
           </label>
-          <label className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 cursor-pointer hover:border-teal hover:bg-teal/5 transition-colors">
-            {cvStatus === "uploading" ? <Loader2 size={16} className="text-teal animate-spin" /> : cvStatus === "done" ? <FileText size={16} className="text-emerald-600" /> : <Upload size={16} className="text-teal" />}
-            <span className="text-sm text-slate-600 truncate">
-              {cvStatus === "uploading" ? "מעלה קובץ..." : cvStatus === "done" ? `נטען: ${cvName}` : cvStatus === "error" ? "לא הצלחנו לקרוא, נסו קובץ אחר" : "לחצו לבחירת קובץ קורות חיים"}
+          <label
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); onFile(e.dataTransfer.files?.[0]); }}
+            className={
+              "flex flex-col items-center justify-center gap-1.5 px-4 py-6 rounded-xl border-2 border-dashed cursor-pointer transition-colors text-center " +
+              (dragOver
+                ? "border-teal bg-teal/10"
+                : cvStatus === "done"
+                ? "border-emerald-300 bg-emerald-50"
+                : "border-slate-300 bg-slate-50 hover:border-teal hover:bg-teal/5")
+            }
+          >
+            {cvStatus === "uploading" ? <Loader2 size={22} className="text-teal animate-spin" /> : cvStatus === "done" ? <FileText size={22} className="text-emerald-600" /> : <Upload size={22} className="text-teal" />}
+            <span className="text-sm text-slate-600 truncate max-w-full">
+              {cvStatus === "uploading" ? "מעלה קובץ..." : cvStatus === "done" ? `נטען: ${cvName}` : cvStatus === "error" ? "לא הצלחנו לקרוא, נסו קובץ אחר" : dragOver ? "שחררו את הקובץ כאן" : "גררו לכאן קובץ קורות חיים או לחצו לבחירה"}
             </span>
             <input
               type="file"
