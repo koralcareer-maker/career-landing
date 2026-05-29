@@ -49,8 +49,13 @@ export async function POST(req: Request) {
     } else {
       return NextResponse.json({ error: "unsupported file type" }, { status: 400 });
     }
-  } catch {
-    return NextResponse.json({ error: "could not read file" }, { status: 400 });
+  } catch (e) {
+    // Temporarily surface the real error so we can diagnose PDF parsing
+    // failures in the serverless runtime.
+    return NextResponse.json(
+      { error: "could not read file", detail: e instanceof Error ? `${e.name}: ${e.message}`.slice(0, 300) : String(e) },
+      { status: 400 },
+    );
   }
 
   // Cap returned text so a giant CV doesn't bloat the form payload.
