@@ -35,9 +35,13 @@ export async function POST(req: Request) {
   let text = "";
   try {
     if (name.endsWith(".pdf") || file.type === "application/pdf") {
-      const { PDFParse } = await import("pdf-parse");
-      const parser = new PDFParse({ data: new Uint8Array(buf) });
-      text = ((await parser.getText()).text ?? "").trim();
+      // pdf-parse v2 needs DOM polyfills (DOMMatrix etc.) that aren't
+      // available in Vercel's Node runtime, so it crashes at runtime
+      // with "ReferenceError: DOMMatrix is not defined". unpdf is built
+      // for serverless and ships @napi-rs/canvas as the DOM shim.
+      const { extractText } = await import("unpdf");
+      const r = await extractText(new Uint8Array(buf), { mergePages: true });
+      text = (r.text ?? "").trim();
     } else if (
       name.endsWith(".docx") ||
       file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -49,13 +53,8 @@ export async function POST(req: Request) {
     } else {
       return NextResponse.json({ error: "unsupported file type" }, { status: 400 });
     }
-  } catch (e) {
-    // Temporarily surface the real error so we can diagnose PDF parsing
-    // failures in the serverless runtime.
-    return NextResponse.json(
-      { error: "could not read file", detail: e instanceof Error ? `${e.name}: ${e.message}`.slice(0, 300) : String(e) },
-      { status: 400 },
-    );
+  } catch {
+    return NextResponse.json({ error: "could not read file" }, { status: 400 });
   }
 
   // Cap returned text so a giant CV doesn't bloat the form payload.

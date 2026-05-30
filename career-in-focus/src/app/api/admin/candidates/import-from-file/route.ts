@@ -26,12 +26,12 @@ export const maxDuration = 60;
 async function extractFileText(file: File): Promise<string> {
   const buf = Buffer.from(await file.arrayBuffer());
   const name = file.name.toLowerCase();
-  // PDF — pdf-parse v2 exports a PDFParse class (no default export).
+  // PDF — unpdf is built for serverless Node (pdf-parse v2 crashes
+  // with "DOMMatrix is not defined" in Vercel's runtime).
   if (name.endsWith(".pdf") || file.type === "application/pdf") {
-    const { PDFParse } = await import("pdf-parse");
-    const parser = new PDFParse({ data: new Uint8Array(buf) });
-    const res = await parser.getText();
-    return (res.text ?? "").trim();
+    const { extractText } = await import("unpdf");
+    const r = await extractText(new Uint8Array(buf), { mergePages: true });
+    return (r.text ?? "").trim();
   }
   // DOCX — mammoth's raw-text extractor.
   if (
