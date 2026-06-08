@@ -127,6 +127,65 @@ export const COMPANIES: CompanyCareer[] = [
   { ats: "lever", id: "hibob",             name: "HiBob" },
   { ats: "lever", id: "fundguard",         name: "FundGuard" },
   { ats: "lever", id: "atera",             name: "Atera" },
+
+  // ─── Expansion batch (June 2026, push toward 1,500 active postings) ───
+  // High-confidence Israeli HQ or substantial Israel R&D presence.
+  // 404 boards just return [] from the fetcher — no error, so over-
+  // including is safe; later we'll prune any that yield 0 IL jobs
+  // across two consecutive syncs.
+
+  // Israeli HQ — security / fintech / SaaS that have hosted boards
+  { ats: "greenhouse", id: "gongio",         name: "Gong" },
+  { ats: "greenhouse", id: "elementor",      name: "Elementor" },
+  { ats: "greenhouse", id: "silverfort",     name: "Silverfort" },
+  { ats: "greenhouse", id: "island",         name: "Island" },
+  { ats: "greenhouse", id: "fireblocks",     name: "Fireblocks" },
+  { ats: "greenhouse", id: "placerai",       name: "Placer.ai" },
+  { ats: "greenhouse", id: "panaya",         name: "Panaya" },
+  { ats: "greenhouse", id: "aporia",         name: "Aporia" },
+  { ats: "greenhouse", id: "coro",           name: "Coro" },
+  { ats: "greenhouse", id: "exabeam",        name: "Exabeam" },
+  { ats: "greenhouse", id: "explorium",      name: "Explorium" },
+  { ats: "greenhouse", id: "evinced",        name: "Evinced" },
+  { ats: "greenhouse", id: "granulate",      name: "Granulate" },
+  { ats: "greenhouse", id: "dataloop",       name: "Dataloop" },
+  { ats: "greenhouse", id: "drata",          name: "Drata" },
+  { ats: "greenhouse", id: "aquasecurity",   name: "Aqua Security" },
+  { ats: "greenhouse", id: "armis",          name: "Armis" },
+  { ats: "greenhouse", id: "wscsports",      name: "WSC Sports" },
+  { ats: "greenhouse", id: "deepinstinct",   name: "Deep Instinct" },
+  { ats: "greenhouse", id: "cato",           name: "Cato Networks" },
+  { ats: "greenhouse", id: "windward",       name: "Windward" },
+  { ats: "greenhouse", id: "tarci",          name: "Tarci" },
+  { ats: "greenhouse", id: "nayax",          name: "Nayax" },
+  { ats: "greenhouse", id: "lusha",          name: "Lusha" },
+  { ats: "greenhouse", id: "amobee",         name: "Amobee" },
+  { ats: "greenhouse", id: "ravelin",        name: "Ravelin" },
+  { ats: "greenhouse", id: "satori",         name: "Satori" },
+  { ats: "greenhouse", id: "salt",           name: "Salt Security" },
+  { ats: "greenhouse", id: "stigg",          name: "Stigg" },
+  { ats: "greenhouse", id: "tytocare",       name: "Tyto Care" },
+  { ats: "greenhouse", id: "iguazio",        name: "Iguazio" },
+  { ats: "greenhouse", id: "trigo",          name: "Trigo Vision" },
+  { ats: "greenhouse", id: "kape",           name: "Kape Technologies" },
+  { ats: "greenhouse", id: "vesttoo",        name: "Vesttoo" },
+  { ats: "greenhouse", id: "spotinst",       name: "Spot.io" },
+  { ats: "greenhouse", id: "scribed",        name: "Scribe" },
+  { ats: "greenhouse", id: "kry",            name: "Kry" },
+  { ats: "greenhouse", id: "instabug",       name: "Instabug" },
+  { ats: "greenhouse", id: "mondaycomstart", name: "monday.com" },
+  // Global with verified IL R&D openings
+  { ats: "greenhouse", id: "mongodb",        name: "MongoDB" },
+  { ats: "greenhouse", id: "twilio",         name: "Twilio" },
+  { ats: "greenhouse", id: "snowflake",      name: "Snowflake" },
+
+  // Lever expansion
+  { ats: "lever", id: "salesforce",          name: "Salesforce IL" },
+  { ats: "lever", id: "moonactive",          name: "Moon Active (Lever)" },
+  { ats: "lever", id: "playtika",            name: "Playtika (Lever)" },
+  { ats: "lever", id: "stoke",               name: "Stoke" },
+  { ats: "lever", id: "cyberx",              name: "CyberX" },
+  { ats: "lever", id: "datacubes",           name: "DataCubes" },
 ];
 
 // Israel-only filter. Lenient on city names (Greenhouse rows say just
