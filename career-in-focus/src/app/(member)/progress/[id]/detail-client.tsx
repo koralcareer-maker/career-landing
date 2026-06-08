@@ -143,6 +143,30 @@ function formatDateTime(iso: string | null): string {
   });
 }
 
+// datetime-local <input> bridges. Two annoying gotchas:
+//   1. The input's `value` must be a NAKED `YYYY-MM-DDTHH:MM` string with NO
+//      timezone marker, but `Date.toISOString()` always returns UTC. If
+//      we just slice the UTC string we drop the local-time offset and the
+//      picker shows the wrong hour (UTC instead of Israel time).
+//   2. When the input's value is sent to the server (which runs in UTC),
+//      `new Date("2026-06-09T10:00")` is parsed as UTC, not local — so
+//      Coral's 10:00 Israel pick lands in DB as 10:00 UTC = 13:00 Israel.
+// Both bugs are bridged here: read converts UTC → local datetime-local;
+// write parses the local string in the browser's timezone and emits a
+// real timestamped ISO so the server stores it correctly.
+function toLocalInputValue(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const tzMs = d.getTimezoneOffset() * 60_000;
+  return new Date(d.getTime() - tzMs).toISOString().slice(0, 16);
+}
+function fromLocalInputValue(v: string): string | null {
+  if (!v) return null;
+  const d = new Date(v); // parsed in the browser's local timezone
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+
 function daysUntil(iso: string | null): number | null {
   if (!iso) return null;
   const ms = new Date(iso).getTime() - Date.now();
@@ -280,7 +304,11 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
     e.preventDefault();
     if (!reminderTitle.trim() || !reminderDue) return;
     const title = reminderTitle;
-    const dueAt = reminderDue;
+    // Convert the picker's local-time string to a real ISO before sending
+    // so the server (UTC) stores the wall-clock time the user picked, not
+    // the same digits interpreted as UTC.
+    const dueAt = fromLocalInputValue(reminderDue);
+    if (!dueAt) return;
     const type = reminderType;
     setReminderTitle("");
     setReminderDue("");
@@ -515,8 +543,8 @@ export function ApplicationDetailClient({ application, journal: initialJournal, 
             <label className="text-xs font-semibold text-gray-500 block mb-1.5">תאריך ראיון</label>
             <input
               type="datetime-local"
-              value={app.interviewDate ? new Date(app.interviewDate).toISOString().slice(0, 16) : ""}
-              onChange={(e) => updateField("interviewDate", e.target.value || null)}
+              value={toLocalInputValue(app.interviewDate)}
+              onChange={(e) => updateField("interviewDate", fromLocalInputValue(e.target.value))}
               onClick={(e) => { try { (e.currentTarget as HTMLInputElement & { showPicker?: () => void }).showPicker?.(); } catch {} }}
               disabled={pending}
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white cursor-pointer hover:border-teal/50 transition-colors"
