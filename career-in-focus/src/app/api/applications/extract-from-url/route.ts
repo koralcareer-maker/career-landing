@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -124,6 +125,102 @@ async function fetchHtml(url: string): Promise<string | null> {
   }
 }
 
+/**
+ * Parse meta/structured-data fields out of raw HTML without going
+ * through an LLM. Most Israeli job boards (AllJobs, Drushim, Civi) and
+ * any modern ATS expose either schema.org JobPosting JSON-LD or
+ * og:title / og:description meta tags. Pulling those directly is:
+ *   - free (no Gemini quota)
+ *   - deterministic (same input → same output)
+ *   - far more accurate than asking the LLM to re-derive what the
+ *     page already states explicitly.
+ *
+ * Tries in order:
+ *   1. JSON-LD JobPosting (title, hiringOrganization.name, location)
+ *   2. og:title (often "{role} at {company}" or "{role} - {company}")
+ *   3. <title> with " - " / " | " / " · " splitter (board-style)
+ *   4. AllJobs-style: title has "(8685372)" job id; company is in a
+ *      sibling element. We don't try to over-engineer the HTML walk
+ *      since the JSON-LD path already covers AllJobs well.
+ *
+ * Returns null fields where nothing matched; the caller combines this
+ * with the URL-based guess and (only if still empty) Gemini.
+ */
+function extractFromMarkup(html: string): Extracted {
+  const out: Extracted = { company: null, role: null, location: null, notes: null };
+
+  // 1) schema.org JobPosting JSON-LD — the cleanest signal when present.
+  const ldMatches = html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+  for (const m of ldMatches) {
+    try {
+      // Some sites embed an array; some embed a single object. Some
+      // boards (AllJobs) emit two JobPosting blocks back-to-back, so we
+      // walk every one and stop at the first that gives us a title.
+      const raw = m[1].trim();
+      const blocks: unknown[] = raw.startsWith("[")
+        ? (JSON.parse(raw) as unknown[])
+        : [JSON.parse(raw)];
+      for (const b of blocks) {
+        if (!b || typeof b !== "object") continue;
+        const obj = b as Record<string, unknown>;
+        const type = obj["@type"];
+        if (type !== "JobPosting" && !(Array.isArray(type) && type.includes("JobPosting"))) continue;
+        if (!out.role && typeof obj.title === "string") out.role = obj.title.slice(0, 200);
+        const org = obj.hiringOrganization as Record<string, unknown> | undefined;
+        if (!out.company && org && typeof org.name === "string") out.company = org.name.slice(0, 120);
+        const loc = obj.jobLocation as Record<string, unknown> | undefined;
+        if (!out.location && loc) {
+          const addr = loc.address as Record<string, unknown> | undefined;
+          const city = addr?.addressLocality;
+          if (typeof city === "string") out.location = city.slice(0, 80);
+        }
+        if (!out.notes && typeof obj.description === "string") {
+          // schema.org description is the full job blurb (often HTML).
+          // Take the first 200 chars of stripped text — enough for a
+          // useful first-glance note without flooding the form.
+          const stripped = obj.description.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+          if (stripped) out.notes = stripped.slice(0, 200);
+        }
+        if (out.company && out.role) return out; // good enough — done.
+      }
+    } catch {
+      // Malformed JSON-LD — skip this block, try the next.
+    }
+  }
+
+  // 2) og:title — usually "Role - Company" or "Role | Company".
+  const ogTitleMatch = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
+  if (ogTitleMatch) {
+    const ogTitle = ogTitleMatch[1].trim();
+    const splitter = / - | \| | · | – /;
+    const parts = ogTitle.split(splitter).map((s) => s.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      if (!out.role) out.role = parts[0].slice(0, 200);
+      // The trailing chunk is often the board name ("AllJobs",
+      // "Drushim") — drop those.
+      const tail = parts[parts.length - 1];
+      const isBoardName = /alljobs|drushim|civi|jobmaster|linkedin|indeed/i.test(tail);
+      if (!out.company && !isBoardName) out.company = tail.slice(0, 120);
+    } else if (parts.length === 1 && !out.role) {
+      out.role = parts[0].slice(0, 200);
+    }
+  }
+
+  // 3) <title> as final fallback when og missing.
+  if (!out.role) {
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    if (titleMatch) out.role = titleMatch[1].trim().slice(0, 200);
+  }
+
+  // 4) og:description → notes if still empty.
+  if (!out.notes) {
+    const ogDescMatch = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
+    if (ogDescMatch) out.notes = ogDescMatch[1].trim().slice(0, 240);
+  }
+
+  return out;
+}
+
 async function extractWithGemini(html: string, sourceUrl: string): Promise<Extracted | null> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
@@ -215,6 +312,26 @@ export async function POST(req: NextRequest) {
   const source = sourceFromHostname(url);
   const urlGuess = parseFromUrl(url);
 
+  // FAST PATH: if this URL is already in our Job catalog, return the
+  // structured row directly. No fetch, no LLM — instant + perfect.
+  // Covers the common case where the user copies a link from /jobs.
+  const known = await prisma.job.findFirst({
+    where: { externalUrl: url },
+    select: { title: true, company: true, location: true, summary: true, description: true },
+  });
+  if (known) {
+    return NextResponse.json({
+      ok: true,
+      company: known.company,
+      role: known.title,
+      location: known.location,
+      notes: (known.summary ?? known.description ?? null)?.slice(0, 240) ?? null,
+      source,
+      jobLink: url,
+      reason: "catalog-hit",
+    });
+  }
+
   const html = await fetchHtml(url);
   if (!html) {
     // Page couldn't be fetched (LinkedIn 403, network error, etc.).
@@ -234,21 +351,28 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const extracted = await extractWithGemini(html, url);
+  // FREE PATH: parse schema.org JobPosting / og: tags / <title> straight
+  // from the HTML. AllJobs, Drushim, Civi and most ATS-hosted boards all
+  // expose JobPosting JSON-LD, so this usually nails it without burning
+  // a single Gemini call.
+  const fromMarkup = extractFromMarkup(html);
+  const hasGoodMarkup = !!fromMarkup.company && !!fromMarkup.role;
 
-  // Merge Gemini output with the URL-based guess: Gemini wins when it
-  // returns a value, the URL parser fills in any gaps it leaves blank.
-  // This way a LinkedIn URL that Gemini fails on still gets company/role
-  // from the slug if the slug exposes them, and a Comeet URL where
-  // Gemini reads the page cleanly keeps the more accurate values.
+  // Only fall through to Gemini if the markup didn't give us the two
+  // load-bearing fields. Saves quota AND latency on the common path.
+  const extracted = hasGoodMarkup ? fromMarkup : await extractWithGemini(html, url);
+
   return NextResponse.json({
     ok: true,
-    company: extracted?.company ?? urlGuess.company,
-    role: extracted?.role ?? urlGuess.role,
-    location: extracted?.location ?? null,
-    notes: extracted?.notes ?? null,
+    // Priority: markup → Gemini → URL slug. Fill any gap from the next
+    // tier so a partial hit on one strategy still gets backfilled by
+    // the others.
+    company: fromMarkup.company ?? extracted?.company ?? urlGuess.company,
+    role: fromMarkup.role ?? extracted?.role ?? urlGuess.role,
+    location: fromMarkup.location ?? extracted?.location ?? null,
+    notes: fromMarkup.notes ?? extracted?.notes ?? null,
     source,
     jobLink: url,
-    reason: extracted ? null : "extract-failed",
+    reason: hasGoodMarkup ? "markup-hit" : extracted ? "gemini-hit" : "extract-failed",
   });
 }
