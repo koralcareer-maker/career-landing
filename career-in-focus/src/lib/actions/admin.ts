@@ -536,15 +536,16 @@ export async function setUserRole(id: string, role: string) {
 // ── Manual user creation (no payment required) ────────────────────────────────
 
 // Generates an easy-to-read temporary password Coral can WhatsApp.
-// Pattern: <Capitalised name fragment>Koral2026! — same shape as the
+// Pattern: <Capitalised name fragment>Koral2026 — same shape as the
 // passwords already in the trainee roster, so we stay consistent and
-// easy to read aloud.
+// easy to read aloud. Coral asked to drop the trailing "!" because
+// users were misreading it / fat-fingering it on mobile keyboards.
 function generateTempPassword(emailLocalPart: string): string {
   const cleaned = emailLocalPart.replace(/[^a-zA-Z]/g, "").slice(0, 8);
   const base = cleaned.length >= 3
     ? cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase()
     : "User" + Math.floor(Math.random() * 900 + 100);
-  return `${base}Koral2026!`;
+  return `${base}Koral2026`;
 }
 
 export async function createUserManually(prevState: unknown, formData: FormData) {
