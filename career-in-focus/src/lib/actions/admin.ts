@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import { sendWelcomeEmail } from "@/lib/email";
+import { sendWelcomeEmail, sendCancellationEmail } from "@/lib/email";
 import { IMPERSONATE_COOKIE, signImpersonationToken } from "@/lib/impersonation";
 
 async function requireAdmin() {
@@ -497,6 +497,61 @@ export async function activateUser(id: string) {
 export async function suspendUser(id: string) {
   await requireAdmin();
   await prisma.user.update({ where: { id }, data: { accessStatus: "SUSPENDED" } });
+  revalidatePath("/admin/users");
+}
+
+/**
+ * Admin-initiated subscription cancellation. Mirrors the member's own
+ * self-service cancel (src/lib/actions/billing.ts): we flag the
+ * subscription CANCELLED but DON'T touch accessStatus — the user keeps
+ * full access through the end of the cycle they already paid for. The
+ * billing cron skips CANCELLED users (no further charges); once
+ * nextChargeAt passes it expires their access without billing.
+ *
+ * On top of flipping the status we also WIPE the saved CardCom token
+ * (cardToken + cardLast4). The billing cron only charges rows where
+ * `cardToken IS NOT NULL`, so clearing it makes a future charge
+ * physically impossible even if the subscription status were ever
+ * flipped back — the card simply can't be billed again. nextChargeAt
+ * is left intact so the cron still expires access at the end of the
+ * paid cycle as designed.
+ *
+ * Sends the same warm cancellation-confirmation email the self-service
+ * flow would have sent, so the member is told the subscription ended
+ * and when their access runs out. Best-effort — an email failure
+ * doesn't roll back the cancellation.
+ */
+export async function cancelUserSubscription(id: string) {
+  await requireAdmin();
+
+  const user = await prisma.user.findUnique({
+    where:  { id },
+    select: { email: true, name: true, gender: true, nextChargeAt: true, subscriptionStatus: true },
+  });
+  if (!user) return; // already gone — no-op
+
+  await prisma.user.update({
+    where: { id },
+    data: {
+      subscriptionStatus: "CANCELLED",
+      cancelledAt:        new Date(),
+      cancellationReason: "OTHER",
+      cancellationNote:   "בוטל ע\"י מנהל",
+      // Remove the stored card token so the card can never be charged
+      // again — the billing cron requires cardToken to be non-null.
+      cardToken:          null,
+      cardLast4:          null,
+    },
+  });
+
+  // Notify the member their subscription was cancelled (non-blocking).
+  sendCancellationEmail({
+    to:      user.email,
+    name:    user.name ?? user.email,
+    endsAt:  user.nextChargeAt,
+    gender:  user.gender === "m" ? "m" : "f",
+  }).catch(console.error);
+
   revalidatePath("/admin/users");
 }
 

@@ -2,9 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { formatDate, timeAgo } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { activateUser, suspendUser, createUserManually, setMembershipType, resendCredentials, impersonateUser, deleteUser } from "@/lib/actions/admin";
+import { activateUser, suspendUser, createUserManually, setMembershipType, resendCredentials, impersonateUser, deleteUser, cancelUserSubscription } from "@/lib/actions/admin";
 import { auth } from "@/auth";
-import { UserCheck, UserX, UserPlus, Crown, LogIn, FolderOpen } from "lucide-react";
+import { UserCheck, UserX, UserPlus, Crown, LogIn, FolderOpen, BadgeX } from "lucide-react";
 import Link from "next/link";
 import { AddUserForm } from "./add-user-form";
 import { ResendCredentialsButton } from "./resend-credentials-button";
@@ -193,6 +193,17 @@ export default async function AdminUsersPage() {
                             <form action={async () => { "use server"; await suspendUser(u.id); }}>
                               <button type="submit" title="השהה" className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors">
                                 <UserX size={13} />
+                              </button>
+                            </form>
+                          )}
+                          {/* Cancel subscription — flags the sub CANCELLED,
+                              wipes the saved card token so the card can't be
+                              charged again, keeps access until cycle end, and
+                              emails the member a cancellation confirmation. */}
+                          {u.subscriptionStatus === "ACTIVE" && u.id !== session?.user?.id && (
+                            <form action={async () => { "use server"; await cancelUserSubscription(u.id); }}>
+                              <button type="submit" title="בטל מנוי (מוחק את כרטיס האשראי השמור, עוצר חיובים, שולח מייל אישור)" className="p-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors">
+                                <BadgeX size={13} />
                               </button>
                             </form>
                           )}
