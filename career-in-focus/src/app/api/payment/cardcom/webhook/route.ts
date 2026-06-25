@@ -64,16 +64,43 @@ export async function POST(req: NextRequest) {
       const next = new Date();
       next.setDate(next.getDate() + 30);
 
-      // Read the existing chargeCount BEFORE updating so we can tell
-      // whether this is a brand-new customer or a recurring charge.
-      // The admin notification copy differs ("new customer" vs
-      // "recurring renewal") so Coral knows whether to send a personal
-      // welcome.
+      // Read current state BEFORE updating. chargeCount tells us
+      // new-customer vs recurring; paymentReference + subscriptionStatus
+      // let us reject replayed/duplicate deliveries (see guards below).
       const existing = await prisma.user.findUnique({
         where: { id: userId },
-        select: { chargeCount: true },
+        select: { chargeCount: true, paymentReference: true, subscriptionStatus: true },
       });
-      const isFirstPurchase = (existing?.chargeCount ?? 0) === 0;
+
+      // Unknown user (e.g. deleted account). Acknowledge so CardCom stops
+      // retrying, but never recreate or charge anything.
+      if (!existing) {
+        console.warn(`CardCom webhook: success for unknown user ${userId} — ignoring`);
+        return NextResponse.json({ ok: true });
+      }
+
+      // ── Idempotency / replay guard ──────────────────────────────────
+      // CardCom legitimately RE-DELIVERS ("retries") webhooks, and a
+      // replayed success notification still carries a reusable recurring
+      // Token. Without this guard a duplicate delivery of an old signup
+      // notification would flip a cancelled customer back to ACTIVE and
+      // RESTORE the card token we deliberately wiped on cancellation —
+      // silently re-arming billing on someone we already cancelled.
+      //
+      // A genuine new payment always carries a NEW TransactionID, so this
+      // never blocks a real signup or re-subscription; it only drops an
+      // exact re-delivery of a transaction we already applied to this user
+      // (admin cancellation leaves paymentReference intact, so the original
+      // signup transaction stays recorded and its replays are caught).
+      if (transactionId && existing.paymentReference === transactionId) {
+        console.warn(
+          `CardCom webhook: duplicate transaction ${transactionId} for user ${userId} ` +
+          `(subscriptionStatus=${existing.subscriptionStatus}) — ignoring replay, not re-arming billing`
+        );
+        return NextResponse.json({ ok: true, duplicate: true });
+      }
+
+      const isFirstPurchase = (existing.chargeCount ?? 0) === 0;
 
       const user = await prisma.user.update({
         where: { id: userId },
