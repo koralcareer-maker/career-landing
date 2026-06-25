@@ -158,6 +158,27 @@ export default async function AdminUsersPage() {
                         <Badge variant={mem.variant} size="sm">
                           {mem.label}
                         </Badge>
+                        {/* Billing status read straight from the DB row, so the
+                            admin can confirm a customer's real state — e.g. a
+                            cancelled member with no saved card cannot be charged
+                            again. "כרטיס שמור" means a CardCom token is on file;
+                            "אין כרטיס" means it was never saved or was wiped on
+                            cancellation. The token itself is never shown. */}
+                        <div className="mt-1 text-[10px] leading-tight whitespace-nowrap">
+                          <span className={
+                            u.subscriptionStatus === "CANCELLED" ? "text-gray-400 font-bold"
+                            : u.subscriptionStatus === "ACTIVE" ? "text-green-600 font-bold"
+                            : "text-gray-300"
+                          }>
+                            {u.subscriptionStatus === "CANCELLED" ? "מנוי בוטל"
+                              : u.subscriptionStatus === "ACTIVE" ? "מנוי פעיל"
+                              : "ללא מנוי"}
+                          </span>
+                          <span className="text-gray-300"> · </span>
+                          <span className={u.cardToken ? "text-amber-600" : "text-gray-400"}>
+                            {u.cardToken ? "💳 כרטיס שמור" : "אין כרטיס 🔒"}
+                          </span>
+                        </div>
                       </td>
                       <td className="py-3 px-4">
                         <Badge variant={profileVariant} size="sm" title={`פרופיל: ${hasProfile ? "✓" : "✗"} · קו"ח: ${hasCv ? "✓" : "✗"} · שאלון: ${hasQuestionnaire ? "✓" : "✗"} · דרכון: ${hasPassport ? "✓" : "✗"}`}>
