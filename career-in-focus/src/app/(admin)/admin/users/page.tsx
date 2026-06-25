@@ -200,10 +200,12 @@ export default async function AdminUsersPage() {
                               wipes the saved card token so the card can't be
                               charged again, keeps access until cycle end, and
                               emails the member a cancellation confirmation.
-                              Shown for any paying member not already cancelled
-                              (covers legacy rows whose subscriptionStatus is
-                              null rather than the literal "ACTIVE"). */}
-                          {u.membershipType !== "NONE" && u.subscriptionStatus !== "CANCELLED" && u.id !== session?.user?.id && (
+                              Shown for every user except yourself and anyone
+                              already cancelled, so it can't be hidden by a
+                              non-standard row (legacy/imported/manual where
+                              membershipType or subscriptionStatus aren't set
+                              the way a CardCom subscriber's are). */}
+                          {u.subscriptionStatus !== "CANCELLED" && u.id !== session?.user?.id && (
                             <form action={async () => { "use server"; await cancelUserSubscription(u.id); }}>
                               <button type="submit" title="מבטל מנוי, מוחק את כרטיס האשראי השמור (לא יחויב שוב) ושולח מייל אישור" className="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors text-[11px] font-bold whitespace-nowrap">
                                 בטל מנוי
