@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { activateUser, suspendUser, createUserManually, setMembershipType, resendCredentials, impersonateUser, deleteUser, cancelUserSubscription } from "@/lib/actions/admin";
 import { auth } from "@/auth";
-import { UserCheck, UserX, UserPlus, Crown, LogIn, FolderOpen, BadgeX } from "lucide-react";
+import { UserCheck, UserX, UserPlus, Crown, LogIn, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import { AddUserForm } from "./add-user-form";
 import { ResendCredentialsButton } from "./resend-credentials-button";
@@ -199,11 +199,14 @@ export default async function AdminUsersPage() {
                           {/* Cancel subscription — flags the sub CANCELLED,
                               wipes the saved card token so the card can't be
                               charged again, keeps access until cycle end, and
-                              emails the member a cancellation confirmation. */}
-                          {u.subscriptionStatus === "ACTIVE" && u.id !== session?.user?.id && (
+                              emails the member a cancellation confirmation.
+                              Shown for any paying member not already cancelled
+                              (covers legacy rows whose subscriptionStatus is
+                              null rather than the literal "ACTIVE"). */}
+                          {u.membershipType !== "NONE" && u.subscriptionStatus !== "CANCELLED" && u.id !== session?.user?.id && (
                             <form action={async () => { "use server"; await cancelUserSubscription(u.id); }}>
-                              <button type="submit" title="בטל מנוי (מוחק את כרטיס האשראי השמור, עוצר חיובים, שולח מייל אישור)" className="p-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors">
-                                <BadgeX size={13} />
+                              <button type="submit" title="מבטל מנוי, מוחק את כרטיס האשראי השמור (לא יחויב שוב) ושולח מייל אישור" className="px-2 py-1 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors text-[11px] font-bold whitespace-nowrap">
+                                בטל מנוי
                               </button>
                             </form>
                           )}
