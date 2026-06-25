@@ -212,6 +212,15 @@ export default async function AdminUsersPage() {
                               </button>
                             </form>
                           )}
+                          {/* Explicit "cancelled" indicator — replaces the cancel
+                              button once a subscription is cancelled, so the admin
+                              gets clear confirmation the action took effect (the
+                              card token has been wiped; no further charges). */}
+                          {u.subscriptionStatus === "CANCELLED" && (
+                            <span title="המנוי בוטל — כרטיס האשראי נמחק, לא יבוצעו חיובים נוספים" className="px-2 py-1 bg-gray-100 text-gray-500 rounded-lg text-[11px] font-bold whitespace-nowrap">
+                              ✓ מנוי בוטל
+                            </span>
+                          )}
                           {/* Resend credentials / password reset */}
                           {u.id !== session?.user?.id && (
                             <ResendCredentialsButton
