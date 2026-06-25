@@ -508,6 +508,14 @@ export async function suspendUser(id: string) {
  * billing cron skips CANCELLED users (no further charges); once
  * nextChargeAt passes it expires their access without billing.
  *
+ * On top of flipping the status we also WIPE the saved CardCom token
+ * (cardToken + cardLast4). The billing cron only charges rows where
+ * `cardToken IS NOT NULL`, so clearing it makes a future charge
+ * physically impossible even if the subscription status were ever
+ * flipped back — the card simply can't be billed again. nextChargeAt
+ * is left intact so the cron still expires access at the end of the
+ * paid cycle as designed.
+ *
  * Sends the same warm cancellation-confirmation email the self-service
  * flow would have sent, so the member is told the subscription ended
  * and when their access runs out. Best-effort — an email failure
@@ -529,6 +537,10 @@ export async function cancelUserSubscription(id: string) {
       cancelledAt:        new Date(),
       cancellationReason: "OTHER",
       cancellationNote:   "בוטל ע\"י מנהל",
+      // Remove the stored card token so the card can never be charged
+      // again — the billing cron requires cardToken to be non-null.
+      cardToken:          null,
+      cardLast4:          null,
     },
   });
 

@@ -196,12 +196,13 @@ export default async function AdminUsersPage() {
                               </button>
                             </form>
                           )}
-                          {/* Cancel subscription — flags the sub CANCELLED (stops
-                              future charges, keeps access until cycle end) and
+                          {/* Cancel subscription — flags the sub CANCELLED,
+                              wipes the saved card token so the card can't be
+                              charged again, keeps access until cycle end, and
                               emails the member a cancellation confirmation. */}
                           {u.subscriptionStatus === "ACTIVE" && u.id !== session?.user?.id && (
                             <form action={async () => { "use server"; await cancelUserSubscription(u.id); }}>
-                              <button type="submit" title="בטל מנוי (עוצר חיובים, שולח מייל אישור)" className="p-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors">
+                              <button type="submit" title="בטל מנוי (מוחק את כרטיס האשראי השמור, עוצר חיובים, שולח מייל אישור)" className="p-1.5 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors">
                                 <BadgeX size={13} />
                               </button>
                             </form>
