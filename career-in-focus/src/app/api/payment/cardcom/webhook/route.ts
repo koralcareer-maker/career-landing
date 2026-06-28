@@ -20,6 +20,26 @@ import { sendWelcomeEmail, sendPurchaseNotification } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Optional shared-secret authentication ───────────────────────────
+    // The webhook is internet-reachable and CardCom does not send an HMAC
+    // signature, so by default anyone who knows a userId could POST a fake
+    // "payment succeeded". To close that, set CARDCOM_WEBHOOK_SECRET in the
+    // environment and append ?key=<secret> to the webhook URL registered in
+    // CardCom (or send it as the x-webhook-secret header). While the env var
+    // is UNSET this check is a no-op, so it can never break live signups —
+    // it only starts enforcing once you opt in by configuring the secret.
+    const webhookSecret = process.env.CARDCOM_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const provided =
+        req.nextUrl.searchParams.get("key") ??
+        req.headers.get("x-webhook-secret") ??
+        "";
+      if (provided !== webhookSecret) {
+        console.warn("CardCom webhook: rejected — missing/invalid secret");
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+
     const contentType = req.headers.get("content-type") ?? "";
     let params: URLSearchParams;
 
