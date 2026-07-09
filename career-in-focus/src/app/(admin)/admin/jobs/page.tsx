@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { deleteJob, toggleJobPublished } from "@/lib/actions/admin";
 import Link from "next/link";
-import { Plus, Trash2, Eye, EyeOff, Flame, Pencil } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Flame, Pencil, Sparkles } from "lucide-react";
 import { FetchJobsButton, SeedSocialJobsButton, SeedFeaturedJobsButton } from "./fetch-jobs-button";
 
 export default async function AdminJobsPage() {
@@ -25,6 +25,11 @@ export default async function AdminJobsPage() {
           <Link href="/admin/jobs/import-civi-batch2">
             <Button variant="outline" className="border-teal/30 text-teal hover:bg-teal-pale">
               ייבוא Civi (10)
+            </Button>
+          </Link>
+          <Link href="/admin/paste-jobs">
+            <Button className="bg-teal hover:bg-teal/90 text-white">
+              <Sparkles size={15} /> הדבקה מוואטסאפ
             </Button>
           </Link>
           <Link href="/admin/jobs/new">
