@@ -1,11 +1,17 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { Sidebar } from "@/components/layout/sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { TopBar } from "@/components/layout/top-bar";
 import { Footer } from "@/components/layout/footer";
 import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import { prisma } from "@/lib/prisma";
+
+// FREE-tier users are logged in but only paid for the job-board slice.
+// Anything outside this allow-list should bounce them back to /jobs
+// (or /pricing if they try billing/account settings, so they can upgrade).
+const FREE_ALLOWED_PREFIXES = ["/jobs"];
 
 export default async function MemberLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -16,6 +22,16 @@ export default async function MemberLayout({ children }: { children: React.React
 
   if (session.user.accessStatus !== "ACTIVE") {
     redirect("/payment/pending");
+  }
+
+  // FREE tier gate. subscriptionStatus="FREE" identifies users who
+  // signed up via the ₪0 plan — they can view the job board but
+  // nothing else. Full members / VIP / admins pass through.
+  const isFreeTier = session.user.subscriptionStatus === "FREE";
+  if (isFreeTier && session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
+    const path = (await headers()).get("x-pathname") ?? "";
+    const allowed = FREE_ALLOWED_PREFIXES.some((p) => path === p || path.startsWith(p + "/"));
+    if (!allowed) redirect("/jobs");
   }
 
   // Get unread notification count

@@ -19,6 +19,7 @@ declare module "next-auth" {
       role: Role;
       accessStatus: AccessStatus;
       membershipType?: string | null;
+      subscriptionStatus?: string | null;   // "FREE" tags the ₪0 tier
       gender?: string | null;   // "f" | "m" | null — drives gendered copy
       // When admin clicks "view as user", we swap the token's identity
       // and stash the admin's real id here. UI uses this to render the
@@ -30,6 +31,7 @@ declare module "next-auth" {
     role: Role;
     accessStatus: AccessStatus;
     membershipType?: string | null;
+    subscriptionStatus?: string | null;
     gender?: string | null;
   }
 }
@@ -85,6 +87,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           role: user.role,
           accessStatus: user.accessStatus,
           membershipType: user.membershipType,
+          subscriptionStatus: user.subscriptionStatus,
           gender: user.gender,
         };
       },
@@ -97,6 +100,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = user.role;
         token.accessStatus = user.accessStatus;
         token.membershipType = user.membershipType;
+        token.subscriptionStatus = user.subscriptionStatus;
         token.gender = user.gender;
       }
 
@@ -109,7 +113,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           (token.impersonatedByAdminId as string | undefined) ?? (token.id as string);
         const dbUser = await prisma.user.findUnique({
           where: { id: realUserId },
-          select: { id: true, email: true, role: true, accessStatus: true, membershipType: true, name: true, image: true, gender: true },
+          select: { id: true, email: true, role: true, accessStatus: true, membershipType: true, subscriptionStatus: true, name: true, image: true, gender: true },
         });
         if (dbUser) {
           token.id = dbUser.id;
@@ -117,6 +121,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           token.role = dbUser.role;
           token.accessStatus = dbUser.accessStatus;
           token.membershipType = dbUser.membershipType;
+          token.subscriptionStatus = dbUser.subscriptionStatus;
           token.name = dbUser.name;
           token.picture = dbUser.image;
           token.gender = dbUser.gender;
@@ -135,7 +140,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (targetId && isAdmin && targetId !== token.id) {
           const target = await prisma.user.findUnique({
             where: { id: targetId },
-            select: { id: true, email: true, role: true, accessStatus: true, membershipType: true, name: true, image: true, gender: true },
+            select: { id: true, email: true, role: true, accessStatus: true, membershipType: true, subscriptionStatus: true, name: true, image: true, gender: true },
           });
           if (target) {
             token.impersonatedByAdminId = token.id;
@@ -144,6 +149,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             token.role = target.role;
             token.accessStatus = target.accessStatus;
             token.membershipType = target.membershipType;
+            token.subscriptionStatus = target.subscriptionStatus;
             token.name = target.name;
             token.picture = target.image;
             token.gender = target.gender;
@@ -166,6 +172,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.role = token.role as Role;
         session.user.accessStatus = token.accessStatus as AccessStatus;
         session.user.membershipType = token.membershipType as string;
+        session.user.subscriptionStatus = token.subscriptionStatus as string | null;
         session.user.name = token.name as string;
         session.user.image = token.picture as string;
         session.user.gender = token.gender as string | null;

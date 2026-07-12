@@ -1,9 +1,9 @@
 /**
  * Subscription billing — CardCom Tokenized model.
  *
- * Plan amounts in agorot (NIS × 100). The Member tier has a date-gated
- * launch promo: ₪19 until 2026-07-01, then ₪49 from that date forward.
- * VIP and Premium are flat-rate.
+ * Plan amounts in agorot (NIS × 100). Member is flat ₪12/month
+ * (Coral dropped the launch promo — new baseline). VIP and Premium
+ * are flat-rate too.
  *
  * Flow:
  *   1. User completes initial signup payment via CardCom Low-Profile.
@@ -32,15 +32,15 @@ interface PlanConfig {
   launchPromo?:  { amount: number; until: Date };
 }
 
-// Cutoff for the Member launch promo. Charges scheduled before this
-// date pay ₪19; from this date forward they pay the regular ₪49.
+// Legacy cutoff — the launch promo was retired when Coral moved the
+// Member tier to a flat ₪12. Left in place because a few call sites
+// still import it; safe to remove once those are cleaned up.
 export const LAUNCH_PROMO_END = new Date("2026-07-01T00:00:00+03:00");
 
 export const PLANS: Record<PlanKey, PlanConfig> = {
   MEMBER: {
-    baseAmount: 4900,
+    baseAmount: 1200,   // ₪12/month — Coral's new baseline (was ₪19 promo / ₪49 base)
     label:      "חברות בקריירה בפוקוס",
-    launchPromo: { amount: 1900, until: LAUNCH_PROMO_END },  // ₪19 → ₪49 on 2026-07-01
   },
   VIP: {
     baseAmount: 14900,

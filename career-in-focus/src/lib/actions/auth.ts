@@ -14,7 +14,7 @@ const SignupSchema = z.object({
   gender: z.enum(["f", "m"]).optional(),
 });
 
-const VALID_PLANS = ["MEMBER", "VIP", "PREMIUM"] as const;
+const VALID_PLANS = ["FREE", "MEMBER", "VIP", "PREMIUM"] as const;
 type Plan = typeof VALID_PLANS[number];
 
 export async function signup(prevState: unknown, formData: FormData) {
@@ -68,14 +68,19 @@ export async function signup(prevState: unknown, formData: FormData) {
     // user's chosen name + password + plan. Keep the existing id +
     // referralCode + referredById so any links already shared remain
     // valid. Reset accessStatus to PENDING so the payment flow re-runs.
+    // FREE plan users skip payment entirely — set accessStatus=ACTIVE
+    // and mark subscriptionStatus="FREE" so we can gate features to
+    // the job board only.
+    const isFree = plan === "FREE";
     await prisma.user.update({
       where: { id: existing.id },
       data: {
         name,
         passwordHash,
         gender,
-        accessStatus: "PENDING",
-        membershipType: plan,
+        accessStatus: isFree ? "ACTIVE" : "PENDING",
+        membershipType: isFree ? "NONE" : plan,
+        subscriptionStatus: isFree ? "FREE" : null,
       },
     });
     // Skip the create block entirely. Auto sign-in below still runs.
@@ -105,15 +110,24 @@ export async function signup(prevState: unknown, formData: FormData) {
     }
     let referralCode = makeCode();
 
+    // FREE plan users skip payment: they get ACTIVE access immediately
+    // and subscriptionStatus="FREE" tags them for gated feature access
+    // (jobs board only). Everyone else stays PENDING until they finish
+    // the CardCom flow.
+    const isFree = plan === "FREE";
+    const baseData = {
+      name,
+      email,
+      passwordHash,
+      gender,
+      role: "MEMBER" as const,
+      accessStatus: isFree ? ("ACTIVE" as const) : ("PENDING" as const),
+      membershipType: isFree ? ("NONE" as const) : plan,
+      subscriptionStatus: isFree ? "FREE" : null,
+    };
     await prisma.user.create({
       data: {
-        name,
-        email,
-        passwordHash,
-        gender,
-        role: "MEMBER",
-        accessStatus: "PENDING",
-        membershipType: plan, // store chosen plan — activated after payment
+        ...baseData,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...({ referralCode, referredById } as any),
       },
@@ -122,8 +136,7 @@ export async function signup(prevState: unknown, formData: FormData) {
       referralCode = makeCode();
       await prisma.user.create({
         data: {
-          name, email, passwordHash, gender,
-          role: "MEMBER", accessStatus: "PENDING", membershipType: plan,
+          ...baseData,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ...({ referralCode, referredById } as any),
         },
@@ -147,10 +160,12 @@ export async function signup(prevState: unknown, formData: FormData) {
     throw error;
   }
 
-  // Per Coral: signup flow goes straight to CardCom — no intermediate
-  // /payment/pending step. The redirect route handles the CardCom
-  // call and bounces back to /payment/success on success or to
-  // /payment/pending only when something went wrong.
+  // FREE users skip payment entirely — send them straight to the job
+  // board (their only accessible page). Everyone else goes through
+  // CardCom (no intermediate /payment/pending step per Coral).
+  if (plan === "FREE") {
+    redirect("/jobs");
+  }
   redirect(`/api/payment/cardcom/redirect?plan=${plan.toLowerCase()}`);
 }
 

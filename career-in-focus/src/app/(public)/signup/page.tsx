@@ -11,9 +11,17 @@ import { Eye, EyeOff, CheckCircle2, Star, Zap, Crown, ShieldCheck, Lock, Sparkle
 import { useState, Suspense } from "react";
 
 const PLAN_LABELS: Record<string, { name: string; price: string; color: string; bg: string; iconWrap: string; icon: React.ReactNode }> = {
+  free: {
+    name: "צפייה חינם",
+    price: "₪0",
+    color: "text-gray-800",
+    bg: "from-gray-50 to-white border-gray-200",
+    iconWrap: "bg-gray-100 text-gray-700",
+    icon: <Star size={14} />,
+  },
   member: {
     name: "חברה",
-    price: "₪19/חודש",
+    price: "₪12/חודש",
     // Logo-true palette: solid neutral cream + black target-style
     // icon tile + teal silhouette inside (the icon star). Replaces
     // the warm gradient that read as 'mustard'.
@@ -99,8 +107,8 @@ function SignupForm() {
               </div>
               <div className={`text-left ${plan.color}`}>
                 <div className="text-2xl font-black leading-none">{plan.price}</div>
-                {planKey === "member" && (
-                  <div className="text-[10px] font-bold opacity-70 mt-0.5">במחיר השקה עד יולי</div>
+                {planKey === "free" && (
+                  <div className="text-[10px] font-bold opacity-70 mt-0.5">גישה ללוח המשרות בלבד</div>
                 )}
               </div>
             </div>

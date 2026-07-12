@@ -7,14 +7,14 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "מחירים — שלוש תוכניות חברות מ-19 ש\"ח לחודש",
+  title: "מחירים — כניסה חינם או חברות מלאה מ-12 ש\"ח לחודש",
   description:
-    "שלוש תוכניות חברות בקריירה בפוקוס — מ-19 ש\"ח לחודש במבצע השקה. דרכון קריירה מבוסס AI, מאמן AI אישי, אלפי משרות מתאימות, וקהילה מקצועית. ביטול בכל עת.",
+    "כניסה חינמית ללוח המשרות של קורל, או חברות מלאה מ-12 ש\"ח לחודש. דרכון קריירה מבוסס AI, מאמן AI אישי, אלפי משרות מתאימות, וקהילה מקצועית. ביטול בכל עת.",
   alternates: { canonical: "https://app.careerinfocus.co.il/pricing" },
   openGraph: {
     title: "מחירים — קריירה בפוקוס",
     description:
-      "תוכניות חברות מ-19 ש\"ח לחודש. דרכון קריירה, מאמן אישי, משרות מותאמות. ביטול בכל עת.",
+      "כניסה חינם ללוח המשרות או חברות מלאה מ-12 ש\"ח לחודש. דרכון קריירה, מאמן אישי, משרות מותאמות. ביטול בכל עת.",
     url: "https://app.careerinfocus.co.il/pricing",
     type: "website",
   },
@@ -26,13 +26,38 @@ export const metadata = {
 // names — renaming would break query-params and DB.
 const PLANS = [
   {
+    id: "free",
+    name: "צפייה חינם",
+    price: "0",
+    period: "ללא עלות",
+    description: "גישה חופשית ללוח המשרות של קורל",
+    icon: Star,
+    features: [
+      "צפייה חופשית באלפי משרות שקורל מרכזת ומעדכנת",
+      "מיון לפי תחום, מיקום ורמת ניסיון",
+      "לחיצה על משרה מפנה ישירות לפרסום המקורי להגשה",
+      "עדכונים על משרות חמות ובלעדיות",
+    ],
+    limitations: [
+      "אין דרכון קריירה, מאמן AI או קורסים",
+      "אין ניהול חיפוש עבודה (דשבורד, ראיונות, follow-ups)",
+      "אין גישה לקהילה או לתכנים המקצועיים",
+    ],
+    cta: "היכנסי חינם",
+    href: "/signup?plan=free",
+    highlight: false,
+    accentText: "text-gray-800",
+    iconColor: "text-gray-700",
+    iconBg: "bg-gray-100",
+    border: "border-gray-200",
+    bg: "bg-white",
+    ctaClass: "bg-white text-gray-800 border-2 border-gray-800 hover:bg-gray-50",
+  },
+  {
     id: "member",
     name: "חבר",
-    price: "19",
-    originalPrice: "49",
+    price: "12",
     period: "לחודש",
-    promoNote: "מבצע השקה — עד 1 ביולי 2026. אחר כך ₪49/חודש קבוע.",
-    badge: "מבצע השקה",
     description: "כל הכלים והקהילה — להתחיל לחפש עבודה בצורה חכמה",
     icon: Star,
     features: [
@@ -47,7 +72,7 @@ const PLANS = [
       "הכוונה לנטוורקינג, פנייה למגייסים וחיפוש עבודה מעבר ללוחות הדרושים",
       "קהילה, סדנאות וטיפים אמיתיים ממגייסים ואנשי מקצוע מהשטח",
     ],
-    cta: "הצטרפו במחיר השקה",
+    cta: "הצטרפו כחברים",
     href: "/signup?plan=member",
     highlight: false,
     // Logo-true palette: solid neutral cream (the previous gradient
@@ -228,7 +253,7 @@ export default async function PricingPage() {
         </div>
 
         {/* Plans */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {PLANS.map((plan) => {
             const Icon = plan.icon;
             return (
@@ -273,7 +298,7 @@ export default async function PricingPage() {
                 </div>
 
                 {/* Features */}
-                <ul className="space-y-2.5 mb-8 flex-1">
+                <ul className="space-y-2.5 mb-4 flex-1">
                   {plan.features.map((f) => (
                     <li key={f} className={`flex items-start gap-2 text-sm ${plan.highlight ? "text-white/90" : (plan.accentText ? "text-teal-dark/85" : "text-gray-700")}`}>
                       <CheckCircle size={15} className={`mt-0.5 shrink-0 ${plan.highlight ? "text-white" : "text-teal"}`} />
@@ -281,6 +306,19 @@ export default async function PricingPage() {
                     </li>
                   ))}
                 </ul>
+
+                {/* Limitations (only rendered when plan explicitly lists them —
+                    used on the FREE tier to make the trade-off obvious). */}
+                {plan.limitations && plan.limitations.length > 0 && (
+                  <ul className="space-y-1.5 mb-6 border-t border-gray-100 pt-3">
+                    {plan.limitations.map((l) => (
+                      <li key={l} className="flex items-start gap-2 text-xs text-gray-400">
+                        <span className="mt-0.5 shrink-0">✕</span>
+                        {l}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
                 <Link
                   href={plan.href}
