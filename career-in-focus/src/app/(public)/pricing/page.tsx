@@ -24,7 +24,35 @@ export const metadata = {
 // implicit in the first feature line ("הכל מחבילת חבר" / "הכל מחבילת
 // PRO"). Internal enum keys (member / vip / premium) keep their historic
 // names — renaming would break query-params and DB.
-const PLANS = [
+// Explicit type so decorative fields (badge, promo strikethrough,
+// limitations list, per-card palette) can appear on some plans and
+// not others — without it TS infers a union of literal shapes and
+// rejects `plan.originalPrice` etc. on the members that lack them
+// (this exact error broke two deploys before the type was added).
+interface PlanCard {
+  id: string;
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  icon: typeof Star;
+  features: string[];
+  cta: string;
+  href: string;
+  highlight: boolean;
+  originalPrice?: string;
+  promoNote?: string;
+  badge?: string;
+  limitations?: string[];
+  accentText?: string;
+  iconColor?: string;
+  iconBg?: string;
+  border?: string;
+  bg?: string;
+  ctaClass?: string;
+}
+
+const PLANS: PlanCard[] = [
   {
     id: "free",
     name: "צפייה חינם",

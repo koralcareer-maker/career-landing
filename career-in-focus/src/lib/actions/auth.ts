@@ -79,7 +79,10 @@ export async function signup(prevState: unknown, formData: FormData) {
         passwordHash,
         gender,
         accessStatus: isFree ? "ACTIVE" : "PENDING",
-        membershipType: isFree ? "NONE" : plan,
+        // Written as a direct comparison (not `isFree ? ...`) so TS
+        // narrows `plan` to the non-FREE members, which are the only
+        // ones assignable to the MembershipType enum.
+        membershipType: plan === "FREE" ? "NONE" : plan,
         subscriptionStatus: isFree ? "FREE" : null,
       },
     });
@@ -122,7 +125,9 @@ export async function signup(prevState: unknown, formData: FormData) {
       gender,
       role: "MEMBER" as const,
       accessStatus: isFree ? ("ACTIVE" as const) : ("PENDING" as const),
-      membershipType: isFree ? ("NONE" as const) : plan,
+      // Direct comparison narrows `plan` away from "FREE" — see the
+      // claim-path note above.
+      membershipType: plan === "FREE" ? ("NONE" as const) : plan,
       subscriptionStatus: isFree ? "FREE" : null,
     };
     await prisma.user.create({

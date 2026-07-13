@@ -29,9 +29,14 @@ export default async function MemberLayout({ children }: { children: React.React
   // nothing else. Full members / VIP / admins pass through.
   const isFreeTier = session.user.subscriptionStatus === "FREE";
   if (isFreeTier && session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
-    const path = (await headers()).get("x-pathname") ?? "";
-    const allowed = FREE_ALLOWED_PREFIXES.some((p) => path === p || path.startsWith(p + "/"));
-    if (!allowed) redirect("/jobs");
+    const path = (await headers()).get("x-pathname");
+    // Fail-open when the header is missing (middleware not running or
+    // stripped by an edge cache) — redirecting on an unknown path
+    // would loop forever, since /jobs itself renders this layout.
+    if (path) {
+      const allowed = FREE_ALLOWED_PREFIXES.some((p) => path === p || path.startsWith(p + "/"));
+      if (!allowed) redirect("/jobs");
+    }
   }
 
   // Get unread notification count
