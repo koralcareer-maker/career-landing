@@ -77,9 +77,9 @@ export default function JoinForm() {
               של קורל
             </h1>
             <p className="text-navy/70 text-sm leading-relaxed">
-              תקבלו כל בוקר מייל עם המשרות החדשות שנוספו אתמול ומתאימות לתחום שלכם.
+              נעדכן אתכם במייל רק כשנמצאות משרות חדשות שמתאימות לתחומים שבחרתם.
               <br />
-              אלפי משרות מכל התחומים — מ־SVT, Civi, LinkedIn, וישירות מקורל.
+              בלי ספאם ובלי מיילים מיותרים. אלפי משרות מכל התחומים, מתעדכנות מדי יום.
             </p>
           </div>
 
@@ -92,8 +92,8 @@ export default function JoinForm() {
               </div>
               <div>
                 <Bell size={18} className="text-teal mx-auto mb-1.5" />
-                <div className="text-xs font-bold text-navy">התראה יומית</div>
-                <div className="text-[10px] text-navy/60">במייל בבוקר</div>
+                <div className="text-xs font-bold text-navy">התראות במייל</div>
+                <div className="text-[10px] text-navy/60">רק כשיש התאמה</div>
               </div>
               <div>
                 <CheckCircle2 size={18} className="text-teal mx-auto mb-1.5" />
@@ -123,7 +123,7 @@ export default function JoinForm() {
               <div>
                 <label className="text-sm font-bold text-navy mb-2 block">תחומי עניין</label>
                 <p className="text-[11px] text-navy/60 mb-3">
-                  בחרו אחד או יותר. תקבלו במייל היומי רק משרות מהתחומים שסימנתם.
+                  בחרו אחד או יותר. נעדכן אתכם רק על משרות חדשות מהתחומים שסימנתם.
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {FIELDS.map((f) => {
@@ -183,7 +183,7 @@ export default function JoinForm() {
               </Button>
 
               <p className="text-[11px] text-navy/50 text-center leading-relaxed">
-                בהרשמה אתם מאשרים לקבל מייל יומי עם משרות רלוונטיות. ניתן לבטל בכל עת בלחיצה על "הסרה" בתחתית כל מייל.
+                בהרשמה אתם מאשרים לקבל עדכוני משרות רלוונטיות במייל. ניתן לבטל בכל עת בלחיצה על "הסרה" בתחתית כל מייל.
                 <br />
                 <Link href="/privacy" className="underline hover:text-teal">
                   מדיניות פרטיות

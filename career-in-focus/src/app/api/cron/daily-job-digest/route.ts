@@ -87,7 +87,7 @@ async function sendDigestEmail(opts: {
     </div>
     <h1 style="font-size:20px;color:#0f172a;margin:0 0 6px 0">${greet}</h1>
     <p style="color:#475569;font-size:14px;margin:0 0 20px 0">
-      אספתי לך ${jobsLabel} שנוספו אתמול ומתאימות לתחומים שסימנת. לחיצה על הכותרת מובילה ישירות להגשת מועמדות.
+      נמצאו ${jobsLabel} שמתאימות לתחומים שסימנת. לחיצה על הכותרת מובילה ישירות להגשת מועמדות.
     </p>
     <table style="width:100%;border-collapse:collapse">${rows}</table>
     <div style="text-align:center;margin-top:24px">
@@ -97,7 +97,7 @@ async function sendDigestEmail(opts: {
     </div>
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
     <p style="color:#94a3b8;font-size:11px;text-align:center;margin:0;line-height:1.6">
-      את מקבלת את המייל הזה כי נרשמת ללוח המשרות של קריירה בפוקוס.<br>
+      קיבלתם את המייל הזה כי נרשמתם ללוח המשרות של קריירה בפוקוס. אנחנו שולחים עדכון רק כשנמצאות משרות חדשות שמתאימות לכם.<br>
       <a href="https://app.careerinfocus.co.il/billing" style="color:#94a3b8">להסרה מהתפוצה</a>
     </p>
   </div>
@@ -112,7 +112,7 @@ async function sendDigestEmail(opts: {
     body: JSON.stringify({
       from: RESEND_FROM,
       to: opts.to,
-      subject: `☕ ${jobsLabel} בתחום שלך — הבוקר`,
+      subject: `🎯 נמצאו ${jobsLabel} בתחום שלך`,
       html,
     }),
   });
