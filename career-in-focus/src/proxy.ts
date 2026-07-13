@@ -13,6 +13,7 @@ const PUBLIC_PATHS = [
   "/pricing",
   "/login",
   "/signup",
+  "/join",
   "/terms",
   "/privacy",
   "/api/auth",
@@ -24,13 +25,26 @@ const PUBLIC_PATHS = [
 
 const ADMIN_PATHS = ["/admin"];
 
+/**
+ * Every pass-through response carries the request's pathname so
+ * server layouts can read it via headers() — the (member) layout
+ * uses this to keep FREE-tier users on /jobs. Without the header the
+ * layout fails open (no redirect), so a stale edge cache can't cause
+ * a loop.
+ */
+function nextWithPathname(pathname: string) {
+  const res = NextResponse.next();
+  res.headers.set("x-pathname", pathname);
+  return res;
+}
+
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
 
   // Allow public paths
   if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
-    return NextResponse.next();
+    return nextWithPathname(pathname);
   }
 
   // Not logged in → redirect to login
@@ -47,17 +61,17 @@ export default auth((req) => {
     if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
-    return NextResponse.next();
+    return nextWithPathname(pathname);
   }
 
   // Member paths: require ACTIVE status (paid)
   if (accessStatus !== "ACTIVE") {
     // Allow /payment pages
-    if (pathname.startsWith("/payment")) return NextResponse.next();
+    if (pathname.startsWith("/payment")) return nextWithPathname(pathname);
     return NextResponse.redirect(new URL("/payment/pending", req.url));
   }
 
-  return NextResponse.next();
+  return nextWithPathname(pathname);
 });
 
 export const config = {
