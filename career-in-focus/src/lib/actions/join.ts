@@ -81,7 +81,7 @@ export async function joinJobBoard(prevState: unknown, formData: FormData) {
     if (hasPassword && hasPaid) {
       return {
         error:
-          "אימייל זה כבר רשום במערכת. אם זה החשבון שלך, נסי להתחבר עם הסיסמה שלך.",
+          "אימייל זה כבר רשום במערכת. אם זה החשבון שלכם, נסו להתחבר עם הסיסמה שלכם.",
       };
     }
     await prisma.user.update({

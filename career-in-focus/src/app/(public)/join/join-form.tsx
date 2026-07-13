@@ -61,7 +61,7 @@ export default function JoinForm() {
             <span className="font-black text-navy text-lg group-hover:text-teal transition-colors">קריירה בפוקוס</span>
           </Link>
           <Link href="/login" className="text-sm font-semibold text-navy/60 hover:text-teal transition-colors">
-            כבר רשומה?
+            כבר רשומים?
           </Link>
         </div>
 
@@ -72,12 +72,12 @@ export default function JoinForm() {
               חינם, ללא התחייבות
             </div>
             <h1 className="text-3xl sm:text-[34px] font-black text-navy leading-[1.15] mb-3">
-              הצטרפי ללוח המשרות
+              הצטרפו חינם ללוח המשרות
               <br />
               של קורל
             </h1>
             <p className="text-navy/70 text-sm leading-relaxed">
-              תקבלי כל בוקר מייל עם המשרות החדשות שנוספו אתמול ומתאימות לתחום שלך.
+              תקבלו כל בוקר מייל עם המשרות החדשות שנוספו אתמול ומתאימות לתחום שלכם.
               <br />
               אלפי משרות מכל התחומים — מ־SVT, Civi, LinkedIn, וישירות מקורל.
             </p>
@@ -123,7 +123,7 @@ export default function JoinForm() {
               <div>
                 <label className="text-sm font-bold text-navy mb-2 block">תחומי עניין</label>
                 <p className="text-[11px] text-navy/60 mb-3">
-                  בחרי אחד או יותר. תקבלי במייל היומי רק משרות מהתחומים שסימנת.
+                  בחרו אחד או יותר. תקבלו במייל היומי רק משרות מהתחומים שסימנתם.
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {FIELDS.map((f) => {
@@ -148,7 +148,7 @@ export default function JoinForm() {
               </div>
 
               <div>
-                <label className="text-sm font-bold text-navy mb-2 block">איך לפנות אלייך במיילים?</label>
+                <label className="text-sm font-bold text-navy mb-2 block">איך לפנות אליכם במיילים?</label>
                 <div className="flex gap-2">
                   {(["f", "m"] as const).map((g) => (
                     <button
@@ -176,14 +176,14 @@ export default function JoinForm() {
 
               <Button type="submit" disabled={isPending || selected.length === 0} size="lg" className="w-full">
                 {isPending
-                  ? "רושמת..."
+                  ? "נרשמים..."
                   : selected.length === 0
-                  ? "בחרי לפחות תחום אחד"
-                  : "הכניסי אותי ללוח המשרות"}
+                  ? "בחרו לפחות תחום אחד"
+                  : "הצטרפו ללוח המשרות"}
               </Button>
 
               <p className="text-[11px] text-navy/50 text-center leading-relaxed">
-                בהרשמה את מאשרת לקבל מייל יומי עם משרות רלוונטיות. ניתן לבטל בכל עת בלחיצה על "הסרה" בתחתית כל מייל.
+                בהרשמה אתם מאשרים לקבל מייל יומי עם משרות רלוונטיות. ניתן לבטל בכל עת בלחיצה על "הסרה" בתחתית כל מייל.
                 <br />
                 <Link href="/privacy" className="underline hover:text-teal">
                   מדיניות פרטיות
@@ -193,9 +193,9 @@ export default function JoinForm() {
           </div>
 
           <div className="text-center mt-8 text-xs text-navy/50">
-            רוצה יותר מאשר לוח משרות? מאמנת AI, דרכון קריירה, קורסים.{" "}
+            רוצים יותר מאשר לוח משרות? מאמנת AI, דרכון קריירה, קורסים.{" "}
             <Link href="/pricing" className="font-bold text-teal underline">
-              ראי את המסלולים
+              צפו במסלולים
             </Link>
           </div>
         </div>

@@ -71,7 +71,7 @@ const PLANS: PlanCard[] = [
       "אין ניהול חיפוש עבודה (דשבורד, ראיונות, follow-ups)",
       "אין גישה לקהילה או לתכנים המקצועיים",
     ],
-    cta: "היכנסי חינם",
+    cta: "הצטרפו חינם",
     href: "/signup?plan=free",
     highlight: false,
     accentText: "text-gray-800",
