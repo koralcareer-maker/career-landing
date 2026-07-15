@@ -114,28 +114,40 @@ export async function GET(req: NextRequest) {
   });
 }
 
+// Hosts that sit behind bot-shields (Cloudflare interactive challenges
+// and the like). Probing them from a datacenter IP returns 403/503 for
+// PERFECTLY LIVE pages — on 2026-07-14 this wrongly unpublished ~1,400
+// SVT + LinkedIn jobs in one night. We don't probe them at all; their
+// listings only leave the board when their importer stops returning
+// them or Coral unpublishes manually.
+const BOT_SHIELDED_HOSTS = ["svt.jobs", "linkedin.com", "alljobs.co.il"];
+
 /**
  * Probe a single URL. Returns:
- *   "alive"   — HEAD or GET returned 2xx/3xx
- *   "dead"    — returned a clear 4xx/5xx after one retry
- *   "skipped" — network error (timeout, DNS, refused). We treat these
- *               as inconclusive so a board's brief blip doesn't wipe
- *               half the listings.
+ *   "alive"   — 2xx/3xx, or a bot-shielded host we can't meaningfully probe
+ *   "dead"    — HTTP 404/410 (the only statuses that reliably mean
+ *               "this posting is gone"; 403/429/5xx are bot-blocking
+ *               or server hiccups on live pages)
+ *   "skipped" — network error (timeout, DNS, refused) — inconclusive
  */
 async function probeUrl(url: string): Promise<"alive" | "dead" | "skipped"> {
-  // Try HEAD first. Many job boards (LinkedIn, AllJobs) return 405 on
-  // HEAD or simply hang — we treat that as inconclusive and fall back
-  // to a tiny GET, which is what a real browser would do.
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    if (BOT_SHIELDED_HOSTS.some((h) => host === h || host.endsWith("." + h))) {
+      return "alive";
+    }
+  } catch {
+    return "skipped"; // mailto:/coral-direct: pseudo-URLs — not probeable
+  }
+
+  // Try HEAD first. Many job boards return 405 on HEAD or simply hang —
+  // fall back to a tiny GET, which is what a real browser would do.
   const headStatus = await singleProbe(url, "HEAD");
   if (headStatus >= 200 && headStatus < 400) return "alive";
 
-  if (headStatus !== -1 && headStatus !== 405 && headStatus < 400) {
-    // 4xx that isn't 405 → consider dead but verify with GET.
-  }
-
   const getStatus = await singleProbe(url, "GET");
   if (getStatus >= 200 && getStatus < 400) return "alive";
-  if (getStatus >= 400 && getStatus < 600) return "dead";
+  if (getStatus === 404 || getStatus === 410) return "dead";
   return "skipped";
 }
 
