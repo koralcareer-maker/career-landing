@@ -29,26 +29,34 @@ export async function POST(req: Request) {
   }
 
   const body = (await req.json().catch(() => null)) as {
-    pairs?: Array<{ match?: string; url?: string }>;
+    pairs?: Array<{ match?: string; url?: string; sourceRef?: string; source?: string }>;
   } | null;
   const pairs = (body?.pairs ?? [])
     .filter(
-      (p): p is { match: string; url: string } =>
+      (p): p is { match: string; url?: string; sourceRef?: string; source?: string } =>
         typeof p.match === "string" &&
         p.match.length >= 8 &&
-        typeof p.url === "string" &&
-        p.url.startsWith("https://"),
+        ((typeof p.url === "string" && p.url.startsWith("https://")) ||
+          typeof p.sourceRef === "string" ||
+          typeof p.source === "string"),
     )
     .slice(0, 500);
   if (pairs.length === 0) {
-    return NextResponse.json({ error: "expected { pairs: [{match, url}] }" }, { status: 400 });
+    return NextResponse.json(
+      { error: "expected { pairs: [{match, url? | sourceRef? | source?}] }" },
+      { status: 400 },
+    );
   }
 
   let updated = 0;
   for (const p of pairs) {
+    const data: { externalUrl?: string; sourceRef?: string; source?: string } = {};
+    if (p.url) data.externalUrl = p.url;
+    if (p.sourceRef) data.sourceRef = p.sourceRef;
+    if (p.source) data.source = p.source;
     const res = await prisma.job.updateMany({
       where: { externalUrl: { contains: p.match } },
-      data: { externalUrl: p.url },
+      data,
     });
     updated += res.count;
   }

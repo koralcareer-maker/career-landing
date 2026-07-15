@@ -35,6 +35,8 @@ interface CoralJobInput {
   field: string;
   contactEmail?: string | null;
   externalUrl?: string | null;
+  /** Stable source id, e.g. "svt:1001782" — used by the daily sync diff. */
+  sourceRef?: string | null;
 }
 
 export async function POST(req: Request) {
@@ -49,6 +51,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "expected { jobs: [...] }" }, { status: 400 });
   }
   const jobs = body.jobs as CoralJobInput[];
+  // Historically this endpoint hardcoded the source, which lumped the
+  // SVT and Civi imports under "קורל - ישיר" in every stats view. The
+  // caller may now label the batch.
+  const batchSource =
+    typeof body.source === "string" && body.source.length > 1
+      ? (body.source as string)
+      : "קורל - ישיר";
 
   // Normalize and assign externalUrl if missing.
   const normalized = jobs.map((j) => {
@@ -85,7 +94,8 @@ export async function POST(req: Request) {
           location: j.location ?? null,
           region: j.region,
           field: j.field,
-          source: "קורל - ישיר",
+          source: batchSource,
+          sourceRef: j.sourceRef ?? null,
           externalUrl: j.externalUrl,
           isHot: true,
           isPublished: true,

@@ -81,6 +81,20 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // AllJobs sits behind a bot shield, so its links are never probed and
+  // would otherwise live forever. Postings there churn fast — expire
+  // our scraped copies after 45 days. SVT/Civi are excluded: the daily
+  // sync agent diffs them against the live source lists instead.
+  const expiry = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000);
+  const expired = await prisma.job.updateMany({
+    where: {
+      isPublished: true,
+      externalUrl: { contains: "alljobs.co.il" },
+      createdAt: { lt: expiry },
+    },
+    data: { isPublished: false },
+  });
+
   if (deadIds.length > 0) {
     // Single bulk update — fewer round-trips than per-row updates.
     await prisma.job.updateMany({
@@ -108,6 +122,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     ok: true,
     ...results,
+    expiredAlljobs: expired.count,
     unpublishedIds: deadIds,
     careersSync: careersSummary,
     careersError,

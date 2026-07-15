@@ -633,6 +633,11 @@ model Job {
   field       String?
   experienceLevel String?
   source      String?
+  // Stable id at the source system, e.g. "svt:1001782" / "civi:882671".
+  // The daily sync agent diffs these against the source's live list to
+  // add new postings and unpublish closed ones. externalUrl can't serve
+  // this purpose for SVT because the public share shortlink is opaque.
+  sourceRef   String?
   externalUrl String?
   isHot       Boolean @default(false)
   isPublished Boolean @default(true)
@@ -640,6 +645,7 @@ model Job {
 
   alerts      JobAlert[]
   candidateMatches CandidateMatch[]
+  @@index([sourceRef])
 }
 
 // One row per (job, user) every time we email a member about a new
