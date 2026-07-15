@@ -4,7 +4,7 @@ import Link from "next/link";
 import { logout } from "@/lib/actions/auth";
 import {
   LayoutDashboard, Users, BookOpen, Wrench, Briefcase,
-  CalendarDays, MessageSquare, Star, LogOut, ChevronLeft, Settings, Mail, UserSearch,
+  CalendarDays, MessageSquare, Star, LogOut, ChevronLeft, Settings, Mail, UserSearch, Handshake,
   Megaphone, IdCard,
 } from "lucide-react";
 
@@ -17,6 +17,7 @@ const ADMIN_NAV = [
   { href: "/admin/tools",        label: "כלים",         icon: Wrench },
   { href: "/admin/jobs",         label: "משרות",        icon: Briefcase },
   { href: "/admin/candidates",   label: "מאגר מועמדים", icon: IdCard },
+  { href: "/admin/matches",      label: "התאמות",       icon: Handshake },
   { href: "/admin/events",       label: "אירועים",      icon: CalendarDays },
   { href: "/admin/updates",      label: "עדכונים",      icon: MessageSquare },
   { href: "/admin/candidate",    label: "מועמד השבוע",  icon: Star },

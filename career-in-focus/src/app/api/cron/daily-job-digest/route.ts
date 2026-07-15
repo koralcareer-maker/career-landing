@@ -25,6 +25,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { matchRecentCandidates } from "@/lib/candidate-matching";
+import { mapFieldToCategory } from "@/lib/job-categories";
 
 const CRON_SECRET_FALLBACK = "career-in-focus-cron-2026";
 
@@ -115,6 +117,7 @@ async function sendDigestEmail(opts: {
       subject: `🎯 נמצאו ${jobsLabel} בתחום שלך`,
       html,
     }),
+    signal: AbortSignal.timeout(15_000),
   });
 }
 
@@ -147,38 +150,47 @@ export async function GET(req: NextRequest) {
   let skippedNoFields = 0;
   const errors: string[] = [];
 
+  // One jobs query for the whole run. Users picked CANONICAL categories
+  // (lib/job-categories) at signup, while Job.field holds free-form
+  // values — so both sides go through mapFieldToCategory and matching
+  // happens in category space.
+  const recentJobs = (
+    await prisma.job.findMany({
+      where: { isPublished: true, createdAt: { gte: since } },
+      orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
+      select: {
+        id: true,
+        title: true,
+        company: true,
+        location: true,
+        field: true,
+        externalUrl: true,
+        isHot: true,
+      },
+    })
+  ).map((j) => ({ ...j, category: mapFieldToCategory(j.field) }));
+
   for (const u of users) {
     try {
       const cand = await prisma.candidate.findFirst({
         where: { email: u.email },
         select: { field: true },
       });
-      const fields = (cand?.field ?? "")
-        .split(/[,;]+/)
-        .map((f) => f.trim())
-        .filter(Boolean);
-      if (fields.length === 0) {
+      const categories = new Set(
+        (cand?.field ?? "")
+          .split(/[,;]+/)
+          .map((f) => f.trim())
+          .filter(Boolean)
+          .map((f) => mapFieldToCategory(f)),
+      );
+      categories.delete("אחר"); // never blast the catch-all bucket
+      if (categories.size === 0) {
         skippedNoFields++;
         continue;
       }
-      const jobs = await prisma.job.findMany({
-        where: {
-          isPublished: true,
-          createdAt: { gte: since },
-          field: { in: fields },
-        },
-        orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
-        take: MAX_JOBS_PER_EMAIL,
-        select: {
-          id: true,
-          title: true,
-          company: true,
-          location: true,
-          field: true,
-          externalUrl: true,
-          isHot: true,
-        },
-      });
+      const jobs = recentJobs
+        .filter((j) => categories.has(j.category))
+        .slice(0, MAX_JOBS_PER_EMAIL);
       if (jobs.length === 0) {
         skippedNoMatch++;
         continue;
@@ -197,6 +209,21 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Second leg — candidate↔job auto-matcher catch-up. Candidates that
+  // arrived via bulk imports (no after() hook) get matched + emailed
+  // here, at most once: matchCandidateToJobs skips existing pairs.
+  let matching: { candidates: number; newMatches: number; emailed: number } | { error: string };
+  try {
+    const run = await matchRecentCandidates({ sinceHours: 26, notify: true });
+    matching = {
+      candidates: run.candidates,
+      newMatches: run.results.reduce((n, r) => n + r.newMatches, 0),
+      emailed: run.results.reduce((n, r) => n + r.emailed, 0),
+    };
+  } catch (e) {
+    matching = { error: e instanceof Error ? e.message.slice(0, 120) : "failed" };
+  }
+
   return NextResponse.json({
     ok: true,
     freeUsers: users.length,
@@ -205,5 +232,6 @@ export async function GET(req: NextRequest) {
     skippedNoFields,
     errorCount: errors.length,
     errors: errors.slice(0, 20),
+    matching,
   });
 }

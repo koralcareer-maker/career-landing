@@ -639,6 +639,7 @@ model Job {
   expiresAt   DateTime?
 
   alerts      JobAlert[]
+  candidateMatches CandidateMatch[]
 }
 
 // One row per (job, user) every time we email a member about a new
@@ -1055,4 +1056,30 @@ model Candidate {
   @@index([source, sourceRef])
   @@index([handledByCoral, createdAt])
   @@index([email])
+
+  matches         CandidateMatch[]
+}
+
+// A scored candidate↔job pairing produced by the auto-matcher
+// (lib/candidate-matching.ts). One row per pair — the unique
+// constraint makes re-runs idempotent. status lifecycle:
+//   NEW      — found, not yet emailed to the candidate
+//   EMAILED  — offer email sent (emailedAt stamped)
+//   DISMISSED — Coral hid it from the matches screen
+model CandidateMatch {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  score       Int       // 0-100 heuristic score at match time
+  reasons     String?   // JSON array of Hebrew reason strings
+  requirementsCheck String? // AI verdict on the job's mandatory requirements, when available
+  status      String    @default("NEW")
+  emailedAt   DateTime?
+
+  @@unique([candidateId, jobId])
+  @@index([status, createdAt])
+  @@index([candidateId])
 }

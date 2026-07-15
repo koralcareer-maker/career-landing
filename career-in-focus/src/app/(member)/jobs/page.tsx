@@ -10,10 +10,14 @@ export const dynamic = "force-dynamic";
 export default async function JobsPage() {
   const session = await auth();
   const userId = session!.user.id;
+  // FREE-tier viewers get the raw board: no per-job match scores (they
+  // have no profile/passport, so every card would show the misleading
+  // 30% baseline) and no profile fetches on their behalf.
+  const isFreeTier = session!.user.subscriptionStatus === "FREE";
 
   const [profile, passport, rawJobs, dismissed] = await Promise.all([
-    prisma.profile.findUnique({ where: { userId } }),
-    prisma.careerPassport.findUnique({ where: { userId } }),
+    isFreeTier ? null : prisma.profile.findUnique({ where: { userId } }),
+    isFreeTier ? null : prisma.careerPassport.findUnique({ where: { userId } }),
     prisma.job.findMany({
       where: { isPublished: true },
       orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
@@ -30,7 +34,7 @@ export default async function JobsPage() {
   const jobs: JobItem[] = rawJobs
     .filter((job) => !dismissedIds.has(job.id))
     .map((job) => {
-      const match = matchJobToUser(job, profile, passport);
+      const match = isFreeTier ? { score: 0, reasons: [] } : matchJobToUser(job, profile, passport);
       return {
         id: job.id,
         title: job.title,
@@ -48,8 +52,10 @@ export default async function JobsPage() {
         matchScore: match.score,
         matchReasons: match.reasons,
       };
-    })
-    .sort((a, b) => b.matchScore - a.matchScore);
+    });
+  // Paid members see best-match-first; free viewers keep the natural
+  // hot-then-newest order straight from the query.
+  if (!isFreeTier) jobs.sort((a, b) => b.matchScore - a.matchScore);
 
   return (
     <div dir="rtl">
@@ -61,7 +67,7 @@ export default async function JobsPage() {
           "לחיצה על \"הגשת מועמדות\" פותחת את הקישור המקורי לפרסום, ובמקביל מוסיפה את המשרה למעקב המועמדויות באופן אוטומטי.",
         ]}
       />
-      <JobsClient jobs={jobs} />
+      <JobsClient jobs={jobs} hideMatch={isFreeTier} />
     </div>
   );
 }

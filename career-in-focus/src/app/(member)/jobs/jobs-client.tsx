@@ -106,7 +106,7 @@ function ApplyAndTrackButton({ job }: { job: JobItem }) {
 
 // ─── Job Card ─────────────────────────────────────────────────────────────────
 
-function JobCard({ job }: { job: JobItem }) {
+function JobCard({ job, hideMatch }: { job: JobItem; hideMatch?: boolean }) {
   const match = getMatchLabel(job.matchScore);
   const [dismissing, startDismiss] = useTransition();
   const [hidden, setHidden] = useState(false);
@@ -168,15 +168,18 @@ function JobCard({ job }: { job: JobItem }) {
             <h3 className="font-bold text-navy text-sm leading-snug line-clamp-2 break-words">{job.title}</h3>
             <p className="text-sm font-semibold text-navy/70 mt-0.5 break-words">{job.company}</p>
           </div>
-          {/* Match score */}
-          <div
-            className={`flex flex-col items-center justify-center w-12 h-12 rounded-xl shrink-0 ${match.color}`}
-          >
-            <span className="text-sm font-black leading-none">{job.matchScore}%</span>
-            <span className="text-[9px] font-medium leading-tight text-center mt-0.5">
-              {job.matchScore >= 75 ? "גבוהה" : job.matchScore >= 50 ? "בינונית" : "נמוכה"}
-            </span>
-          </div>
+          {/* Match score — hidden for free-tier viewers (no profile, so
+              the number would just be the meaningless 30% baseline) */}
+          {!hideMatch && (
+            <div
+              className={`flex flex-col items-center justify-center w-12 h-12 rounded-xl shrink-0 ${match.color}`}
+            >
+              <span className="text-sm font-black leading-none">{job.matchScore}%</span>
+              <span className="text-[9px] font-medium leading-tight text-center mt-0.5">
+                {job.matchScore >= 75 ? "גבוהה" : job.matchScore >= 50 ? "בינונית" : "נמוכה"}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Summary */}
@@ -245,7 +248,7 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function JobsClient({ jobs }: { jobs: JobItem[] }) {
+export function JobsClient({ jobs, hideMatch }: { jobs: JobItem[]; hideMatch?: boolean }) {
   const [activeField, setActiveField] = useState("הכל");
   const [activeRegion, setActiveRegion] = useState("הכל");
   const [activeLevel, setActiveLevel] = useState("הכל");
@@ -425,7 +428,7 @@ export function JobsClient({ jobs }: { jobs: JobItem[] }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((job) => (
-            <JobCard key={job.id} job={job} />
+            <JobCard key={job.id} job={job} hideMatch={hideMatch} />
           ))}
         </div>
       )}

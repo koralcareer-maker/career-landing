@@ -1,6 +1,8 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { after } from "next/server";
+import { matchCandidateToJobs } from "@/lib/candidate-matching";
 import { signIn } from "@/auth";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
@@ -147,11 +149,25 @@ export async function joinJobBoard(prevState: unknown, formData: FormData) {
     source: "הרשמה חינם ללוח משרות",
     sourceRef: email,
   };
+  let candidateId: string;
   if (existingCand) {
     await prisma.candidate.update({ where: { id: existingCand.id }, data: candData });
+    candidateId = existingCand.id;
   } else {
-    await prisma.candidate.create({ data: candData });
+    const created = await prisma.candidate.create({ data: candData, select: { id: true } });
+    candidateId = created.id;
   }
+
+  // Auto-matcher — runs after the response is sent so it never slows
+  // the signup. Finds title-matched jobs, emails the candidate their
+  // offers, and surfaces the pairs on Coral's /admin/matches screen.
+  after(async () => {
+    try {
+      await matchCandidateToJobs(candidateId, { notify: true });
+    } catch (e) {
+      console.warn("[join] matcher failed:", e instanceof Error ? e.message : e);
+    }
+  });
 
   // Auto sign-in so they land on /jobs already logged in. Same trick
   // as the paid signup — redirect:false + relative redirect below.

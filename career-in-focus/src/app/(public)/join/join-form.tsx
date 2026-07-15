@@ -8,42 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sparkles, Bell, CheckCircle2, Briefcase } from "lucide-react";
 
-// Job fields the FREE tier user picks so we can match daily-digest
-// jobs to them. Same labels as the main pricing / job filters — keep
-// in sync if either side changes.
-const FIELDS = [
-  "פיתוח",
-  "QA",
-  "עיצוב",
-  "דאטה",
-  "מוצר",
-  "Customer Success",
-  "Cyber",
-  "AI/ML",
-  "Mobile",
-  "שירות לקוחות",
-  "מכירות",
-  "שיווק",
-  "כספים",
-  "משאבי אנוש",
-  "אדמיניסטרציה",
-  "תפעול",
-  "ניהול",
-  "לוגיסטיקה",
-  "תעשייה",
-  "רפואה ובריאות",
-  "בנקאות",
-  "ביטוח",
-  "עורכי דין",
-  "חינוך והדרכה",
-  "אבטחה",
-  "מסעדנות ותיירות",
-  "חברתי קהילתי",
-];
+// The join dropdown uses the site's canonical 32-category taxonomy
+// (lib/job-categories) — the exact same list the /jobs board filter
+// shows — so a free signup's interests map 1:1 onto the board and the
+// daily digest can match jobs to people without any translation layer.
+import { JOB_CATEGORIES } from "@/lib/job-categories";
+import { ChevronDown, X } from "lucide-react";
 
 export default function JoinForm() {
   const [state, action, isPending] = useActionState(joinJobBoard, null);
   const [selected, setSelected] = useState<string[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [gender, setGender] = useState<"f" | "m">("f");
 
   const toggle = (f: string) =>
@@ -125,25 +100,57 @@ export default function JoinForm() {
                 <p className="text-[11px] text-navy/60 mb-3">
                   בחרו אחד או יותר. נעדכן אתכם רק על משרות חדשות מהתחומים שסימנתם.
                 </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {FIELDS.map((f) => {
-                    const active = selected.includes(f);
-                    return (
-                      <button
-                        type="button"
-                        key={f}
-                        onClick={() => toggle(f)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                          active
-                            ? "bg-teal text-white border-teal"
-                            : "bg-white text-navy/70 border-gray-200 hover:border-teal/40"
-                        }`}
-                      >
-                        {f}
-                      </button>
-                    );
-                  })}
+
+                {/* Dropdown multi-select over the canonical categories */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setDropdownOpen((o) => !o)}
+                    className="w-full flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white hover:border-teal/40 transition-colors"
+                  >
+                    <span className={selected.length === 0 ? "text-gray-400" : "text-navy font-semibold"}>
+                      {selected.length === 0
+                        ? "בחרו תחומים מהרשימה..."
+                        : `נבחרו ${selected.length} תחומים`}
+                    </span>
+                    <ChevronDown size={15} className={`text-gray-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {dropdownOpen && (
+                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                      {JOB_CATEGORIES.map((f) => {
+                        const active = selected.includes(f);
+                        return (
+                          <button
+                            type="button"
+                            key={f}
+                            onClick={() => toggle(f)}
+                            className={`w-full flex items-center justify-between px-3 py-2 text-sm text-right transition-colors ${
+                              active ? "bg-teal/10 text-teal font-bold" : "text-navy/80 hover:bg-gray-50"
+                            }`}
+                          >
+                            <span>{f}</span>
+                            {active && <CheckCircle2 size={14} className="shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
+
+                {/* Selected categories as removable tags */}
+                {selected.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {selected.map((f) => (
+                      <span key={f} className="inline-flex items-center gap-1 bg-teal text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+                        {f}
+                        <button type="button" onClick={() => toggle(f)} aria-label={`הסרת ${f}`}>
+                          <X size={11} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <input type="hidden" name="fields" value={selected.join(",")} />
               </div>
 
