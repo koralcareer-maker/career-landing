@@ -21,6 +21,16 @@ export default async function JobsPage() {
     prisma.job.findMany({
       where: { isPublished: true },
       orderBy: [{ isHot: "desc" }, { createdAt: "desc" }],
+      // description is by far the heaviest column (several KB × ~4,000
+      // rows). Paid members need it for match scoring; the free board
+      // renders without it, which cuts the query payload dramatically.
+      select: {
+        id: true, title: true, company: true, companyLogo: true,
+        summary: true, location: true, region: true, field: true,
+        experienceLevel: true, source: true, externalUrl: true,
+        isHot: true, createdAt: true,
+        description: !isFreeTier,
+      },
     }),
     // Per-user dismissals — jobs the member clicked X on. We filter
     // them out below; nothing changes for other members.

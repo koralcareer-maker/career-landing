@@ -70,7 +70,7 @@ export async function joinJobBoard(prevState: unknown, formData: FormData) {
   const fieldsForDb = fieldList.join(", ");
 
   const password = randomPassword();
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await bcrypt.hash(password, 10);
 
   // Case 1 — a real paid account already exists → bounce to login.
   // Case 2 — an unfinished / placeholder row → claim it as FREE and
@@ -134,38 +134,35 @@ export async function joinJobBoard(prevState: unknown, formData: FormData) {
     }
   }
 
-  // Also stash them in the Candidate pool so Coral can see them in
-  // /admin/candidates — same table she uses for paid leads. Dedupe by
-  // email so re-signups don't create duplicates.
-  const existingCand = await prisma.candidate.findFirst({
-    where: { email },
-    select: { id: true },
-  });
-  const candData = {
-    name,
-    email,
-    phone,
-    field: fieldsForDb,
-    source: "הרשמה חינם ללוח משרות",
-    sourceRef: email,
-  };
-  let candidateId: string;
-  if (existingCand) {
-    await prisma.candidate.update({ where: { id: existingCand.id }, data: candData });
-    candidateId = existingCand.id;
-  } else {
-    const created = await prisma.candidate.create({ data: candData, select: { id: true } });
-    candidateId = created.id;
-  }
-
-  // Auto-matcher — runs after the response is sent so it never slows
-  // the signup. Finds title-matched jobs, emails the candidate their
-  // offers, and surfaces the pairs on Coral's /admin/matches screen.
+  // Candidate-pool upsert + auto-matcher both run after the response
+  // is sent — neither should add a millisecond to the signup click.
+  // The user only waits for their account + session; Coral's pool row
+  // and the matches materialize seconds later.
   after(async () => {
     try {
+      const existingCand = await prisma.candidate.findFirst({
+        where: { email },
+        select: { id: true },
+      });
+      const candData = {
+        name,
+        email,
+        phone,
+        field: fieldsForDb,
+        source: "הרשמה חינם ללוח משרות",
+        sourceRef: email,
+      };
+      let candidateId: string;
+      if (existingCand) {
+        await prisma.candidate.update({ where: { id: existingCand.id }, data: candData });
+        candidateId = existingCand.id;
+      } else {
+        const created = await prisma.candidate.create({ data: candData, select: { id: true } });
+        candidateId = created.id;
+      }
       await matchCandidateToJobs(candidateId, { notify: true });
     } catch (e) {
-      console.warn("[join] matcher failed:", e instanceof Error ? e.message : e);
+      console.warn("[join] post-signup pipeline failed:", e instanceof Error ? e.message : e);
     }
   });
 

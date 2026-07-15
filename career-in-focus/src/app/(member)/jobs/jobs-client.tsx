@@ -249,6 +249,7 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function JobsClient({ jobs, hideMatch }: { jobs: JobItem[]; hideMatch?: boolean }) {
+  const [visibleCount, setVisibleCount] = useState(60);
   const [activeField, setActiveField] = useState("הכל");
   const [activeRegion, setActiveRegion] = useState("הכל");
   const [activeLevel, setActiveLevel] = useState("הכל");
@@ -422,15 +423,26 @@ export function JobsClient({ jobs, hideMatch }: { jobs: JobItem[]; hideMatch?: b
         )}
       </div>
 
-      {/* Job Cards Grid */}
+      {/* Job Cards Grid — incremental render. Mounting ~4,000 cards at
+          once froze the first paint for seconds; 60 fill several
+          viewports and the button pulls in the rest on demand. */}
       {filtered.length === 0 ? (
         <EmptyState hasFilters={hasFilters} />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((job) => (
-            <JobCard key={job.id} job={job} hideMatch={hideMatch} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered.slice(0, visibleCount).map((job) => (
+              <JobCard key={job.id} job={job} hideMatch={hideMatch} />
+            ))}
+          </div>
+          {filtered.length > visibleCount && (
+            <div className="text-center mt-8">
+              <Button variant="outline" onClick={() => setVisibleCount((c) => c + 120)}>
+                הצגת עוד משרות ({filtered.length - visibleCount} נוספות)
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
