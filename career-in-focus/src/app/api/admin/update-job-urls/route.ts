@@ -29,16 +29,17 @@ export async function POST(req: Request) {
   }
 
   const body = (await req.json().catch(() => null)) as {
-    pairs?: Array<{ match?: string; url?: string; sourceRef?: string; source?: string }>;
+    pairs?: Array<{ match?: string; url?: string; sourceRef?: string; source?: string; isHot?: boolean }>;
   } | null;
   const pairs = (body?.pairs ?? [])
     .filter(
-      (p): p is { match: string; url?: string; sourceRef?: string; source?: string } =>
+      (p): p is { match: string; url?: string; sourceRef?: string; source?: string; isHot?: boolean } =>
         typeof p.match === "string" &&
         p.match.length >= 8 &&
         ((typeof p.url === "string" && p.url.startsWith("https://")) ||
           typeof p.sourceRef === "string" ||
-          typeof p.source === "string"),
+          typeof p.source === "string" ||
+          typeof p.isHot === "boolean"),
     )
     .slice(0, 500);
   if (pairs.length === 0) {
@@ -50,10 +51,11 @@ export async function POST(req: Request) {
 
   let updated = 0;
   for (const p of pairs) {
-    const data: { externalUrl?: string; sourceRef?: string; source?: string } = {};
+    const data: { externalUrl?: string; sourceRef?: string; source?: string; isHot?: boolean } = {};
     if (p.url) data.externalUrl = p.url;
     if (p.sourceRef) data.sourceRef = p.sourceRef;
     if (p.source) data.source = p.source;
+    if (typeof p.isHot === "boolean") data.isHot = p.isHot;
     const res = await prisma.job.updateMany({
       where: { externalUrl: { contains: p.match } },
       data,

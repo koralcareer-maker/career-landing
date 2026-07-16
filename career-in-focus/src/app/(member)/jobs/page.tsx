@@ -30,8 +30,8 @@ export default async function JobsPage() {
       select: {
         id: true, title: true, company: true, companyLogo: true,
         summary: true, location: true, region: true, field: true,
-        experienceLevel: true, source: true, externalUrl: true,
-        isHot: true, createdAt: true,
+        experienceLevel: true, source: true, sourceRef: true,
+        externalUrl: true, isHot: true, createdAt: true,
       },
     }),
     // Per-user dismissals — jobs the member clicked X on. We filter
@@ -65,8 +65,22 @@ export default async function JobsPage() {
         matchReasons: match.reasons,
       };
     });
-  // Paid members see best-match-first; free viewers keep the natural
-  // hot-then-newest order straight from the query.
+  // Board order. Coral's own recruitment-system postings (SVT) lead:
+  // rank 0 = her SVT jobs, rank 1 = other hot jobs, rank 2 = the rest;
+  // newest-first inside each rank. Paid members then get their
+  // personal match order on top of everything (unchanged).
+  const svtIdx = new Map(
+    rawJobs.map((j) => [
+      j.id,
+      j.sourceRef?.startsWith("svt:") || j.source === "קורל - SVT" ? 0 : j.isHot ? 1 : 2,
+    ]),
+  );
+  jobs.sort((a, b) => {
+    const ra = svtIdx.get(a.id) ?? 2;
+    const rb = svtIdx.get(b.id) ?? 2;
+    if (ra !== rb) return ra - rb;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   if (!isFreeTier) jobs.sort((a, b) => b.matchScore - a.matchScore);
 
   return (
