@@ -26,6 +26,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { matchRecentCandidates } from "@/lib/candidate-matching";
+import { syncRecruitmentOs } from "@/lib/recruitment-os-sync";
 import { mapFieldToCategory } from "@/lib/job-categories";
 
 const CRON_SECRET_FALLBACK = "career-in-focus-cron-2026";
@@ -209,7 +210,18 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Second leg — candidate↔job auto-matcher catch-up. Candidates that
+  // Second leg — sync Coral's own recruitment system ("גיוס בפוקוס")
+  // into the board: adds newly opened client jobs (SPD, ברק פיננסים…),
+  // refreshes existing ones, retires filled/cancelled ones. Runs here
+  // instead of its own cron so we stay under the plan's cron cap.
+  let osSync: Awaited<ReturnType<typeof syncRecruitmentOs>> | { error: string };
+  try {
+    osSync = await syncRecruitmentOs();
+  } catch (e) {
+    osSync = { error: e instanceof Error ? e.message.slice(0, 120) : "failed" };
+  }
+
+  // Third leg — candidate↔job auto-matcher catch-up. Candidates that
   // arrived via bulk imports (no after() hook) get matched + emailed
   // here, at most once: matchCandidateToJobs skips existing pairs.
   let matching: { candidates: number; newMatches: number; emailed: number } | { error: string };
@@ -232,6 +244,7 @@ export async function GET(req: NextRequest) {
     skippedNoFields,
     errorCount: errors.length,
     errors: errors.slice(0, 20),
+    osSync,
     matching,
   });
 }

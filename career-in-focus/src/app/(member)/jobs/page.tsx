@@ -69,15 +69,17 @@ export default async function JobsPage() {
   // rank 0 = her SVT jobs, rank 1 = other hot jobs, rank 2 = the rest;
   // newest-first inside each rank. Paid members then get their
   // personal match order on top of everything (unchanged).
-  const svtIdx = new Map(
-    rawJobs.map((j) => [
-      j.id,
-      j.sourceRef?.startsWith("svt:") || j.source === "קורל - SVT" ? 0 : j.isHot ? 1 : 2,
-    ]),
-  );
+  // rank 0 = Coral's own recruitment-system jobs (SPD, ברק פיננסים…),
+  // rank 1 = her SVT postings, rank 2 = other hot, rank 3 = the rest.
+  const rank = (j: { sourceRef: string | null; source: string | null; isHot: boolean }) => {
+    if (j.sourceRef?.startsWith("ros:") || j.source === "גיוס בפוקוס") return 0;
+    if (j.sourceRef?.startsWith("svt:") || j.source === "קורל - SVT") return 1;
+    return j.isHot ? 2 : 3;
+  };
+  const rankById = new Map(rawJobs.map((j) => [j.id, rank(j)]));
   jobs.sort((a, b) => {
-    const ra = svtIdx.get(a.id) ?? 2;
-    const rb = svtIdx.get(b.id) ?? 2;
+    const ra = rankById.get(a.id) ?? 3;
+    const rb = rankById.get(b.id) ?? 3;
     if (ra !== rb) return ra - rb;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
