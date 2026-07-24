@@ -224,13 +224,16 @@ export async function GET(req: NextRequest) {
   // Third leg — candidate↔job auto-matcher catch-up. Candidates that
   // arrived via bulk imports (no after() hook) get matched + emailed
   // here, at most once: matchCandidateToJobs skips existing pairs.
-  let matching: { candidates: number; newMatches: number; emailed: number } | { error: string };
+  let matching: { candidates: number; newMatches: number; emailed: number; adminSummarySent: boolean } | { error: string };
   try {
-    const run = await matchRecentCandidates({ sinceHours: 26, notify: true });
+    // adminNotify: one roundup email to Coral of every candidate matched
+    // in this nightly catch-up.
+    const run = await matchRecentCandidates({ sinceHours: 26, notify: true, adminNotify: true });
     matching = {
       candidates: run.candidates,
       newMatches: run.results.reduce((n, r) => n + r.newMatches, 0),
       emailed: run.results.reduce((n, r) => n + r.emailed, 0),
+      adminSummarySent: run.adminSummarySent,
     };
   } catch (e) {
     matching = { error: e instanceof Error ? e.message.slice(0, 120) : "failed" };

@@ -36,11 +36,15 @@ export async function POST(req: Request) {
     sinceHours?: number;
     notify?: boolean;
     limit?: number;
+    adminNotify?: boolean;
   };
   const notify = body.notify === true;
+  // Email Coral a summary of what matched — off by default so a silent
+  // backfill stays silent; pass adminNotify:true to get the roundup.
+  const adminNotify = body.adminNotify === true;
 
   if (body.candidateId) {
-    const result = await matchCandidateToJobs(body.candidateId, { notify });
+    const result = await matchCandidateToJobs(body.candidateId, { notify, adminNotify });
     return NextResponse.json({ ok: true, mode: "single", notify, result });
   }
 
@@ -48,6 +52,7 @@ export async function POST(req: Request) {
     sinceHours: body.sinceHours ?? 26,
     notify,
     limit: body.limit,
+    adminNotify,
   });
   return NextResponse.json({
     ok: true,

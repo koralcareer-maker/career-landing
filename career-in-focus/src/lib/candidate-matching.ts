@@ -44,6 +44,9 @@ const MAX_JOBS_PER_EMAIL = 5;
 const MAX_AI_CHECKS = 6;             // Gemini calls per run, quota-friendly
 const RESEND_FROM =
   process.env.RESEND_FROM ?? "קורל <noreply@careerinfocus.co.il>";
+// Where Coral's own match alerts go. She asked to be emailed about every
+// candidate + the jobs they matched.
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "koralcareer@gmail.com";
 
 interface JobLite {
   id: string;
@@ -63,6 +66,77 @@ export interface MatchRunResult {
   newMatches: number;
   emailed: number;
   skippedReason?: string;
+  // Carried so the bulk runner can build ONE admin summary email
+  // instead of one-per-candidate spam. Present only when this run
+  // produced new matches.
+  adminRow?: AdminMatchRow;
+}
+
+// One row in an admin alert/summary.
+interface AdminMatchRow {
+  candidateName: string;
+  candidateContact: string; // "email · phone" for quick outreach
+  targetRole: string | null;
+  jobs: Array<{ title: string; company: string | null; url: string | null }>;
+}
+
+/** Email Coral about candidate→job matches — one candidate or a batch. */
+async function sendAdminMatchEmail(rows: AdminMatchRow[]): Promise<boolean> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key || rows.length === 0) return false;
+
+  const single = rows.length === 1;
+  const subject = single
+    ? `🧩 התאמות למועמד/ת: ${rows[0].candidateName} (${rows[0].jobs.length})`
+    : `🧩 סיכום התאמות — ${rows.length} מועמדים חדשים`;
+
+  const blocks = rows
+    .map((r) => {
+      const jobLis = r.jobs
+        .map((j) => {
+          const meta = j.company ? ` · ${j.company}` : "";
+          const link = j.url
+            ? `<a href="${j.url}" style="color:#0d9488;text-decoration:none">${j.title}</a>`
+            : j.title;
+          return `<li style="margin:3px 0">${link}${meta}</li>`;
+        })
+        .join("");
+      return `
+      <div style="margin:0 0 18px 0;padding:14px;border:1px solid #eee;border-radius:12px">
+        <div style="font-weight:700;color:#0f172a;font-size:15px">${r.candidateName}${r.targetRole ? ` — ${r.targetRole}` : ""}</div>
+        <div style="font-size:12px;color:#64748b;margin:2px 0 8px">${r.candidateContact}</div>
+        <ul style="margin:0;padding-inline-start:18px;font-size:13px;color:#334155">${jobLis}</ul>
+      </div>`;
+    })
+    .join("");
+
+  const html = `<!doctype html>
+<html dir="rtl" lang="he"><body style="font-family:Arial,sans-serif;background:#fafafa;padding:24px">
+  <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:16px;padding:28px;border:1px solid #eee">
+    <div style="font-weight:900;color:#0d9488;font-size:20px;margin-bottom:6px">קריירה בפוקוס · התאמות</div>
+    <p style="color:#475569;font-size:14px;margin:0 0 18px 0">
+      ${single
+        ? "מועמד/ת חדש/ה נכנס/ה למערכת והנה המשרות שהתאמתי לו/ה:"
+        : `סיכום ההתאמות של המועמדים החדשים. מסך מלא: <a href="https://app.careerinfocus.co.il/admin/matches" style="color:#0d9488">מסך התאמות</a>.`}
+    </p>
+    ${blocks}
+    <div style="text-align:center;margin-top:16px">
+      <a href="https://app.careerinfocus.co.il/admin/matches" style="display:inline-block;background:#0d9488;color:#fff;padding:10px 22px;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px">למסך ההתאמות</a>
+    </div>
+  </div>
+</body></html>`;
+
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: RESEND_FROM, to: ADMIN_EMAIL, subject, html }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    return r.ok;
+  } catch {
+    return false;
+  }
 }
 
 /** Load the published-jobs pool once so bulk runs can share it. */
@@ -229,14 +303,15 @@ async function sendMatchEmail(opts: {
  */
 export async function matchCandidateToJobs(
   candidateId: string,
-  opts?: { notify?: boolean; jobs?: JobLite[]; aiBudget?: { remaining: number } },
+  opts?: { notify?: boolean; jobs?: JobLite[]; aiBudget?: { remaining: number }; adminNotify?: boolean },
 ): Promise<MatchRunResult> {
   const notify = opts?.notify ?? false;
+  const adminNotify = opts?.adminNotify ?? false;
 
   const candidate = await prisma.candidate.findUnique({
     where: { id: candidateId },
     select: {
-      id: true, name: true, email: true, source: true,
+      id: true, name: true, email: true, phone: true, source: true,
       targetRole: true, currentTitle: true, field: true,
       yearsExperience: true, skills: true, summary: true,
       isActive: true,
@@ -277,7 +352,7 @@ export async function matchCandidateToJobs(
       select: { jobId: true },
     });
     const seen = new Set(existingFree.map((e) => e.jobId));
-    let created = 0;
+    const createdJobs: JobLite[] = [];
     for (const job of inCategory) {
       if (seen.has(job.id)) continue;
       await prisma.candidateMatch.create({
@@ -288,9 +363,17 @@ export async function matchCandidateToJobs(
           reasons: JSON.stringify([`תחום תואם: ${mapFieldToCategory(job.field)}`]),
         },
       }).catch(() => { /* unique-race — fine */ });
-      created++;
+      createdJobs.push(job);
     }
-    return { candidateId, scored: jobs.length, newMatches: created, emailed: 0 };
+    const row = createdJobs.length > 0 ? adminRow(candidate, createdJobs) : undefined;
+    if (adminNotify && row) await sendAdminMatchEmail([row]);
+    return {
+      candidateId,
+      scored: jobs.length,
+      newMatches: createdJobs.length,
+      emailed: 0,
+      adminRow: row,
+    };
   }
 
   // The title anchor is the whole point ("סנכרון בטייטל") — without a
@@ -390,7 +473,34 @@ export async function matchCandidateToJobs(
     }
   }
 
-  return { candidateId, scored: jobs.length, newMatches: kept.length, emailed };
+  const row = kept.length > 0 ? adminRow(candidate, kept.map((s) => s.job)) : undefined;
+  if (adminNotify && row) await sendAdminMatchEmail([row]);
+
+  return {
+    candidateId,
+    scored: jobs.length,
+    newMatches: kept.length,
+    emailed,
+    adminRow: row,
+  };
+}
+
+/** Build one admin-alert row from a candidate + the jobs matched to them. */
+function adminRow(
+  candidate: { name: string; email: string | null; phone: string | null; targetRole: string | null; currentTitle: string | null },
+  matched: JobLite[],
+): AdminMatchRow {
+  const contact = [candidate.email, candidate.phone].filter(Boolean).join(" · ") || "אין פרטי קשר";
+  return {
+    candidateName: candidate.name,
+    candidateContact: contact,
+    targetRole: candidate.targetRole || candidate.currentTitle,
+    jobs: matched.slice(0, 10).map((j) => ({
+      title: j.title,
+      company: j.company,
+      url: j.externalUrl,
+    })),
+  };
 }
 
 /**
@@ -401,7 +511,8 @@ export async function matchRecentCandidates(opts: {
   sinceHours: number;
   notify: boolean;
   limit?: number;
-}): Promise<{ candidates: number; results: MatchRunResult[] }> {
+  adminNotify?: boolean;
+}): Promise<{ candidates: number; results: MatchRunResult[]; adminSummarySent: boolean }> {
   const since = new Date(Date.now() - opts.sinceHours * 60 * 60 * 1000);
   const recent = await prisma.candidate.findMany({
     where: { createdAt: { gte: since }, isActive: true },
@@ -409,7 +520,7 @@ export async function matchRecentCandidates(opts: {
     orderBy: { createdAt: "desc" },
     take: opts.limit ?? 200,
   });
-  if (recent.length === 0) return { candidates: 0, results: [] };
+  if (recent.length === 0) return { candidates: 0, results: [], adminSummarySent: false };
 
   const jobs = await loadMatchableJobs();
   const results: MatchRunResult[] = [];
@@ -421,7 +532,10 @@ export async function matchRecentCandidates(opts: {
   for (const c of recent) {
     if (Date.now() > deadline) break;
     try {
-      results.push(await matchCandidateToJobs(c.id, { notify: opts.notify, jobs, aiBudget }));
+      // Per-candidate admin emails are suppressed here (adminNotify:false)
+      // so a bulk run of N candidates doesn't send N emails — we batch
+      // all their rows into one summary below.
+      results.push(await matchCandidateToJobs(c.id, { notify: opts.notify, jobs, aiBudget, adminNotify: false }));
     } catch (e) {
       results.push({
         candidateId: c.id, scored: 0, newMatches: 0, emailed: 0,
@@ -429,5 +543,16 @@ export async function matchRecentCandidates(opts: {
       });
     }
   }
-  return { candidates: recent.length, results };
+
+  // One roundup email to Coral covering every candidate that got new
+  // matches this run.
+  let adminSummarySent = false;
+  if (opts.adminNotify) {
+    const adminRows = results.map((r) => r.adminRow).filter((r): r is AdminMatchRow => !!r);
+    if (adminRows.length > 0) {
+      adminSummarySent = await sendAdminMatchEmail(adminRows);
+    }
+  }
+
+  return { candidates: recent.length, results, adminSummarySent };
 }

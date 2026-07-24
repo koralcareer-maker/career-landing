@@ -160,7 +160,9 @@ export async function joinJobBoard(prevState: unknown, formData: FormData) {
         const created = await prisma.candidate.create({ data: candData, select: { id: true } });
         candidateId = created.id;
       }
-      await matchCandidateToJobs(candidateId, { notify: true });
+      // adminNotify: Coral asked to get a match email for every new
+      // candidate the moment they sign up.
+      await matchCandidateToJobs(candidateId, { notify: true, adminNotify: true });
     } catch (e) {
       console.warn("[join] post-signup pipeline failed:", e instanceof Error ? e.message : e);
     }
